@@ -1,6 +1,6 @@
 ---
 layout: posts
-title: docker 安装 gitlab
+title: Docker 安装 gitlab
 date: 2022-03-04 22:17:00
 categories: 
 - 其他
