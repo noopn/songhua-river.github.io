@@ -1,7 +1,7 @@
 ---
 title: 文件和目录命令
 mathjax: true
-abbrlink: 7ecf5e39
+
 categories:
   - Linux
   - 基础命令

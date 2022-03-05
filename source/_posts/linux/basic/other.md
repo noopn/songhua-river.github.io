@@ -1,7 +1,7 @@
 ---
 title: 其他命令
 mathjax: true
-abbrlink: 7375f30c
+
 date: 2020-10-26 21:07:30
 categories:
   - Linux

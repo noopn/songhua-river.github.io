@@ -1,7 +1,7 @@
 ---
 title: supOS常见问题
 mathjax: true
-abbrlink: 3221341b
+
 date: 2021-05-19 19:30:09
 categories: 
 - 其他
@@ -16,6 +16,7 @@ tags:
 ①  [导入App提示重复不能导入 (3.0.3)](#导入App提示重复不能导入)
 ②  [如何修改标签页组件的标签样式](#如何修改标签页组件的标签样式)
 ③  [如何设置页面的背景为透明色](#如何设置页面的背景为透明色)
+④  [服务中调用openApi或第三方接口](#服务中调用openApi或第三方接口)
 
 #### 导入App提示重复\/已存在不能导入
 
@@ -110,4 +111,111 @@ document.querySelector('#组件Id .ant-tabs-nav-wrap').style.background='blue'
 ```javascript
 document.querySelector('body .ant-layout').style.background='transparent'
 document.querySelector('body').style.background='transparent'
+```
+
+
+#### 服务中调用openApi或第三方接口
+
+```javascript
+var httpClient = services.HttpClientService;
+ 
+// get请求参数
+httpClient.getString(String url);
+httpClient.getString(String url, int timeout);
+httpClient.getString(String url, Map header);
+httpClient.getString(String url, Map header, int timeout);
+ 
+// post请求参数
+httpClient.post(String url, String body);
+httpClient.post(String url, String body, int timeout);
+httpClient.post(String url, String body, Map header);
+httpClient.post(String url, String body, Map header, int timeout);
+ 
+// put请求参数
+httpClient.put(String url, String body);
+httpClient.put(String url, String body, int timeout);
+httpClient.put(String url, String body, Map header);
+httpClient.put(String url, String body, Map header, int timeout);
+ 
+// delete请求参数
+httpClient.delete(String url);
+httpClient.delete(String url, int timeout);
+httpClient.delete(String url, Map header);
+httpClient.delete(String url, Map header, int timeout);
+```
+
+
+**get**
+
+```javascript
+var timeout = 2000;
+var url = "https://developer.supos.com/services/resources/video/resources/newestList";
+var result = services.HttpClientService.getString(url, timeout);
+result;
+```
+
+**post**
+
+```javascript
+var timeout = 2000;
+var url = "/open-api/supos/oodm/v2/model-label-types";
+var body = {
+  "appAccessMode": "PUBLIC",
+  "appName": "system",
+  "comment": "这是一个测试标签",
+  "displayName": "设备",
+  "enName": "device",
+  "namespace": "system"
+};
+var result = services.HttpClientService.post(url, JSON.stringify(body), timeout);
+result;
+```
+
+**其他示例**
+
+```javascript
+// 创建属性
+// /v2/template/{templateNamespace}/{templateName}/entity/{instanceName}/attribute
+var param = {
+"comment": "这是一个测试属性",
+"dataType": "DOUBLE",
+"displayName": "p3",
+"enName": "p3",
+"readWriteMode": "READ_WRITE",
+"appAccessMode": "PUBLIC",
+"appName": "system",
+"appShowName": "system",
+"namespace": "system",
+"maxValue": 2342342342.232,
+"minValue": -2342342342.232
+}
+var url = "/open-api/supos/oodm/v2/template/system/test/entity/o1/attribute";
+var result = services.HttpClientService.post(url, JSON.stringify(param));
+result
+ 
+ 
+// 修改属性
+// 客户端为IE11浏览器时不支持ES6脚本
+// /v2/template/{templateNamespace}/{templateName}/entity/{instanceName}/attribute/{attributeNamespace}/{attributeName}
+var param = {
+"comment": "这是一个测试属性",
+"readWriteMode": "READ_WRITE",
+"appAccessMode": "PUBLIC",
+"appName": "system",
+"appShowName": "system",
+"namespace": "system",
+"maxValue": 234234342342.232,
+"minValue": -234234342342.232
+}
+var url = "/open-api/supos/oodm/v2/template/system/test/entity/o1/attribute/system/p3";
+var result = services.HttpClientService.put(url, JSON.stringify(param));
+result
+ 
+ 
+// 查询属性
+// 客户端为IE11浏览器时不支持ES6脚本
+// /v2/template/{templateNamespace}/{templateName}/instance/{instanceName}/attribute/self
+var url = "/open-api/supos/oodm/v2/template/system/test/instance/o1/attribute/self?pageIndex=1&pageSize=3";
+var result = services.HttpClientService.getString(url);
+result
 ```

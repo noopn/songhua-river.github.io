@@ -1,7 +1,7 @@
 ---
 title: Ramda Type 方法源码解析
 mathjax: true
-abbrlink: 54a7cf63
+
 date: 2021-01-19 16:01:47
 categories:
   - JavaScript

@@ -1,7 +1,7 @@
 ---
 title: 重定向和管道
 mathjax: true
-abbrlink: 2447a85e
+
 date: 2020-10-12 02:02:54
 categories:
   - Linux

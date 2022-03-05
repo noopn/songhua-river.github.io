@@ -1,7 +1,7 @@
 ---
 title: ubuntu取消代理
 mathjax: true
-abbrlink: c5c74ff0
+
 date: 2021-04-01 09:46:11
 categories:
   - Linux

@@ -1,7 +1,7 @@
 ---
 title: kmp算法
 mathjax: true
-abbrlink: 999a8be4
+
 date: 2021-08-15 18:41:59
 tags:
   - 算法

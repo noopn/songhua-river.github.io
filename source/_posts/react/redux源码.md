@@ -1,7 +1,7 @@
 ---
 layout: post
 title: redux实现原理
-abbrlink: 9c81db45
+
 categories:
   - React
 tags:

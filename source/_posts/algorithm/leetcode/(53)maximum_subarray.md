@@ -9,7 +9,7 @@ categories:
   - 算法
   - LeetCode
   - Easy
-abbrlink: 396fd427
+
 date: 2020-09-24 11:20:56
 ---
 

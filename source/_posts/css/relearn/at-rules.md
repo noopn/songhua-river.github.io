@@ -1,7 +1,7 @@
 ---
 title: '@规则'
 mathjax: true
-abbrlink: 56ec7aea
+
 date: 2020-09-20 18:41:38
 tags:
   - CSS

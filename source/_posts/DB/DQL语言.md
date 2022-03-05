@@ -1,7 +1,7 @@
 ---
 title: MySQL DQL查询语言
 mathjax: true
-abbrlink: 7a6d6864
+
 date: 2021-12-09 09:55:38
 categories:
   - 数据库

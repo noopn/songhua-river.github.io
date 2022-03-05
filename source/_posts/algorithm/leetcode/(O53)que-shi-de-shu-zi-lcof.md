@@ -1,7 +1,7 @@
 ---
 title: O53.0～n-1中缺失的数字
 mathjax: true
-abbrlink: 28c29680
+
 date: 2020-11-01 19:38:05
 tags:
   - 算法

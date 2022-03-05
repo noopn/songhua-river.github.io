@@ -1,7 +1,7 @@
 ---
 title: Generator
 mathjax: true
-abbrlink: 6b643b84
+
 date: 2020-11-01 16:44:40
 categories:
   - JavaScript

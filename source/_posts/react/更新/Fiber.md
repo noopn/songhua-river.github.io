@@ -1,7 +1,7 @@
 ---
 title: FiberNode
 mathjax: true
-abbrlink: ba6d72c1
+
 date: 2021-02-14 14:24:36
 categories:
   - React

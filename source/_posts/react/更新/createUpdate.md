@@ -1,7 +1,7 @@
 ---
 title: createUpdate
 mathjax: true
-abbrlink: 9f89304e
+
 date: 2021-02-14 14:33:17
 categories:
   - React

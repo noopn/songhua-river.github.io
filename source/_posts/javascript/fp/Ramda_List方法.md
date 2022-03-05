@@ -7,7 +7,7 @@ categories:
 tags:
   - 函数式编程
   - Ramda
-abbrlink: 6ac7a6cf
+
 date: 2021-01-19 12:57:53
 ---
 

@@ -1,7 +1,7 @@
 ---
 title: Iterator
 mathjax: true
-abbrlink: 1cf0e843
+
 date: 2020-10-29 22:44:37
 categories:
   - JavaScript

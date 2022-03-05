@@ -1,7 +1,7 @@
 ---
 layout: post
 title: webpack核心概念
-abbrlink: 731d431a
+
 categories:
   - webpack
 tags:

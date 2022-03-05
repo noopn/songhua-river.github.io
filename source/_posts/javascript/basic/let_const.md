@@ -1,7 +1,7 @@
 ---
 title: let const
 mathjax: true
-abbrlink: 773aaa3d
+
 date: 2020-10-16 09:40:39
 categories:
 - JavaScript

@@ -8,7 +8,7 @@ categories:
   - 算法
   - LeetCode
   - Easy
-abbrlink: b45ed06c
+
 date: 2020-10-09 09:31:00
 ---
 

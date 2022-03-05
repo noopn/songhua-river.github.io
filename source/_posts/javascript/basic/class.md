@@ -1,7 +1,7 @@
 ---
 layout: post
 title: Class 类
-abbrlink: 885dbafa
+
 date: 2020-11-16 08:47:26
 categories:
 - JavaScript

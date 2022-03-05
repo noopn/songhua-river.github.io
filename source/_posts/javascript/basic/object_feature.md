@@ -1,7 +1,7 @@
 ---
 title: Object新特性
 mathjax: true
-abbrlink: af01aeda
+
 date: 2020-10-18 14:23:49
 categories:
 - JavaScript

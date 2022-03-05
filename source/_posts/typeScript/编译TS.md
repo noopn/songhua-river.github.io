@@ -5,7 +5,7 @@ categories:
   - TypeScript
 tags:
   - TypeScript
-abbrlink: c4c01a83
+
 date: 2021-01-14 23:26:07
 ---
 

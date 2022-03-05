@@ -1,7 +1,7 @@
 ---
 title: 远程管理命令
 mathjax: true
-abbrlink: b2a05287
+
 date: 2020-10-12 02:20:31
 categories:
   - Linux

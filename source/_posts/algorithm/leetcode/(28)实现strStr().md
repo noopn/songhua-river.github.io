@@ -1,7 +1,7 @@
 ---
 title: 28. 实现 strStr()
 mathjax: true
-abbrlink: 69b4046c
+
 date: 2020-09-20 13:59:58
 tags:
   - 算法

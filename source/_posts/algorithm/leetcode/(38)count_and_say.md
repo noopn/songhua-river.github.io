@@ -1,7 +1,7 @@
 ---
 title: 38. 外观数列
 mathjax: true
-abbrlink: 179dda14
+
 date: 2020-09-23 18:03:52
 tags:
   - 算法

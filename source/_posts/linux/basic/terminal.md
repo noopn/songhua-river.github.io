@@ -6,7 +6,7 @@ categories:
   - 基础命令
 tags:
   - Linux
-abbrlink: b635e924
+
 date: 2020-10-07 13:41:41
 ---
 

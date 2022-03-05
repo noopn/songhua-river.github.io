@@ -1,7 +1,7 @@
 ---
 title: ESLint 和 Prettier 区别
 mathjax: true
-abbrlink: 124b0412
+
 date: 2021-09-11 00:15:41
 categories:
   - DevOps

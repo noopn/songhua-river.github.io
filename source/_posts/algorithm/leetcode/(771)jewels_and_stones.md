@@ -1,7 +1,7 @@
 ---
 title: 771.宝石与石头
 mathjax: true
-abbrlink: af7f3fb9
+
 date: 2020-10-02 09:12:46
 categories:
 tags:

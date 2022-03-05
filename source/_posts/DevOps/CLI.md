@@ -1,7 +1,7 @@
 ---
 title: CLI
 mathjax: true
-abbrlink: de5113b6
+
 date: 2020-12-20 14:51:27
 categories:
   - DevOps

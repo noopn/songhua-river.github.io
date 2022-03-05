@@ -1,7 +1,7 @@
 ---
 title: Array
 mathjax: true
-abbrlink: a10ceeb7
+
 date: 2020-10-18 11:13:43
 categories:
 - JavaScript

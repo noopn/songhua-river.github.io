@@ -1,7 +1,7 @@
 ---
 title: Object新增方法
 mathjax: true
-abbrlink: 998b8e20
+
 date: 2020-10-20 09:52:50
 categories:
 - JavaScript

@@ -1,7 +1,7 @@
 ---
 title: 文件内容命令
 mathjax: true
-abbrlink: 65d7f240
+
 date: 2020-10-12 01:46:43
 categories:
   - Linux

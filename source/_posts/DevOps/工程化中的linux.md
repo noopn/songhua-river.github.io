@@ -1,7 +1,7 @@
 ---
 title: 工程化中的linux
 mathjax: true
-abbrlink: ed6b4dad
+
 date: 2020-12-02 16:52:11
 categories:
   - DevOps

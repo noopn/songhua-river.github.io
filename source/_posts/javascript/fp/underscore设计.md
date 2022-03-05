@@ -7,7 +7,7 @@ categories:
 tags:
   - 函数式编程
   - underscore
-abbrlink: db3582e2
+
 date: 2020-12-02 13:44:27
 ---
 

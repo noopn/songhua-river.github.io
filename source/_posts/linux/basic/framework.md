@@ -1,7 +1,7 @@
 ---
 title: linux 架构
 mathjax: true
-abbrlink: 864c72ac
+
 date: 2020-10-13 22:19:40
 categories:
 - Linux
