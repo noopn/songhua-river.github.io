@@ -109,7 +109,7 @@ function updateContainer(element, container, parentComponent, callback) {
 
 在这个函数里做了如下几件事情:
 
-- 获取一个时间戳 `eventTime` 通过 Performance Api 获取程序执行到当前语句的时间,如果不知道内部调用 `Date.now()`代替
+- 获取一个时间戳 `eventTime` 通过 Performance Api 获取程序执行到当前语句的时间,如果不支持则内部调用 `Date.now()`代替
 - 获取一个优先级 `var lane = requestUpdateLane(RootFiber)` 通过 RootFiber 上的`mode`计算后返回一个同步任务值,也就是`SyncLane = 1`
 - 用以上两个变量,创建`Update`更新对象, 并添加`UpdateState`更新标记
   ```javascript
@@ -181,59 +181,7 @@ function updateContainer(element, container, parentComponent, callback) {
       // workInProgress 通过alternate属性链接原始的 FiberRoot 对象
       workInProgress.alternate = current;
       current.alternate = workInProgress;
-    } else {
-      workInProgress.pendingProps = pendingProps; // Needed because Blocks store data on type.
-      workInProgress.type = current.type; // We already have an alternate.
-      // Reset the effect tag.
-      workInProgress.flags = NoFlags; // The effect list is no longer valid.
-      workInProgress.nextEffect = null;
-      workInProgress.firstEffect = null;
-      workInProgress.lastEffect = null;
-
-    }
-
-    workInProgress.childLanes = current.childLanes;
-    workInProgress.lanes = current.lanes;
-    workInProgress.child = current.child;
-    workInProgress.memoizedProps = current.memoizedProps;
-    workInProgress.memoizedState = current.memoizedState;
-    workInProgress.updateQueue = current.updateQueue; // Clone the dependencies object. This is mutated during the render phase, so
-    // it cannot be shared with the current fiber.
-
-    var currentDependencies = current.dependencies;
-    workInProgress.dependencies = currentDependencies === null ? null : {
-      lanes: currentDependencies.lanes,
-      firstContext: currentDependencies.firstContext
-    }; // These will be overridden during the parent's reconciliation
-
-    workInProgress.sibling = current.sibling;
-    workInProgress.index = current.index;
-    workInProgress.ref = current.ref;
-
-    {
-      workInProgress.selfBaseDuration = current.selfBaseDuration;
-      workInProgress.treeBaseDuration = current.treeBaseDuration;
-    }
-
-    {
-      workInProgress._debugNeedsRemount = current._debugNeedsRemount;
-
-      switch (workInProgress.tag) {
-        case IndeterminateComponent:
-        case FunctionComponent:
-        case SimpleMemoComponent:
-          workInProgress.type = resolveFunctionForHotReloading(current.type);
-          break;
-
-        case ClassComponent:
-          workInProgress.type = resolveClassForHotReloading(current.type);
-          break;
-
-        case ForwardRef:
-          workInProgress.type = resolveForwardRefForHotReloading(current.type);
-          break;
-      }
-    }
+    } else { }
 
     return workInProgress;
   }
@@ -393,6 +341,49 @@ function completeUnitOfWork(unitOfWork) {
 
 ![](0007.png)
 
-在提交阶段,会执行 `root.current = finishedWork;` 把最新构建的树,指向 `root.current`,最终形成如下的链表
+在提交阶段,会执行如下代码, 把最新构建的树,指向 `root.current`,最终形成如下的链表
+
+```javascript
+function performSyncWorkOnRoot(root) {
+  var finishedWork = root.current.alternate;
+  root.finishedWork = finishedWork;
+  root.finishedLanes = lanes;
+  commitRoot(root);
+}
+
+root.current = root.finishedWork;
+```
 
 ![](0008.png)
+
+#### update阶段Fiber树构建
+
+点击h1标签状态更新,依然会进入 `createWorkInProgress` 第一个节点是 RootFiber,alternate已经存在,如果不存在则创建一个FiberInWorkProgress并用alternate相连
+
+```javascript
+function createWorkInProgress(current, pendingProps) {
+  // alternate 存在为渲染结束交换之后的RootFiber
+  var workInProgress = current.alternate;
+
+  if (workInProgress === null) {
+  } else {
+    workInProgress.pendingProps = pendingProps; // Needed because Blocks store data on type.
+
+    workInProgress.type = current.type; 
+    workInProgress.flags = NoFlags; // The effect list is no longer valid.
+
+    workInProgress.nextEffect = null;
+    workInProgress.firstEffect = null;
+    workInProgress.lastEffect = null;
+  }
+  return workInProgress;
+}
+```
+
+与render阶段相同都会进入beginWork, 会把当前节点的子节点和子节点的兄弟节点克隆到 workInProgress 上.
+
+![](0009.png)
+
+下面与render阶段类似,依次处理每个节点并于原节点 alternate 相连
+
+![](0010.png)
