@@ -17,6 +17,7 @@ tags:
 ②  [如何修改标签页组件的标签样式](#如何修改标签页组件的标签样式)
 ③  [如何设置页面的背景为透明色](#如何设置页面的背景为透明色)
 ④  [服务中调用openApi或第三方接口](#服务中调用openApi或第三方接口)
+④  [如何调用平台内置服务](#如何调用平台内置服务)
 
 #### 导入App提示重复\/已存在不能导入
 
@@ -218,4 +219,80 @@ result
 var url = "/open-api/supos/oodm/v2/template/system/test/instance/o1/attribute/self?pageIndex=1&pageSize=3";
 var result = services.HttpClientService.getString(url);
 result
+```
+
+
+#### 如何调用平台内置服务
+
+2.7 版本使用方式
+
+```js
+scriptUtil.excuteScriptService({
+  objName: '对象实例别名',
+  serviceName: '服务别名',
+  "服务的参数别名": "参数的值,可能是字符串,也可能是对象,按照服务参数说明填写"
+  cb:(res)=>{
+    // 执行结束后的回调函数,和下面方法二选一,写法不同,效果一样
+  }
+}, (res) => {
+  // 执行结束后的回调函数 
+})
+```
+
+3.0 及以上版本使用方式
+
+```js
+scriptUtil.excuteScriptService({
+  objName: '模板命名空间.模板别名',
+  serviceName: '服务命名空间.服务别名',
+  version: 'V2',
+  "服务的参数别名": "参数的值,可能是字符串,也可能是对象,按照服务参数说明填写"
+  cb:(res)=>{
+    // 执行结束后的回调函数,和下面方法二选一,写法不同,效果一样
+  }
+}, (res) => {
+  // 执行结束后的回调函数 
+})
+```
+
+查看服务参数
+
+点击对象模板 -> 添加按钮,创建表单 -> 点击进入详情
+
+![](0008.png)
+
+点击服务 -> **其他服务就是平台内置服务** -> 点击操作中的查看
+
+![](0009.png)
+
+在 信息输入 描述中查看参数格式, 别名就是参数的 `key` 描述就是值的格式
+
+![](0010.png)
+
+
++ 案例1: 添加表单数据的内置服务
+
+|别名 | 类型 | 描述 | 必填 |
+|---|---|---|---|
+|params | STRING	| 参数格式：{"id":"1","name":"zhangsan"}| 是|
+
+2.7 写法 
+
+```js
+scriptUtil.excuteScriptService(k{
+  objName: 'templateNamespace.templateName',
+  serviceName: 'serviceNamespace.addDataTableEntry',
+  params:
+  cb:(res)=>{
+    if(res.code==200){
+
+    }
+  }
+})
+```
+
+3.0 写o法
+
+```js
+
 ```
