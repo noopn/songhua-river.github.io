@@ -11,13 +11,17 @@ tags:
 
 [^_^]:①②③④⑤⑥⑦⑧⑨⑩⑪⑫⑬⑭⑮⑯⑰⑱⑲⑳❶❷❸❹❺❻❼❽❾❿⓫⓬⓭⓮⓯⓰⓱⓲⓳⓴
 
+
+### [官方文档](https://devc.supos.com/document?groupId=doc_group_id_005&devcContentId=DOC_CONTENT_1625187847647&version=supos_version_002&id=534)
+
 #### 目录
 
 ①  [导入App提示重复不能导入 (3.0.3)](#导入App提示重复不能导入)
 ②  [如何修改标签页组件的标签样式](#如何修改标签页组件的标签样式)
 ③  [如何设置页面的背景为透明色](#如何设置页面的背景为透明色)
 ④  [服务中调用openApi或第三方接口](#服务中调用openApi或第三方接口)
-④  [如何调用平台内置服务](#如何调用平台内置服务)
+④  [脚本中如何调用平台内置服务](#脚本中如何调用平台内置服务)
+⑤  [服务中如何调用平台内置服务](#服务中如何调用平台内置服务)
 
 #### 导入App提示重复\/已存在不能导入
 
@@ -222,7 +226,7 @@ result
 ```
 
 
-#### 如何调用平台内置服务
+#### 脚本中如何调用平台内置服务
 
 2.7 版本使用方式
 
@@ -230,7 +234,9 @@ result
 scriptUtil.excuteScriptService({
   objName: '对象实例别名',
   serviceName: '服务别名',
-  "服务的参数别名": "参数的值,可能是字符串,也可能是对象,按照服务参数说明填写"
+  params:{
+    // "参数的值,可能是字符串,也可能是对象,按照服务参数说明填写"
+  },
   cb:(res)=>{
     // 执行结束后的回调函数,和下面方法二选一,写法不同,效果一样
   }
@@ -246,7 +252,9 @@ scriptUtil.excuteScriptService({
   objName: '模板命名空间.模板别名',
   serviceName: '服务命名空间.服务别名',
   version: 'V2',
-  "服务的参数别名": "参数的值,可能是字符串,也可能是对象,按照服务参数说明填写"
+  params:{
+    // "参数的值,可能是字符串,也可能是对象,按照服务参数说明填写"
+  },
   cb:(res)=>{
     // 执行结束后的回调函数,和下面方法二选一,写法不同,效果一样
   }
@@ -280,19 +288,119 @@ scriptUtil.excuteScriptService({
 
 ```js
 scriptUtil.excuteScriptService(k{
-  objName: 'templateNamespace.templateName',
-  serviceName: 'serviceNamespace.addDataTableEntry',
-  params:
+  objName: '对象实例名称',
+  serviceName: 'addDataTableEntry',
+  // params 固定属性不要修改
+  params:{
+    // 属性描述中的参数,值需要传一个字符串所以需要转换
+    params: JSON.stringify({"id":"1","name":"zhangsan"})
+  },
   cb:(res)=>{
     if(res.code==200){
-
+      //
     }
   }
 })
 ```
 
-3.0 写o法
+3.0 写法
+
+```js
+scriptUtil.excuteScriptService(k{
+  objName: 'templateNamespace.templateName',
+  serviceName: 'serviceNamespace.addDataTableEntry',
+  // params 固定属性不要修改
+  params:{
+    // 属性描述中的参数,值需要传一个字符串所以需要转换
+    params: JSON.stringify({"id":"1","name":"zhangsan"})
+  },
+  cb:(res)=>{
+    if(res.code==200){
+      //
+    }
+  }
+})
+```
+
+
+#### 服务中如何调用平台内置服务
+
+2.7 版本
+
+```js
+var inputs = {
+  params: JSON.stringify({"id":"1","name":"zhangsan"})
+};
+ObjectPool.get('对象实例别名').executeService('内置服务(addDataTableEntry)', inputs);
+```
+
+3.0 版本 
 
 ```js
 
+var inputs = {
+  params: JSON.stringify({"id":"1","name":"zhangsan"})
+};
+var instance = templates['对象模板命名空间.模板别名'].instances('对象实例别名');
+var result = instance.executeService('服务命名空间.内置服务(addDataTableEntry)',inputs);
 ```
+
+#### 服务中使用sql查询表单模板
+
+语法与<a href='#服务中如何调用平台内置服务'>服务中如何调用平台内置服务</a>相同,只需要把sql当作服务参数传入即可
+
+
+下面是一个稍微复杂一点的例子, `timeLine` 和 `status` 是外部传入的两个参数
+
+可以直接对传入参数进行操作, 循环或是判断是否有值
+
+
+```js
+
+var i=0;   
+// 解析成一个数组用于循环
+var timeLine = JSON.parse(timeLine);
+
+var sql1 = "select p.admin_promanagesystem_companyname as ocompanyname,p.admin_promanagesystem_companyname as ocid, sum(p.admin_promanagesystem_money) as contractmoney "
+
+for(var k in timeLine){
+    var month = timeLine[k];
+    sql1+= " ,JSON_OBJECT('count', op" +i +".count, 'overdue', op" +i +".overdue,'money',op" +i +".money,'engineeringnode',op" +i +".engineeringnode ) as '" + month + "' "
+    i = i+1
+}
+    sql1+= " from admin_promanagesystem_proContractNode as p "
+var i=0;   
+for(var k in timeLine){
+    var month = timeLine[k];
+
+    sql1+= "left join ( "
+    sql1+= " select p.admin_promanagesystem_companyname as companyname, p.admin_promanagesystem_companyname as cid, '"+ month +"' as date "
+    sql1+= " from admin_promanagesystem_proContractNode as p "
+    sql1+= " where DATE_FORMAT(p.admin_promanagesystem_estimatedCompDate, '%Y-%m') = '"+month+"' "
+
+    // 判断这个外部参数是否为真,用于添加查询条件
+    if(status) {
+    sql1+= " and p.admin_promanagesystem_engineerStatus = '" + status + "' "    
+    }
+    sql1+= " group by p.admin_promanagesystem_companyname "
+    sql1+= " order by STR_TO_DATE(p.admin_promanagesystem_estimatedCompDate,'%Y-%m-%d') desc "
+    sql1+= ") as op" +i +" on 1 = 1 and p.admin_promanagesystem_companyname = op" +i +".companyname "
+    i = i+1
+}
+    
+    sql1+= "group by p.admin_promanagesystem_companyname "
+    
+   
+
+var inputs = {
+	input: JSON.stringify({"sql": sql1})
+};     
+var template = templates['admin_promanagesystem.proManageSystem'];
+
+var list = template['system.querySQLExec'](inputs).data;
+
+var list = template['system.querySQLExec'](inputs).data.dataSource;
+list
+
+```
+
