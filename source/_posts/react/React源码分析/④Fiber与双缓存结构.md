@@ -242,8 +242,7 @@ var reconcileChildFibers = ChildReconciler(true);
 var mountChildFibers = ChildReconciler(false);
 ```
 
-由于原始节点current存在, 会进入 reconcileChildFibers,根据不同的子元素类型使用不同的处理方法
-Diff算法也发生在这里
+由于原始节点current存在, 会进入 reconcileChildFibers,根据不同的子元素类型使用不同的处理方法,[**Diff算法**](/posts/bb4fc484e4b2/)也发生在这里
 
 <strong id='#reconcileChildFibers'>reconcileChildFibers</strong>
 

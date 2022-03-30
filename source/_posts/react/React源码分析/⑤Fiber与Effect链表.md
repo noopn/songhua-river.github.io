@@ -61,7 +61,7 @@ case HostComponent:
 }
 ```
 
-如果是更新阶段, 会进入 if 分支执行 updateHostComponent$1, 在 这个函数内部会调用 diffProperties 也就是属性的 Diff 算法
+如果是更新阶段, 会进入 if 分支执行 updateHostComponent$1, 在 这个函数内部会调用 <strong id='diffProperties'>diffProperties</strong> 也就是属性的 Diff 算法
 
 以下一个进来的 `p` 节点为例, 新的文本是 `内容改变`, 旧的文本是 `内容`
 

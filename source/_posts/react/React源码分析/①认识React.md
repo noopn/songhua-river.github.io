@@ -232,7 +232,7 @@ Component.prototype.forceUpdate = function(callback) {
 
 现在已经知道了render执行时的大部分必要信息，那render背后的逻辑又是怎样的，这显然是一个复杂的调用过程，但是我们可以通过浏览器的性能分析去查看render函数的调用那个过程
 
-现在你只需要大概了解调用了那些方法，这些方法会组成后面的调用流程图，后面会详细的描述
+现在你只需要大概了解调用了哪些方法，这些方法会组成后面的调用流程图，后面会详细的描述
 
 ![](0001.png)
 
@@ -276,76 +276,6 @@ Component.prototype.forceUpdate = function(callback) {
 **commitMutationEffects**: 执行节点操作
 **commitLayoutEffects：** 执行副作用函数，包括 `componentDidUpdate` 或 `effect`回调函数
 
-#### 预告
 
-如此复杂的调用栈，是为了解决那些问题。下一章，让我们感受一下react的设计理念
+如此复杂的调用栈，是为了解决哪些问题。下一章，让我们感受一下react的设计理念
 
-<!-- ##### Fiber 双缓存
-
-Fiber 对象上面保存了包括这个节点的属性、类型、dom 等，Fiber 通过 child、sibling、return（指向父节点）来形成 Fiber 树，还保存了更新状态时用于计算 state 的 updateQueue，updateQueue 是一种链表结构，上面可能存在多个未计算的 update，update 也是一种数据结构，上面包含了更新的数据、优先级等，除了这些之外，上面还有和副作用有关的信息。
-
-双缓存是指存在两颗 Fiber 树，current Fiber 树描述了当前呈现的 dom 树，workInProgress Fiber 是正在更新的 Fiber 树，这两颗 Fiber 树都是在内存中运行的，在 workInProgress Fiber 构建完成之后会将它作为 current Fiber 应用到 dom 上
-
-在 mount 时（首次渲染），会根据 jsx 对象（Class Component 或的 render 函数者 Function Component 的返回值），构建 Fiber 对象，形成 Fiber 树，然后这颗 Fiber 树会作为 current Fiber 应用到真实 dom 上，在 update（状态更新时如 setState）的时候，会根据状态变更后的 jsx 对象和 current Fiber 做对比形成新的 workInProgress Fiber，然后 workInProgress Fiber 切换成 current Fiber 应用到真实 dom 就达到了更新的目的，而这一切都是在内存中发生的，从而减少了对 dom 好性能的操作。
-
-![](0006.jpg)
-
-#### Lane 模型
-
-react 之前的版本用 expirationTime 属性代表优先级，该优先级和 IO 不能很好的搭配工作（io 的优先级高于 cpu 的优先级），现在有了更加细粒度的优先级表示方法 Lane，Lane 用二进制位表示优先级，二进制中的 1 表示位置，同一个二进制数可以有多个相同优先级的位，这就可以表示‘批’的概念，而且二进制方便计算。
-
-这好比赛车比赛，在比赛开始的时候会分配一个赛道，比赛开始之后大家都会抢内圈的赛道（react 中就是抢优先级高的 Lane），比赛的尾声，最后一名赛车如果落后了很多，它也会跑到内圈的赛道，最后到达目的地（对应 react 中就是饥饿问题，低优先级的任务如果被高优先级的任务一直打断，到了它的过期时间，它也会变成高优先级）
-
-Lane 的二进制位如下，1 的 bits 越多，优先级越低
-
-```javascript
-export const NoLanes: Lanes = /*                        */ 0b0000000000000000000000000000000;
-export const NoLane: Lane = /*                          */ 0b0000000000000000000000000000000;
-
-export const SyncLane: Lane = /*                        */ 0b0000000000000000000000000000001;
-export const SyncBatchedLane: Lane = /*                 */ 0b0000000000000000000000000000010;
-```
-
-#### Scheduler
-
-Scheduler 的作用是调度任务，react15 没有 Scheduler 这部分，所以所有任务没有优先级，也不能中断，只能同步执行。
-
-我们知道了要实现异步可中断的更新，需要浏览器指定一个时间，如果没有时间剩余了就需要暂停任务，requestIdleCallback 貌似是个不错的选择，但是它存在兼容和触发不稳定的原因，react17 中采用 MessageChannel 来实现。
-
-在 Scheduler 中的每的每个任务的优先级使用过期时间表示的，如果一个任务的过期时间离现在很近，说明它马上就要过期了，优先级很高，如果过期时间很长，那它的优先级就低，没有过期的任务存放在 timerQueue 中，过期的任务存放在 taskQueue 中，timerQueue 和 timerQueue 都是小顶堆，所以 peek 取出来的都是离现在时间最近也就是优先级最高的那个任务，然后优先执行它。
-
-#### reconciler
-
-Reconciler 发生在 render 阶段，render 阶段会分别为节点执行 beginWork 和 completeWork，或者计算 state，对比节点的差异，为节点赋值相应的 effectFlags（对应 dom 节点的增删改）。
-
-协调器是在 render 阶段工作的，简单一句话概括就是 Reconciler 会创建或者更新 Fiber 节点。在 mount 的时候会根据 jsx 生成 Fiber 对象，在 update 的时候会根据最新的 state 形成的 jsx 对象和 current Fiber 树对比构建 workInProgress Fiber 树，这个对比的过程就是 diff 算法。
-
-diff 算法发生在 render 阶段的 reconcileChildFibers 函数中，diff 算法分为单节点的 diff 和多节点的 diff（例如一个节点中包含多个子节点就属于多节点的 diff），单节点会根据节点的 key 和 type，props 等来判断节点是复用还是直接新创建节点，多节点 diff 会涉及节点的增删和节点位置的变化。
-
-reconcile 时会在这些 Fiber 上打上 Flags 标签，在 commit 阶段把这些标签应用到真实 dom 上，这些标签代表节点的增删改，如
-
-```javascript
-export const Placement = /*             */ 0b0000000000010;
-export const Update = /*                */ 0b0000000000100;
-```
-
-render 阶段遍历 Fiber 树类似 dfs 的过程，处理发生在 beginWork 函数中，该函数做的主要工作是创建 Fiber 节点，计算 state 和 diff 算法，‘冒泡’阶段发生在 completeWork 中，该函数主要是做一些收尾工作，例如处理节点的 props、和形成一条 effectList 的链表，该链表是被标记了更新的节点形成的链表。
-
-```javascript
-function App() {
-  const [count, setCount] = useState(0);
-  return (
-    <>
-      <h1
-        onClick={() => {
-          setCount(() => count + 1);
-        }}
-      >
-        <p title={count}>{count}</p> hello
-      </h1>
-    </>
-  );
-}
-```
-
-如果 p 和 h1 节点更新了则 effectList 如下，从 rootFiber->h1->p,，顺便说下 fiberRoot 是整个项目的根节点，只存在一个，rootFiber 是应用的根节点，可能存在多个。 -->
