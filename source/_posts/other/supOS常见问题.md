@@ -22,6 +22,7 @@ tags:
 ④  [服务中调用openApi或第三方接口](#服务中调用openApi或第三方接口)
 ④  [脚本中如何调用平台内置服务](#脚本中如何调用平台内置服务)
 ⑤  [服务中如何调用平台内置服务](#服务中如何调用平台内置服务)
+⑥  [表格中设置单元格点击事件无效](#表格中设置单元格点击事件无效)
 
 #### 导入App提示重复\/已存在不能导入
 
@@ -404,3 +405,20 @@ list
 
 ```
 
+#### 表格中设置单元格点击事件无效
+
+如果按照 [官方文档](https://devc.supos.com/document?groupId=doc_group_id_005&devcContentId=DOC_CONTENT_1646703154679&version=supos_version_002&id=909#_234 )配置单元格点击事件无效,需要吧事件名称改为 `onClick`
+
+```js
+
+var table = scriptUtil.getRegisterReactDom('组件id');
+var cellConfig={
+ name: {
+    onClick: function(row, tableData){
+      console.log('单击该单元格', row, tableData);
+    },
+  }
+};
+
+table.setCellConfig(cellConfig);
+```
