@@ -407,7 +407,7 @@ list
 
 #### 表格中设置单元格点击事件无效
 
-如果按照 [官方文档](https://devc.supos.com/document?groupId=doc_group_id_005&devcContentId=DOC_CONTENT_1646703154679&version=supos_version_002&id=909#_234 )配置单元格点击事件无效,需要吧事件名称改为 `onClick`
+如果按照 [官方文档](https://devc.supos.com/document?groupId=doc_group_id_005&devcContentId=DOC_CONTENT_1646703154679&version=supos_version_002&id=909#_234 ) 配置单元格点击事件无效,需要把事件名称改为 `onClick`
 
 ```js
 
