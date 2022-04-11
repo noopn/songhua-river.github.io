@@ -574,7 +574,15 @@ case HostComponent:
   
 ```
 
-以下一个进来的 `p` 节点为例, 新的文本是 `内容改变`, 旧的文本是 `内容`,与 h1 的处理过程类似
+以下一个进来的 `p` 节点为例, 新的文本是 `内容改变`, 旧的文本是 `内容`,与 h1 的处理过程类似,最后会执行 RootFiber 的 completeWork 会给 fiber 添加 snapshot 副作用标记
+
+```js
+// Schedule an effect to clear this container at the start of the next commit.
+// This handles the case of React rendering into a container with previous children.
+// It's also safe to do for updates too, because current.child would only be null
+// if the previous render was null (so the the container would already be empty).
+workInProgress.flags |= Snapshot;
+```
 
 最终依次处理所有节点之后,生成一个新的 Fiber 树
 
