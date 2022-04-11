@@ -4,7 +4,7 @@ title: React源码分析 ⑥ Diff 算法
 date: 2022-03-28 15:40:23
 categories:
   - React
-  - 源码分析
+  - React源码分析
 tags:
   - React
 ---
@@ -334,3 +334,199 @@ function reconcileChildrenArray(returnFiber, currentFirstChild, newChildren, lan
   }
 ```
 
+#### 属性Diff
+
+```js
+function diffProperties(domElement, tag, lastRawProps, nextRawProps, rootContainerElement) {
+
+  // lastRawProps {children:'内容'}
+  // nextRawProps {children:'内容改变'}
+
+  var updatePayload = null;
+  var lastProps;
+  var nextProps;
+
+  // 这些元素类型,会被添加上特有的元素默认属性
+  switch (tag) {
+    case 'input':
+      lastProps = getHostProps(domElement, lastRawProps);
+      nextProps = getHostProps(domElement, nextRawProps);
+      updatePayload = [];
+      break;
+
+    case 'option':
+      lastProps = getHostProps$1(domElement, lastRawProps);
+      nextProps = getHostProps$1(domElement, nextRawProps);
+      updatePayload = [];
+      break;
+
+    case 'select':
+      lastProps = getHostProps$2(domElement, lastRawProps);
+      nextProps = getHostProps$2(domElement, nextRawProps);
+      updatePayload = [];
+      break;
+
+    case 'textarea':
+      lastProps = getHostProps$3(domElement, lastRawProps);
+      nextProps = getHostProps$3(domElement, nextRawProps);
+      updatePayload = [];
+      break;
+
+    default:
+      lastProps = lastRawProps;
+      nextProps = nextRawProps;
+
+      if (typeof lastProps.onClick !== 'function' && typeof nextProps.onClick === 'function') {
+        // TODO: This cast may not be sound for SVG, MathML or custom elements.
+        trapClickOnNonInteractiveElement(domElement);
+      }
+
+      break;
+  }
+
+  // 验证一些特殊属性,是否合法 例如 dangerouslySetInnerHTML
+  assertValidProps(tag, nextProps);
+  var propKey;
+  var styleName;
+  var styleUpdates = null;
+
+  for (propKey in lastProps) {
+    // 如果旧的属性没有,而新的属性有,那个就跳出直接分析新的属性
+    if (nextProps.hasOwnProperty(propKey) || !lastProps.hasOwnProperty(propKey) || lastProps[propKey] == null) {
+      continue;
+    }
+
+    if (propKey === STYLE) {
+      var lastStyle = lastProps[propKey];
+      // 如果是style属性,提取出属性的key
+      for (styleName in lastStyle) {
+        if (lastStyle.hasOwnProperty(styleName)) {
+          if (!styleUpdates) {
+            styleUpdates = {};
+          }
+
+          styleUpdates[styleName] = '';
+        }
+      }
+    } else if (propKey === DANGEROUSLY_SET_INNER_HTML || propKey === CHILDREN) ; else if (propKey === SUPPRESS_CONTENT_EDITABLE_WARNING || propKey === SUPPRESS_HYDRATION_WARNING) ; else if (propKey === AUTOFOCUS) ; else if (registrationNameDependencies.hasOwnProperty(propKey)) {
+      // This is a special case. If any listener updates we need to ensure
+      // that the "current" fiber pointer gets updated so we need a commit
+      // to update this element.
+      if (!updatePayload) {
+        updatePayload = [];
+      }
+    } else {
+      // For all other deleted properties we add it to the queue. We use
+      // the allowed property list in the commit phase instead.
+      (updatePayload = updatePayload || []).push(propKey, null);
+    }
+  }
+
+  for (propKey in nextProps) {
+    var nextProp = nextProps[propKey];
+    var lastProp = lastProps != null ? lastProps[propKey] : undefined;
+
+    // 如果新的属性值为假,或者没有变化,就跳出循环
+    if (!nextProps.hasOwnProperty(propKey) || nextProp === lastProp || nextProp == null && lastProp == null) {
+      continue;
+    }
+
+    if (propKey === STYLE) {
+      {
+        if (nextProp) {
+          // Freeze the next style object so that we can assume it won't be
+          // mutated. We have already warned for this in the past.
+          Object.freeze(nextProp);
+        }
+      }
+
+      if (lastProp) {
+        // Unset styles on `lastProp` but not on `nextProp`.
+        for (styleName in lastProp) {
+          if (lastProp.hasOwnProperty(styleName) && (!nextProp || !nextProp.hasOwnProperty(styleName))) {
+            if (!styleUpdates) {
+              styleUpdates = {};
+            }
+
+            styleUpdates[styleName] = '';
+          }
+        } // Update styles that changed since `lastProp`.
+
+
+        for (styleName in nextProp) {
+          if (nextProp.hasOwnProperty(styleName) && lastProp[styleName] !== nextProp[styleName]) {
+            if (!styleUpdates) {
+              styleUpdates = {};
+            }
+
+            styleUpdates[styleName] = nextProp[styleName];
+          }
+        }
+      } else {
+        // Relies on `updateStylesByID` not mutating `styleUpdates`.
+        if (!styleUpdates) {
+          if (!updatePayload) {
+            updatePayload = [];
+          }
+
+          updatePayload.push(propKey, styleUpdates);
+        }
+
+        styleUpdates = nextProp;
+      }
+    } else if (propKey === DANGEROUSLY_SET_INNER_HTML) {
+      var nextHtml = nextProp ? nextProp[HTML$1] : undefined;
+      var lastHtml = lastProp ? lastProp[HTML$1] : undefined;
+
+      if (nextHtml != null) {
+        if (lastHtml !== nextHtml) {
+          (updatePayload = updatePayload || []).push(propKey, nextHtml);
+        }
+      }
+    } 
+    //  会以数组的形式,同时插入 key 和 value ['children','内容改变']
+    else if (propKey === CHILDREN) {
+      if (typeof nextProp === 'string' || typeof nextProp === 'number') {
+        (updatePayload = updatePayload || []).push(propKey, '' + nextProp);
+      }
+    } else if (propKey === SUPPRESS_CONTENT_EDITABLE_WARNING || propKey === SUPPRESS_HYDRATION_WARNING) ; else if (registrationNameDependencies.hasOwnProperty(propKey)) {
+      if (nextProp != null) {
+        // We eagerly listen to this even though we haven't committed yet.
+        if ( typeof nextProp !== 'function') {
+          warnForInvalidEventListener(propKey, nextProp);
+        }
+
+        if (propKey === 'onScroll') {
+          listenToNonDelegatedEvent('scroll', domElement);
+        }
+      }
+
+      if (!updatePayload && lastProp !== nextProp) {
+        // This is a special case. If any listener updates we need to ensure
+        // that the "current" props pointer gets updated so we need a commit
+        // to update this element.
+        updatePayload = [];
+      }
+    } else if (typeof nextProp === 'object' && nextProp !== null && nextProp.$$typeof === REACT_OPAQUE_ID_TYPE) {
+      // If we encounter useOpaqueReference's opaque object, this means we are hydrating.
+      // In this case, call the opaque object's toString function which generates a new client
+      // ID so client and server IDs match and throws to rerender.
+      nextProp.toString();
+    } else {
+      // For any other property we always add it to the queue and then we
+      // filter it out using the allowed property list during the commit.
+      (updatePayload = updatePayload || []).push(propKey, nextProp);
+    }
+  }
+
+  if (styleUpdates) {
+    {
+      validateShorthandPropertyCollisionInDev(styleUpdates, nextProps[STYLE]);
+    }
+
+    (updatePayload = updatePayload || []).push(STYLE, styleUpdates);
+  }
+
+  return updatePayload;
+}
+```

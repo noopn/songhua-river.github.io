@@ -2,7 +2,7 @@
 title: React源码分析 ① 从入口开始认识React
 categories:
   - React
-  - 源码分析
+  - React源码分析
 
 tags:
   - React
