@@ -67,32 +67,46 @@ A3 并不会和 A2 相同,造成这个的原因就是 **分配条件类型（Dis
 
 当条件类型作用在泛型上时, 当传入一个联合类型这个类型是可分配的.
 
-换句话说,当在使用泛型做条件判断的时候, 而且这个泛型传入的是一个联合类型,就会像数学中的分配率一样,把联合类型中的没一项分别进行条件判断
+换句话说,当在使用泛型做条件判断的时候, 而且这个泛型传入的是一个联合类型,就会像数学中的分配率一样,把联合类型中的没没一项分别进行条件判断,最终返回一个联合类型
 
 所以上面 A3 类型,等价于
 
 ```ts
-type A3 = ("x" extends "x" ? string : number) | ("y" extends "x" ? string : number)
+type A3 =
+  | ("x" extends "x" ? string : number)
+  | ("y" extends "x" ? string : number);
 ```
 
-**注意never**
+分配条件类型最终会返回一个不同分支返回结果的联合类型,如果返回的结果是一个包装过的类型,那么就是不同分支包装类型的联合类型
+
+```ts
+type Test<T, T2 = T> = T extends T2 ? {t: T} : never;
+
+type a = Test<string|number>  // {t:string} | {t:number}
+
+type Test2<T, T2 = T> = T extends T2 ? [T] : never;
+
+type a = Test<string|number>  // [string] | [number]
+```
+
+**注意 never**
 
 never 在条件语句中的行为可能和想象的不一样,这也是条件类型在对其约束, never 相当于空的联合类型,所以没有判断直接返回
 
 ```ts
-type A1 = never extends 'x' ? string : number; // string
+type A1 = never extends "x" ? string : number; // string
 
-type P<T> = T extends 'x' ? string : number;
-type A2 = P<never> // never
+type P<T> = T extends "x" ? string : number;
+type A2 = P<never>; // never
 ```
 
-**防止条件了型分配**
+**防止条件类型分配**
 
 如果不想让 never 解析成空的联合类型,而是当作一个 never 类型传入,实际上就是阻止类型系统对联合类型自动分配,可以使用一个 `[]`
 
 ```ts
-  type P<T> = [T] extends ['x'] ? string : number;
-  type A1 = P<'x' | 'y'> // number
-  type A2 = P<never> // string
+type P<T> = [T] extends ["x"] ? string : number;
+type A1 = P<"x" | "y">; // number
+type A2 = P<never>; // string
 ```
 
