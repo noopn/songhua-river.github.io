@@ -3,10 +3,11 @@ layout: posts
 title: React源码分析 ④ Fiber与双缓存结构
 date: 2022-03-06 13:24:56
 categories:
+  - 源码分析
   - React
-  - React源码分析
 tags:
   - React
+  - 源码分析
 ---
 
 先创建一个组件,下面这个了例子在大部分的章节都会用到

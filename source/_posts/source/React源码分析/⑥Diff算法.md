@@ -3,10 +3,11 @@ layout: posts
 title: React源码分析 ⑥ Diff 算法
 date: 2022-03-28 15:40:23
 categories:
+  - 源码分析
   - React
-  - React源码分析
 tags:
   - React
+  - 源码分析
 ---
 
 #### 设计动机

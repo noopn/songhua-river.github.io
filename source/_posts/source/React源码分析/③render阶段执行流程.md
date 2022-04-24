@@ -3,10 +3,11 @@ layout: posts
 title: React源码分析 ③ render阶段执行流程
 date: 2022-03-17 15:21:34
 categories:
+  - 源码分析
   - React
-  - React源码分析
 tags:
   - React
+  - 源码分析
 ---
 
 ![](0001.png)

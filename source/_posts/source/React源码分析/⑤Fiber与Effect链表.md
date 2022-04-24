@@ -3,10 +3,11 @@ layout: posts
 title: React源码分析 ⑤ Fiber与Effects链表
 date: 2022-03-21 13:16:15
 categories:
+  - 源码分析
   - React
-  - React源码分析
 tags:
   - React
+  - 源码分析
 ---
 
 ```javascript

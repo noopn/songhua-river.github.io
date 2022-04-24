@@ -1,11 +1,11 @@
 ---
 title: React源码分析 ① 从入口开始认识React
 categories:
+  - 源码分析
   - React
-  - React源码分析
-
 tags:
   - React
+  - 源码分析
 
 date: 2021-10-22 19:04:28
 ---
