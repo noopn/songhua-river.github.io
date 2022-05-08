@@ -1,0 +1,43 @@
+---
+layout: posts
+title: Rollup 与 Webpack 比较
+mathjax: true
+date: 2022-05-09 00:54:05
+categories:
+  - DevOps
+tags:
+  - DevOps
+  - Webpack
+---
+
+#### 跟随前端技术的演化
+
+当前端演化到单页应用阶段的时候,对于复杂的单页应用有两个问题需要解决,而 Webpack 就是在这时产生的.
+
+- **代码分割**
+
+这意味着可以按需加载,不用再等待整个应用都被下载并解析完成。
+
+- **静态资源**
+
+图片、CSS 等静态资源可以直接导入到你的 app 中，就和其它的模块、节点一样能够进行依赖管理。可以放在任意的文件夹中, Webpack 会帮助处理文件路径, 包括添加哈希值,最终输出在指定的文件夹中.
+
+包括 Webpack 在内的大多数打包器,都是将模块封装在函数中,通过 Webpack 实现的 require 方法,组织模块间的调用.
+
+而 Rollup 利用了 ES6 的模块设计,将所有的模块的代码都放在同一个位置, 因此更加精简执行速度也会更快. [ Rollup 交互式解释器（REPL）](https://rollupjs.org/repl/?version=2.72.1&shareable=JTdCJTIybW9kdWxlcyUyMiUzQSU1QiU3QiUyMm5hbWUlMjIlM0ElMjJtYWluLmpzJTIyJTJDJTIyY29kZSUyMiUzQSUyMiUyRiolMjBEWU5BTUlDJTIwSU1QT1JUUyU1Q24lMjAlMjAlMjBSb2xsdXAlMjBzdXBwb3J0cyUyMGF1dG9tYXRpYyUyMGNodW5raW5nJTIwYW5kJTIwbGF6eS1sb2FkaW5nJTVDbiUyMCUyMCUyMHZpYSUyMGR5bmFtaWMlMjBpbXBvcnRzJTIwdXRpbGl6aW5nJTIwdGhlJTIwaW1wb3J0JTIwbWVjaGFuaXNtJTVDbiUyMCUyMCUyMG9mJTIwdGhlJTIwaG9zdCUyMHN5c3RlbS4lMjAqJTJGJTVDbmlmJTIwKGRpc3BsYXlNYXRoKSUyMCU3QiU1Q24lNUN0aW1wb3J0KCcuJTJGbWF0aHMuanMnKS50aGVuKGZ1bmN0aW9uJTIwKG1hdGhzKSUyMCU3QiU1Q24lNUN0JTVDdGNvbnNvbGUubG9nKG1hdGhzLnNxdWFyZSg1KSklM0IlNUNuJTVDdCU1Q3Rjb25zb2xlLmxvZyhtYXRocy5jdWJlKDUpKSUzQiU1Q24lNUN0JTdEKSUzQiU1Q24lN0QlMjIlMkMlMjJpc0VudHJ5JTIyJTNBdHJ1ZSU3RCUyQyU3QiUyMm5hbWUlMjIlM0ElMjJtYXRocy5qcyUyMiUyQyUyMmNvZGUlMjIlM0ElMjJpbXBvcnQlMjBzcXVhcmUlMjBmcm9tJTIwJy4lMkZzcXVhcmUuanMnJTNCJTVDbiU1Q25leHBvcnQlMjAlN0JkZWZhdWx0JTIwYXMlMjBzcXVhcmUlN0QlMjBmcm9tJTIwJy4lMkZzcXVhcmUuanMnJTNCJTVDbiU1Q25leHBvcnQlMjBmdW5jdGlvbiUyMGN1YmUlMjAoeCUyMCklMjAlN0IlNUNuJTVDdHJldHVybiUyMHNxdWFyZSh4KSUyMColMjB4JTNCJTVDbiU3RCUyMiUyQyUyMmlzRW50cnklMjIlM0FmYWxzZSU3RCUyQyU3QiUyMm5hbWUlMjIlM0ElMjJzcXVhcmUuanMlMjIlMkMlMjJjb2RlJTIyJTNBJTIyZXhwb3J0JTIwZGVmYXVsdCUyMGZ1bmN0aW9uJTIwc3F1YXJlJTIwKCUyMHglMjApJTIwJTdCJTVDbiU1Q3RyZXR1cm4lMjB4JTIwKiUyMHglM0IlNUNuJTdEJTIyJTJDJTIyaXNFbnRyeSUyMiUzQWZhbHNlJTdEJTVEJTJDJTIyb3B0aW9ucyUyMiUzQSU3QiUyMmZvcm1hdCUyMiUzQSUyMmVzJTIyJTJDJTIybmFtZSUyMiUzQSUyMm15QnVuZGxlJTIyJTJDJTIyYW1kJTIyJTNBJTdCJTIyaWQlMjIlM0ElMjIlMjIlN0QlMkMlMjJnbG9iYWxzJTIyJTNBJTdCJTdEJTdEJTJDJTIyZXhhbXBsZSUyMiUzQSUyMjAwJTIyJTdE)
+
+但是同时这样也导致 Rollup 失去了代码分割的功能, 也不支持模块热替换(HMR),另一个痛点是通过插件处理大多数 CommonJS 文件的时候，一些代码将无法被翻译为 ES2015。而与之相反 Webpack 可以很好而处理.
+
+#### 如何选择
+
+> 在开发应用时使用 Webpack，开发库时使用 Rollup
+
+这虽然不是绝对的,但是很多开源项目提供有经验,如果有很多的静态资源，再或者你做的东西深度依赖 CommonJS，毫无疑问选择 Webpack.
+
+如果你的代码基于 ES2015 模块编写，并且你做的东西是准备给他人使用的，你或许可以考虑使用 Rollup。
+
+**对于包作者一定使用 pkg.module**
+
+对于第三方开源库,在 ES6 模块化规范出现以前,一定要注意模块系统的区别,有人喜欢 Browserify 有人喜欢 AMD,在 UMD 出现之后有了一些改善,但是仍然无法完全信任.
+
+现在给你的库的 package.json 文件增加一个 "module": "dist/my-library.es.js" 入口，可以让你的库同时支持 UMD 与 ES2015。 Webpack 和 Rollup 都使用了 pkg.module 来尽可能的生成效率更高的代码——在一些情况下，它们都能使用 tree-shake 来精简掉你的库中未使用的部分。
