@@ -4,10 +4,9 @@ title: Rollup 与 Webpack 比较
 mathjax: true
 date: 2022-05-09 00:54:05
 categories:
-  - DevOps
+  - webpack
 tags:
-  - DevOps
-  - Webpack
+  - webpack
 ---
 
 #### 跟随前端技术的演化
