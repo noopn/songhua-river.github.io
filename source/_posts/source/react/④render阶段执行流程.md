@@ -1,6 +1,6 @@
 ---
 layout: posts
-title: React源码分析 ③ render阶段执行流程
+title: React源码分析 ④ render阶段执行流程
 date: 2022-03-17 15:21:34
 categories:
   - 源码分析
@@ -22,12 +22,11 @@ tags:
 function isValidContainer(node) {
   return !!(
     node &&
-    (node.nodeType === ELEMENT_NODE 
-    ||node.nodeType === DOCUMENT_NODE
-    ||node.nodeType === DOCUMENT_FRAGMENT_NODE
-    ||(node.nodeType === COMMENT_NODE 
-      &&node.nodeValue === " react-mount-point-unstable "
-    ))
+    (node.nodeType === ELEMENT_NODE ||
+      node.nodeType === DOCUMENT_NODE ||
+      node.nodeType === DOCUMENT_FRAGMENT_NODE ||
+      (node.nodeType === COMMENT_NODE &&
+        node.nodeValue === " react-mount-point-unstable "))
   );
 }
 ```
@@ -38,10 +37,10 @@ function isValidContainer(node) {
 
 #### legacyRenderSubtreeIntoContainer(null, element, container, false, callback)
 
-首先尝试清空挂载节点中的内容,如果挂载节点中有其他的节点已经通过render渲染过,会提示错误
+首先尝试清空挂载节点中的内容,如果挂载节点中有其他的节点已经通过 render 渲染过,会提示错误
 
 ```js
-while (rootSibling = container.lastChild) {
+while ((rootSibling = container.lastChild)) {
   container.removeChild(rootSibling);
 }
 ```
@@ -53,7 +52,6 @@ while (rootSibling = container.lastChild) {
 `container._reactRootContainer = new ReactDOMBlockingRoot()` 挂载元素上会打上一个标记, 赋值为 RootFiber 构造函数的实例,而 render 方法 `_reactRootContainer` 中与`__reactContainer$xxx` 共同判断节点是否挂载过
 
 对于已经渲染过的节点会通过 `_reactRootContainer` 直接复用 `FiberRoot`, 并执行 `updateContainer` 批量更新, 如果是首次渲染则执行 `unbatchedUpdates`非批量更新,立即调用 `updateContainer`,同步执行尽快展示元素.
-
 
 #### updateContainer(element, container, parentComponent, callback)
 
@@ -145,10 +143,11 @@ function markRootUpdated(root, updateLane, eventTime) {
 // 如果传出的优先级是同步的
 if (lane === SyncLane) {
   if (
-  // 检查是非批量更新的状态
-  (executionContext & LegacyUnbatchedContext) !== NoContext && 
-  // 检查还没有开始渲染
-  (executionContext & (RenderContext | CommitContext)) === NoContext) {
+    // 检查是非批量更新的状态
+    (executionContext & LegacyUnbatchedContext) !== NoContext &&
+    // 检查还没有开始渲染
+    (executionContext & (RenderContext | CommitContext)) === NoContext
+  ) {
     // Register pending interactions on the root to avoid losing traced interaction data.
     schedulePendingInteractions(root, lane);
     // This is a legacy edge case. The initial mount of a ReactDOM.render-ed
@@ -172,9 +171,12 @@ if (lane === SyncLane) {
   }
 } else {
   // Schedule a discrete update but only if it's not Sync.
-  if ((executionContext & DiscreteEventContext) !== NoContext && ( // Only updates at user-blocking priority or greater are considered
-  // discrete, even inside a discrete event.
-  priorityLevel === UserBlockingPriority$2 || priorityLevel === ImmediatePriority$1)) {
+  if (
+    (executionContext & DiscreteEventContext) !== NoContext && // Only updates at user-blocking priority or greater are considered
+    // discrete, even inside a discrete event.
+    (priorityLevel === UserBlockingPriority$2 ||
+      priorityLevel === ImmediatePriority$1)
+  ) {
     // This is the result of a discrete event. Track the lowest priority
     // discrete update per root so we can flush them early, if needed.
     if (rootsWithPendingDiscreteUpdates === null) {
@@ -183,7 +185,6 @@ if (lane === SyncLane) {
       rootsWithPendingDiscreteUpdates.add(root);
     }
   } // Schedule other updates after in case the callback is sync.
-
 
   ensureRootIsScheduled(root, eventTime);
   schedulePendingInteractions(root, lane);

@@ -1,6 +1,6 @@
 ---
 layout: posts
-title: React源码分析 ⑤ Fiber与Effects链表
+title: React源码分析 ⑥ Fiber与Effects链表
 date: 2022-03-21 13:16:15
 categories:
   - 源码分析
@@ -12,10 +12,10 @@ tags:
 
 ```javascript
 const App: React.FC = () => {
-  const [content, setContent] = useState('内容');
+  const [content, setContent] = useState("内容");
   return (
     <>
-      <h1 onClick={() => setContent('内容改变')} role="presentation">
+      <h1 onClick={() => setContent("内容改变")} role="presentation">
         标题
       </h1>
       <p>{content}</p> 2020.01.01
@@ -24,7 +24,7 @@ const App: React.FC = () => {
 };
 ```
 
-回到  completeUnitOfWork 方法,看一下链表的创建过程
+回到 completeUnitOfWork 方法,看一下链表的创建过程
 
 ```javascript
 function completeUnitOfWork(unitOfWork) {
@@ -34,9 +34,11 @@ function completeUnitOfWork(unitOfWork) {
     if ((completedWork.flags & Incomplete) === NoFlags) {
       setCurrentFiber(completedWork);
 
-      if (returnFiber !== null && 
-      // Do not append effects to parents if a sibling failed to complete
-      (returnFiber.flags & Incomplete) === NoFlags) {
+      if (
+        returnFiber !== null &&
+        // Do not append effects to parents if a sibling failed to complete
+        (returnFiber.flags & Incomplete) === NoFlags
+      ) {
         // Append all the effects of the subtree and this fiber onto the effect
         // list of the parent. The completion order of the children affects the
         // side-effect order.
@@ -57,15 +59,14 @@ function completeUnitOfWork(unitOfWork) {
         // reusing children we'll schedule this effect onto itself since we're
         // at the end.
 
-
         var flags = completedWork.flags;
-         // Skip both NoWork and PerformedWork tags when creating the effect
+        // Skip both NoWork and PerformedWork tags when creating the effect
         // list. PerformedWork effect is read by React DevTools but shouldn't be
         // committed.
 
         // 创建Effect链表时跳过 tag 为 NoWork 和PerformedWork
         // 他们只会被 DevTools 使用不应该提交
-        
+
         if (flags > PerformedWork) {
           if (returnFiber.lastEffect !== null) {
             returnFiber.lastEffect.nextEffect = completedWork;
@@ -76,7 +77,7 @@ function completeUnitOfWork(unitOfWork) {
           returnFiber.lastEffect = completedWork;
         }
       }
-    } 
+    }
     completedWork = returnFiber; // Update the next thing we're working on in case something throws.
 
     workInProgress = completedWork;
@@ -84,7 +85,7 @@ function completeUnitOfWork(unitOfWork) {
 }
 ```
 
-首先,分析一下挂载时的链表创建过程, 第一个结束 completeWork 的是 h1 元素, 它的 returnFiber 是 App, 由于 h1 的flags 是 0, 因为首次渲染是没有标记副作用,所以 App 和 h1 并不会通过 Effect 指针相连, 同理 p 和 文本元素,也是一样处理
+首先,分析一下挂载时的链表创建过程, 第一个结束 completeWork 的是 h1 元素, 它的 returnFiber 是 App, 由于 h1 的 flags 是 0, 因为首次渲染是没有标记副作用,所以 App 和 h1 并不会通过 Effect 指针相连, 同理 p 和 文本元素,也是一样处理
 
 下一个节点是 AppFiber, 它的 returnFiber 是 RootFiber, 由于 App 节点首次渲染的时候需要插入到挂载元素中, 所以它有 Placement 副作用,它的值大于 PerformedWork(标记节点处理过的副作用) ,首次挂载时的 Effect 链表如下
 
@@ -95,7 +96,7 @@ returnFiber.lastEffect = completedWork;
 
 ![](0106.png)
 
-更新时, h1 绑定的函数是匿名函数,所以会携带副作用, 因为第一次执行的时候 h1 和它 returnFiber 的 firstEffect 和 lastEffect,都为null,所以最先建立这两个节点的联系
+更新时, h1 绑定的函数是匿名函数,所以会携带副作用, 因为第一次执行的时候 h1 和它 returnFiber 的 firstEffect 和 lastEffect,都为 null,所以最先建立这两个节点的联系
 
 ![](0001.png)
 
@@ -105,7 +106,7 @@ returnFiber.lastEffect = completedWork;
 
 ![](0002.png)
 
-下面增加一点组件的复杂性 
+下面增加一点组件的复杂性
 
 ```ts
 const Box: React.FC<{ content: string }> = (props) => {
@@ -119,13 +120,13 @@ const Box: React.FC<{ content: string }> = (props) => {
 };
 
 const App: React.FC = () => {
-  const [content, setContent] = useState('内容');
+  const [content, setContent] = useState("内容");
   return (
     <>
-      <h1 onClick={() => setContent('内容改变')} role="presentation">
+      <h1 onClick={() => setContent("内容改变")} role="presentation">
         标题 <p>{content}</p>
       </h1>
-      <Box content={content}/>
+      <Box content={content} />
     </>
   );
 };
@@ -143,7 +144,7 @@ const App: React.FC = () => {
 
 ![](0004.png)
 
-下一个节点是 h1 会被拼接到 effectList 最后面, 这次 returnFiber 是App, 它的 firstEffect 就是 h1 的 firstEffect, 换句话说也就是,上层节点会延长 effect 链表的头部, 会继承上一个节点 firstEffect
+下一个节点是 h1 会被拼接到 effectList 最后面, 这次 returnFiber 是 App, 它的 firstEffect 就是 h1 的 firstEffect, 换句话说也就是,上层节点会延长 effect 链表的头部, 会继承上一个节点 firstEffect
 
 ![](0005.png)
 
@@ -157,7 +158,7 @@ const App: React.FC = () => {
 
 ![](0007.png)
 
-下一个是个 Box 节点, returnFiber 是 App,相当于在末尾追加了 effect 链表, 所以修改了 App lastEffect 指针,并且延长了 h1 的nextEffect
+下一个是个 Box 节点, returnFiber 是 App,相当于在末尾追加了 effect 链表, 所以修改了 App lastEffect 指针,并且延长了 h1 的 nextEffect
 
 ![](0008.png)
 
@@ -165,7 +166,7 @@ const App: React.FC = () => {
 
 ![](0009.png)
 
-当点击 p 标签触发更新, 会重新构建整个 effect 链表, 最先进入 complete 的 span节点, 所以会和他的父节点生成 effect 链表
+当点击 p 标签触发更新, 会重新构建整个 effect 链表, 最先进入 complete 的 span 节点, 所以会和他的父节点生成 effect 链表
 
 构建步骤与第一次更新时类似
 
