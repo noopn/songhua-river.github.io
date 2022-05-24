@@ -3,34 +3,34 @@ title: MySQl 服务基础
 mathjax: true
 categories:
   - 数据库
-tags: 
-  -数据库
-  -MySQL
+tags:
+  - 数据库
+  - MySQL
 
 date: 2021-12-01 15:13:50
 ---
 
 #### MySQL 服务启动和停止
 
-查看系统内是否有mysql服务
+查看系统内是否有 mysql 服务
 
 ```bash
 ps aux | grep mysql
 ```
 
-停止mysql服务
+停止 mysql 服务
 
 ```bash
 sudo service mysql stop
 ```
 
-启动mysql服务
+启动 mysql 服务
 
 ```bash
 sudo service mysql start
 ```
 
-重启mysql服务
+重启 mysql 服务
 
 ```bash
 sudo service mysql restart
@@ -107,11 +107,10 @@ mysql -V
 
 #### 语法规范
 
-+ 不区分大小写，建议关键字大写，表名，列名小写
-+ 每条命令`;`结尾
-+ 命令可以换行
-+ 注释
+- 不区分大小写，建议关键字大写，表名，列名小写
+- 每条命令`;`结尾
+- 命令可以换行
+- 注释
   单行注释: `#注释文字`
   单行注释: `-- 注释文字`
   多行注释: `/* 注释文字 */`
-
