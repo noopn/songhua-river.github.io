@@ -9,7 +9,6 @@ tags:
 date: 2021-09-12 21:50:39
 ---
 
-
 #### 基础库
 
 [prettier](https://github.com/prettier/prettier) 定义并实现了基本规则
@@ -20,24 +19,21 @@ date: 2021-09-12 21:50:39
 
 [prettier-eslint](https://github.com/prettier/prettier-eslint) 可以通过 `eslint --fix` 来使用 `prettier` 格式化代码
 
-[prettier-eslint-cli](https://github.com/prettier/prettier-eslint-cli) 以cli方式执行`prettier-eslint`
+[prettier-eslint-cli](https://github.com/prettier/prettier-eslint-cli) 以 cli 方式执行`prettier-eslint`
 
-
-#### Prettier影响的规则
+#### Prettier 影响的规则
 
 [规则](https://prettier.io/docs/en/options.html)
 
-#### Prettier配置文件
+#### Prettier 配置文件
 
-一共有三种方式支持对Prettier进行配置：
+一共有三种方式支持对 Prettier 进行配置：
 
-+ 根目录创建.prettierrc 文件，能够写入YML、JSON的配置格式，并且支持.yaml/.yml/.json/.js后缀；
-+ 根目录创建.prettier.config.js 文件，并对外export一个对象；
-+ 在package.json中新建prettier属性。
-
+- 根目录创建.prettierrc 文件，能够写入 YML、JSON 的配置格式，并且支持.yaml/.yml/.json/.js 后缀；
+- 根目录创建.prettier.config.js 文件，并对外 export 一个对象；
+- 在 package.json 中新建 prettier 属性。
 
 [更多配置](https://prettier.io/docs/en/options.html)
-
 
 ```json
 {
@@ -48,8 +44,8 @@ date: 2021-09-12 21:50:39
 }
 ```
 
-#### 与ESLint结合
+#### 与 ESLint 结合
 
-安装prettier插件
+安装 prettier 插件
 
-[ESLint配置指南](/posts/ef51be94/)
+[ESLint 配置指南](/posts/ef51be94/)
