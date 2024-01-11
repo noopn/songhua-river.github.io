@@ -1,0 +1,616 @@
+<!DOCTYPE html>
+
+
+<html lang="zh-CN">
+  
+
+    <head>
+      <meta charset="utf-8" />
+       
+      <meta name="keywords" content="前端 web react" />
+       
+      <meta name="description" content="前端技术与生活。" />
+      
+      <meta
+        name="viewport"
+        content="width=device-width, initial-scale=1, maximum-scale=1"
+      />
+      <title>React源码分析 ② 设计理念 |  四月八日</title>
+  <meta name="generator" content="hexo-theme-ayer">
+      
+      <link rel="shortcut icon" href="/favicon.ico" />
+       
+<link rel="stylesheet" href="/dist/main.css">
+ 
+<link rel="stylesheet" href="/css/fonts/remixicon.css">
+ 
+<link rel="stylesheet" href="/css/custom.css">
+ 
+      <script src="/js/pace.min.js"></script>
+       
+ 
+
+      <link rel="stylesheet" href="/css/bulma.min.css" />
+      <script src="/js/sweetalert2.min.js"></script>
+
+      <!-- mermaid -->
+      
+      <script src="https://cdn.staticfile.org/mermaid/8.14.0/mermaid.min.js"></script>
+      
+      <style>
+        .swal2-styled.swal2-confirm {
+          font-size: 1.6rem;
+        }
+      </style>
+    <!-- hexo injector head_end start -->
+<link rel="stylesheet" href="/css/katex.min.css">
+
+<link rel="stylesheet" href="/css/style.css">
+<!-- hexo injector head_end end --></head>
+  </html>
+</html>
+
+
+<body>
+  <div id="app">
+    
+      
+    <main class="content on">
+      <section class="outer">
+  <article
+  id="post-source/react/②设计理念"
+  class="article article-type-post"
+  itemscope
+  itemprop="blogPost"
+  data-scroll-reveal
+>
+  <div class="article-inner">
+    
+    <header class="article-header">
+       
+<h1 class="article-title sea-center" style="border-left:0" itemprop="name">
+  React源码分析 ② 设计理念
+</h1>
+ 
+
+      
+    </header>
+     
+    <div class="article-meta">
+      <a href="/posts/6125c216c845/" class="article-date">
+  <time datetime="2021-12-06T03:02:35.000Z" itemprop="datePublished">2021-12-06</time>
+</a> 
+  <div class="article-category">
+    <a class="article-category-link" href="/categories/%E6%BA%90%E7%A0%81%E5%88%86%E6%9E%90/">源码分析</a> / <a class="article-category-link" href="/categories/%E6%BA%90%E7%A0%81%E5%88%86%E6%9E%90/React/">React</a>
+  </div>
+  
+<div class="word_count">
+    <span class="post-time">
+        <span class="post-meta-item-icon">
+            <i class="ri-quill-pen-line"></i>
+            <span class="post-meta-item-text"> 字数统计:</span>
+            <span class="post-count">2.1k</span>
+        </span>
+    </span>
+
+    <span class="post-time">
+        &nbsp; | &nbsp;
+        <span class="post-meta-item-icon">
+            <i class="ri-book-open-line"></i>
+            <span class="post-meta-item-text"> 阅读时长≈</span>
+            <span class="post-count">8 分钟</span>
+        </span>
+    </span>
+</div>
+ 
+    </div>
+      
+    <div class="tocbot"></div>
+
+
+
+
+  
+    <div class="article-entry" itemprop="articleBody">
+       
+  <h4 id="状态渲染UI"><a href="#状态渲染UI" class="headerlink" title="状态渲染UI"></a>状态渲染UI</h4><figure class="highlight javascript"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line"><span class="variable constant_">UI</span> = <span class="title function_">react</span>(state);</span><br></pre></td></tr></table></figure>
+
+<p>React 程序设计哲学</p>
+<ul>
+<li>将设计好的 UI 划分为组件层级</li>
+<li>确定 UI state 的最小（且完整）表示</li>
+<li>确定 state 放置的位置</li>
+<li>添加反向数据流，低层层级组件更新高层级组件状态</li>
+</ul>
+<h4 id="使用组合而不是继承"><a href="#使用组合而不是继承" class="headerlink" title="使用组合而不是继承"></a>使用组合而不是继承</h4><p>Props 和组合为你提供了清晰而安全地定制组件外观和行为的灵活方式。注意：组件可以接受任意 props，包括基本数据类型，React 元素以及函数。</p>
+<p>如果你想要在组件间复用非 UI 的功能，我们建议将其提取为一个单独的 JavaScript 模块，如函数、对象或者类。组件可以直接引入（import）而无需通过 extend 继承它们。</p>
+<h4 id="Fiber"><a href="#Fiber" class="headerlink" title="Fiber"></a>Fiber</h4><p>Fiber 其实就是Virtual DOM的一种实现，相比于通过React.createElement创建的 Virtual DOM，Fiber在此基础上添加了更多的属性，例如 return, current 等指针，用于将Fiber对象链接为链表。最终形成一颗树状结构，也就是Fiber树，他对应着真实DOM树的结构。</p>
+<p>而Fiber对象上的属性还不止这些，还有像updateQueue更新队列等属性，但到目前位置知道Fiber是对DOM树的一种描述，已经足够了。而让React设计Fiber的原因，则是因为下面的协调过程。</p>
+<h4 id="协调-reconciler"><a href="#协调-reconciler" class="headerlink" title="协调 reconciler"></a>协调 reconciler</h4><p>这一概念应该是当我们对React执行过程深入思考的时候最容易想到的一部分，通过JSX创建的Virtual DOM 如何与真实的 DOM 同步，真实DOM属性改变的时候，又如何被记录到 Virtual DOM 上，这个过程就叫做<a target="_blank" rel="noopener" href="https://zh-hans.reactjs.org/docs/reconciliation.html">协调</a>。 </p>
+<p>reconciler 模块，用于处理协调相关的事务。Diff算法也在这个期间发生。</p>
+<p>React15之前的协调过程是同步的，也叫stack reconciler。</p>
+<p>JS的执行是单线程的,由于浏览器器触发的事件（用户交互触发的事件回调）是一个宏任务，所以会等待同步任务执行完成，在更新比较耗时的任务时，会阻塞用户的交互。</p>
+<p>也许会考虑将耗时任务放到异步任务中执行，但最终还是会回到主线程中执行，所以比较好的解决办法就是任务分割，当其他优先级比较高的任务到来时，将正在执行的任务打断让出执行权。之后再从中断的部分开始异步执行剩下的计算。</p>
+<p>为了将老的同步更新的架构变为异步可中断更新，所以需要一套数据结构让它既能对应真实的dom又能作为分隔的单元，这就是Fiber。</p>
+<h4 id="Scheduler"><a href="#Scheduler" class="headerlink" title="Scheduler"></a>Scheduler</h4><p>有了Fiber，就需要用浏览器的时间片异步执行这些Fiber的工作单元，浏览器有一个api叫做requestIdleCallback，它可以在浏览器空闲的时候执行一些任务，我们用这个api执行react的更新，让高优先级的任务优先响应不就可以了吗，但事实是 requestIdleCallback 存在着浏览器的兼容性和触发不稳定的问题，所以我们需要用js实现一套时间片运行的机制，在react中这部分叫做scheduler。</p>
+<p>下面用伪代码理解一下 <strong>分割，异步执行，让出执行权</strong></p>
+<figure class="highlight javascript"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">let</span> firstFiber <span class="comment">// 代表Fiber树的头节点</span></span><br><span class="line"><span class="keyword">let</span> nextFiber = firstFiber <span class="comment">// 用于遍历子节点</span></span><br><span class="line"></span><br><span class="line"><span class="keyword">function</span> <span class="title function_">performUnitOfWork</span> ()&#123;</span><br><span class="line">  <span class="comment">// 处理节点相关逻辑</span></span><br><span class="line">  <span class="keyword">return</span> nextFiber.<span class="property">next</span>; <span class="comment">// 返回下一个节点</span></span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line"><span class="keyword">function</span> <span class="title function_">workLoop</span>(<span class="params">deadline</span>)&#123;</span><br><span class="line">  <span class="keyword">while</span>(nextFiber &amp;&amp; !shouldYield)&#123;</span><br><span class="line">    nextFiber = <span class="title function_">performUnitOfWork</span>();</span><br><span class="line">    <span class="comment">// 如果没有剩余时间处理下一个节点</span></span><br><span class="line">    <span class="comment">// 则暂停执行，让出主线程，给优先级更高的任务</span></span><br><span class="line">    shouldYield = deadline &lt; <span class="number">1</span>;</span><br><span class="line">  &#125;</span><br><span class="line">  <span class="title function_">requestIdleCallback</span>(workLoop)</span><br><span class="line">&#125;</span><br><span class="line"><span class="title function_">requestIdleCallback</span>(workLoop)</span><br></pre></td></tr></table></figure>
+<h4 id="Lane"><a href="#Lane" class="headerlink" title="Lane"></a>Lane</h4><p>有了异步调度，我们还需要细粒度的管理各个任务的优先级，让高优先级的任务优先执行，各个Fiber工作单元还能比较优先级，相同优先级的任务可以一起更新。</p>
+<h4 id="代数效应"><a href="#代数效应" class="headerlink" title="代数效应"></a>代数效应</h4><p>（algebraic effects） 可能翻译成 <strong>可以当做参数传递的副作用</strong> 更容易理解。 它是函数式编程中的一个概念，用于将副作用从函数调用中分离。</p>
+<p>从实用的角度上举例，假如我们有这样一段代码，其主要目的是进行一大段精妙的运算：</p>
+<figure class="highlight javascript"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">async</span> <span class="keyword">function</span> <span class="title function_">biz</span>(<span class="params">id</span>) &#123;</span><br><span class="line">  <span class="keyword">const</span> infoId = <span class="comment">/* do some calc */</span> id; <span class="comment">// 这里可以理解为是一大段计算逻辑</span></span><br><span class="line">  <span class="keyword">const</span> info = <span class="keyword">await</span> <span class="title function_">getInfo</span>(infoId);   <span class="comment">// 副作用，与 server 通信</span></span><br><span class="line">  <span class="keyword">const</span> dataId = <span class="comment">/* do some calc */</span> info.<span class="property">dataId</span>; <span class="comment">// 这里可以理解为是一大段计算逻辑</span></span><br><span class="line">  <span class="keyword">const</span> data = <span class="title function_">getData</span>(dataId);         <span class="comment">// 副作用，非幂等操作</span></span><br><span class="line">  <span class="keyword">return</span> <span class="comment">/* do some calc */</span> data.<span class="property">finalCalcData</span>;  <span class="comment">// 这里可以理解为是一大段计算逻辑</span></span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+<p>尽管运算逻辑很优美，但美中不足的是有两段副作用，导致它不能成为一个干净的纯函数被单元测试。而且这里会导致严重的逻辑耦合：『做什么』与『怎么做』没有拆的很干净：你的一大段计算逻辑是在处理做什么；两个副作用更关心怎么做：比如线上是接口调用，单测里是 mock 数据；但是由于这两块副作用代码，导致整个糅杂的逻辑都无法复用。直接把两个副作用传进来不就行了？</p>
+<figure class="highlight javascript"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">async</span> <span class="keyword">function</span> <span class="title function_">biz</span>(<span class="params">id, getInfo, getData</span>) &#123;</span><br><span class="line">  <span class="keyword">const</span> infoId = <span class="comment">/* do some calc */</span> id; <span class="comment">// 这里可以理解为是一大段计算逻辑</span></span><br><span class="line">  <span class="keyword">const</span> info = <span class="keyword">await</span> <span class="title function_">getInfo</span>(infoId);   <span class="comment">// 副作用，与 server 通信</span></span><br><span class="line">  <span class="keyword">const</span> dataId = <span class="comment">/* do some calc */</span> info.<span class="property">dataId</span>; <span class="comment">// 这里可以理解为是一大段计算逻辑</span></span><br><span class="line">  <span class="keyword">const</span> data = <span class="title function_">getData</span>(dataId);         <span class="comment">// 副作用，非幂等操作</span></span><br><span class="line">  <span class="keyword">return</span> <span class="comment">/* do some calc */</span> data.<span class="property">finalCalcData</span>;  <span class="comment">// 这里可以理解为是一大段计算逻辑</span></span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+<p>是的，这样确实可以复用，但还有一个叫函数染色的问题没有解决：明明是一大段干净的同步运算逻辑，因为 getInfo 是异步的，导致整个函数都得加个 async。而且很有可能在我单元测试里，这个 getInfo 是直接同步取内存数据，还得因此弄个 Promise……这时候如果 JS 里有这样一种语法就好了：</p>
+<p>当函数执行到<code>perform</code>的时候，会被暂停，并被<code>handle</code>捕获，当异步执行的结果被返回，函数在继续执行</p>
+<figure class="highlight javascript"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br></pre></td><td class="code"><pre><span class="line"></span><br><span class="line"><span class="keyword">function</span> <span class="title function_">biz</span>(<span class="params">id</span>) &#123;</span><br><span class="line">  <span class="keyword">const</span> infoId = <span class="comment">/* do some calc */</span> id; <span class="comment">// 这里可以理解为是一大段计算逻辑</span></span><br><span class="line">  <span class="keyword">const</span> info = perform &#123; <span class="attr">type</span>: <span class="string">&#x27;getInfo&#x27;</span>, <span class="attr">payload</span>: infoId &#125;;</span><br><span class="line">  <span class="keyword">const</span> dataId = <span class="comment">/* do some calc */</span> info.<span class="property">dataId</span>; <span class="comment">// 这里可以理解为是一大段计算逻辑</span></span><br><span class="line">  <span class="keyword">const</span> data = perform &#123; <span class="attr">type</span>: <span class="string">&#x27;getData&#x27;</span>, <span class="attr">payload</span>: dataId &#125;;</span><br><span class="line">  <span class="keyword">return</span> <span class="comment">/* do some calc */</span> data.<span class="property">finalCalcData</span>;  <span class="comment">// 这里可以理解为是一大段计算逻辑</span></span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line"><span class="comment">// 正常业务逻辑</span></span><br><span class="line"><span class="keyword">async</span> <span class="keyword">function</span> <span class="title function_">runBiz</span>(<span class="params"></span>) &#123;</span><br><span class="line">  <span class="keyword">try</span> &#123;</span><br><span class="line">    <span class="title function_">biz</span>();</span><br><span class="line">  &#125; <span class="title function_">handle</span>(<span class="params">effect</span>) &#123;</span><br><span class="line">    <span class="keyword">if</span> (effect.<span class="property">type</span> === <span class="string">&#x27;getInfo&#x27;</span>) &#123;</span><br><span class="line">      resume <span class="keyword">await</span> <span class="title function_">getInfo</span>(effect.<span class="property">payload</span>);</span><br><span class="line">    &#125; <span class="keyword">else</span> <span class="keyword">if</span> (effect.<span class="property">type</span> === <span class="string">&#x27;getData&#x27;</span>) &#123;</span><br><span class="line">      resume <span class="keyword">await</span> <span class="title function_">getData</span>(effect.<span class="property">payload</span>)</span><br><span class="line">    &#125;</span><br><span class="line">  &#125;</span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line"><span class="comment">// 单元测试逻辑</span></span><br><span class="line"><span class="keyword">function</span> <span class="title function_">testBiz</span>(<span class="params"></span>) &#123;</span><br><span class="line">  <span class="keyword">try</span> &#123;</span><br><span class="line">    <span class="title function_">biz</span>();</span><br><span class="line">  &#125; <span class="title function_">handle</span>(<span class="params">effect</span>) &#123;</span><br><span class="line">    <span class="keyword">if</span> (effect.<span class="property">type</span> === <span class="string">&#x27;getInfo&#x27;</span>) &#123;</span><br><span class="line">      resume testInfo;</span><br><span class="line">    &#125; <span class="keyword">else</span> <span class="keyword">if</span> (effect.<span class="property">type</span> === <span class="string">&#x27;getData&#x27;</span>) &#123;</span><br><span class="line">      resume testData;</span><br><span class="line">    &#125;</span><br><span class="line">  &#125;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+<p>分离副作用在函数编程中非常常见，<code>redux-saga</code>也会将副作用分离出来，只负责发起请求</p>
+<figure class="highlight javascript"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">function</span> * <span class="title function_">fetchUser</span>(<span class="params">action</span>)&#123;</span><br><span class="line">  <span class="keyword">try</span>&#123;</span><br><span class="line">    <span class="keyword">const</span> user = <span class="keyword">yield</span> <span class="title function_">call</span>(<span class="title class_">Api</span>.<span class="property">fetchUser</span>,action.<span class="property">payload</span>);</span><br><span class="line">    <span class="keyword">yield</span> <span class="title function_">put</span>(&#123;<span class="attr">type</span>:<span class="string">&quot;SUCCESS&quot;</span>,<span class="attr">user</span>:user&#125;)</span><br><span class="line">  &#125;<span class="keyword">catch</span>(err)&#123;</span><br><span class="line">    <span class="keyword">yield</span> <span class="title function_">put</span>(&#123;<span class="attr">type</span>:<span class="string">&quot;ERROR&quot;</span>&#125;)</span><br><span class="line">  &#125;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+<p>这样业务逻辑代码即摆脱了副作用，完成了做什么与怎么做的解耦；又完全不必担心异步副作用带来的染色问题，可以愉快的单测和复用了。Suspense也是这种概念的延伸:</p>
+<figure class="highlight javascript"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">const</span> <span class="title class_">ProductResource</span> = <span class="title function_">createResource</span>(fetchProduct);</span><br><span class="line"></span><br><span class="line"><span class="keyword">const</span> <span class="title function_">Product</span> = (<span class="params">props</span>) =&gt; &#123;</span><br><span class="line">    <span class="keyword">const</span> p = <span class="title class_">ProductResource</span>.<span class="title function_">read</span>( <span class="comment">// 用同步的方式来编写异步代码!</span></span><br><span class="line">          props.<span class="property">id</span></span><br><span class="line">    );</span><br><span class="line">  <span class="keyword">return</span> <span class="language-xml"><span class="tag">&lt;<span class="name">h3</span>&gt;</span>&#123;p.price&#125;<span class="tag">&lt;/<span class="name">h3</span>&gt;</span></span>;</span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line"><span class="keyword">function</span> <span class="title function_">App</span>(<span class="params"></span>) &#123;</span><br><span class="line">  <span class="keyword">return</span> (</span><br><span class="line">    <span class="language-xml"><span class="tag">&lt;<span class="name">div</span>&gt;</span></span></span><br><span class="line"><span class="language-xml">      <span class="tag">&lt;<span class="name">Suspense</span> <span class="attr">fallback</span>=<span class="string">&#123;</span>&lt;<span class="attr">div</span>&gt;</span>Loading...<span class="tag">&lt;/<span class="name">div</span>&gt;</span>&#125;&gt;</span></span><br><span class="line"><span class="language-xml">        <span class="tag">&lt;<span class="name">Product</span> <span class="attr">id</span>=<span class="string">&#123;123&#125;</span> /&gt;</span></span></span><br><span class="line"><span class="language-xml">      <span class="tag">&lt;/<span class="name">Suspense</span>&gt;</span></span></span><br><span class="line"><span class="language-xml">    <span class="tag">&lt;/<span class="name">div</span>&gt;</span></span></span><br><span class="line">  );</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+<p>可以看到 <code>ProductResource.read</code> 完全是同步的写法，把获取数据的部分完全分离出了 <code>Product</code> 组件之外。在源码中， <code>ProductResource.read</code> 会在获取数据之前会throw一个特殊的 <code>Promise</code>， 由于 <code>scheduler</code> 的存在， <code>scheduler</code> 可以捕获这个 <code>promise</code>，暂停更新等数据获取之后交还执行权。<code>ProductResource</code> 可以是 <code>localStorage</code> 甚至是 <code>redis</code> 、 <code>mysql</code> 等数据库，也就是组件即服务，可能以后会有 <code>server Component</code> 的出现。</p>
+ 
+      <!-- reward -->
+      
+      <div id="reword-out">
+        <div id="reward-btn">
+          打赏
+        </div>
+      </div>
+      
+    </div>
+    
+
+    <!-- copyright -->
+    
+    <div class="declare">
+      <ul class="post-copyright">
+        <li>
+          <i class="ri-copyright-line"></i>
+          <strong>版权声明： </strong>
+          
+          本博客所有文章除特别声明外，著作权归作者所有。转载请注明出处！
+          
+        </li>
+      </ul>
+    </div>
+    
+    <footer class="article-footer">
+       
+  <ul class="article-tag-list" itemprop="keywords"><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/React/" rel="tag">React</a></li><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/%E6%BA%90%E7%A0%81%E5%88%86%E6%9E%90/" rel="tag">源码分析</a></li></ul>
+
+    </footer>
+  </div>
+
+   
+  <nav class="article-nav">
+    
+      <a href="/posts/64b5a8e1f0ec/" class="article-nav-link">
+        <strong class="article-nav-caption">上一篇</strong>
+        <div class="article-nav-title">
+          
+            MySQL DQL查询语言
+          
+        </div>
+      </a>
+    
+    
+      <a href="/posts/e661e59beb46/" class="article-nav-link">
+        <strong class="article-nav-caption">下一篇</strong>
+        <div class="article-nav-title">react 常见问题问题</div>
+      </a>
+    
+  </nav>
+
+  
+   
+<div class="gitalk" id="gitalk-container"></div>
+
+<link rel="stylesheet" href="https://cdn.staticfile.org/gitalk/1.7.2/gitalk.min.css">
+
+
+<script src="https://cdn.staticfile.org/gitalk/1.7.2/gitalk.min.js"></script>
+
+
+<script src="https://cdn.staticfile.org/blueimp-md5/2.19.0/js/md5.min.js"></script>
+
+<script type="text/javascript">
+  var gitalk = new Gitalk({
+    clientID: 'bce2317b25da7c3c18f6',
+    clientSecret: 'e0ab868ca9054234798be82c2b1c0c9dd8632307',
+    repo: 'noopn.github.io',
+    owner: 'noopn',
+    admin: ['noopn'],
+    // id: location.pathname,      // Ensure uniqueness and length less than 50
+    id: md5(location.pathname),
+    distractionFreeMode: false,  // Facebook-like distraction free mode
+    pagerDirection: 'last'
+  })
+
+  gitalk.render('gitalk-container')
+</script>
+
+     
+</article>
+
+</section>
+      <footer class="footer">
+  <div class="outer">
+    <ul>
+      <li>
+        Copyrights &copy;
+        2015-2024
+        <i class="ri-heart-fill heart_icon"></i> SunZhiqi
+      </li>
+    </ul>
+    <ul>
+      <li>
+        
+      </li>
+    </ul>
+    <ul>
+      <li>
+        
+      </li>
+    </ul>
+    <ul>
+      
+    </ul>
+    <ul>
+      
+    </ul>
+    <ul>
+      <li>
+        <!-- cnzz统计 -->
+        
+      </li>
+    </ul>
+  </div>
+</footer>    
+    </main>
+    <div class="float_btns">
+      <div class="totop" id="totop">
+  <i class="ri-arrow-up-line"></i>
+</div>
+
+    </div>
+    <aside class="sidebar on">
+      <button class="navbar-toggle"></button>
+<nav class="navbar">
+  
+  <div class="logo">
+    <a href="/"><img src="/images/ayer-side.png" alt="四月八日"></a>
+  </div>
+  
+  <ul class="nav nav-main">
+    
+    <li class="nav-item">
+      <a class="nav-item-link" href="/">主页</a>
+    </li>
+    
+    <li class="nav-item">
+      <a class="nav-item-link" href="/archives">归档</a>
+    </li>
+    
+    <li class="nav-item">
+      <a class="nav-item-link" href="/categories">分类</a>
+    </li>
+    
+    <li class="nav-item">
+      <a class="nav-item-link" href="/tags">标签</a>
+    </li>
+    
+    <li class="nav-item">
+      <a class="nav-item-link" href="/tags/Essay">随笔</a>
+    </li>
+    
+  </ul>
+</nav>
+<nav class="navbar navbar-bottom">
+  <ul class="nav">
+    <li class="nav-item">
+      
+      <a class="nav-item-link nav-item-search"  title="搜索">
+        <i class="ri-search-line"></i>
+      </a>
+      
+      
+    </li>
+  </ul>
+</nav>
+<div class="search-form-wrap">
+  <div class="local-search local-search-plugin">
+  <input type="search" id="local-search-input" class="local-search-input" placeholder="Search...">
+  <div id="local-search-result" class="local-search-result"></div>
+</div>
+</div>
+    </aside>
+    <div id="mask"></div>
+
+<!-- #reward -->
+<div id="reward">
+  <span class="close"><i class="ri-close-line"></i></span>
+  <p class="reward-p"><i class="ri-cup-line"></i>此时无声胜有声！</p>
+  <div class="reward-box">
+    
+    <div class="reward-item">
+      <img class="reward-img" src="/images/alipay.jpg">
+      <span class="reward-type">支付宝</span>
+    </div>
+    
+    
+    <div class="reward-item">
+      <img class="reward-img" src="/images/wechat.jpg">
+      <span class="reward-type">微信</span>
+    </div>
+    
+  </div>
+</div>
+    
+<script src="/js/jquery-3.6.0.min.js"></script>
+ 
+<script src="/js/lazyload.min.js"></script>
+
+<!-- Tocbot -->
+ 
+<script src="/js/tocbot.min.js"></script>
+
+<script>
+  tocbot.init({
+    tocSelector: ".tocbot",
+    contentSelector: ".article-entry",
+    headingSelector: "h1, h2, h3, h4, h5, h6",
+    hasInnerContainers: true,
+    scrollSmooth: true,
+    scrollContainer: "main",
+    positionFixedSelector: ".tocbot",
+    positionFixedClass: "is-position-fixed",
+    fixedSidebarOffset: "auto",
+  });
+</script>
+
+<script src="/js/jquery.modal.min.js"></script>
+<link rel="stylesheet" href="/css/jquery.modal.min.css" />
+<script src="/js/jquery.justifiedGallery.min.js"></script>
+
+<script src="/dist/main.js"></script>
+
+<!-- ImageViewer -->
+ <!-- Root element of PhotoSwipe. Must have class pswp. -->
+<div class="pswp" tabindex="-1" role="dialog" aria-hidden="true">
+  <!-- Background of PhotoSwipe. 
+         It's a separate element as animating opacity is faster than rgba(). -->
+  <div class="pswp__bg"></div>
+
+  <!-- Slides wrapper with overflow:hidden. -->
+  <div class="pswp__scroll-wrap">
+    <!-- Container that holds slides. 
+            PhotoSwipe keeps only 3 of them in the DOM to save memory.
+            Don't modify these 3 pswp__item elements, data is added later on. -->
+    <div class="pswp__container">
+      <div class="pswp__item"></div>
+      <div class="pswp__item"></div>
+      <div class="pswp__item"></div>
+    </div>
+
+    <!-- Default (PhotoSwipeUI_Default) interface on top of sliding area. Can be changed. -->
+    <div class="pswp__ui pswp__ui--hidden">
+      <div class="pswp__top-bar">
+        <!--  Controls are self-explanatory. Order can be changed. -->
+
+        <div class="pswp__counter"></div>
+
+        <button
+          class="pswp__button pswp__button--close"
+          title="Close (Esc)"
+        ></button>
+
+        <button
+          class="pswp__button pswp__button--share"
+          style="display: none"
+          title="Share"
+        ></button>
+
+        <button
+          class="pswp__button pswp__button--fs"
+          title="Toggle fullscreen"
+        ></button>
+
+        <button
+          class="pswp__button pswp__button--zoom"
+          title="Zoom in/out"
+        ></button>
+
+        <!-- Preloader demo http://codepen.io/dimsemenov/pen/yyBWoR -->
+        <!-- element will get class pswp__preloader--active when preloader is running -->
+        <div class="pswp__preloader">
+          <div class="pswp__preloader__icn">
+            <div class="pswp__preloader__cut">
+              <div class="pswp__preloader__donut"></div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <div class="pswp__share-modal pswp__share-modal--hidden pswp__single-tap">
+        <div class="pswp__share-tooltip"></div>
+      </div>
+
+      <button
+        class="pswp__button pswp__button--arrow--left"
+        title="Previous (arrow left)"
+      ></button>
+
+      <button
+        class="pswp__button pswp__button--arrow--right"
+        title="Next (arrow right)"
+      ></button>
+
+      <div class="pswp__caption">
+        <div class="pswp__caption__center"></div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<link rel="stylesheet" href="/css/photoswipe.min.css" />
+<link rel="stylesheet" href="/css/default-skin.min.css" />
+<script src="/js/photoswipe.min.js"></script>
+<script src="/js/photoswipe-ui-default.min.js"></script>
+
+<script>
+  function viewer_init() {
+    let pswpElement = document.querySelectorAll(".pswp")[0];
+    let $imgArr = document.querySelectorAll(
+      ".article-entry img:not(.reward-img)"
+    );
+
+    $imgArr.forEach(($em, i) => {
+      $em.onclick = () => {
+        // slider展开状态
+        // todo: 这样不好，后面改成状态
+        if (document.querySelector(".left-col.show")) return;
+        let items = [];
+        $imgArr.forEach(($em2, i2) => {
+          let img = $em2.getAttribute("data-idx", i2);
+          let src =
+            $em2.getAttribute("data-target") || $em2.getAttribute("src");
+          let title = $em2.getAttribute("alt");
+          // 获得原图尺寸
+          const image = new Image();
+          image.src = src;
+          items.push({
+            src: src,
+            w: image.width || $em2.width,
+            h: image.height || $em2.height,
+            title: title,
+          });
+        });
+        var gallery = new PhotoSwipe(pswpElement, PhotoSwipeUI_Default, items, {
+          index: parseInt(i),
+        });
+        gallery.init();
+      };
+    });
+  }
+  viewer_init();
+</script>
+ 
+<!-- MathJax -->
+ <script type="text/x-mathjax-config">
+  MathJax.Hub.Config({
+      tex2jax: {
+          inlineMath: [ ['$','$'], ["\\(","\\)"]  ],
+          processEscapes: true,
+          skipTags: ['script', 'noscript', 'style', 'textarea', 'pre', 'code']
+      }
+  });
+
+  MathJax.Hub.Queue(function() {
+      var all = MathJax.Hub.getAllJax(), i;
+      for(i=0; i < all.length; i += 1) {
+          all[i].SourceElement().parentNode.className += ' has-jax';
+      }
+  });
+</script>
+
+<script src="/js/MathJax.js"></script>
+<script src="/js/TeX-AMS-MML_HTMLorMML-full.js"></script>
+
+<script>
+  var ayerConfig = {
+    mathjax: true,
+  };
+</script>
+
+<!-- Katex -->
+
+<!-- busuanzi  -->
+
+<!-- ClickLove -->
+
+<!-- ClickBoom1 -->
+
+<!-- ClickBoom2 -->
+
+<!-- CodeCopy -->
+ 
+<link rel="stylesheet" href="/css/clipboard.css">
+ <script src="/js/clipboard.min.js"></script>
+<script>
+  function wait(callback, seconds) {
+    var timelag = null;
+    timelag = window.setTimeout(callback, seconds);
+  }
+  !(function (e, t, a) {
+    var initCopyCode = function () {
+      var copyHtml = "";
+      copyHtml += '<button class="btn-copy" data-clipboard-snippet="">';
+      copyHtml += '<i class="ri-file-copy-2-line"></i><span>COPY</span>';
+      copyHtml += "</button>";
+      $(".highlight .code pre").before(copyHtml);
+      $(".article pre code").before(copyHtml);
+      var clipboard = new ClipboardJS(".btn-copy", {
+        target: function (trigger) {
+          return trigger.nextElementSibling;
+        },
+      });
+      clipboard.on("success", function (e) {
+        let $btn = $(e.trigger);
+        $btn.addClass("copied");
+        let $icon = $($btn.find("i"));
+        $icon.removeClass("ri-file-copy-2-line");
+        $icon.addClass("ri-checkbox-circle-line");
+        let $span = $($btn.find("span"));
+        $span[0].innerText = "COPIED";
+
+        wait(function () {
+          // 等待两秒钟后恢复
+          $icon.removeClass("ri-checkbox-circle-line");
+          $icon.addClass("ri-file-copy-2-line");
+          $span[0].innerText = "COPY";
+        }, 2000);
+      });
+      clipboard.on("error", function (e) {
+        e.clearSelection();
+        let $btn = $(e.trigger);
+        $btn.addClass("copy-failed");
+        let $icon = $($btn.find("i"));
+        $icon.removeClass("ri-file-copy-2-line");
+        $icon.addClass("ri-time-line");
+        let $span = $($btn.find("span"));
+        $span[0].innerText = "COPY FAILED";
+
+        wait(function () {
+          // 等待两秒钟后恢复
+          $icon.removeClass("ri-time-line");
+          $icon.addClass("ri-file-copy-2-line");
+          $span[0].innerText = "COPY";
+        }, 2000);
+      });
+    };
+    initCopyCode();
+  })(window, document);
+</script>
+ 
+<!-- CanvasBackground -->
+
+<script>
+  if (window.mermaid) {
+    mermaid.initialize({ theme: "default" });
+  }
+</script>
+
+
+    
+    
+
+  </div>
+</body>
+
+</html>

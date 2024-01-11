@@ -1,0 +1,614 @@
+<!DOCTYPE html>
+
+
+<html lang="zh-CN">
+  
+
+    <head>
+      <meta charset="utf-8" />
+       
+      <meta name="keywords" content="前端 web react" />
+       
+      <meta name="description" content="前端技术与生活。" />
+      
+      <meta
+        name="viewport"
+        content="width=device-width, initial-scale=1, maximum-scale=1"
+      />
+      <title>React源码分析 ⑥ Fiber与Effects链表 |  四月八日</title>
+  <meta name="generator" content="hexo-theme-ayer">
+      
+      <link rel="shortcut icon" href="/favicon.ico" />
+       
+<link rel="stylesheet" href="/dist/main.css">
+ 
+<link rel="stylesheet" href="/css/fonts/remixicon.css">
+ 
+<link rel="stylesheet" href="/css/custom.css">
+ 
+      <script src="/js/pace.min.js"></script>
+       
+ 
+
+      <link rel="stylesheet" href="/css/bulma.min.css" />
+      <script src="/js/sweetalert2.min.js"></script>
+
+      <!-- mermaid -->
+      
+      <script src="https://cdn.staticfile.org/mermaid/8.14.0/mermaid.min.js"></script>
+      
+      <style>
+        .swal2-styled.swal2-confirm {
+          font-size: 1.6rem;
+        }
+      </style>
+    <!-- hexo injector head_end start -->
+<link rel="stylesheet" href="/css/katex.min.css">
+
+<link rel="stylesheet" href="/css/style.css">
+<!-- hexo injector head_end end --></head>
+  </html>
+</html>
+
+
+<body>
+  <div id="app">
+    
+      
+    <main class="content on">
+      <section class="outer">
+  <article
+  id="posts-source/react/⑥Fiber与Effect链表"
+  class="article article-type-posts"
+  itemscope
+  itemprop="blogPost"
+  data-scroll-reveal
+>
+  <div class="article-inner">
+    
+    <header class="article-header">
+       
+<h1 class="article-title sea-center" style="border-left:0" itemprop="name">
+  React源码分析 ⑥ Fiber与Effects链表
+</h1>
+ 
+
+      
+    </header>
+     
+    <div class="article-meta">
+      <a href="/posts/2a574ab5dfc0/" class="article-date">
+  <time datetime="2022-03-21T05:16:15.000Z" itemprop="datePublished">2022-03-21</time>
+</a> 
+  <div class="article-category">
+    <a class="article-category-link" href="/categories/%E6%BA%90%E7%A0%81%E5%88%86%E6%9E%90/">源码分析</a> / <a class="article-category-link" href="/categories/%E6%BA%90%E7%A0%81%E5%88%86%E6%9E%90/React/">React</a>
+  </div>
+  
+<div class="word_count">
+    <span class="post-time">
+        <span class="post-meta-item-icon">
+            <i class="ri-quill-pen-line"></i>
+            <span class="post-meta-item-text"> 字数统计:</span>
+            <span class="post-count">1.2k</span>
+        </span>
+    </span>
+
+    <span class="post-time">
+        &nbsp; | &nbsp;
+        <span class="post-meta-item-icon">
+            <i class="ri-book-open-line"></i>
+            <span class="post-meta-item-text"> 阅读时长≈</span>
+            <span class="post-count">5 分钟</span>
+        </span>
+    </span>
+</div>
+ 
+    </div>
+      
+
+
+
+  
+    <div class="article-entry" itemprop="articleBody">
+       
+  <figure class="highlight javascript"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">const</span> <span class="title class_">App</span>: <span class="title class_">React</span>.<span class="property">FC</span> = <span class="function">() =&gt;</span> &#123;</span><br><span class="line">  <span class="keyword">const</span> [content, setContent] = <span class="title function_">useState</span>(<span class="string">&quot;内容&quot;</span>);</span><br><span class="line">  <span class="keyword">return</span> (</span><br><span class="line">    <span class="language-xml"><span class="tag">&lt;&gt;</span></span></span><br><span class="line"><span class="language-xml">      <span class="tag">&lt;<span class="name">h1</span> <span class="attr">onClick</span>=<span class="string">&#123;()</span> =&gt;</span> setContent(&quot;内容改变&quot;)&#125; role=&quot;presentation&quot;&gt;</span></span><br><span class="line"><span class="language-xml">        标题</span></span><br><span class="line"><span class="language-xml">      <span class="tag">&lt;/<span class="name">h1</span>&gt;</span></span></span><br><span class="line"><span class="language-xml">      <span class="tag">&lt;<span class="name">p</span>&gt;</span>&#123;content&#125;<span class="tag">&lt;/<span class="name">p</span>&gt;</span> 2020.01.01</span></span><br><span class="line"><span class="language-xml">    <span class="tag">&lt;/&gt;</span></span></span><br><span class="line">  );</span><br><span class="line">&#125;;</span><br></pre></td></tr></table></figure>
+
+<p>回到 completeUnitOfWork 方法,看一下链表的创建过程</p>
+<figure class="highlight javascript"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br><span class="line">35</span><br><span class="line">36</span><br><span class="line">37</span><br><span class="line">38</span><br><span class="line">39</span><br><span class="line">40</span><br><span class="line">41</span><br><span class="line">42</span><br><span class="line">43</span><br><span class="line">44</span><br><span class="line">45</span><br><span class="line">46</span><br><span class="line">47</span><br><span class="line">48</span><br><span class="line">49</span><br><span class="line">50</span><br><span class="line">51</span><br><span class="line">52</span><br><span class="line">53</span><br><span class="line">54</span><br><span class="line">55</span><br><span class="line">56</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">function</span> <span class="title function_">completeUnitOfWork</span>(<span class="params">unitOfWork</span>) &#123;</span><br><span class="line">  <span class="keyword">do</span> &#123;</span><br><span class="line">    <span class="title function_">completeWork</span>();</span><br><span class="line"></span><br><span class="line">    <span class="keyword">if</span> ((completedWork.<span class="property">flags</span> &amp; <span class="title class_">Incomplete</span>) === <span class="title class_">NoFlags</span>) &#123;</span><br><span class="line">      <span class="title function_">setCurrentFiber</span>(completedWork);</span><br><span class="line"></span><br><span class="line">      <span class="keyword">if</span> (</span><br><span class="line">        returnFiber !== <span class="literal">null</span> &amp;&amp;</span><br><span class="line">        <span class="comment">// Do not append effects to parents if a sibling failed to complete</span></span><br><span class="line">        (returnFiber.<span class="property">flags</span> &amp; <span class="title class_">Incomplete</span>) === <span class="title class_">NoFlags</span></span><br><span class="line">      ) &#123;</span><br><span class="line">        <span class="comment">// Append all the effects of the subtree and this fiber onto the effect</span></span><br><span class="line">        <span class="comment">// list of the parent. The completion order of the children affects the</span></span><br><span class="line">        <span class="comment">// side-effect order.</span></span><br><span class="line">        <span class="keyword">if</span> (returnFiber.<span class="property">firstEffect</span> === <span class="literal">null</span>) &#123;</span><br><span class="line">          returnFiber.<span class="property">firstEffect</span> = completedWork.<span class="property">firstEffect</span>;</span><br><span class="line">        &#125;</span><br><span class="line"></span><br><span class="line">        <span class="keyword">if</span> (completedWork.<span class="property">lastEffect</span> !== <span class="literal">null</span>) &#123;</span><br><span class="line">          <span class="keyword">if</span> (returnFiber.<span class="property">lastEffect</span> !== <span class="literal">null</span>) &#123;</span><br><span class="line">            returnFiber.<span class="property">lastEffect</span>.<span class="property">nextEffect</span> = completedWork.<span class="property">firstEffect</span>;</span><br><span class="line">          &#125;</span><br><span class="line"></span><br><span class="line">          returnFiber.<span class="property">lastEffect</span> = completedWork.<span class="property">lastEffect</span>;</span><br><span class="line">        &#125; <span class="comment">// If this fiber had side-effects, we append it AFTER the children&#x27;s</span></span><br><span class="line">        <span class="comment">// side-effects. We can perform certain side-effects earlier if needed,</span></span><br><span class="line">        <span class="comment">// by doing multiple passes over the effect list. We don&#x27;t want to</span></span><br><span class="line">        <span class="comment">// schedule our own side-effect on our own list because if end up</span></span><br><span class="line">        <span class="comment">// reusing children we&#x27;ll schedule this effect onto itself since we&#x27;re</span></span><br><span class="line">        <span class="comment">// at the end.</span></span><br><span class="line"></span><br><span class="line">        <span class="keyword">var</span> flags = completedWork.<span class="property">flags</span>;</span><br><span class="line">        <span class="comment">// Skip both NoWork and PerformedWork tags when creating the effect</span></span><br><span class="line">        <span class="comment">// list. PerformedWork effect is read by React DevTools but shouldn&#x27;t be</span></span><br><span class="line">        <span class="comment">// committed.</span></span><br><span class="line"></span><br><span class="line">        <span class="comment">// 创建Effect链表时跳过 tag 为 NoWork 和PerformedWork</span></span><br><span class="line">        <span class="comment">// 他们只会被 DevTools 使用不应该提交</span></span><br><span class="line"></span><br><span class="line">        <span class="keyword">if</span> (flags &gt; <span class="title class_">PerformedWork</span>) &#123;</span><br><span class="line">          <span class="keyword">if</span> (returnFiber.<span class="property">lastEffect</span> !== <span class="literal">null</span>) &#123;</span><br><span class="line">            returnFiber.<span class="property">lastEffect</span>.<span class="property">nextEffect</span> = completedWork;</span><br><span class="line">          &#125; <span class="keyword">else</span> &#123;</span><br><span class="line">            returnFiber.<span class="property">firstEffect</span> = completedWork;</span><br><span class="line">          &#125;</span><br><span class="line"></span><br><span class="line">          returnFiber.<span class="property">lastEffect</span> = completedWork;</span><br><span class="line">        &#125;</span><br><span class="line">      &#125;</span><br><span class="line">    &#125;</span><br><span class="line">    completedWork = returnFiber; <span class="comment">// Update the next thing we&#x27;re working on in case something throws.</span></span><br><span class="line"></span><br><span class="line">    workInProgress = completedWork;</span><br><span class="line">  &#125; <span class="keyword">while</span> (completedWork !== <span class="literal">null</span>); <span class="comment">// We&#x27;ve reached the root.</span></span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+<p>首先,分析一下挂载时的链表创建过程, 第一个结束 completeWork 的是 h1 元素, 它的 returnFiber 是 App, 由于 h1 的 flags 是 0, 因为首次渲染是没有标记副作用,所以 App 和 h1 并不会通过 Effect 指针相连, 同理 p 和 文本元素,也是一样处理</p>
+<p>下一个节点是 AppFiber, 它的 returnFiber 是 RootFiber, 由于 App 节点首次渲染的时候需要插入到挂载元素中, 所以它有 Placement 副作用,它的值大于 PerformedWork(标记节点处理过的副作用) ,首次挂载时的 Effect 链表如下</p>
+<figure class="highlight js"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line">returnFiber.<span class="property">firstEffect</span> = completedWork;</span><br><span class="line">returnFiber.<span class="property">lastEffect</span> = completedWork;</span><br></pre></td></tr></table></figure>
+
+<p><img src="/posts/2a574ab5dfc0/0106.png"></p>
+<p>更新时, h1 绑定的函数是匿名函数,所以会携带副作用, 因为第一次执行的时候 h1 和它 returnFiber 的 firstEffect 和 lastEffect,都为 null,所以最先建立这两个节点的联系</p>
+<p><img src="/posts/2a574ab5dfc0/0001.png"></p>
+<p>下一个节点是 p 节点, 它的副作用也需要添加到 Effect 链表上,所以通过 lastEffect 指针找到当前副作用链表的最后一个副作用,它的下一个副作用就是当前的 p 节点</p>
+<p>最后调整 returnFiber 的 lastEffect 指针,指向新的副作用 p 节点. 总结来说,如果下一级的子元素携带副作用, 通过 lastEffect 指针找到最后的副作用,并通过 nextEffect 延长 Effect 链表, 如果是上级元素携带副作用,则修改 firstEffect 指针延长 Effect 链表</p>
+<p><img src="/posts/2a574ab5dfc0/0002.png"></p>
+<p>下面增加一点组件的复杂性</p>
+<figure class="highlight ts"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">const</span> <span class="title class_">Box</span>: <span class="title class_">React</span>.<span class="property">FC</span>&lt;&#123; <span class="attr">content</span>: <span class="built_in">string</span> &#125;&gt; = <span class="function">(<span class="params">props</span>) =&gt;</span> &#123;</span><br><span class="line">  <span class="keyword">const</span> [<span class="built_in">number</span>, setNumber] = <span class="title function_">useState</span>(<span class="number">1</span>);</span><br><span class="line">  <span class="keyword">return</span> (</span><br><span class="line">    <span class="language-xml"><span class="tag">&lt;<span class="name">p</span> <span class="attr">onClick</span>=<span class="string">&#123;()</span> =&gt;</span> setNumber((v) =&gt; v + 1)&#125;&gt;</span></span><br><span class="line"><span class="language-xml">      &#123;props.content&#125;</span></span><br><span class="line"><span class="language-xml">      <span class="tag">&lt;<span class="name">span</span>&gt;</span>&#123;number&#125;<span class="tag">&lt;/<span class="name">span</span>&gt;</span></span></span><br><span class="line"><span class="language-xml">    <span class="tag">&lt;/<span class="name">p</span>&gt;</span></span></span><br><span class="line">  );</span><br><span class="line">&#125;;</span><br><span class="line"></span><br><span class="line"><span class="keyword">const</span> <span class="title class_">App</span>: <span class="title class_">React</span>.<span class="property">FC</span> = <span class="function">() =&gt;</span> &#123;</span><br><span class="line">  <span class="keyword">const</span> [content, setContent] = <span class="title function_">useState</span>(<span class="string">&quot;内容&quot;</span>);</span><br><span class="line">  <span class="keyword">return</span> (</span><br><span class="line">    <span class="language-xml"><span class="tag">&lt;&gt;</span></span></span><br><span class="line"><span class="language-xml">      <span class="tag">&lt;<span class="name">h1</span> <span class="attr">onClick</span>=<span class="string">&#123;()</span> =&gt;</span> setContent(&quot;内容改变&quot;)&#125; role=&quot;presentation&quot;&gt;</span></span><br><span class="line"><span class="language-xml">        标题 <span class="tag">&lt;<span class="name">p</span>&gt;</span>&#123;content&#125;<span class="tag">&lt;/<span class="name">p</span>&gt;</span></span></span><br><span class="line"><span class="language-xml">      <span class="tag">&lt;/<span class="name">h1</span>&gt;</span></span></span><br><span class="line"><span class="language-xml">      <span class="tag">&lt;<span class="name">Box</span> <span class="attr">content</span>=<span class="string">&#123;content&#125;</span> /&gt;</span></span></span><br><span class="line"><span class="language-xml">    <span class="tag">&lt;/&gt;</span></span></span><br><span class="line">  );</span><br><span class="line">&#125;;</span><br></pre></td></tr></table></figure>
+
+<p>这个组件最终形成的 Fiber 树如下</p>
+<p><img src="/posts/2a574ab5dfc0/0003.png"></p>
+<p>当点击 h1 标签后</p>
+<p>第一个进入的是标题文本节点,但是文本节点不存在副作用,所以会跳过这个节点</p>
+<p>下一个节点是 P 节点, 内容改变携带了副作用,所以会最先添加到链表中和 returnFiber 也就是 h1 Fiber 相连</p>
+<p><img src="/posts/2a574ab5dfc0/0004.png"></p>
+<p>下一个节点是 h1 会被拼接到 effectList 最后面, 这次 returnFiber 是 App, 它的 firstEffect 就是 h1 的 firstEffect, 换句话说也就是,上层节点会延长 effect 链表的头部, 会继承上一个节点 firstEffect</p>
+<p><img src="/posts/2a574ab5dfc0/0005.png"></p>
+<p>下一个节点是 Box 中的文本节点, 会和他的上级节点形成 effect 链表</p>
+<p><img src="/posts/2a574ab5dfc0/0006.png"></p>
+<p>下一个是 span 节点, 因为还没有点击 p 标签,所以 span 没有携带副作用,直接跳过</p>
+<p>下一个是 span 上级的 p 节点, returnFiber 是 Box 会成为新的头部</p>
+<p><img src="/posts/2a574ab5dfc0/0007.png"></p>
+<p>下一个是个 Box 节点, returnFiber 是 App,相当于在末尾追加了 effect 链表, 所以修改了 App lastEffect 指针,并且延长了 h1 的 nextEffect</p>
+<p><img src="/posts/2a574ab5dfc0/0008.png"></p>
+<p>最后遍历到根节点 rootFiber 相当于头部延长 effect 链表</p>
+<p><img src="/posts/2a574ab5dfc0/0009.png"></p>
+<p>当点击 p 标签触发更新, 会重新构建整个 effect 链表, 最先进入 complete 的 span 节点, 所以会和他的父节点生成 effect 链表</p>
+<p>构建步骤与第一次更新时类似</p>
+<p><img src="/posts/2a574ab5dfc0/0010.png"></p>
+<p><img src="/posts/2a574ab5dfc0/0011.png"></p>
+<p><img src="/posts/2a574ab5dfc0/0012.png"></p>
+<p><img src="/posts/2a574ab5dfc0/0013.png"></p>
+ 
+      <!-- reward -->
+      
+      <div id="reword-out">
+        <div id="reward-btn">
+          打赏
+        </div>
+      </div>
+      
+    </div>
+    
+
+    <!-- copyright -->
+    
+    <div class="declare">
+      <ul class="post-copyright">
+        <li>
+          <i class="ri-copyright-line"></i>
+          <strong>版权声明： </strong>
+          
+          本博客所有文章除特别声明外，著作权归作者所有。转载请注明出处！
+          
+        </li>
+      </ul>
+    </div>
+    
+    <footer class="article-footer">
+       
+  <ul class="article-tag-list" itemprop="keywords"><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/React/" rel="tag">React</a></li><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/%E6%BA%90%E7%A0%81%E5%88%86%E6%9E%90/" rel="tag">源码分析</a></li></ul>
+
+    </footer>
+  </div>
+
+   
+  <nav class="article-nav">
+    
+      <a href="/posts/3686962dff4f/" class="article-nav-link">
+        <strong class="article-nav-caption">上一篇</strong>
+        <div class="article-nav-title">
+          
+            React源码分析 ⑦ Diff 算法
+          
+        </div>
+      </a>
+    
+    
+      <a href="/posts/49df00acbc4a/" class="article-nav-link">
+        <strong class="article-nav-caption">下一篇</strong>
+        <div class="article-nav-title">React源码分析 ④ render阶段执行流程</div>
+      </a>
+    
+  </nav>
+
+  
+   
+<div class="gitalk" id="gitalk-container"></div>
+
+<link rel="stylesheet" href="https://cdn.staticfile.org/gitalk/1.7.2/gitalk.min.css">
+
+
+<script src="https://cdn.staticfile.org/gitalk/1.7.2/gitalk.min.js"></script>
+
+
+<script src="https://cdn.staticfile.org/blueimp-md5/2.19.0/js/md5.min.js"></script>
+
+<script type="text/javascript">
+  var gitalk = new Gitalk({
+    clientID: 'bce2317b25da7c3c18f6',
+    clientSecret: 'e0ab868ca9054234798be82c2b1c0c9dd8632307',
+    repo: 'noopn.github.io',
+    owner: 'noopn',
+    admin: ['noopn'],
+    // id: location.pathname,      // Ensure uniqueness and length less than 50
+    id: md5(location.pathname),
+    distractionFreeMode: false,  // Facebook-like distraction free mode
+    pagerDirection: 'last'
+  })
+
+  gitalk.render('gitalk-container')
+</script>
+
+     
+</article>
+
+</section>
+      <footer class="footer">
+  <div class="outer">
+    <ul>
+      <li>
+        Copyrights &copy;
+        2015-2024
+        <i class="ri-heart-fill heart_icon"></i> SunZhiqi
+      </li>
+    </ul>
+    <ul>
+      <li>
+        
+      </li>
+    </ul>
+    <ul>
+      <li>
+        
+      </li>
+    </ul>
+    <ul>
+      
+    </ul>
+    <ul>
+      
+    </ul>
+    <ul>
+      <li>
+        <!-- cnzz统计 -->
+        
+      </li>
+    </ul>
+  </div>
+</footer>    
+    </main>
+    <div class="float_btns">
+      <div class="totop" id="totop">
+  <i class="ri-arrow-up-line"></i>
+</div>
+
+    </div>
+    <aside class="sidebar on">
+      <button class="navbar-toggle"></button>
+<nav class="navbar">
+  
+  <div class="logo">
+    <a href="/"><img src="/images/ayer-side.png" alt="四月八日"></a>
+  </div>
+  
+  <ul class="nav nav-main">
+    
+    <li class="nav-item">
+      <a class="nav-item-link" href="/">主页</a>
+    </li>
+    
+    <li class="nav-item">
+      <a class="nav-item-link" href="/archives">归档</a>
+    </li>
+    
+    <li class="nav-item">
+      <a class="nav-item-link" href="/categories">分类</a>
+    </li>
+    
+    <li class="nav-item">
+      <a class="nav-item-link" href="/tags">标签</a>
+    </li>
+    
+    <li class="nav-item">
+      <a class="nav-item-link" href="/tags/Essay">随笔</a>
+    </li>
+    
+  </ul>
+</nav>
+<nav class="navbar navbar-bottom">
+  <ul class="nav">
+    <li class="nav-item">
+      
+      <a class="nav-item-link nav-item-search"  title="搜索">
+        <i class="ri-search-line"></i>
+      </a>
+      
+      
+    </li>
+  </ul>
+</nav>
+<div class="search-form-wrap">
+  <div class="local-search local-search-plugin">
+  <input type="search" id="local-search-input" class="local-search-input" placeholder="Search...">
+  <div id="local-search-result" class="local-search-result"></div>
+</div>
+</div>
+    </aside>
+    <div id="mask"></div>
+
+<!-- #reward -->
+<div id="reward">
+  <span class="close"><i class="ri-close-line"></i></span>
+  <p class="reward-p"><i class="ri-cup-line"></i>此时无声胜有声！</p>
+  <div class="reward-box">
+    
+    <div class="reward-item">
+      <img class="reward-img" src="/images/alipay.jpg">
+      <span class="reward-type">支付宝</span>
+    </div>
+    
+    
+    <div class="reward-item">
+      <img class="reward-img" src="/images/wechat.jpg">
+      <span class="reward-type">微信</span>
+    </div>
+    
+  </div>
+</div>
+    
+<script src="/js/jquery-3.6.0.min.js"></script>
+ 
+<script src="/js/lazyload.min.js"></script>
+
+<!-- Tocbot -->
+ 
+<script src="/js/tocbot.min.js"></script>
+
+<script>
+  tocbot.init({
+    tocSelector: ".tocbot",
+    contentSelector: ".article-entry",
+    headingSelector: "h1, h2, h3, h4, h5, h6",
+    hasInnerContainers: true,
+    scrollSmooth: true,
+    scrollContainer: "main",
+    positionFixedSelector: ".tocbot",
+    positionFixedClass: "is-position-fixed",
+    fixedSidebarOffset: "auto",
+  });
+</script>
+
+<script src="/js/jquery.modal.min.js"></script>
+<link rel="stylesheet" href="/css/jquery.modal.min.css" />
+<script src="/js/jquery.justifiedGallery.min.js"></script>
+
+<script src="/dist/main.js"></script>
+
+<!-- ImageViewer -->
+ <!-- Root element of PhotoSwipe. Must have class pswp. -->
+<div class="pswp" tabindex="-1" role="dialog" aria-hidden="true">
+  <!-- Background of PhotoSwipe. 
+         It's a separate element as animating opacity is faster than rgba(). -->
+  <div class="pswp__bg"></div>
+
+  <!-- Slides wrapper with overflow:hidden. -->
+  <div class="pswp__scroll-wrap">
+    <!-- Container that holds slides. 
+            PhotoSwipe keeps only 3 of them in the DOM to save memory.
+            Don't modify these 3 pswp__item elements, data is added later on. -->
+    <div class="pswp__container">
+      <div class="pswp__item"></div>
+      <div class="pswp__item"></div>
+      <div class="pswp__item"></div>
+    </div>
+
+    <!-- Default (PhotoSwipeUI_Default) interface on top of sliding area. Can be changed. -->
+    <div class="pswp__ui pswp__ui--hidden">
+      <div class="pswp__top-bar">
+        <!--  Controls are self-explanatory. Order can be changed. -->
+
+        <div class="pswp__counter"></div>
+
+        <button
+          class="pswp__button pswp__button--close"
+          title="Close (Esc)"
+        ></button>
+
+        <button
+          class="pswp__button pswp__button--share"
+          style="display: none"
+          title="Share"
+        ></button>
+
+        <button
+          class="pswp__button pswp__button--fs"
+          title="Toggle fullscreen"
+        ></button>
+
+        <button
+          class="pswp__button pswp__button--zoom"
+          title="Zoom in/out"
+        ></button>
+
+        <!-- Preloader demo http://codepen.io/dimsemenov/pen/yyBWoR -->
+        <!-- element will get class pswp__preloader--active when preloader is running -->
+        <div class="pswp__preloader">
+          <div class="pswp__preloader__icn">
+            <div class="pswp__preloader__cut">
+              <div class="pswp__preloader__donut"></div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <div class="pswp__share-modal pswp__share-modal--hidden pswp__single-tap">
+        <div class="pswp__share-tooltip"></div>
+      </div>
+
+      <button
+        class="pswp__button pswp__button--arrow--left"
+        title="Previous (arrow left)"
+      ></button>
+
+      <button
+        class="pswp__button pswp__button--arrow--right"
+        title="Next (arrow right)"
+      ></button>
+
+      <div class="pswp__caption">
+        <div class="pswp__caption__center"></div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<link rel="stylesheet" href="/css/photoswipe.min.css" />
+<link rel="stylesheet" href="/css/default-skin.min.css" />
+<script src="/js/photoswipe.min.js"></script>
+<script src="/js/photoswipe-ui-default.min.js"></script>
+
+<script>
+  function viewer_init() {
+    let pswpElement = document.querySelectorAll(".pswp")[0];
+    let $imgArr = document.querySelectorAll(
+      ".article-entry img:not(.reward-img)"
+    );
+
+    $imgArr.forEach(($em, i) => {
+      $em.onclick = () => {
+        // slider展开状态
+        // todo: 这样不好，后面改成状态
+        if (document.querySelector(".left-col.show")) return;
+        let items = [];
+        $imgArr.forEach(($em2, i2) => {
+          let img = $em2.getAttribute("data-idx", i2);
+          let src =
+            $em2.getAttribute("data-target") || $em2.getAttribute("src");
+          let title = $em2.getAttribute("alt");
+          // 获得原图尺寸
+          const image = new Image();
+          image.src = src;
+          items.push({
+            src: src,
+            w: image.width || $em2.width,
+            h: image.height || $em2.height,
+            title: title,
+          });
+        });
+        var gallery = new PhotoSwipe(pswpElement, PhotoSwipeUI_Default, items, {
+          index: parseInt(i),
+        });
+        gallery.init();
+      };
+    });
+  }
+  viewer_init();
+</script>
+ 
+<!-- MathJax -->
+ <script type="text/x-mathjax-config">
+  MathJax.Hub.Config({
+      tex2jax: {
+          inlineMath: [ ['$','$'], ["\\(","\\)"]  ],
+          processEscapes: true,
+          skipTags: ['script', 'noscript', 'style', 'textarea', 'pre', 'code']
+      }
+  });
+
+  MathJax.Hub.Queue(function() {
+      var all = MathJax.Hub.getAllJax(), i;
+      for(i=0; i < all.length; i += 1) {
+          all[i].SourceElement().parentNode.className += ' has-jax';
+      }
+  });
+</script>
+
+<script src="/js/MathJax.js"></script>
+<script src="/js/TeX-AMS-MML_HTMLorMML-full.js"></script>
+
+<script>
+  var ayerConfig = {
+    mathjax: true,
+  };
+</script>
+
+<!-- Katex -->
+
+<!-- busuanzi  -->
+
+<!-- ClickLove -->
+
+<!-- ClickBoom1 -->
+
+<!-- ClickBoom2 -->
+
+<!-- CodeCopy -->
+ 
+<link rel="stylesheet" href="/css/clipboard.css">
+ <script src="/js/clipboard.min.js"></script>
+<script>
+  function wait(callback, seconds) {
+    var timelag = null;
+    timelag = window.setTimeout(callback, seconds);
+  }
+  !(function (e, t, a) {
+    var initCopyCode = function () {
+      var copyHtml = "";
+      copyHtml += '<button class="btn-copy" data-clipboard-snippet="">';
+      copyHtml += '<i class="ri-file-copy-2-line"></i><span>COPY</span>';
+      copyHtml += "</button>";
+      $(".highlight .code pre").before(copyHtml);
+      $(".article pre code").before(copyHtml);
+      var clipboard = new ClipboardJS(".btn-copy", {
+        target: function (trigger) {
+          return trigger.nextElementSibling;
+        },
+      });
+      clipboard.on("success", function (e) {
+        let $btn = $(e.trigger);
+        $btn.addClass("copied");
+        let $icon = $($btn.find("i"));
+        $icon.removeClass("ri-file-copy-2-line");
+        $icon.addClass("ri-checkbox-circle-line");
+        let $span = $($btn.find("span"));
+        $span[0].innerText = "COPIED";
+
+        wait(function () {
+          // 等待两秒钟后恢复
+          $icon.removeClass("ri-checkbox-circle-line");
+          $icon.addClass("ri-file-copy-2-line");
+          $span[0].innerText = "COPY";
+        }, 2000);
+      });
+      clipboard.on("error", function (e) {
+        e.clearSelection();
+        let $btn = $(e.trigger);
+        $btn.addClass("copy-failed");
+        let $icon = $($btn.find("i"));
+        $icon.removeClass("ri-file-copy-2-line");
+        $icon.addClass("ri-time-line");
+        let $span = $($btn.find("span"));
+        $span[0].innerText = "COPY FAILED";
+
+        wait(function () {
+          // 等待两秒钟后恢复
+          $icon.removeClass("ri-time-line");
+          $icon.addClass("ri-file-copy-2-line");
+          $span[0].innerText = "COPY";
+        }, 2000);
+      });
+    };
+    initCopyCode();
+  })(window, document);
+</script>
+ 
+<!-- CanvasBackground -->
+
+<script>
+  if (window.mermaid) {
+    mermaid.initialize({ theme: "default" });
+  }
+</script>
+
+
+    
+    
+
+  </div>
+</body>
+
+</html>

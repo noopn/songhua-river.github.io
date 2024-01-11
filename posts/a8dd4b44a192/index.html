@@ -1,0 +1,638 @@
+<!DOCTYPE html>
+
+
+<html lang="zh-CN">
+  
+
+    <head>
+      <meta charset="utf-8" />
+       
+      <meta name="keywords" content="前端 web react" />
+       
+      <meta name="description" content="前端技术与生活。" />
+      
+      <meta
+        name="viewport"
+        content="width=device-width, initial-scale=1, maximum-scale=1"
+      />
+      <title>④ ReactSSR 接入redux |  四月八日</title>
+  <meta name="generator" content="hexo-theme-ayer">
+      
+      <link rel="shortcut icon" href="/favicon.ico" />
+       
+<link rel="stylesheet" href="/dist/main.css">
+ 
+<link rel="stylesheet" href="/css/fonts/remixicon.css">
+ 
+<link rel="stylesheet" href="/css/custom.css">
+ 
+      <script src="/js/pace.min.js"></script>
+       
+ 
+
+      <link rel="stylesheet" href="/css/bulma.min.css" />
+      <script src="/js/sweetalert2.min.js"></script>
+
+      <!-- mermaid -->
+      
+      <script src="https://cdn.staticfile.org/mermaid/8.14.0/mermaid.min.js"></script>
+      
+      <style>
+        .swal2-styled.swal2-confirm {
+          font-size: 1.6rem;
+        }
+      </style>
+    <!-- hexo injector head_end start -->
+<link rel="stylesheet" href="/css/katex.min.css">
+
+<link rel="stylesheet" href="/css/style.css">
+<!-- hexo injector head_end end --></head>
+  </html>
+</html>
+
+
+<body>
+  <div id="app">
+    
+      
+    <main class="content on">
+      <section class="outer">
+  <article
+  id="post-react/④(SSR)接入redux"
+  class="article article-type-post"
+  itemscope
+  itemprop="blogPost"
+  data-scroll-reveal
+>
+  <div class="article-inner">
+    
+    <header class="article-header">
+       
+<h1 class="article-title sea-center" style="border-left:0" itemprop="name">
+  ④ ReactSSR 接入redux
+</h1>
+ 
+
+      
+    </header>
+     
+    <div class="article-meta">
+      <a href="/posts/a8dd4b44a192/" class="article-date">
+  <time datetime="2021-11-20T07:21:01.000Z" itemprop="datePublished">2021-11-20</time>
+</a> 
+  <div class="article-category">
+    <a class="article-category-link" href="/categories/React/">React</a> / <a class="article-category-link" href="/categories/React/SSR/">SSR</a>
+  </div>
+  
+<div class="word_count">
+    <span class="post-time">
+        <span class="post-meta-item-icon">
+            <i class="ri-quill-pen-line"></i>
+            <span class="post-meta-item-text"> 字数统计:</span>
+            <span class="post-count">1.4k</span>
+        </span>
+    </span>
+
+    <span class="post-time">
+        &nbsp; | &nbsp;
+        <span class="post-meta-item-icon">
+            <i class="ri-book-open-line"></i>
+            <span class="post-meta-item-text"> 阅读时长≈</span>
+            <span class="post-count">7 分钟</span>
+        </span>
+    </span>
+</div>
+ 
+    </div>
+      
+    <div class="tocbot"></div>
+
+
+
+
+  
+    <div class="article-entry" itemprop="articleBody">
+       
+  <h4 id="创建Action"><a href="#创建Action" class="headerlink" title="创建Action"></a>创建Action</h4><blockquote>
+<p>&#x2F;src&#x2F;components&#x2F;hello&#x2F;action.ts</p>
+</blockquote>
+<figure class="highlight javascript"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">import</span> &#123; <span class="title class_">Dispatch</span>, <span class="title class_">ActionCreator</span> &#125; <span class="keyword">from</span> <span class="string">&quot;redux&quot;</span>;</span><br><span class="line"><span class="keyword">import</span> axios, &#123; <span class="title class_">AxiosResponse</span> &#125; <span class="keyword">from</span> <span class="string">&#x27;axios&#x27;</span></span><br><span class="line"></span><br><span class="line"><span class="keyword">export</span> <span class="keyword">const</span> <span class="variable constant_">LOAD_DATA</span> = <span class="string">&#x27;LOAD_DATA&#x27;</span>;</span><br><span class="line"></span><br><span class="line"><span class="keyword">export</span> type <span class="variable constant_">LOAD_DATA_TYPE</span> = <span class="keyword">typeof</span> <span class="variable constant_">LOAD_DATA</span>;</span><br><span class="line"></span><br><span class="line">interface <span class="title class_">FetchDataInterface</span> &#123;</span><br><span class="line">    (match?: any): <span class="title class_">Promise</span>&lt;<span class="title class_">AxiosResponse</span>&gt;</span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line"><span class="keyword">const</span> <span class="attr">fetchData</span>: <span class="title class_">FetchDataInterface</span> = <span class="function">(<span class="params">match</span>) =&gt;</span> <span class="title function_">axios</span>(<span class="string">&#x27;https://fakestoreapi.com/products&#x27;</span>);</span><br><span class="line"></span><br><span class="line">interface <span class="title class_">ServerLoadDataInterface</span> &#123;</span><br><span class="line">    (<span class="attr">match</span>: any): <span class="title class_">Promise</span>&lt;any&gt;</span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line"><span class="keyword">export</span> <span class="keyword">const</span> <span class="attr">serverLoadData</span>: <span class="title class_">ServerLoadDataInterface</span> = <span class="function">(<span class="params">match</span>) =&gt;</span> <span class="title function_">fetchData</span>().<span class="title function_">then</span>(<span class="function">(<span class="params">&#123; data &#125;</span>) =&gt;</span> (&#123; <span class="attr">hello</span>: &#123; <span class="attr">shopData</span>: data &#125; &#125;));</span><br><span class="line"></span><br><span class="line"><span class="keyword">const</span> <span class="attr">loadDataAction</span>: <span class="title class_">ActionCreator</span>&lt;&#123; <span class="attr">type</span>: <span class="variable constant_">LOAD_DATA_TYPE</span> &#125;&gt; = <span class="function">(<span class="params">payload</span>) =&gt;</span> (&#123;</span><br><span class="line">    <span class="attr">type</span>: <span class="variable constant_">LOAD_DATA</span>,</span><br><span class="line">    payload,</span><br><span class="line">&#125;)</span><br><span class="line"></span><br><span class="line"></span><br><span class="line"><span class="keyword">export</span> type <span class="title class_">ActionTypes</span> = <span class="variable constant_">LOAD_DATA_TYPE</span>;</span><br><span class="line"><span class="keyword">export</span> <span class="keyword">const</span> <span class="title function_">loadData</span> = (<span class="params"></span>) =&gt; <span class="function">(<span class="params">dispatch: Dispatch</span>) =&gt;</span> <span class="title function_">fetchData</span>().<span class="title function_">then</span>(<span class="function">(<span class="params">&#123; data &#125;</span>) =&gt;</span> <span class="title function_">dispatch</span>(<span class="title function_">loadDataAction</span>(data)));</span><br><span class="line"></span><br></pre></td></tr></table></figure>
+
+<h4 id="创建reducer"><a href="#创建reducer" class="headerlink" title="创建reducer"></a>创建reducer</h4><blockquote>
+<p>&#x2F;src&#x2F;components&#x2F;hello&#x2F;reducer.ts</p>
+</blockquote>
+<figure class="highlight javascript"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">import</span> &#123;<span class="title class_">AnyAction</span>,<span class="title class_">Reducer</span>&#125; <span class="keyword">from</span> <span class="string">&#x27;redux&#x27;</span>;</span><br><span class="line"><span class="keyword">import</span> &#123;</span><br><span class="line">    <span class="variable constant_">LOAD_DATA</span>,</span><br><span class="line">&#125; <span class="keyword">from</span> <span class="string">&#x27;./action&#x27;</span>;</span><br><span class="line"></span><br><span class="line"><span class="keyword">import</span> &#123; <span class="title class_">StoreType</span> &#125; <span class="keyword">from</span> <span class="string">&#x27;.&#x27;</span>;</span><br><span class="line"></span><br><span class="line"><span class="keyword">const</span> initStore = &#123;</span><br><span class="line">    <span class="attr">shopData</span>:[]</span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line"></span><br><span class="line"><span class="keyword">const</span> <span class="attr">hello</span>:<span class="title class_">Reducer</span>&lt;<span class="title class_">StoreType</span>,<span class="title class_">AnyAction</span>&gt; = <span class="function">(<span class="params">state=initStore, action</span>) =&gt;</span> &#123;</span><br><span class="line">    <span class="keyword">switch</span> (action.<span class="property">type</span>) &#123;</span><br><span class="line">        <span class="keyword">case</span> <span class="attr">LOAD_DATA</span>:</span><br><span class="line">            <span class="keyword">return</span> (&#123;...state,<span class="attr">shopData</span>:action.<span class="property">payload</span>&#125;)</span><br><span class="line">        <span class="attr">default</span>:</span><br><span class="line">            <span class="keyword">return</span> state;</span><br><span class="line">    &#125;</span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line"><span class="keyword">export</span> <span class="keyword">default</span> hello;</span><br></pre></td></tr></table></figure>
+
+
+<h4 id="connect-Hello组件"><a href="#connect-Hello组件" class="headerlink" title="connect Hello组件"></a>connect Hello组件</h4><blockquote>
+<p>&#x2F;src&#x2F;components&#x2F;hello&#x2F;hello.ts</p>
+</blockquote>
+<figure class="highlight javascript"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br><span class="line">35</span><br><span class="line">36</span><br><span class="line">37</span><br><span class="line">38</span><br><span class="line">39</span><br><span class="line">40</span><br><span class="line">41</span><br><span class="line">42</span><br><span class="line">43</span><br><span class="line">44</span><br><span class="line">45</span><br><span class="line">46</span><br><span class="line">47</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">import</span> <span class="title class_">React</span> <span class="keyword">from</span> <span class="string">&#x27;react&#x27;</span>;</span><br><span class="line"><span class="keyword">import</span> &#123; bindActionCreators,<span class="title class_">Dispatch</span> &#125; <span class="keyword">from</span> <span class="string">&#x27;redux&#x27;</span>;</span><br><span class="line"><span class="keyword">import</span> &#123;connect&#125; <span class="keyword">from</span> <span class="string">&#x27;react-redux&#x27;</span>;</span><br><span class="line"><span class="keyword">import</span> &#123; <span class="title class_">StoreType</span> &#125; <span class="keyword">from</span> <span class="string">&#x27;../../store&#x27;</span>;</span><br><span class="line"><span class="keyword">import</span> <span class="title class_">Header</span> <span class="keyword">from</span> <span class="string">&#x27;../header&#x27;</span>;</span><br><span class="line"><span class="keyword">import</span> &#123;loadData&#125; <span class="keyword">from</span> <span class="string">&#x27;./action&#x27;</span>;</span><br><span class="line"></span><br><span class="line">type <span class="title class_">HelloComponentProps</span> = &#123;</span><br><span class="line">    <span class="attr">loadData</span>:<span class="function">()=&gt;</span><span class="keyword">void</span>,</span><br><span class="line">    <span class="attr">shopData</span>:<span class="title class_">Array</span>&lt;any&gt;,</span><br><span class="line">&#125;;</span><br><span class="line"></span><br><span class="line"><span class="keyword">const</span> <span class="title class_">Hello</span>:<span class="title class_">React</span>.<span class="property">FC</span>&lt;<span class="title class_">HelloComponentProps</span>&gt; = <span class="function">(<span class="params">props</span>) =&gt;</span>&#123;</span><br><span class="line">    <span class="keyword">const</span> &#123;</span><br><span class="line">        loadData,</span><br><span class="line">        shopData</span><br><span class="line">    &#125; = props;</span><br><span class="line">    </span><br><span class="line"></span><br><span class="line">    <span class="title class_">React</span>.<span class="title function_">useEffect</span>(<span class="function">()=&gt;</span>&#123;</span><br><span class="line">        <span class="title function_">loadData</span>();</span><br><span class="line">    &#125;,[])</span><br><span class="line"></span><br><span class="line">    <span class="keyword">return</span> <span class="language-xml"><span class="tag">&lt;<span class="name">div</span>&gt;</span></span></span><br><span class="line"><span class="language-xml">        <span class="tag">&lt;<span class="name">Header</span>/&gt;</span></span></span><br><span class="line"><span class="language-xml">        &#123;</span></span><br><span class="line"><span class="language-xml">            shopData.map(item=&gt; <span class="tag">&lt;<span class="name">h6</span> <span class="attr">onClick</span>=<span class="string">&#123;()</span>=&gt;</span>&#123;alert(&quot;hello&quot;)&#125;&#125; key=&#123;item.id&#125;&gt;&#123;item.title&#125;<span class="tag">&lt;/<span class="name">h6</span>&gt;</span>)</span></span><br><span class="line"><span class="language-xml">        &#125;</span></span><br><span class="line"><span class="language-xml">    <span class="tag">&lt;/<span class="name">div</span>&gt;</span></span></span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line"></span><br><span class="line"></span><br><span class="line"><span class="keyword">const</span> <span class="title function_">mapStateToProps</span> = (<span class="params">state:StoreType</span>) =&gt; &#123;</span><br><span class="line">    <span class="keyword">return</span> &#123;</span><br><span class="line">        <span class="attr">shopData</span>:state.<span class="property">hello</span>.<span class="property">shopData</span></span><br><span class="line">    &#125;</span><br><span class="line">  &#125;</span><br><span class="line">  </span><br><span class="line">  <span class="keyword">const</span> <span class="title function_">mapDispatchToProps</span> = (<span class="params">dispatch:Dispatch</span>) =&gt; &#123;</span><br><span class="line">    <span class="keyword">return</span> &#123;</span><br><span class="line">        <span class="attr">loadData</span>: <span class="title function_">bindActionCreators</span>(loadData,dispatch)</span><br><span class="line">    &#125;</span><br><span class="line">  &#125;</span><br><span class="line"></span><br><span class="line"></span><br><span class="line"><span class="keyword">export</span> <span class="keyword">default</span> <span class="title function_">connect</span>(mapStateToProps,mapDispatchToProps)(<span class="title class_">Hello</span>) ;</span><br></pre></td></tr></table></figure>
+
+<h4 id="修改-Hello-组件入口文件-index-ts"><a href="#修改-Hello-组件入口文件-index-ts" class="headerlink" title="修改 Hello 组件入口文件 index.ts"></a>修改 Hello 组件入口文件 index.ts</h4><ul>
+<li><p>暴露服务端渲染时需要的数据请求方法</p>
+</li>
+<li><p>添加store类型，暴露到外部的 store&#x2F;index.js 统一描述store类型</p>
+</li>
+</ul>
+<figure class="highlight javascript"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">import</span> <span class="title class_">Hello</span> <span class="keyword">from</span> <span class="string">&quot;./hello&quot;</span>;</span><br><span class="line"><span class="keyword">import</span> &#123;serverLoadData&#125; <span class="keyword">from</span> <span class="string">&#x27;./action&#x27;</span>;</span><br><span class="line"></span><br><span class="line"></span><br><span class="line"><span class="keyword">export</span> interface <span class="title class_">StoreType</span> &#123;</span><br><span class="line">    <span class="attr">shopData</span>:<span class="title class_">Array</span>&lt;any&gt;</span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line"><span class="keyword">export</span> &#123;</span><br><span class="line">    serverLoadData</span><br><span class="line">&#125;;</span><br><span class="line"></span><br><span class="line"><span class="keyword">export</span> <span class="keyword">default</span> <span class="title class_">Hello</span>;</span><br></pre></td></tr></table></figure>
+
+<h4 id="创建全局的store"><a href="#创建全局的store" class="headerlink" title="创建全局的store"></a>创建全局的store</h4><blockquote>
+<p>src&#x2F;store&#x2F;index.ts</p>
+</blockquote>
+<p>用于生成store对象</p>
+<figure class="highlight javascript"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">import</span> &#123; <span class="title class_">Provider</span> &#125; <span class="keyword">from</span> <span class="string">&#x27;react-redux&#x27;</span></span><br><span class="line"><span class="keyword">import</span> &#123; createStore, applyMiddleware &#125; <span class="keyword">from</span> <span class="string">&#x27;redux&#x27;</span>;</span><br><span class="line"><span class="keyword">import</span> thunk <span class="keyword">from</span> <span class="string">&#x27;redux-thunk&#x27;</span></span><br><span class="line"><span class="keyword">import</span> reducers <span class="keyword">from</span> <span class="string">&#x27;./reducers&#x27;</span>;</span><br><span class="line"><span class="keyword">import</span> &#123; <span class="title class_">StoreType</span> <span class="keyword">as</span> <span class="title class_">HelloStoreType</span> &#125; <span class="keyword">from</span> <span class="string">&#x27;../components/hello&#x27;</span>;</span><br><span class="line"></span><br><span class="line"><span class="keyword">const</span> <span class="title function_">browserStore</span> = (<span class="params"></span>)=&gt; <span class="title function_">createStore</span>(reducers, (<span class="variable language_">window</span> <span class="keyword">as</span> any).<span class="property">__HYDRATE_DATA__</span>, <span class="title function_">applyMiddleware</span>(thunk));</span><br><span class="line"></span><br><span class="line"><span class="keyword">const</span> <span class="title function_">serverStores</span> = (<span class="params">__HYDRATE_DATA__: any</span>) =&gt; <span class="title function_">createStore</span>(reducers, __HYDRATE_DATA__, <span class="title function_">applyMiddleware</span>(thunk));</span><br><span class="line"></span><br><span class="line"><span class="keyword">export</span> type <span class="title class_">StoreType</span> = &#123;</span><br><span class="line">    <span class="attr">hello</span>: <span class="title class_">HelloStoreType</span></span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line"><span class="keyword">export</span> &#123;</span><br><span class="line">    <span class="title class_">Provider</span>,</span><br><span class="line">    browserStore,</span><br><span class="line">    serverStores</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+<blockquote>
+<p>src&#x2F;store&#x2F;reducers.ts</p>
+</blockquote>
+<p>合并所有组件中的reducer</p>
+<figure class="highlight javascript"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">import</span> &#123; combineReducers &#125; <span class="keyword">from</span> <span class="string">&#x27;redux&#x27;</span>;</span><br><span class="line"><span class="keyword">import</span> hello <span class="keyword">from</span> <span class="string">&#x27;../components/hello/reducer&#x27;</span>;</span><br><span class="line"></span><br><span class="line"><span class="keyword">export</span> <span class="keyword">default</span> <span class="title function_">combineReducers</span>(&#123;</span><br><span class="line">    hello</span><br><span class="line">&#125;)</span><br></pre></td></tr></table></figure>
+
+<h4 id="服务端预加载数据，改造routers"><a href="#服务端预加载数据，改造routers" class="headerlink" title="服务端预加载数据，改造routers"></a>服务端预加载数据，改造routers</h4><p>之前的routers是一个JSX元素，现在想调用组件暴露出的服务端请求数据的方法，并在拿到结果重新渲染组件，生成html字符串，并返回给浏览器</p>
+<p>所以第一步：改造routers让我们可以拿到数据请求的方法</p>
+<blockquote>
+<p>src&#x2F;components&#x2F;routes.tsx</p>
+</blockquote>
+<figure class="highlight javascript"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">import</span> <span class="title class_">Hello</span>, &#123; serverLoadData <span class="keyword">as</span> helloServerLoadData &#125; <span class="keyword">from</span> <span class="string">&quot;./hello&quot;</span>;</span><br><span class="line"><span class="keyword">import</span> <span class="title class_">Login</span> <span class="keyword">from</span> <span class="string">&quot;./login&quot;</span>;</span><br><span class="line"></span><br><span class="line"><span class="keyword">const</span> routes = [</span><br><span class="line"></span><br><span class="line">    &#123;</span><br><span class="line">        <span class="attr">path</span>: <span class="string">&quot;/hello&quot;</span>,</span><br><span class="line">        <span class="attr">exact</span>: <span class="literal">true</span>,</span><br><span class="line">        <span class="attr">component</span>: <span class="title class_">Hello</span>,</span><br><span class="line">        <span class="attr">loadData</span>: <span class="function">(<span class="params">match:any</span>) =&gt;</span> <span class="title function_">helloServerLoadData</span>(match)</span><br><span class="line">    &#125;,</span><br><span class="line">    &#123;</span><br><span class="line">        <span class="attr">path</span>: <span class="string">&quot;/login&quot;</span>,</span><br><span class="line">        <span class="attr">exact</span>: <span class="literal">true</span>,</span><br><span class="line">        <span class="attr">component</span>: <span class="title class_">Login</span>,</span><br><span class="line">    &#125;,</span><br><span class="line">    &#123;</span><br><span class="line">        <span class="attr">path</span>: <span class="string">&quot;/&quot;</span>,</span><br><span class="line">        <span class="attr">component</span>: <span class="title class_">Hello</span>,</span><br><span class="line">        <span class="attr">exact</span>: <span class="literal">true</span>,</span><br><span class="line">        <span class="attr">loadData</span>: <span class="function">(<span class="params">match:any</span>) =&gt;</span> <span class="title function_">helloServerLoadData</span>(match)</span><br><span class="line">    &#125;,</span><br><span class="line">];</span><br><span class="line"></span><br><span class="line"><span class="keyword">export</span> <span class="keyword">default</span> routes;</span><br></pre></td></tr></table></figure>
+
+<blockquote>
+<p>src&#x2F;components&#x2F;router.tsx</p>
+</blockquote>
+<p>循环生成路由组件</p>
+<figure class="highlight javascript"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">import</span> <span class="title class_">React</span> <span class="keyword">from</span> <span class="string">&quot;react&quot;</span>;</span><br><span class="line"><span class="keyword">import</span> <span class="title class_">Koa</span> <span class="keyword">from</span> <span class="string">&#x27;koa&#x27;</span>;</span><br><span class="line"><span class="keyword">import</span> &#123;</span><br><span class="line">    <span class="title class_">BrowserRouter</span>,</span><br><span class="line">    <span class="title class_">Switch</span>,</span><br><span class="line">    <span class="title class_">Route</span></span><br><span class="line">&#125; <span class="keyword">from</span> <span class="string">&quot;react-router-dom&quot;</span>;</span><br><span class="line"></span><br><span class="line"><span class="keyword">import</span> routes <span class="keyword">from</span> <span class="string">&#x27;./routes&#x27;</span></span><br><span class="line"></span><br><span class="line">interface <span class="title class_">RouterProps</span> &#123;</span><br><span class="line">    ctx?: <span class="title class_">Koa</span>.<span class="property">BaseContext</span></span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line"><span class="keyword">const</span> <span class="title class_">Router</span>: <span class="title class_">React</span>.<span class="property">FC</span>&lt;<span class="title class_">RouterProps</span>&gt; = <span class="function">() =&gt;</span> &#123;</span><br><span class="line">    <span class="keyword">return</span> (</span><br><span class="line">        <span class="language-xml"><span class="tag">&lt;<span class="name">BrowserRouter</span>&gt;</span></span></span><br><span class="line"><span class="language-xml">            <span class="tag">&lt;<span class="name">Switch</span>&gt;</span></span></span><br><span class="line"><span class="language-xml">                &#123;routes.map(route =&gt; (</span></span><br><span class="line"><span class="language-xml">                    <span class="tag">&lt;<span class="name">Route</span> &#123;<span class="attr">...route</span>&#125; <span class="attr">key</span>=<span class="string">&#123;route.path&#125;</span> /&gt;</span></span></span><br><span class="line"><span class="language-xml">                ))&#125;</span></span><br><span class="line"><span class="language-xml">            <span class="tag">&lt;/<span class="name">Switch</span>&gt;</span></span></span><br><span class="line"><span class="language-xml">        <span class="tag">&lt;/<span class="name">BrowserRouter</span>&gt;</span></span></span><br><span class="line">    )</span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line"><span class="keyword">export</span> <span class="keyword">default</span> <span class="title class_">Router</span>;</span><br></pre></td></tr></table></figure>
+
+<h4 id="匹配路由对应的组件"><a href="#匹配路由对应的组件" class="headerlink" title="匹配路由对应的组件"></a>匹配路由对应的组件</h4><p><a target="_blank" rel="noopener" href="https://www.npmjs.com/package/react-router-config">react-router-config</a> 用于匹配包括子路由在内的所有路由配置对应的组件</p>
+<p>在拿到所有的匹配项之后，循环调用所有组件的数据请求方法，并把返回的promise对象放到一个数组中</p>
+<p>当所有的返回值拿到之后，组合所有的state,初始化React组件，并渲染成字符串返回给浏览器</p>
+<figure class="highlight javascript"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br><span class="line">35</span><br><span class="line">36</span><br><span class="line">37</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">import</span> <span class="title class_">Router</span> <span class="keyword">from</span> <span class="string">&#x27;@koa/router&#x27;</span>;</span><br><span class="line"><span class="keyword">import</span> <span class="title class_">ReactDOMServer</span> <span class="keyword">from</span> <span class="string">&#x27;react-dom/server&#x27;</span>;</span><br><span class="line"><span class="keyword">import</span> <span class="title class_">React</span> <span class="keyword">from</span> <span class="string">&#x27;react&#x27;</span>;</span><br><span class="line"><span class="keyword">import</span> <span class="title class_">App</span> <span class="keyword">from</span> <span class="string">&#x27;./router&#x27;</span>;</span><br><span class="line"><span class="keyword">import</span> routes <span class="keyword">from</span> <span class="string">&#x27;../components/routes&#x27;</span></span><br><span class="line"><span class="keyword">import</span> &#123; matchRoutes &#125; <span class="keyword">from</span> <span class="string">&quot;react-router-config&quot;</span>;</span><br><span class="line"></span><br><span class="line"></span><br><span class="line"><span class="keyword">const</span> router = <span class="keyword">new</span> <span class="title class_">Router</span>();</span><br><span class="line"></span><br><span class="line">router.<span class="title function_">get</span>(<span class="string">&quot;/(.*)&quot;</span>,<span class="keyword">async</span> (ctx,next)=&gt;&#123;</span><br><span class="line">    <span class="keyword">const</span> <span class="attr">promises</span>:<span class="title class_">Array</span>&lt;any&gt; = <span class="title function_">matchRoutes</span>(routes,ctx.<span class="property">request</span>.<span class="property">path</span>).<span class="title function_">map</span>(<span class="function">(<span class="params">&#123;route,match&#125;</span>)=&gt;</span> route.<span class="property">loadData</span>?route.<span class="title function_">loadData</span>(match):<span class="title class_">Promise</span>.<span class="title function_">resolve</span>());</span><br><span class="line"></span><br><span class="line">    <span class="keyword">const</span> preloadData = <span class="keyword">await</span> <span class="title class_">Promise</span>.<span class="title function_">all</span>(promises);</span><br><span class="line">    <span class="keyword">const</span> __HYDRATE_DATA__ = preloadData.<span class="title function_">reduce</span>(<span class="function">(<span class="params">res,data</span>)=&gt;</span><span class="title class_">Object</span>.<span class="title function_">assign</span>(&#123;&#125;,res,data) ,&#123;&#125;);</span><br><span class="line"></span><br><span class="line">    ctx.<span class="property">body</span>=<span class="string">`</span></span><br><span class="line"><span class="string">    &lt;!DOCTYPE html&gt;</span></span><br><span class="line"><span class="string">        &lt;html lang=&quot;en&quot;&gt;</span></span><br><span class="line"><span class="string">            &lt;head&gt;</span></span><br><span class="line"><span class="string">                &lt;meta charset=&quot;UTF-8&quot;&gt;</span></span><br><span class="line"><span class="string">                &lt;meta http-equiv=&quot;X-UA-Compatible&quot; content=&quot;IE=edge&quot;&gt;</span></span><br><span class="line"><span class="string">                &lt;meta name=&quot;viewport&quot; content=&quot;width=device-width, initial-scale=1.0&quot;&gt;</span></span><br><span class="line"><span class="string">                &lt;title&gt;Document&lt;/title&gt;</span></span><br><span class="line"><span class="string">            &lt;/head&gt;</span></span><br><span class="line"><span class="string">            &lt;body&gt;</span></span><br><span class="line"><span class="string">                &lt;div id=&#x27;root&#x27;&gt;<span class="subst">$&#123;ReactDOMServer.renderToString(&lt;App &#123;...&#123;ctx,__HYDRATE_DATA__&#125;&#125;/&gt;)&#125;</span>&lt;/div&gt;</span></span><br><span class="line"><span class="string">                &lt;script&gt;</span></span><br><span class="line"><span class="string">                    window.__HYDRATE_DATA__ = <span class="subst">$&#123;<span class="built_in">JSON</span>.stringify(__HYDRATE_DATA__)&#125;</span></span></span><br><span class="line"><span class="string">                &lt;/script&gt;</span></span><br><span class="line"><span class="string">                &lt;script src=&#x27;/index.js&#x27;&gt;&lt;/script&gt;</span></span><br><span class="line"><span class="string">            &lt;/body&gt;</span></span><br><span class="line"><span class="string">        &lt;/html&gt;</span></span><br><span class="line"><span class="string">    `</span></span><br><span class="line">&#125;)</span><br><span class="line"></span><br><span class="line"><span class="keyword">export</span> <span class="keyword">default</span> router;</span><br></pre></td></tr></table></figure>
+
+
+<h4 id="数据脱水和注水"><a href="#数据脱水和注水" class="headerlink" title="数据脱水和注水"></a>数据脱水和注水</h4><ul>
+<li><p>服务端渲染的时候需要把整合之后的store传入到初始化函数中，用于渲染Html字符串</p>
+</li>
+<li><p>客户端渲染的时候，由于第一次渲染是并没有数据，会覆盖掉服务端渲染的结构，并重新请求后在渲染，这中间的过程就会白屏<br>所以会在服务端直接把数据以字符串的方式插入到html界面中，在客户端解析的时候会变成window下的一个store对象，这个过程就叫做数据注水</p>
+</li>
+<li><p>当客户端初始化时，会尝试查找window下有没有服务端插入的数据，如果有就用这个数据作为初始化数据，从而防止两边状态不统一造成的白屏，这一过程也叫做数据脱水</p>
+</li>
+</ul>
+ 
+      <!-- reward -->
+      
+      <div id="reword-out">
+        <div id="reward-btn">
+          打赏
+        </div>
+      </div>
+      
+    </div>
+    
+
+    <!-- copyright -->
+    
+    <div class="declare">
+      <ul class="post-copyright">
+        <li>
+          <i class="ri-copyright-line"></i>
+          <strong>版权声明： </strong>
+          
+          本博客所有文章除特别声明外，著作权归作者所有。转载请注明出处！
+          
+        </li>
+      </ul>
+    </div>
+    
+    <footer class="article-footer">
+       
+  <ul class="article-tag-list" itemprop="keywords"><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/React/" rel="tag">React</a></li><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/SSR/" rel="tag">SSR</a></li></ul>
+
+    </footer>
+  </div>
+
+   
+  <nav class="article-nav">
+    
+      <a href="/posts/70ef756f1afd/" class="article-nav-link">
+        <strong class="article-nav-caption">上一篇</strong>
+        <div class="article-nav-title">
+          
+            ⑤ ReactSSR node中间层代理请求
+          
+        </div>
+      </a>
+    
+    
+      <a href="/posts/804c59ff0688/" class="article-nav-link">
+        <strong class="article-nav-caption">下一篇</strong>
+        <div class="article-nav-title">可编程组件开发工具使用</div>
+      </a>
+    
+  </nav>
+
+  
+   
+<div class="gitalk" id="gitalk-container"></div>
+
+<link rel="stylesheet" href="https://cdn.staticfile.org/gitalk/1.7.2/gitalk.min.css">
+
+
+<script src="https://cdn.staticfile.org/gitalk/1.7.2/gitalk.min.js"></script>
+
+
+<script src="https://cdn.staticfile.org/blueimp-md5/2.19.0/js/md5.min.js"></script>
+
+<script type="text/javascript">
+  var gitalk = new Gitalk({
+    clientID: 'bce2317b25da7c3c18f6',
+    clientSecret: 'e0ab868ca9054234798be82c2b1c0c9dd8632307',
+    repo: 'noopn.github.io',
+    owner: 'noopn',
+    admin: ['noopn'],
+    // id: location.pathname,      // Ensure uniqueness and length less than 50
+    id: md5(location.pathname),
+    distractionFreeMode: false,  // Facebook-like distraction free mode
+    pagerDirection: 'last'
+  })
+
+  gitalk.render('gitalk-container')
+</script>
+
+     
+</article>
+
+</section>
+      <footer class="footer">
+  <div class="outer">
+    <ul>
+      <li>
+        Copyrights &copy;
+        2015-2024
+        <i class="ri-heart-fill heart_icon"></i> SunZhiqi
+      </li>
+    </ul>
+    <ul>
+      <li>
+        
+      </li>
+    </ul>
+    <ul>
+      <li>
+        
+      </li>
+    </ul>
+    <ul>
+      
+    </ul>
+    <ul>
+      
+    </ul>
+    <ul>
+      <li>
+        <!-- cnzz统计 -->
+        
+      </li>
+    </ul>
+  </div>
+</footer>    
+    </main>
+    <div class="float_btns">
+      <div class="totop" id="totop">
+  <i class="ri-arrow-up-line"></i>
+</div>
+
+    </div>
+    <aside class="sidebar on">
+      <button class="navbar-toggle"></button>
+<nav class="navbar">
+  
+  <div class="logo">
+    <a href="/"><img src="/images/ayer-side.png" alt="四月八日"></a>
+  </div>
+  
+  <ul class="nav nav-main">
+    
+    <li class="nav-item">
+      <a class="nav-item-link" href="/">主页</a>
+    </li>
+    
+    <li class="nav-item">
+      <a class="nav-item-link" href="/archives">归档</a>
+    </li>
+    
+    <li class="nav-item">
+      <a class="nav-item-link" href="/categories">分类</a>
+    </li>
+    
+    <li class="nav-item">
+      <a class="nav-item-link" href="/tags">标签</a>
+    </li>
+    
+    <li class="nav-item">
+      <a class="nav-item-link" href="/tags/Essay">随笔</a>
+    </li>
+    
+  </ul>
+</nav>
+<nav class="navbar navbar-bottom">
+  <ul class="nav">
+    <li class="nav-item">
+      
+      <a class="nav-item-link nav-item-search"  title="搜索">
+        <i class="ri-search-line"></i>
+      </a>
+      
+      
+    </li>
+  </ul>
+</nav>
+<div class="search-form-wrap">
+  <div class="local-search local-search-plugin">
+  <input type="search" id="local-search-input" class="local-search-input" placeholder="Search...">
+  <div id="local-search-result" class="local-search-result"></div>
+</div>
+</div>
+    </aside>
+    <div id="mask"></div>
+
+<!-- #reward -->
+<div id="reward">
+  <span class="close"><i class="ri-close-line"></i></span>
+  <p class="reward-p"><i class="ri-cup-line"></i>此时无声胜有声！</p>
+  <div class="reward-box">
+    
+    <div class="reward-item">
+      <img class="reward-img" src="/images/alipay.jpg">
+      <span class="reward-type">支付宝</span>
+    </div>
+    
+    
+    <div class="reward-item">
+      <img class="reward-img" src="/images/wechat.jpg">
+      <span class="reward-type">微信</span>
+    </div>
+    
+  </div>
+</div>
+    
+<script src="/js/jquery-3.6.0.min.js"></script>
+ 
+<script src="/js/lazyload.min.js"></script>
+
+<!-- Tocbot -->
+ 
+<script src="/js/tocbot.min.js"></script>
+
+<script>
+  tocbot.init({
+    tocSelector: ".tocbot",
+    contentSelector: ".article-entry",
+    headingSelector: "h1, h2, h3, h4, h5, h6",
+    hasInnerContainers: true,
+    scrollSmooth: true,
+    scrollContainer: "main",
+    positionFixedSelector: ".tocbot",
+    positionFixedClass: "is-position-fixed",
+    fixedSidebarOffset: "auto",
+  });
+</script>
+
+<script src="/js/jquery.modal.min.js"></script>
+<link rel="stylesheet" href="/css/jquery.modal.min.css" />
+<script src="/js/jquery.justifiedGallery.min.js"></script>
+
+<script src="/dist/main.js"></script>
+
+<!-- ImageViewer -->
+ <!-- Root element of PhotoSwipe. Must have class pswp. -->
+<div class="pswp" tabindex="-1" role="dialog" aria-hidden="true">
+  <!-- Background of PhotoSwipe. 
+         It's a separate element as animating opacity is faster than rgba(). -->
+  <div class="pswp__bg"></div>
+
+  <!-- Slides wrapper with overflow:hidden. -->
+  <div class="pswp__scroll-wrap">
+    <!-- Container that holds slides. 
+            PhotoSwipe keeps only 3 of them in the DOM to save memory.
+            Don't modify these 3 pswp__item elements, data is added later on. -->
+    <div class="pswp__container">
+      <div class="pswp__item"></div>
+      <div class="pswp__item"></div>
+      <div class="pswp__item"></div>
+    </div>
+
+    <!-- Default (PhotoSwipeUI_Default) interface on top of sliding area. Can be changed. -->
+    <div class="pswp__ui pswp__ui--hidden">
+      <div class="pswp__top-bar">
+        <!--  Controls are self-explanatory. Order can be changed. -->
+
+        <div class="pswp__counter"></div>
+
+        <button
+          class="pswp__button pswp__button--close"
+          title="Close (Esc)"
+        ></button>
+
+        <button
+          class="pswp__button pswp__button--share"
+          style="display: none"
+          title="Share"
+        ></button>
+
+        <button
+          class="pswp__button pswp__button--fs"
+          title="Toggle fullscreen"
+        ></button>
+
+        <button
+          class="pswp__button pswp__button--zoom"
+          title="Zoom in/out"
+        ></button>
+
+        <!-- Preloader demo http://codepen.io/dimsemenov/pen/yyBWoR -->
+        <!-- element will get class pswp__preloader--active when preloader is running -->
+        <div class="pswp__preloader">
+          <div class="pswp__preloader__icn">
+            <div class="pswp__preloader__cut">
+              <div class="pswp__preloader__donut"></div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <div class="pswp__share-modal pswp__share-modal--hidden pswp__single-tap">
+        <div class="pswp__share-tooltip"></div>
+      </div>
+
+      <button
+        class="pswp__button pswp__button--arrow--left"
+        title="Previous (arrow left)"
+      ></button>
+
+      <button
+        class="pswp__button pswp__button--arrow--right"
+        title="Next (arrow right)"
+      ></button>
+
+      <div class="pswp__caption">
+        <div class="pswp__caption__center"></div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<link rel="stylesheet" href="/css/photoswipe.min.css" />
+<link rel="stylesheet" href="/css/default-skin.min.css" />
+<script src="/js/photoswipe.min.js"></script>
+<script src="/js/photoswipe-ui-default.min.js"></script>
+
+<script>
+  function viewer_init() {
+    let pswpElement = document.querySelectorAll(".pswp")[0];
+    let $imgArr = document.querySelectorAll(
+      ".article-entry img:not(.reward-img)"
+    );
+
+    $imgArr.forEach(($em, i) => {
+      $em.onclick = () => {
+        // slider展开状态
+        // todo: 这样不好，后面改成状态
+        if (document.querySelector(".left-col.show")) return;
+        let items = [];
+        $imgArr.forEach(($em2, i2) => {
+          let img = $em2.getAttribute("data-idx", i2);
+          let src =
+            $em2.getAttribute("data-target") || $em2.getAttribute("src");
+          let title = $em2.getAttribute("alt");
+          // 获得原图尺寸
+          const image = new Image();
+          image.src = src;
+          items.push({
+            src: src,
+            w: image.width || $em2.width,
+            h: image.height || $em2.height,
+            title: title,
+          });
+        });
+        var gallery = new PhotoSwipe(pswpElement, PhotoSwipeUI_Default, items, {
+          index: parseInt(i),
+        });
+        gallery.init();
+      };
+    });
+  }
+  viewer_init();
+</script>
+ 
+<!-- MathJax -->
+ <script type="text/x-mathjax-config">
+  MathJax.Hub.Config({
+      tex2jax: {
+          inlineMath: [ ['$','$'], ["\\(","\\)"]  ],
+          processEscapes: true,
+          skipTags: ['script', 'noscript', 'style', 'textarea', 'pre', 'code']
+      }
+  });
+
+  MathJax.Hub.Queue(function() {
+      var all = MathJax.Hub.getAllJax(), i;
+      for(i=0; i < all.length; i += 1) {
+          all[i].SourceElement().parentNode.className += ' has-jax';
+      }
+  });
+</script>
+
+<script src="/js/MathJax.js"></script>
+<script src="/js/TeX-AMS-MML_HTMLorMML-full.js"></script>
+
+<script>
+  var ayerConfig = {
+    mathjax: true,
+  };
+</script>
+
+<!-- Katex -->
+
+<!-- busuanzi  -->
+
+<!-- ClickLove -->
+
+<!-- ClickBoom1 -->
+
+<!-- ClickBoom2 -->
+
+<!-- CodeCopy -->
+ 
+<link rel="stylesheet" href="/css/clipboard.css">
+ <script src="/js/clipboard.min.js"></script>
+<script>
+  function wait(callback, seconds) {
+    var timelag = null;
+    timelag = window.setTimeout(callback, seconds);
+  }
+  !(function (e, t, a) {
+    var initCopyCode = function () {
+      var copyHtml = "";
+      copyHtml += '<button class="btn-copy" data-clipboard-snippet="">';
+      copyHtml += '<i class="ri-file-copy-2-line"></i><span>COPY</span>';
+      copyHtml += "</button>";
+      $(".highlight .code pre").before(copyHtml);
+      $(".article pre code").before(copyHtml);
+      var clipboard = new ClipboardJS(".btn-copy", {
+        target: function (trigger) {
+          return trigger.nextElementSibling;
+        },
+      });
+      clipboard.on("success", function (e) {
+        let $btn = $(e.trigger);
+        $btn.addClass("copied");
+        let $icon = $($btn.find("i"));
+        $icon.removeClass("ri-file-copy-2-line");
+        $icon.addClass("ri-checkbox-circle-line");
+        let $span = $($btn.find("span"));
+        $span[0].innerText = "COPIED";
+
+        wait(function () {
+          // 等待两秒钟后恢复
+          $icon.removeClass("ri-checkbox-circle-line");
+          $icon.addClass("ri-file-copy-2-line");
+          $span[0].innerText = "COPY";
+        }, 2000);
+      });
+      clipboard.on("error", function (e) {
+        e.clearSelection();
+        let $btn = $(e.trigger);
+        $btn.addClass("copy-failed");
+        let $icon = $($btn.find("i"));
+        $icon.removeClass("ri-file-copy-2-line");
+        $icon.addClass("ri-time-line");
+        let $span = $($btn.find("span"));
+        $span[0].innerText = "COPY FAILED";
+
+        wait(function () {
+          // 等待两秒钟后恢复
+          $icon.removeClass("ri-time-line");
+          $icon.addClass("ri-file-copy-2-line");
+          $span[0].innerText = "COPY";
+        }, 2000);
+      });
+    };
+    initCopyCode();
+  })(window, document);
+</script>
+ 
+<!-- CanvasBackground -->
+
+<script>
+  if (window.mermaid) {
+    mermaid.initialize({ theme: "default" });
+  }
+</script>
+
+
+    
+    
+
+  </div>
+</body>
+
+</html>

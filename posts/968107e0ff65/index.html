@@ -1,0 +1,640 @@
+<!DOCTYPE html>
+
+
+<html lang="zh-CN">
+  
+
+    <head>
+      <meta charset="utf-8" />
+       
+      <meta name="keywords" content="前端 web react" />
+       
+      <meta name="description" content="前端技术与生活。" />
+      
+      <meta
+        name="viewport"
+        content="width=device-width, initial-scale=1, maximum-scale=1"
+      />
+      <title>React源码分析 ⑩ 事件系统 |  四月八日</title>
+  <meta name="generator" content="hexo-theme-ayer">
+      
+      <link rel="shortcut icon" href="/favicon.ico" />
+       
+<link rel="stylesheet" href="/dist/main.css">
+ 
+<link rel="stylesheet" href="/css/fonts/remixicon.css">
+ 
+<link rel="stylesheet" href="/css/custom.css">
+ 
+      <script src="/js/pace.min.js"></script>
+       
+ 
+
+      <link rel="stylesheet" href="/css/bulma.min.css" />
+      <script src="/js/sweetalert2.min.js"></script>
+
+      <!-- mermaid -->
+      
+      <script src="https://cdn.staticfile.org/mermaid/8.14.0/mermaid.min.js"></script>
+      
+      <style>
+        .swal2-styled.swal2-confirm {
+          font-size: 1.6rem;
+        }
+      </style>
+    <!-- hexo injector head_end start -->
+<link rel="stylesheet" href="/css/katex.min.css">
+
+<link rel="stylesheet" href="/css/style.css">
+<!-- hexo injector head_end end --></head>
+  </html>
+</html>
+
+
+<body>
+  <div id="app">
+    
+      
+    <main class="content on">
+      <section class="outer">
+  <article
+  id="posts-source/react/⑩事件系统"
+  class="article article-type-posts"
+  itemscope
+  itemprop="blogPost"
+  data-scroll-reveal
+>
+  <div class="article-inner">
+    
+    <header class="article-header">
+       
+<h1 class="article-title sea-center" style="border-left:0" itemprop="name">
+  React源码分析 ⑩ 事件系统
+</h1>
+ 
+
+      
+    </header>
+     
+    <div class="article-meta">
+      <a href="/posts/968107e0ff65/" class="article-date">
+  <time datetime="2022-05-11T05:48:23.000Z" itemprop="datePublished">2022-05-11</time>
+</a> 
+  <div class="article-category">
+    <a class="article-category-link" href="/categories/%E6%BA%90%E7%A0%81%E5%88%86%E6%9E%90/">源码分析</a> / <a class="article-category-link" href="/categories/%E6%BA%90%E7%A0%81%E5%88%86%E6%9E%90/React/">React</a>
+  </div>
+  
+<div class="word_count">
+    <span class="post-time">
+        <span class="post-meta-item-icon">
+            <i class="ri-quill-pen-line"></i>
+            <span class="post-meta-item-text"> 字数统计:</span>
+            <span class="post-count">3.4k</span>
+        </span>
+    </span>
+
+    <span class="post-time">
+        &nbsp; | &nbsp;
+        <span class="post-meta-item-icon">
+            <i class="ri-book-open-line"></i>
+            <span class="post-meta-item-text"> 阅读时长≈</span>
+            <span class="post-count">17 分钟</span>
+        </span>
+    </span>
+</div>
+ 
+    </div>
+      
+    <div class="tocbot"></div>
+
+
+
+
+  
+    <div class="article-entry" itemprop="articleBody">
+       
+  <h4 id="合成事件"><a href="#合成事件" class="headerlink" title="合成事件"></a>合成事件</h4><p>先看一个案例</p>
+<figure class="highlight js"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">export</span> <span class="keyword">default</span> <span class="keyword">class</span> <span class="title class_">App</span> <span class="keyword">extends</span> <span class="title class_ inherited__">React.Component</span> &#123;</span><br><span class="line">  state = &#123;</span><br><span class="line">    <span class="attr">show</span>: <span class="literal">false</span>,</span><br><span class="line">  &#125;;</span><br><span class="line">  ref = <span class="title class_">React</span>.<span class="title function_">createRef</span>();</span><br><span class="line">  <span class="title function_">componentDidMount</span>(<span class="params"></span>) &#123;</span><br><span class="line">    <span class="keyword">const</span> that = <span class="variable language_">this</span>;</span><br><span class="line">    <span class="variable language_">document</span>.<span class="title function_">addEventListener</span>(<span class="string">&quot;click&quot;</span>, <span class="function">() =&gt;</span> &#123;</span><br><span class="line">      that.<span class="title function_">setState</span>(&#123; <span class="attr">show</span>: <span class="literal">false</span> &#125;);</span><br><span class="line">      <span class="variable language_">console</span>.<span class="title function_">log</span>(<span class="string">&quot;document&quot;</span>);</span><br><span class="line">    &#125;);</span><br><span class="line">    <span class="variable language_">this</span>.<span class="property">ref</span>.<span class="property">current</span>.<span class="title function_">addEventListener</span>(<span class="string">&quot;click&quot;</span>, <span class="function">() =&gt;</span> &#123;</span><br><span class="line">      <span class="variable language_">console</span>.<span class="title function_">log</span>(<span class="string">&quot;ref&quot;</span>);</span><br><span class="line">    &#125;);</span><br><span class="line">  &#125;</span><br><span class="line">  <span class="title function_">render</span>(<span class="params"></span>) &#123;</span><br><span class="line">    <span class="keyword">return</span> (</span><br><span class="line">      <span class="language-xml"><span class="tag">&lt;<span class="name">div</span></span></span></span><br><span class="line"><span class="tag"><span class="language-xml">        <span class="attr">ref</span>=<span class="string">&#123;this.ref&#125;</span></span></span></span><br><span class="line"><span class="tag"><span class="language-xml">        <span class="attr">onClick</span>=<span class="string">&#123;()</span> =&gt;</span> this.setState(&#123; show: true &#125;, console.log(&quot;dom&quot;))&#125;</span></span><br><span class="line"><span class="language-xml">      &gt;</span></span><br><span class="line"><span class="language-xml">        点击 &#123;this.state.show ? &quot;show&quot; : &quot;null&quot;&#125;</span></span><br><span class="line"><span class="language-xml">      <span class="tag">&lt;/<span class="name">div</span>&gt;</span></span></span><br><span class="line">    );</span><br><span class="line">  &#125;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+<p>当点击事件触发的时候会发现点击事件无效, 先打印出 <code>ref</code>,再打印 <code>dom</code>,后打印出 <code>document</code>,先分析一个打印顺序的问题</p>
+<p>如果事件是绑定在原生上的,那么 render 的执行会早于 componentDidMount,所以按理来说打印 <code>dom</code> 的事件应该先执行,在执行打印 <code>ref</code> 的事件,但显然结果不是这样.</p>
+<p>其实这就是 React 合成事件(SyntheticEvent),在项目初始化的时候, 在 react v16 版本会把所有的事件绑定在 <code>document</code> 元素上, v17 版本把元素修改为 <code>root</code> 元素,用官方的话讲就是:不需要使用 <code>addEventListener</code> 为已创建的 DOM 元素添加监听器。事实上，你只需要在该元素初始渲染的时候添加监听器即可。</p>
+<p>因为这个原因,在冒泡阶段最先执行的是 <code>div</code> 的原生事件,又因为 <code>div</code> 上的合成事件虽然绑定在 <code>document</code> 上,但绑定时机在项目初始化的时候, 而 <code>document</code> 上原生的绑定事件是在 <code>componentDidMount</code> 生命周期中,所以按照原生事件的行为,先绑定的先执行,会先打印 <code>dom</code> 后打印 <code>document</code>,看一个复杂的例子:</p>
+<figure class="highlight js"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br><span class="line">35</span><br><span class="line">36</span><br><span class="line">37</span><br><span class="line">38</span><br><span class="line">39</span><br><span class="line">40</span><br><span class="line">41</span><br><span class="line">42</span><br><span class="line">43</span><br><span class="line">44</span><br><span class="line">45</span><br><span class="line">46</span><br><span class="line">47</span><br><span class="line">48</span><br><span class="line">49</span><br><span class="line">50</span><br><span class="line">51</span><br><span class="line">52</span><br><span class="line">53</span><br><span class="line">54</span><br><span class="line">55</span><br><span class="line">56</span><br><span class="line">57</span><br><span class="line">58</span><br><span class="line">59</span><br><span class="line">60</span><br><span class="line">61</span><br><span class="line">62</span><br><span class="line">63</span><br><span class="line">64</span><br><span class="line">65</span><br><span class="line">66</span><br><span class="line">67</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">import</span> <span class="title class_">React</span> <span class="keyword">from</span> <span class="string">&quot;react&quot;</span>;</span><br><span class="line"></span><br><span class="line"><span class="keyword">export</span> <span class="keyword">default</span> <span class="keyword">class</span> <span class="title class_">App</span> <span class="keyword">extends</span> <span class="title class_ inherited__">React.Component</span> &#123;</span><br><span class="line">  parentRef = <span class="title class_">React</span>.<span class="title function_">createRef</span>();</span><br><span class="line">  childRef = <span class="title class_">React</span>.<span class="title function_">createRef</span>();</span><br><span class="line">  <span class="title function_">componentDidMount</span>(<span class="params"></span>) &#123;</span><br><span class="line">    <span class="variable language_">this</span>.<span class="property">parentRef</span>.<span class="property">current</span>.<span class="title function_">addEventListener</span>(</span><br><span class="line">      <span class="string">&quot;click&quot;</span>,</span><br><span class="line">      <span class="function">() =&gt;</span> &#123;</span><br><span class="line">        <span class="variable language_">console</span>.<span class="title function_">log</span>(<span class="string">&quot;父元素原生事件捕获&quot;</span>);</span><br><span class="line">      &#125;,</span><br><span class="line">      <span class="literal">true</span></span><br><span class="line">    );</span><br><span class="line">    <span class="variable language_">this</span>.<span class="property">parentRef</span>.<span class="property">current</span>.<span class="title function_">addEventListener</span>(<span class="string">&quot;click&quot;</span>, <span class="function">() =&gt;</span> &#123;</span><br><span class="line">      <span class="variable language_">console</span>.<span class="title function_">log</span>(<span class="string">&quot;父元素原生事件冒泡&quot;</span>);</span><br><span class="line">    &#125;);</span><br><span class="line">    <span class="variable language_">this</span>.<span class="property">childRef</span>.<span class="property">current</span>.<span class="title function_">addEventListener</span>(</span><br><span class="line">      <span class="string">&quot;click&quot;</span>,</span><br><span class="line">      <span class="function">() =&gt;</span> &#123;</span><br><span class="line">        <span class="variable language_">console</span>.<span class="title function_">log</span>(<span class="string">&quot;子元素原生事件捕获&quot;</span>);</span><br><span class="line">      &#125;,</span><br><span class="line">      <span class="literal">true</span></span><br><span class="line">    );</span><br><span class="line">    <span class="variable language_">this</span>.<span class="property">childRef</span>.<span class="property">current</span>.<span class="title function_">addEventListener</span>(<span class="string">&quot;click&quot;</span>, <span class="function">() =&gt;</span> &#123;</span><br><span class="line">      <span class="variable language_">console</span>.<span class="title function_">log</span>(<span class="string">&quot;子元素原生事件冒泡&quot;</span>);</span><br><span class="line">    &#125;);</span><br><span class="line">    <span class="variable language_">document</span>.<span class="title function_">addEventListener</span>(</span><br><span class="line">      <span class="string">&quot;click&quot;</span>,</span><br><span class="line">      <span class="function">() =&gt;</span> &#123;</span><br><span class="line">        <span class="variable language_">console</span>.<span class="title function_">log</span>(<span class="string">&quot;document 捕获&quot;</span>);</span><br><span class="line">      &#125;,</span><br><span class="line">      <span class="literal">true</span></span><br><span class="line">    );</span><br><span class="line">    <span class="variable language_">document</span>.<span class="title function_">addEventListener</span>(<span class="string">&quot;click&quot;</span>, <span class="function">() =&gt;</span> &#123;</span><br><span class="line">      <span class="variable language_">console</span>.<span class="title function_">log</span>(<span class="string">&quot;document 冒泡&quot;</span>);</span><br><span class="line">    &#125;);</span><br><span class="line">  &#125;</span><br><span class="line">  parentBubble = <span class="function">() =&gt;</span> &#123;</span><br><span class="line">    <span class="variable language_">console</span>.<span class="title function_">log</span>(<span class="string">&quot;父组件React事件冒泡&quot;</span>);</span><br><span class="line">  &#125;;</span><br><span class="line">  parenteCapture = <span class="function">() =&gt;</span> &#123;</span><br><span class="line">    <span class="variable language_">console</span>.<span class="title function_">log</span>(<span class="string">&quot;父组件React事件捕获&quot;</span>);</span><br><span class="line">  &#125;;</span><br><span class="line">  childBubble = <span class="function">() =&gt;</span> &#123;</span><br><span class="line">    <span class="variable language_">console</span>.<span class="title function_">log</span>(<span class="string">&quot;子组件React事件冒泡&quot;</span>);</span><br><span class="line">  &#125;;</span><br><span class="line">  childeCapture = <span class="function">() =&gt;</span> &#123;</span><br><span class="line">    <span class="variable language_">console</span>.<span class="title function_">log</span>(<span class="string">&quot;子组件React事件捕获&quot;</span>);</span><br><span class="line">  &#125;;</span><br><span class="line">  <span class="title function_">render</span>(<span class="params"></span>) &#123;</span><br><span class="line">    <span class="keyword">return</span> (</span><br><span class="line">      <span class="language-xml"><span class="tag">&lt;<span class="name">div</span></span></span></span><br><span class="line"><span class="tag"><span class="language-xml">        <span class="attr">ref</span>=<span class="string">&#123;this.parentRef&#125;</span></span></span></span><br><span class="line"><span class="tag"><span class="language-xml">        <span class="attr">onClick</span>=<span class="string">&#123;this.parentBubble&#125;</span></span></span></span><br><span class="line"><span class="tag"><span class="language-xml">        <span class="attr">onClickCapture</span>=<span class="string">&#123;this.parenteCapture&#125;</span></span></span></span><br><span class="line"><span class="tag"><span class="language-xml">      &gt;</span></span></span><br><span class="line"><span class="language-xml">        <span class="tag">&lt;<span class="name">p</span></span></span></span><br><span class="line"><span class="tag"><span class="language-xml">          <span class="attr">ref</span>=<span class="string">&#123;this.childRef&#125;</span></span></span></span><br><span class="line"><span class="tag"><span class="language-xml">          <span class="attr">onClick</span>=<span class="string">&#123;this.childBubble&#125;</span></span></span></span><br><span class="line"><span class="tag"><span class="language-xml">          <span class="attr">onClickCapture</span>=<span class="string">&#123;this.childeCapture&#125;</span></span></span></span><br><span class="line"><span class="tag"><span class="language-xml">        &gt;</span></span></span><br><span class="line"><span class="language-xml">          事件</span></span><br><span class="line"><span class="language-xml">        <span class="tag">&lt;/<span class="name">p</span>&gt;</span></span></span><br><span class="line"><span class="language-xml">      <span class="tag">&lt;/<span class="name">div</span>&gt;</span></span></span><br><span class="line">    );</span><br><span class="line">  &#125;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+<p>v16 版本</p>
+<figure class="highlight txt"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br></pre></td><td class="code"><pre><span class="line">document 捕获</span><br><span class="line">父元素原生事件捕获</span><br><span class="line">子元素原生事件捕获</span><br><span class="line">子元素原生事件冒泡</span><br><span class="line">父元素原生事件冒泡</span><br><span class="line">父组件React事件捕获</span><br><span class="line">子组件React事件捕获</span><br><span class="line">子组件React事件冒泡</span><br><span class="line">父组件React事件冒泡</span><br><span class="line">document 冒泡</span><br></pre></td></tr></table></figure>
+
+<p><strong>虽然合成事件绑定在 document 元素上但只能在冒泡阶段触发</strong>, 因为合成事件绑定在冒包阶段而不是捕获阶段, 因此会先执行所有原生事件的捕获阶段, 捕获阶段结束之后由于合成事件在 <code>document</code> 仍然不会执行, 紧接着执行原生的冒泡事件.直到冒泡到 <code>document</code> 元素由于合成事件绑定的早,所有一次性的执行了合成事件的捕获和冒泡阶段,最后才是 <code>document</code> 冒泡事件</p>
+<p>v17 版本</p>
+<figure class="highlight txt"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br></pre></td><td class="code"><pre><span class="line"></span><br><span class="line">document 捕获</span><br><span class="line">父组件React事件捕获</span><br><span class="line">子组件React事件捕获</span><br><span class="line">父元素原生事件捕获</span><br><span class="line">子元素原生事件捕获</span><br><span class="line">子元素原生事件冒泡</span><br><span class="line">父元素原生事件冒泡</span><br><span class="line">子组件React事件冒泡</span><br><span class="line">父组件React事件冒泡</span><br><span class="line">document 冒泡</span><br></pre></td></tr></table></figure>
+
+<p>由于在 v17 版本中事件是绑定在 root 上的,所以在捕获阶段可以执行合成事件的 冒泡阶段.</p>
+<h4 id="简单实现"><a href="#简单实现" class="headerlink" title="简单实现"></a>简单实现</h4><figure class="highlight html"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br><span class="line">35</span><br><span class="line">36</span><br><span class="line">37</span><br><span class="line">38</span><br><span class="line">39</span><br><span class="line">40</span><br><span class="line">41</span><br><span class="line">42</span><br><span class="line">43</span><br><span class="line">44</span><br><span class="line">45</span><br><span class="line">46</span><br><span class="line">47</span><br><span class="line">48</span><br><span class="line">49</span><br><span class="line">50</span><br><span class="line">51</span><br><span class="line">52</span><br><span class="line">53</span><br><span class="line">54</span><br><span class="line">55</span><br><span class="line">56</span><br><span class="line">57</span><br></pre></td><td class="code"><pre><span class="line"><span class="tag">&lt;<span class="name">body</span>&gt;</span></span><br><span class="line">  <span class="tag">&lt;<span class="name">div</span> <span class="attr">id</span>=<span class="string">&quot;root&quot;</span>&gt;</span></span><br><span class="line">    <span class="tag">&lt;<span class="name">div</span> <span class="attr">id</span>=<span class="string">&quot;parent&quot;</span>&gt;</span></span><br><span class="line">      <span class="tag">&lt;<span class="name">p</span> <span class="attr">id</span>=<span class="string">&quot;child&quot;</span>&gt;</span>事件<span class="tag">&lt;/<span class="name">p</span>&gt;</span></span><br><span class="line">    <span class="tag">&lt;/<span class="name">div</span>&gt;</span></span><br><span class="line">  <span class="tag">&lt;/<span class="name">div</span>&gt;</span></span><br><span class="line"><span class="tag">&lt;/<span class="name">body</span>&gt;</span></span><br><span class="line"><span class="tag">&lt;<span class="name">script</span>&gt;</span><span class="language-javascript"></span></span><br><span class="line"><span class="language-javascript">  <span class="keyword">let</span> root = <span class="variable language_">document</span>.<span class="title function_">getElementById</span>(<span class="string">&quot;root&quot;</span>);</span></span><br><span class="line"><span class="language-javascript">  <span class="keyword">let</span> parent = <span class="variable language_">document</span>.<span class="title function_">getElementById</span>(<span class="string">&quot;parent&quot;</span>);</span></span><br><span class="line"><span class="language-javascript">  <span class="keyword">let</span> child = <span class="variable language_">document</span>.<span class="title function_">getElementById</span>(<span class="string">&quot;child&quot;</span>);</span></span><br><span class="line"><span class="language-javascript"></span></span><br><span class="line"><span class="language-javascript">  parent.<span class="title function_">addEventListener</span>(</span></span><br><span class="line"><span class="language-javascript">    <span class="string">&quot;click&quot;</span>,</span></span><br><span class="line"><span class="language-javascript">    <span class="function">() =&gt;</span> &#123;</span></span><br><span class="line"><span class="language-javascript">      <span class="variable language_">console</span>.<span class="title function_">log</span>(<span class="string">&quot;父元素原生事件捕获&quot;</span>);</span></span><br><span class="line"><span class="language-javascript">    &#125;,</span></span><br><span class="line"><span class="language-javascript">    <span class="literal">true</span></span></span><br><span class="line"><span class="language-javascript">  );</span></span><br><span class="line"><span class="language-javascript">  parent.<span class="title function_">addEventListener</span>(<span class="string">&quot;click&quot;</span>, <span class="function">() =&gt;</span> &#123;</span></span><br><span class="line"><span class="language-javascript">    <span class="variable language_">console</span>.<span class="title function_">log</span>(<span class="string">&quot;父元素原生事件冒泡&quot;</span>);</span></span><br><span class="line"><span class="language-javascript">  &#125;);</span></span><br><span class="line"><span class="language-javascript">  child.<span class="title function_">addEventListener</span>(</span></span><br><span class="line"><span class="language-javascript">    <span class="string">&quot;click&quot;</span>,</span></span><br><span class="line"><span class="language-javascript">    <span class="function">() =&gt;</span> &#123;</span></span><br><span class="line"><span class="language-javascript">      <span class="variable language_">console</span>.<span class="title function_">log</span>(<span class="string">&quot;子元素原生事件捕获&quot;</span>);</span></span><br><span class="line"><span class="language-javascript">    &#125;,</span></span><br><span class="line"><span class="language-javascript">    <span class="literal">true</span></span></span><br><span class="line"><span class="language-javascript">  );</span></span><br><span class="line"><span class="language-javascript">  child.<span class="title function_">addEventListener</span>(<span class="string">&quot;click&quot;</span>, <span class="function">() =&gt;</span> &#123;</span></span><br><span class="line"><span class="language-javascript">    <span class="variable language_">console</span>.<span class="title function_">log</span>(<span class="string">&quot;子元素原生事件冒泡&quot;</span>);</span></span><br><span class="line"><span class="language-javascript">  &#125;);</span></span><br><span class="line"><span class="language-javascript"></span></span><br><span class="line"><span class="language-javascript">  <span class="variable language_">document</span>.<span class="title function_">addEventListener</span>(</span></span><br><span class="line"><span class="language-javascript">    <span class="string">&quot;click&quot;</span>,</span></span><br><span class="line"><span class="language-javascript">    <span class="keyword">function</span> (<span class="params"></span>) &#123;</span></span><br><span class="line"><span class="language-javascript">      <span class="variable language_">console</span>.<span class="title function_">log</span>(<span class="string">&quot;document 捕获&quot;</span>);</span></span><br><span class="line"><span class="language-javascript">    &#125;,</span></span><br><span class="line"><span class="language-javascript">    <span class="literal">true</span></span></span><br><span class="line"><span class="language-javascript">  );</span></span><br><span class="line"><span class="language-javascript">  <span class="variable language_">document</span>.<span class="title function_">addEventListener</span>(<span class="string">&quot;click&quot;</span>, <span class="keyword">function</span> (<span class="params"></span>) &#123;</span></span><br><span class="line"><span class="language-javascript">    <span class="variable language_">console</span>.<span class="title function_">log</span>(<span class="string">&quot;document 冒泡&quot;</span>);</span></span><br><span class="line"><span class="language-javascript">  &#125;);</span></span><br><span class="line"><span class="language-javascript"></span></span><br><span class="line"><span class="language-javascript">  parent.<span class="property">onClick</span> = <span class="keyword">function</span> (<span class="params"></span>) &#123;</span></span><br><span class="line"><span class="language-javascript">    <span class="variable language_">console</span>.<span class="title function_">log</span>(<span class="string">&quot;父组件React事件冒泡&quot;</span>);</span></span><br><span class="line"><span class="language-javascript">  &#125;;</span></span><br><span class="line"><span class="language-javascript">  parent.<span class="property">onClickCapture</span> = <span class="function">() =&gt;</span> &#123;</span></span><br><span class="line"><span class="language-javascript">    <span class="variable language_">console</span>.<span class="title function_">log</span>(<span class="string">&quot;父组件React事件捕获&quot;</span>);</span></span><br><span class="line"><span class="language-javascript">  &#125;;</span></span><br><span class="line"><span class="language-javascript">  child.<span class="property">onClick</span> = <span class="keyword">function</span> (<span class="params"></span>) &#123;</span></span><br><span class="line"><span class="language-javascript">    <span class="variable language_">console</span>.<span class="title function_">log</span>(<span class="string">&quot;子组件React事件冒泡&quot;</span>);</span></span><br><span class="line"><span class="language-javascript">  &#125;;</span></span><br><span class="line"><span class="language-javascript">  child.<span class="property">onClickCapture</span> = <span class="function">() =&gt;</span> &#123;</span></span><br><span class="line"><span class="language-javascript">    <span class="variable language_">console</span>.<span class="title function_">log</span>(<span class="string">&quot;子组件React事件捕获&quot;</span>);</span></span><br><span class="line"><span class="language-javascript">  &#125;;</span></span><br><span class="line"><span class="language-javascript"></span><span class="tag">&lt;/<span class="name">script</span>&gt;</span></span><br></pre></td></tr></table></figure>
+
+<p>v16 版本</p>
+<figure class="highlight js"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br></pre></td><td class="code"><pre><span class="line"><span class="variable language_">document</span>.<span class="title function_">addEventListener</span>(<span class="string">&quot;click&quot;</span>, dispatchEvent);</span><br><span class="line"><span class="keyword">function</span> <span class="title function_">dispatchEvent</span>(<span class="params">event</span>) &#123;</span><br><span class="line">  <span class="keyword">let</span> paths = [];</span><br><span class="line">  <span class="keyword">let</span> current = event.<span class="property">target</span>;</span><br><span class="line">  <span class="keyword">while</span> (current) &#123;</span><br><span class="line">    paths.<span class="title function_">push</span>(current);</span><br><span class="line">    current = current.<span class="property">parentNode</span>;</span><br><span class="line">  &#125;</span><br><span class="line">  <span class="keyword">for</span> (<span class="keyword">let</span> i = paths.<span class="property">length</span> - <span class="number">1</span>; i &gt;= <span class="number">0</span>; i--) &#123;</span><br><span class="line">    <span class="keyword">let</span> handle = paths[i].<span class="property">onClickCapture</span>;</span><br><span class="line">    handle &amp;&amp; <span class="title function_">handle</span>();</span><br><span class="line">  &#125;</span><br><span class="line">  <span class="keyword">for</span> (<span class="keyword">let</span> i = <span class="number">0</span>; i &lt; paths.<span class="property">length</span>; i++) &#123;</span><br><span class="line">    <span class="keyword">let</span> handle = paths[i].<span class="property">onClick</span>;</span><br><span class="line">    handle &amp;&amp; <span class="title function_">handle</span>();</span><br><span class="line">  &#125;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+<p>v17 版本</p>
+<figure class="highlight js"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">function</span> <span class="title function_">dispatchEvent</span>(<span class="params">event, useCapture</span>) &#123;</span><br><span class="line">  <span class="keyword">let</span> paths = [];</span><br><span class="line">  <span class="keyword">let</span> current = event.<span class="property">target</span>;</span><br><span class="line">  <span class="keyword">while</span> (current) &#123;</span><br><span class="line">    paths.<span class="title function_">push</span>(current);</span><br><span class="line">    current = current.<span class="property">parentNode</span>;</span><br><span class="line">  &#125;</span><br><span class="line">  <span class="keyword">if</span> (useCapture) &#123;</span><br><span class="line">    <span class="keyword">for</span> (<span class="keyword">let</span> i = paths.<span class="property">length</span> - <span class="number">1</span>; i &gt;= <span class="number">0</span>; i--) &#123;</span><br><span class="line">      <span class="keyword">let</span> handle = paths[i].<span class="property">onClickCapture</span>;</span><br><span class="line">      handle &amp;&amp; <span class="title function_">handle</span>();</span><br><span class="line">    &#125;</span><br><span class="line">  &#125; <span class="keyword">else</span> &#123;</span><br><span class="line">    <span class="keyword">for</span> (<span class="keyword">let</span> i = <span class="number">0</span>; i &lt; paths.<span class="property">length</span>; i++) &#123;</span><br><span class="line">      <span class="keyword">let</span> handle = paths[i].<span class="property">onClick</span>;</span><br><span class="line">      handle &amp;&amp; <span class="title function_">handle</span>();</span><br><span class="line">    &#125;</span><br><span class="line">  &#125;</span><br><span class="line">&#125;</span><br><span class="line">root.<span class="title function_">addEventListener</span>(<span class="string">&quot;click&quot;</span>, <span class="function">(<span class="params">e</span>) =&gt;</span> <span class="title function_">dispatchEvent</span>(e, <span class="literal">true</span>), <span class="literal">true</span>);</span><br><span class="line">root.<span class="title function_">addEventListener</span>(<span class="string">&quot;click&quot;</span>, <span class="function">(<span class="params">e</span>) =&gt;</span> <span class="title function_">dispatchEvent</span>(e, <span class="literal">false</span>));</span><br></pre></td></tr></table></figure>
+
+<h4 id="事件注册"><a href="#事件注册" class="headerlink" title="事件注册"></a>事件注册</h4><p><img src="/posts/968107e0ff65/0001.png"></p>
+<p>这一过程是在全局执行的</p>
+<figure class="highlight js"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br></pre></td><td class="code"><pre><span class="line"><span class="title class_">SimpleEventPlugin</span>.<span class="title function_">registerEvents</span>();</span><br><span class="line"><span class="title class_">EnterLeaveEventPlugin</span>.<span class="title function_">registerEvents</span>();</span><br><span class="line"><span class="title class_">ChangeEventPlugin</span>.<span class="title function_">registerEvents</span>();</span><br><span class="line"><span class="title class_">SelectEventPlugin</span>.<span class="title function_">registerEvents</span>();</span><br><span class="line"><span class="title class_">BeforeInputEventPlugin</span>.<span class="title function_">registerEvents</span>();</span><br></pre></td></tr></table></figure>
+
+<p>先把所有的事件分为以下 5 种类型</p>
+<ul>
+<li><p><a href="/posts/0bde2678fb55/#simpleEventPluginEvents">simpleEvents</a></p>
+<figure class="highlight js"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">for</span> (<span class="keyword">var</span> i = <span class="number">0</span>; i &lt; simpleEventPluginEvents.<span class="property">length</span>; i++) &#123;</span><br><span class="line">  <span class="keyword">var</span> eventName = simpleEventPluginEvents[i];</span><br><span class="line">  <span class="keyword">var</span> domEventName = eventName.<span class="title function_">toLowerCase</span>();</span><br><span class="line">  <span class="keyword">var</span> capitalizedEvent = eventName[<span class="number">0</span>].<span class="title function_">toUpperCase</span>() + eventName.<span class="title function_">slice</span>(<span class="number">1</span>);</span><br><span class="line"></span><br><span class="line">  <span class="comment">// 把事件转换成 onEvent 的格式</span></span><br><span class="line">  <span class="title function_">registerSimpleEvent</span>(domEventName, <span class="string">&quot;on&quot;</span> + capitalizedEvent);</span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line"><span class="title function_">registerSimpleEvent</span>(<span class="variable constant_">ANIMATION_END</span>, <span class="string">&quot;onAnimationEnd&quot;</span>);</span><br><span class="line"><span class="title function_">registerSimpleEvent</span>(<span class="variable constant_">ANIMATION_ITERATION</span>, <span class="string">&quot;onAnimationIteration&quot;</span>);</span><br><span class="line"><span class="title function_">registerSimpleEvent</span>(<span class="variable constant_">ANIMATION_START</span>, <span class="string">&quot;onAnimationStart&quot;</span>);</span><br><span class="line"><span class="title function_">registerSimpleEvent</span>(<span class="string">&quot;dblclick&quot;</span>, <span class="string">&quot;onDoubleClick&quot;</span>);</span><br><span class="line"><span class="title function_">registerSimpleEvent</span>(<span class="string">&quot;focusin&quot;</span>, <span class="string">&quot;onFocus&quot;</span>);</span><br><span class="line"><span class="title function_">registerSimpleEvent</span>(<span class="string">&quot;focusout&quot;</span>, <span class="string">&quot;onBlur&quot;</span>);</span><br><span class="line"><span class="title function_">registerSimpleEvent</span>(<span class="variable constant_">TRANSITION_END</span>, <span class="string">&quot;onTransitionEnd&quot;</span>);</span><br></pre></td></tr></table></figure>
+</li>
+<li><p>enterLeaveEvents</p>
+<figure class="highlight js"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br></pre></td><td class="code"><pre><span class="line"><span class="title function_">registerDirectEvent</span>(<span class="string">&quot;onMouseEnter&quot;</span>, [<span class="string">&quot;mouseout&quot;</span>, <span class="string">&quot;mouseover&quot;</span>]);</span><br><span class="line"><span class="title function_">registerDirectEvent</span>(<span class="string">&quot;onMouseLeave&quot;</span>, [<span class="string">&quot;mouseout&quot;</span>, <span class="string">&quot;mouseover&quot;</span>]);</span><br><span class="line"><span class="title function_">registerDirectEvent</span>(<span class="string">&quot;onPointerEnter&quot;</span>, [<span class="string">&quot;pointerout&quot;</span>, <span class="string">&quot;pointerover&quot;</span>]);</span><br><span class="line"><span class="title function_">registerDirectEvent</span>(<span class="string">&quot;onPointerLeave&quot;</span>, [<span class="string">&quot;pointerout&quot;</span>, <span class="string">&quot;pointerover&quot;</span>]);</span><br></pre></td></tr></table></figure></li>
+<li><p>changeEvents</p>
+<figure class="highlight js"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br></pre></td><td class="code"><pre><span class="line"><span class="title function_">registerTwoPhaseEvent</span>(<span class="string">&quot;onChange&quot;</span>, [</span><br><span class="line">  <span class="string">&quot;change&quot;</span>,</span><br><span class="line">  <span class="string">&quot;click&quot;</span>,</span><br><span class="line">  <span class="string">&quot;focusin&quot;</span>,</span><br><span class="line">  <span class="string">&quot;focusout&quot;</span>,</span><br><span class="line">  <span class="string">&quot;input&quot;</span>,</span><br><span class="line">  <span class="string">&quot;keydown&quot;</span>,</span><br><span class="line">  <span class="string">&quot;keyup&quot;</span>,</span><br><span class="line">  <span class="string">&quot;selectionchange&quot;</span>,</span><br><span class="line">]);</span><br></pre></td></tr></table></figure>
+</li>
+<li><p>selectEvent</p>
+<figure class="highlight js"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br></pre></td><td class="code"><pre><span class="line"><span class="title function_">registerTwoPhaseEvent</span>(<span class="string">&quot;onSelect&quot;</span>, [</span><br><span class="line">  <span class="string">&quot;focusout&quot;</span>,</span><br><span class="line">  <span class="string">&quot;contextmenu&quot;</span>,</span><br><span class="line">  <span class="string">&quot;dragend&quot;</span>,</span><br><span class="line">  <span class="string">&quot;focusin&quot;</span>,</span><br><span class="line">  <span class="string">&quot;keydown&quot;</span>,</span><br><span class="line">  <span class="string">&quot;keyup&quot;</span>,</span><br><span class="line">  <span class="string">&quot;mousedown&quot;</span>,</span><br><span class="line">  <span class="string">&quot;mouseup&quot;</span>,</span><br><span class="line">  <span class="string">&quot;selectionchange&quot;</span>,</span><br><span class="line">]);</span><br></pre></td></tr></table></figure>
+</li>
+<li><p>beforeInputEvents</p>
+<figure class="highlight js"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">function</span> <span class="title function_">registerEvents</span>(<span class="params"></span>) &#123;</span><br><span class="line">  <span class="title function_">registerTwoPhaseEvent</span>(<span class="string">&quot;onBeforeInput&quot;</span>, [</span><br><span class="line">    <span class="string">&quot;compositionend&quot;</span>,</span><br><span class="line">    <span class="string">&quot;keypress&quot;</span>,</span><br><span class="line">    <span class="string">&quot;textInput&quot;</span>,</span><br><span class="line">    <span class="string">&quot;paste&quot;</span>,</span><br><span class="line">  ]);</span><br><span class="line">  <span class="title function_">registerTwoPhaseEvent</span>(<span class="string">&quot;onCompositionEnd&quot;</span>, [</span><br><span class="line">    <span class="string">&quot;compositionend&quot;</span>,</span><br><span class="line">    <span class="string">&quot;focusout&quot;</span>,</span><br><span class="line">    <span class="string">&quot;keydown&quot;</span>,</span><br><span class="line">    <span class="string">&quot;keypress&quot;</span>,</span><br><span class="line">    <span class="string">&quot;keyup&quot;</span>,</span><br><span class="line">    <span class="string">&quot;mousedown&quot;</span>,</span><br><span class="line">  ]);</span><br><span class="line">  <span class="title function_">registerTwoPhaseEvent</span>(<span class="string">&quot;onCompositionStart&quot;</span>, [</span><br><span class="line">    <span class="string">&quot;compositionstart&quot;</span>,</span><br><span class="line">    <span class="string">&quot;focusout&quot;</span>,</span><br><span class="line">    <span class="string">&quot;keydown&quot;</span>,</span><br><span class="line">    <span class="string">&quot;keypress&quot;</span>,</span><br><span class="line">    <span class="string">&quot;keyup&quot;</span>,</span><br><span class="line">    <span class="string">&quot;mousedown&quot;</span>,</span><br><span class="line">  ]);</span><br><span class="line">  <span class="title function_">registerTwoPhaseEvent</span>(<span class="string">&quot;onCompositionUpdate&quot;</span>, [</span><br><span class="line">    <span class="string">&quot;compositionupdate&quot;</span>,</span><br><span class="line">    <span class="string">&quot;focusout&quot;</span>,</span><br><span class="line">    <span class="string">&quot;keydown&quot;</span>,</span><br><span class="line">    <span class="string">&quot;keypress&quot;</span>,</span><br><span class="line">    <span class="string">&quot;keyup&quot;</span>,</span><br><span class="line">    <span class="string">&quot;mousedown&quot;</span>,</span><br><span class="line">  ]);</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure></li>
+</ul>
+<p><strong>registerSimpleEvent</strong> 是为了保存原生事件和合成事件名称之间的对应关系,并且调用 <code>registerTwoPhaseEvent</code></p>
+<figure class="highlight js"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">var</span> topLevelEventsToReactNames = <span class="keyword">new</span> <span class="title class_">Map</span>();</span><br><span class="line"><span class="comment">//                              click       onClick</span></span><br><span class="line"><span class="keyword">function</span> <span class="title function_">registerSimpleEvent</span>(<span class="params">domEventName, reactName</span>) &#123;</span><br><span class="line">  topLevelEventsToReactNames.<span class="title function_">set</span>(domEventName, reactName);</span><br><span class="line">  <span class="title function_">registerTwoPhaseEvent</span>(reactName, [domEventName]);</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+<p><strong>registerTwoPhaseEvent</strong> 会调用 <code>registerDirectEvent</code> 用于绑定合成事件名称和其对应的真正事件,一个合成事件对应多个原生事件,也就是 JSX 中绑定的事件,可能会触发多个原生事件</p>
+<figure class="highlight js"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">function</span> <span class="title function_">registerTwoPhaseEvent</span>(<span class="params">registrationName, dependencies</span>) &#123;</span><br><span class="line">  <span class="title function_">registerDirectEvent</span>(registrationName, dependencies);</span><br><span class="line">  <span class="title function_">registerDirectEvent</span>(registrationName + <span class="string">&quot;Capture&quot;</span>, dependencies);</span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line"><span class="keyword">function</span> <span class="title function_">registerDirectEvent</span>(<span class="params">registrationName, dependencies</span>) &#123;</span><br><span class="line">  <span class="comment">// 合成事件和原生事件的对应关系 &#123;onAbort:[&#x27;abort&#x27;]&#125;</span></span><br><span class="line">  registrationNameDependencies[registrationName] = dependencies;</span><br><span class="line"></span><br><span class="line">  &#123;</span><br><span class="line">    <span class="keyword">var</span> lowerCasedName = registrationName.<span class="title function_">toLowerCase</span>();</span><br><span class="line"></span><br><span class="line">    <span class="comment">// 内部用于验证事件的对象,保存的是驼峰命名和非驼峰命名之间的关系  &#123;onclick:onClick&#125;</span></span><br><span class="line">    possibleRegistrationNames[lowerCasedName] = registrationName;</span><br><span class="line"></span><br><span class="line">    <span class="keyword">if</span> (registrationName === <span class="string">&quot;onDoubleClick&quot;</span>) &#123;</span><br><span class="line">      possibleRegistrationNames.<span class="property">ondblclick</span> = registrationName;</span><br><span class="line">    &#125;</span><br><span class="line">  &#125;</span><br><span class="line">  <span class="comment">//所有原生事件名称的 set 集合 set([click,cancel])</span></span><br><span class="line">  <span class="keyword">for</span> (<span class="keyword">var</span> i = <span class="number">0</span>; i &lt; dependencies.<span class="property">length</span>; i++) &#123;</span><br><span class="line">    allNativeEvents.<span class="title function_">add</span>(dependencies[i]);</span><br><span class="line">  &#125;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+<p>注册过程就是通过几个全局变量完整的保存了,原生事件名称(click),原生事件绑定名称(onClick),合成事件名称 中的对应关系</p>
+<h4 id="事件绑定"><a href="#事件绑定" class="headerlink" title="事件绑定"></a>事件绑定</h4><p><img src="/posts/968107e0ff65/0002.png"></p>
+<p>绑定事件发生在 <code>render</code> 或 <code>createRoot</code> 方法中, 在创建了 <code>root</code> 节点之后会调用 <code>listenToAllSupportedEvents</code>, 会对所有的原生事件调用绑定函数</p>
+<figure class="highlight js"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br><span class="line">35</span><br><span class="line">36</span><br><span class="line">37</span><br><span class="line">38</span><br><span class="line">39</span><br><span class="line">40</span><br><span class="line">41</span><br><span class="line">42</span><br><span class="line">43</span><br><span class="line">44</span><br><span class="line">45</span><br><span class="line">46</span><br><span class="line">47</span><br><span class="line">48</span><br><span class="line">49</span><br><span class="line">50</span><br><span class="line">51</span><br><span class="line">52</span><br><span class="line">53</span><br><span class="line">54</span><br><span class="line">55</span><br><span class="line">56</span><br><span class="line">57</span><br><span class="line">58</span><br><span class="line">59</span><br><span class="line">60</span><br><span class="line">61</span><br><span class="line">62</span><br><span class="line">63</span><br><span class="line">64</span><br><span class="line">65</span><br><span class="line">66</span><br><span class="line">67</span><br><span class="line">68</span><br><span class="line">69</span><br><span class="line">70</span><br><span class="line">71</span><br><span class="line">72</span><br><span class="line">73</span><br><span class="line">74</span><br><span class="line">75</span><br><span class="line">76</span><br><span class="line">77</span><br><span class="line">78</span><br><span class="line">79</span><br><span class="line">80</span><br><span class="line">81</span><br><span class="line">82</span><br><span class="line">83</span><br><span class="line">84</span><br><span class="line">85</span><br><span class="line">86</span><br><span class="line">87</span><br><span class="line">88</span><br><span class="line">89</span><br><span class="line">90</span><br><span class="line">91</span><br><span class="line">92</span><br><span class="line">93</span><br><span class="line">94</span><br><span class="line">95</span><br><span class="line">96</span><br><span class="line">97</span><br><span class="line">98</span><br><span class="line">99</span><br><span class="line">100</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">function</span> <span class="title function_">listenToAllSupportedEvents</span>(<span class="params">rootContainerElement</span>) &#123;</span><br><span class="line">  allNativeEvents.<span class="title function_">forEach</span>(<span class="keyword">function</span> (<span class="params">domEventName</span>) &#123;</span><br><span class="line">    <span class="comment">// 特殊处理,这个方法只会在 document 上</span></span><br><span class="line">    <span class="keyword">if</span> (domEventName !== <span class="string">&quot;selectionchange&quot;</span>) &#123;</span><br><span class="line">      <span class="comment">// 排除那些没有冒泡阶段的事件</span></span><br><span class="line">      <span class="keyword">if</span> (!nonDelegatedEvents.<span class="title function_">has</span>(domEventName)) &#123;</span><br><span class="line">        <span class="title function_">listenToNativeEvent</span>(domEventName, <span class="literal">false</span>, rootContainerElement);</span><br><span class="line">      &#125;</span><br><span class="line">      <span class="title function_">listenToNativeEvent</span>(domEventName, <span class="literal">true</span>, rootContainerElement);</span><br><span class="line">    &#125;</span><br><span class="line">  &#125;);</span><br><span class="line"></span><br><span class="line">  ownerDocument[listeningMarker] = <span class="literal">true</span>;</span><br><span class="line">  <span class="title function_">listenToNativeEvent</span>(<span class="string">&quot;selectionchange&quot;</span>, <span class="literal">false</span>, ownerDocument);</span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line"><span class="keyword">function</span> <span class="title function_">listenToNativeEvent</span>(<span class="params">domEventName, isCapturePhaseListener, target</span>) &#123;</span><br><span class="line">  <span class="keyword">var</span> eventSystemFlags = <span class="number">0</span>;</span><br><span class="line"></span><br><span class="line">  <span class="comment">// 添加捕获阶段的标识</span></span><br><span class="line">  <span class="keyword">if</span> (isCapturePhaseListener) &#123;</span><br><span class="line">    eventSystemFlags |= <span class="variable constant_">IS_CAPTURE_PHASE</span>;</span><br><span class="line">  &#125;</span><br><span class="line"></span><br><span class="line">  <span class="title function_">addTrappedEventListener</span>(</span><br><span class="line">    target,</span><br><span class="line">    domEventName,</span><br><span class="line">    eventSystemFlags,</span><br><span class="line">    isCapturePhaseListener</span><br><span class="line">  );</span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line"><span class="keyword">function</span> <span class="title function_">addTrappedEventListener</span>(<span class="params"></span></span><br><span class="line"><span class="params">  targetContainer,</span></span><br><span class="line"><span class="params">  domEventName,</span></span><br><span class="line"><span class="params">  eventSystemFlags,</span></span><br><span class="line"><span class="params">  isCapturePhaseListener,</span></span><br><span class="line"><span class="params">  isDeferredListenerForLegacyFBSupport</span></span><br><span class="line"><span class="params"></span>) &#123;</span><br><span class="line">  <span class="comment">// 创建事件回调函数</span></span><br><span class="line">  <span class="keyword">var</span> listener = <span class="title function_">createEventListenerWrapperWithPriority</span>(</span><br><span class="line">    targetContainer,</span><br><span class="line">    domEventName,</span><br><span class="line">    eventSystemFlags</span><br><span class="line">  );</span><br><span class="line"></span><br><span class="line">  <span class="keyword">var</span> isPassiveListener = <span class="literal">undefined</span>;</span><br><span class="line">  <span class="comment">// 是否支持 passive 参数</span></span><br><span class="line">  <span class="comment">// addEventListener 第三个参数可以写为一个对象 &#123; capture: false, once: true,passive:true &#125;</span></span><br><span class="line">  <span class="comment">// capture 表示冒泡阶段执行还是捕获阶段执行</span></span><br><span class="line">  <span class="comment">// once 标识绑定事件只会执行一次就被移除</span></span><br><span class="line">  <span class="comment">// passive 是否执行默认事件,有些默认事件和浏览器行为绑定比如移动端 touchstart 会触发浏览器滚动</span></span><br><span class="line">  <span class="comment">// 如果使用 event.preventDefault() 会调用函数后才会停止默认行为, 可以使用 passive:false 直接阻止默认行为</span></span><br><span class="line">  <span class="keyword">if</span> (passiveBrowserEventsSupported) &#123;</span><br><span class="line">    <span class="keyword">if</span> (</span><br><span class="line">      domEventName === <span class="string">&quot;touchstart&quot;</span> ||</span><br><span class="line">      domEventName === <span class="string">&quot;touchmove&quot;</span> ||</span><br><span class="line">      domEventName === <span class="string">&quot;wheel&quot;</span></span><br><span class="line">    ) &#123;</span><br><span class="line">      isPassiveListener = <span class="literal">true</span>;</span><br><span class="line">    &#125;</span><br><span class="line">  &#125;</span><br><span class="line"></span><br><span class="line">  targetContainer = targetContainer;</span><br><span class="line">  <span class="keyword">var</span> unsubscribeListener;</span><br><span class="line"></span><br><span class="line">  <span class="comment">// 利用 addEventListener 绑定事件监听函数</span></span><br><span class="line"></span><br><span class="line">  <span class="keyword">if</span> (isCapturePhaseListener) &#123;</span><br><span class="line">    <span class="keyword">if</span> (isPassiveListener !== <span class="literal">undefined</span>) &#123;</span><br><span class="line">      unsubscribeListener = <span class="title function_">addEventCaptureListenerWithPassiveFlag</span>(</span><br><span class="line">        targetContainer,</span><br><span class="line">        domEventName,</span><br><span class="line">        listener,</span><br><span class="line">        isPassiveListener</span><br><span class="line">      );</span><br><span class="line">    &#125; <span class="keyword">else</span> &#123;</span><br><span class="line">      unsubscribeListener = <span class="title function_">addEventCaptureListener</span>(</span><br><span class="line">        targetContainer,</span><br><span class="line">        domEventName,</span><br><span class="line">        listener</span><br><span class="line">      );</span><br><span class="line">    &#125;</span><br><span class="line">  &#125; <span class="keyword">else</span> &#123;</span><br><span class="line">    <span class="keyword">if</span> (isPassiveListener !== <span class="literal">undefined</span>) &#123;</span><br><span class="line">      unsubscribeListener = <span class="title function_">addEventBubbleListenerWithPassiveFlag</span>(</span><br><span class="line">        targetContainer,</span><br><span class="line">        domEventName,</span><br><span class="line">        listener,</span><br><span class="line">        isPassiveListener</span><br><span class="line">      );</span><br><span class="line">    &#125; <span class="keyword">else</span> &#123;</span><br><span class="line">      unsubscribeListener = <span class="title function_">addEventBubbleListener</span>(</span><br><span class="line">        targetContainer,</span><br><span class="line">        domEventName,</span><br><span class="line">        listener</span><br><span class="line">      );</span><br><span class="line">    &#125;</span><br><span class="line">  &#125;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+<p><code>createEventListenerWrapperWithPriority</code> 会调用 <code>getEventPriority</code> 按事件名称为事件定义不同的优先级,不同的优先级对应不同的事件处理函数</p>
+<figure class="highlight js"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br><span class="line">35</span><br><span class="line">36</span><br><span class="line">37</span><br><span class="line">38</span><br><span class="line">39</span><br><span class="line">40</span><br><span class="line">41</span><br><span class="line">42</span><br><span class="line">43</span><br><span class="line">44</span><br><span class="line">45</span><br><span class="line">46</span><br><span class="line">47</span><br><span class="line">48</span><br><span class="line">49</span><br><span class="line">50</span><br><span class="line">51</span><br><span class="line">52</span><br><span class="line">53</span><br><span class="line">54</span><br><span class="line">55</span><br><span class="line">56</span><br><span class="line">57</span><br><span class="line">58</span><br><span class="line">59</span><br><span class="line">60</span><br><span class="line">61</span><br><span class="line">62</span><br><span class="line">63</span><br><span class="line">64</span><br><span class="line">65</span><br><span class="line">66</span><br><span class="line">67</span><br><span class="line">68</span><br><span class="line">69</span><br><span class="line">70</span><br><span class="line">71</span><br><span class="line">72</span><br><span class="line">73</span><br><span class="line">74</span><br><span class="line">75</span><br><span class="line">76</span><br><span class="line">77</span><br><span class="line">78</span><br><span class="line">79</span><br><span class="line">80</span><br><span class="line">81</span><br><span class="line">82</span><br><span class="line">83</span><br><span class="line">84</span><br><span class="line">85</span><br><span class="line">86</span><br><span class="line">87</span><br><span class="line">88</span><br><span class="line">89</span><br><span class="line">90</span><br><span class="line">91</span><br><span class="line">92</span><br><span class="line">93</span><br><span class="line">94</span><br><span class="line">95</span><br><span class="line">96</span><br><span class="line">97</span><br><span class="line">98</span><br><span class="line">99</span><br><span class="line">100</span><br><span class="line">101</span><br><span class="line">102</span><br><span class="line">103</span><br><span class="line">104</span><br><span class="line">105</span><br><span class="line">106</span><br><span class="line">107</span><br><span class="line">108</span><br><span class="line">109</span><br><span class="line">110</span><br><span class="line">111</span><br><span class="line">112</span><br><span class="line">113</span><br><span class="line">114</span><br><span class="line">115</span><br><span class="line">116</span><br><span class="line">117</span><br><span class="line">118</span><br><span class="line">119</span><br><span class="line">120</span><br><span class="line">121</span><br><span class="line">122</span><br><span class="line">123</span><br><span class="line">124</span><br><span class="line">125</span><br><span class="line">126</span><br><span class="line">127</span><br><span class="line">128</span><br><span class="line">129</span><br><span class="line">130</span><br><span class="line">131</span><br><span class="line">132</span><br><span class="line">133</span><br><span class="line">134</span><br><span class="line">135</span><br><span class="line">136</span><br><span class="line">137</span><br><span class="line">138</span><br><span class="line">139</span><br><span class="line">140</span><br><span class="line">141</span><br><span class="line">142</span><br><span class="line">143</span><br><span class="line">144</span><br><span class="line">145</span><br><span class="line">146</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">function</span> <span class="title function_">getEventPriority</span>(<span class="params">domEventName</span>) &#123;</span><br><span class="line">  <span class="keyword">switch</span> (domEventName) &#123;</span><br><span class="line">    <span class="comment">// Used by SimpleEventPlugin:</span></span><br><span class="line">    <span class="keyword">case</span> <span class="string">&quot;cancel&quot;</span>:</span><br><span class="line">    <span class="keyword">case</span> <span class="string">&quot;click&quot;</span>:</span><br><span class="line">    <span class="keyword">case</span> <span class="string">&quot;close&quot;</span>:</span><br><span class="line">    <span class="keyword">case</span> <span class="string">&quot;contextmenu&quot;</span>:</span><br><span class="line">    <span class="keyword">case</span> <span class="string">&quot;copy&quot;</span>:</span><br><span class="line">    <span class="keyword">case</span> <span class="string">&quot;cut&quot;</span>:</span><br><span class="line">    <span class="keyword">case</span> <span class="string">&quot;auxclick&quot;</span>:</span><br><span class="line">    <span class="keyword">case</span> <span class="string">&quot;dblclick&quot;</span>:</span><br><span class="line">    <span class="keyword">case</span> <span class="string">&quot;dragend&quot;</span>:</span><br><span class="line">    <span class="keyword">case</span> <span class="string">&quot;dragstart&quot;</span>:</span><br><span class="line">    <span class="keyword">case</span> <span class="string">&quot;drop&quot;</span>:</span><br><span class="line">    <span class="keyword">case</span> <span class="string">&quot;focusin&quot;</span>:</span><br><span class="line">    <span class="keyword">case</span> <span class="string">&quot;focusout&quot;</span>:</span><br><span class="line">    <span class="keyword">case</span> <span class="string">&quot;input&quot;</span>:</span><br><span class="line">    <span class="keyword">case</span> <span class="string">&quot;invalid&quot;</span>:</span><br><span class="line">    <span class="keyword">case</span> <span class="string">&quot;keydown&quot;</span>:</span><br><span class="line">    <span class="keyword">case</span> <span class="string">&quot;keypress&quot;</span>:</span><br><span class="line">    <span class="keyword">case</span> <span class="string">&quot;keyup&quot;</span>:</span><br><span class="line">    <span class="keyword">case</span> <span class="string">&quot;mousedown&quot;</span>:</span><br><span class="line">    <span class="keyword">case</span> <span class="string">&quot;mouseup&quot;</span>:</span><br><span class="line">    <span class="keyword">case</span> <span class="string">&quot;paste&quot;</span>:</span><br><span class="line">    <span class="keyword">case</span> <span class="string">&quot;pause&quot;</span>:</span><br><span class="line">    <span class="keyword">case</span> <span class="string">&quot;play&quot;</span>:</span><br><span class="line">    <span class="keyword">case</span> <span class="string">&quot;pointercancel&quot;</span>:</span><br><span class="line">    <span class="keyword">case</span> <span class="string">&quot;pointerdown&quot;</span>:</span><br><span class="line">    <span class="keyword">case</span> <span class="string">&quot;pointerup&quot;</span>:</span><br><span class="line">    <span class="keyword">case</span> <span class="string">&quot;ratechange&quot;</span>:</span><br><span class="line">    <span class="keyword">case</span> <span class="string">&quot;reset&quot;</span>:</span><br><span class="line">    <span class="keyword">case</span> <span class="string">&quot;resize&quot;</span>:</span><br><span class="line">    <span class="keyword">case</span> <span class="string">&quot;seeked&quot;</span>:</span><br><span class="line">    <span class="keyword">case</span> <span class="string">&quot;submit&quot;</span>:</span><br><span class="line">    <span class="keyword">case</span> <span class="string">&quot;touchcancel&quot;</span>:</span><br><span class="line">    <span class="keyword">case</span> <span class="string">&quot;touchend&quot;</span>:</span><br><span class="line">    <span class="keyword">case</span> <span class="string">&quot;touchstart&quot;</span>:</span><br><span class="line">    <span class="keyword">case</span> <span class="string">&quot;volumechange&quot;</span>: <span class="comment">// Used by polyfills:</span></span><br><span class="line">    <span class="comment">// eslint-disable-next-line no-fallthrough</span></span><br><span class="line"></span><br><span class="line">    <span class="keyword">case</span> <span class="string">&quot;change&quot;</span>:</span><br><span class="line">    <span class="keyword">case</span> <span class="string">&quot;selectionchange&quot;</span>:</span><br><span class="line">    <span class="keyword">case</span> <span class="string">&quot;textInput&quot;</span>:</span><br><span class="line">    <span class="keyword">case</span> <span class="string">&quot;compositionstart&quot;</span>:</span><br><span class="line">    <span class="keyword">case</span> <span class="string">&quot;compositionend&quot;</span>:</span><br><span class="line">    <span class="keyword">case</span> <span class="string">&quot;compositionupdate&quot;</span>: <span class="comment">// Only enableCreateEventHandleAPI:</span></span><br><span class="line">    <span class="comment">// eslint-disable-next-line no-fallthrough</span></span><br><span class="line"></span><br><span class="line">    <span class="keyword">case</span> <span class="string">&quot;beforeblur&quot;</span>:</span><br><span class="line">    <span class="keyword">case</span> <span class="string">&quot;afterblur&quot;</span>: <span class="comment">// Not used by React but could be by user code:</span></span><br><span class="line">    <span class="comment">// eslint-disable-next-line no-fallthrough</span></span><br><span class="line"></span><br><span class="line">    <span class="keyword">case</span> <span class="string">&quot;beforeinput&quot;</span>:</span><br><span class="line">    <span class="keyword">case</span> <span class="string">&quot;blur&quot;</span>:</span><br><span class="line">    <span class="keyword">case</span> <span class="string">&quot;fullscreenchange&quot;</span>:</span><br><span class="line">    <span class="keyword">case</span> <span class="string">&quot;focus&quot;</span>:</span><br><span class="line">    <span class="keyword">case</span> <span class="string">&quot;hashchange&quot;</span>:</span><br><span class="line">    <span class="keyword">case</span> <span class="string">&quot;popstate&quot;</span>:</span><br><span class="line">    <span class="keyword">case</span> <span class="string">&quot;select&quot;</span>:</span><br><span class="line">    <span class="keyword">case</span> <span class="string">&quot;selectstart&quot;</span>:</span><br><span class="line">      <span class="keyword">return</span> <span class="title class_">DiscreteEventPriority</span>;</span><br><span class="line"></span><br><span class="line">    <span class="keyword">case</span> <span class="string">&quot;drag&quot;</span>:</span><br><span class="line">    <span class="keyword">case</span> <span class="string">&quot;dragenter&quot;</span>:</span><br><span class="line">    <span class="keyword">case</span> <span class="string">&quot;dragexit&quot;</span>:</span><br><span class="line">    <span class="keyword">case</span> <span class="string">&quot;dragleave&quot;</span>:</span><br><span class="line">    <span class="keyword">case</span> <span class="string">&quot;dragover&quot;</span>:</span><br><span class="line">    <span class="keyword">case</span> <span class="string">&quot;mousemove&quot;</span>:</span><br><span class="line">    <span class="keyword">case</span> <span class="string">&quot;mouseout&quot;</span>:</span><br><span class="line">    <span class="keyword">case</span> <span class="string">&quot;mouseover&quot;</span>:</span><br><span class="line">    <span class="keyword">case</span> <span class="string">&quot;pointermove&quot;</span>:</span><br><span class="line">    <span class="keyword">case</span> <span class="string">&quot;pointerout&quot;</span>:</span><br><span class="line">    <span class="keyword">case</span> <span class="string">&quot;pointerover&quot;</span>:</span><br><span class="line">    <span class="keyword">case</span> <span class="string">&quot;scroll&quot;</span>:</span><br><span class="line">    <span class="keyword">case</span> <span class="string">&quot;toggle&quot;</span>:</span><br><span class="line">    <span class="keyword">case</span> <span class="string">&quot;touchmove&quot;</span>:</span><br><span class="line">    <span class="keyword">case</span> <span class="string">&quot;wheel&quot;</span>: <span class="comment">// Not used by React but could be by user code:</span></span><br><span class="line">    <span class="comment">// eslint-disable-next-line no-fallthrough</span></span><br><span class="line"></span><br><span class="line">    <span class="keyword">case</span> <span class="string">&quot;mouseenter&quot;</span>:</span><br><span class="line">    <span class="keyword">case</span> <span class="string">&quot;mouseleave&quot;</span>:</span><br><span class="line">    <span class="keyword">case</span> <span class="string">&quot;pointerenter&quot;</span>:</span><br><span class="line">    <span class="keyword">case</span> <span class="string">&quot;pointerleave&quot;</span>:</span><br><span class="line">      <span class="keyword">return</span> <span class="title class_">ContinuousEventPriority</span>;</span><br><span class="line"></span><br><span class="line">    <span class="keyword">case</span> <span class="string">&quot;message&quot;</span>: &#123;</span><br><span class="line">      <span class="comment">// We might be in the Scheduler callback.</span></span><br><span class="line">      <span class="comment">// Eventually this mechanism will be replaced by a check</span></span><br><span class="line">      <span class="comment">// of the current priority on the native scheduler.</span></span><br><span class="line">      <span class="keyword">var</span> schedulerPriority = <span class="title function_">getCurrentPriorityLevel</span>();</span><br><span class="line"></span><br><span class="line">      <span class="keyword">switch</span> (schedulerPriority) &#123;</span><br><span class="line">        <span class="keyword">case</span> <span class="title class_">ImmediatePriority</span>:</span><br><span class="line">          <span class="keyword">return</span> <span class="title class_">DiscreteEventPriority</span>;</span><br><span class="line"></span><br><span class="line">        <span class="keyword">case</span> <span class="title class_">UserBlockingPriority</span>:</span><br><span class="line">          <span class="keyword">return</span> <span class="title class_">ContinuousEventPriority</span>;</span><br><span class="line"></span><br><span class="line">        <span class="keyword">case</span> <span class="title class_">NormalPriority</span>:</span><br><span class="line">        <span class="keyword">case</span> <span class="title class_">LowPriority</span>:</span><br><span class="line">          <span class="comment">// <span class="doctag">TODO:</span> Handle LowSchedulerPriority, somehow. Maybe the same lane as hydration.</span></span><br><span class="line">          <span class="keyword">return</span> <span class="title class_">DefaultEventPriority</span>;</span><br><span class="line"></span><br><span class="line">        <span class="keyword">case</span> <span class="title class_">IdlePriority</span>:</span><br><span class="line">          <span class="keyword">return</span> <span class="title class_">IdleEventPriority</span>;</span><br><span class="line"></span><br><span class="line">        <span class="attr">default</span>:</span><br><span class="line">          <span class="keyword">return</span> <span class="title class_">DefaultEventPriority</span>;</span><br><span class="line">      &#125;</span><br><span class="line">    &#125;</span><br><span class="line"></span><br><span class="line">    <span class="attr">default</span>:</span><br><span class="line">      <span class="keyword">return</span> <span class="title class_">DefaultEventPriority</span>;</span><br><span class="line">  &#125;</span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line"><span class="keyword">function</span> <span class="title function_">createEventListenerWrapperWithPriority</span>(<span class="params"></span></span><br><span class="line"><span class="params">  targetContainer,</span></span><br><span class="line"><span class="params">  domEventName,</span></span><br><span class="line"><span class="params">  eventSystemFlags</span></span><br><span class="line"><span class="params"></span>) &#123;</span><br><span class="line">  <span class="keyword">var</span> eventPriority = <span class="title function_">getEventPriority</span>(domEventName);</span><br><span class="line">  <span class="keyword">var</span> listenerWrapper;</span><br><span class="line"></span><br><span class="line">  <span class="keyword">switch</span> (eventPriority) &#123;</span><br><span class="line">    <span class="keyword">case</span> <span class="title class_">DiscreteEventPriority</span>:</span><br><span class="line">      listenerWrapper = dispatchDiscreteEvent;</span><br><span class="line">      <span class="keyword">break</span>;</span><br><span class="line"></span><br><span class="line">    <span class="keyword">case</span> <span class="title class_">ContinuousEventPriority</span>:</span><br><span class="line">      listenerWrapper = dispatchContinuousEvent;</span><br><span class="line">      <span class="keyword">break</span>;</span><br><span class="line"></span><br><span class="line">    <span class="keyword">case</span> <span class="title class_">DefaultEventPriority</span>:</span><br><span class="line">    <span class="attr">default</span>:</span><br><span class="line">      listenerWrapper = dispatchEvent;</span><br><span class="line">      <span class="keyword">break</span>;</span><br><span class="line">  &#125;</span><br><span class="line"></span><br><span class="line">  <span class="keyword">return</span> listenerWrapper.<span class="title function_">bind</span>(</span><br><span class="line">    <span class="literal">null</span>,</span><br><span class="line">    domEventName,</span><br><span class="line">    eventSystemFlags,</span><br><span class="line">    targetContainer</span><br><span class="line">  );</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+<h4 id="事件执行"><a href="#事件执行" class="headerlink" title="事件执行"></a>事件执行</h4><p><img src="/posts/968107e0ff65/0003.png"></p>
+<p>当一个事件触发时, 会调用事件绑定时创建的回调函数,这个函数会以批处理的形式调用事件处理方法 <code>dispatchEventsForPlugins</code></p>
+<figure class="highlight js"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br></pre></td><td class="code"><pre><span class="line"><span class="title function_">batchedUpdates</span>(<span class="keyword">function</span> (<span class="params"></span>) &#123;</span><br><span class="line">  <span class="keyword">return</span> <span class="title function_">dispatchEventsForPlugins</span>(</span><br><span class="line">    domEventName, <span class="comment">// 事件名称</span></span><br><span class="line">    eventSystemFlags, <span class="comment">// 捕获阶段标识</span></span><br><span class="line">    nativeEvent, <span class="comment">// 原生事件对象</span></span><br><span class="line">    ancestorInst</span><br><span class="line">  );</span><br><span class="line">&#125;);</span><br></pre></td></tr></table></figure>
+
+<p><strong>dispatchEventsForPlugins</strong> 首先获取触发事件的元素调用 <code>extractEvents</code> 方法,从原生 DOM 上的 stateNode 获取到 FiberNode,并且尝试获取当前元素的绑定事件,在根据不同的事件优先级,包装成不同的合成事件对象</p>
+<figure class="highlight js"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br><span class="line">35</span><br><span class="line">36</span><br><span class="line">37</span><br><span class="line">38</span><br><span class="line">39</span><br><span class="line">40</span><br><span class="line">41</span><br><span class="line">42</span><br><span class="line">43</span><br><span class="line">44</span><br><span class="line">45</span><br><span class="line">46</span><br><span class="line">47</span><br><span class="line">48</span><br><span class="line">49</span><br><span class="line">50</span><br><span class="line">51</span><br><span class="line">52</span><br><span class="line">53</span><br><span class="line">54</span><br><span class="line">55</span><br><span class="line">56</span><br><span class="line">57</span><br><span class="line">58</span><br><span class="line">59</span><br><span class="line">60</span><br><span class="line">61</span><br><span class="line">62</span><br><span class="line">63</span><br><span class="line">64</span><br><span class="line">65</span><br><span class="line">66</span><br><span class="line">67</span><br><span class="line">68</span><br><span class="line">69</span><br><span class="line">70</span><br><span class="line">71</span><br><span class="line">72</span><br><span class="line">73</span><br><span class="line">74</span><br><span class="line">75</span><br><span class="line">76</span><br><span class="line">77</span><br><span class="line">78</span><br><span class="line">79</span><br><span class="line">80</span><br><span class="line">81</span><br><span class="line">82</span><br><span class="line">83</span><br><span class="line">84</span><br><span class="line">85</span><br><span class="line">86</span><br><span class="line">87</span><br><span class="line">88</span><br><span class="line">89</span><br><span class="line">90</span><br><span class="line">91</span><br><span class="line">92</span><br><span class="line">93</span><br><span class="line">94</span><br><span class="line">95</span><br><span class="line">96</span><br><span class="line">97</span><br><span class="line">98</span><br><span class="line">99</span><br><span class="line">100</span><br><span class="line">101</span><br><span class="line">102</span><br><span class="line">103</span><br><span class="line">104</span><br><span class="line">105</span><br><span class="line">106</span><br><span class="line">107</span><br><span class="line">108</span><br><span class="line">109</span><br><span class="line">110</span><br><span class="line">111</span><br><span class="line">112</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">function</span> <span class="title function_">dispatchEventsForPlugins</span>(<span class="params"></span></span><br><span class="line"><span class="params">  domEventName,</span></span><br><span class="line"><span class="params">  eventSystemFlags,</span></span><br><span class="line"><span class="params">  nativeEvent,</span></span><br><span class="line"><span class="params">  targetInst,</span></span><br><span class="line"><span class="params">  targetContainer</span></span><br><span class="line"><span class="params"></span>) &#123;</span><br><span class="line">  <span class="keyword">var</span> nativeEventTarget = <span class="title function_">getEventTarget</span>(nativeEvent);</span><br><span class="line">  <span class="keyword">var</span> dispatchQueue = [];</span><br><span class="line"></span><br><span class="line">    <span class="comment">//  内部调用不同的处理函数,用于处理没有原生事件对应的 React 事件,例如 onBeforeInput</span></span><br><span class="line">    <span class="comment">// if (shouldProcessPolyfillPlugins) &#123;</span></span><br><span class="line">    <span class="comment">//     extractEvents$2(dispatchQueue, domEventName, targetInst, nativeEvent, nativeEventTarget);</span></span><br><span class="line">    <span class="comment">//     extractEvents$1(dispatchQueue, domEventName, targetInst, nativeEvent, nativeEventTarget);</span></span><br><span class="line">    <span class="comment">//     extractEvents$3(dispatchQueue, domEventName, targetInst, nativeEvent, nativeEventTarget);</span></span><br><span class="line">    <span class="comment">//     extractEvents(dispatchQueue, domEventName, targetInst, nativeEvent, nativeEventTarget);</span></span><br><span class="line">    <span class="comment">// &#125;</span></span><br><span class="line">  <span class="title function_">extractEvents</span>(</span><br><span class="line">    dispatchQueue,</span><br><span class="line">    domEventName,</span><br><span class="line">    targetInst,</span><br><span class="line">    nativeEvent,</span><br><span class="line">    nativeEventTarget,</span><br><span class="line">    eventSystemFlags</span><br><span class="line">  );</span><br><span class="line">  <span class="title function_">processDispatchQueue</span>(dispatchQueue, eventSystemFlags);</span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line"><span class="keyword">function</span> <span class="title function_">extractEvents</span>(<span class="params"></span></span><br><span class="line"><span class="params">  dispatchQueue,</span></span><br><span class="line"><span class="params">  domEventName,</span></span><br><span class="line"><span class="params">  targetInst,</span></span><br><span class="line"><span class="params">  nativeEvent,</span></span><br><span class="line"><span class="params">  nativeEventTarget,</span></span><br><span class="line"><span class="params">  eventSystemFlags,</span></span><br><span class="line"><span class="params">  targetContainer</span></span><br><span class="line"><span class="params"></span>) &#123;</span><br><span class="line">  <span class="comment">// 不同的事件类型,对应不同的合成事件构造函数</span></span><br><span class="line">  <span class="comment">// 内部实现 preventDefault stopPropagation</span></span><br><span class="line">  <span class="keyword">switch</span> (domEventName) &#123;</span><br><span class="line">    <span class="keyword">case</span> <span class="string">&quot;click&quot;</span>:</span><br><span class="line">      <span class="title class_">SyntheticEventCtor</span> = <span class="title class_">SyntheticMouseEvent</span>;</span><br><span class="line">    <span class="keyword">case</span> <span class="string">&quot;drag&quot;</span>:</span><br><span class="line">      <span class="title class_">SyntheticEventCtor</span> = <span class="title class_">SyntheticDragEvent</span>;</span><br><span class="line">  &#125;</span><br><span class="line"></span><br><span class="line">  <span class="comment">// 从当前节点循环遍历到根节点, 收集所有上级节点中绑定当前方法的节点和它的绑定函数</span></span><br><span class="line">  <span class="keyword">var</span> _listeners = <span class="title function_">accumulateSinglePhaseListeners</span>(</span><br><span class="line">    targetInst,</span><br><span class="line">    reactName,</span><br><span class="line">    nativeEvent.<span class="property">type</span>,</span><br><span class="line">    inCapturePhase,</span><br><span class="line">    accumulateTargetOnly</span><br><span class="line">  );</span><br><span class="line"></span><br><span class="line">  <span class="keyword">if</span> (_listeners.<span class="property">length</span> &gt; <span class="number">0</span>) &#123;</span><br><span class="line">    <span class="comment">// Intentionally create event lazily.</span></span><br><span class="line">    <span class="keyword">var</span> _event = <span class="keyword">new</span> <span class="title class_">SyntheticEventCtor</span>(</span><br><span class="line">      reactName,</span><br><span class="line">      reactEventType,</span><br><span class="line">      <span class="literal">null</span>,</span><br><span class="line">      nativeEvent,</span><br><span class="line">      nativeEventTarget</span><br><span class="line">    );</span><br><span class="line"></span><br><span class="line">    dispatchQueue.<span class="title function_">push</span>(&#123;</span><br><span class="line">      <span class="attr">event</span>: _event,</span><br><span class="line">      <span class="attr">listeners</span>: _listeners,</span><br><span class="line">    &#125;);</span><br><span class="line">  &#125;</span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line"><span class="keyword">function</span> <span class="title function_">processDispatchQueue</span>(<span class="params">dispatchQueue, eventSystemFlags</span>) &#123;</span><br><span class="line">  <span class="keyword">var</span> inCapturePhase = (eventSystemFlags &amp; <span class="variable constant_">IS_CAPTURE_PHASE</span>) !== <span class="number">0</span>;</span><br><span class="line"></span><br><span class="line">  <span class="comment">// 循环事件队列,依次触发合成事件</span></span><br><span class="line">  <span class="keyword">for</span> (<span class="keyword">let</span> i = <span class="number">0</span>; i &lt; dispatchQueue.<span class="property">length</span>; i++) &#123;</span><br><span class="line">    <span class="keyword">const</span> &#123;event, listeners&#125; = dispatchQueue[i];</span><br><span class="line">    <span class="keyword">var</span> previousInstance;</span><br><span class="line"></span><br><span class="line">    (<span class="keyword">function</span> <span class="title function_">processDispatchQueueItemsInOrder</span>(<span class="params"></span></span><br><span class="line"><span class="params">      event: ReactSyntheticEvent,</span></span><br><span class="line"><span class="params">      dispatchListeners: <span class="built_in">Array</span>&lt;DispatchListener&gt;,</span></span><br><span class="line"><span class="params">      inCapturePhase: boolean</span></span><br><span class="line"><span class="params">    </span>): <span class="keyword">void</span> &#123;</span><br><span class="line">      <span class="keyword">let</span> previousInstance;</span><br><span class="line">      <span class="keyword">if</span> (inCapturePhase) &#123;</span><br><span class="line">        <span class="comment">// 反响遍历模拟捕获阶段</span></span><br><span class="line">        <span class="keyword">for</span> (<span class="keyword">let</span> i = dispatchListeners.<span class="property">length</span> - <span class="number">1</span>; i &gt;= <span class="number">0</span>; i--) &#123;</span><br><span class="line">          <span class="keyword">const</span> &#123; instance, currentTarget, listener &#125; = dispatchListeners[i];</span><br><span class="line">          <span class="keyword">if</span> (instance !== previousInstance &amp;&amp; event.<span class="title function_">isPropagationStopped</span>()) &#123;</span><br><span class="line">            <span class="keyword">return</span>;</span><br><span class="line">          &#125;</span><br><span class="line">          <span class="title function_">executeDispatch</span>(event, listener, currentTarget);</span><br><span class="line">          previousInstance = instance;</span><br><span class="line">        &#125;</span><br><span class="line">      &#125; <span class="keyword">else</span> &#123;</span><br><span class="line">        <span class="comment">// 正向循环模拟冒泡阶段</span></span><br><span class="line">        <span class="keyword">for</span> (<span class="keyword">let</span> i = <span class="number">0</span>; i &lt; dispatchListeners.<span class="property">length</span>; i++) &#123;</span><br><span class="line">          <span class="keyword">const</span> &#123; instance, currentTarget, listener &#125; = dispatchListeners[i];</span><br><span class="line">          <span class="keyword">if</span> (instance !== previousInstance &amp;&amp; event.<span class="title function_">isPropagationStopped</span>()) &#123;</span><br><span class="line">            <span class="keyword">return</span>;</span><br><span class="line">          &#125;</span><br><span class="line">          <span class="title function_">executeDispatch</span>(event, listener, currentTarget);</span><br><span class="line">          previousInstance = instance;</span><br><span class="line">        &#125;</span><br><span class="line">      &#125;</span><br><span class="line">    &#125;</span><br><span class="line">  &#125;)()</span><br><span class="line"></span><br><span class="line">  <span class="title function_">rethrowCaughtError</span>();</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+ 
+      <!-- reward -->
+      
+      <div id="reword-out">
+        <div id="reward-btn">
+          打赏
+        </div>
+      </div>
+      
+    </div>
+    
+
+    <!-- copyright -->
+    
+    <div class="declare">
+      <ul class="post-copyright">
+        <li>
+          <i class="ri-copyright-line"></i>
+          <strong>版权声明： </strong>
+          
+          本博客所有文章除特别声明外，著作权归作者所有。转载请注明出处！
+          
+        </li>
+      </ul>
+    </div>
+    
+    <footer class="article-footer">
+       
+  <ul class="article-tag-list" itemprop="keywords"><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/React/" rel="tag">React</a></li><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/%E6%BA%90%E7%A0%81%E5%88%86%E6%9E%90/" rel="tag">源码分析</a></li></ul>
+
+    </footer>
+  </div>
+
+   
+  <nav class="article-nav">
+    
+      <a href="/posts/8017bedea687/" class="article-nav-link">
+        <strong class="article-nav-caption">上一篇</strong>
+        <div class="article-nav-title">
+          
+            身份认证
+          
+        </div>
+      </a>
+    
+    
+      <a href="/posts/46127b00e223/" class="article-nav-link">
+        <strong class="article-nav-caption">下一篇</strong>
+        <div class="article-nav-title">React源码分析 ⑪ 更新流程</div>
+      </a>
+    
+  </nav>
+
+  
+   
+<div class="gitalk" id="gitalk-container"></div>
+
+<link rel="stylesheet" href="https://cdn.staticfile.org/gitalk/1.7.2/gitalk.min.css">
+
+
+<script src="https://cdn.staticfile.org/gitalk/1.7.2/gitalk.min.js"></script>
+
+
+<script src="https://cdn.staticfile.org/blueimp-md5/2.19.0/js/md5.min.js"></script>
+
+<script type="text/javascript">
+  var gitalk = new Gitalk({
+    clientID: 'bce2317b25da7c3c18f6',
+    clientSecret: 'e0ab868ca9054234798be82c2b1c0c9dd8632307',
+    repo: 'noopn.github.io',
+    owner: 'noopn',
+    admin: ['noopn'],
+    // id: location.pathname,      // Ensure uniqueness and length less than 50
+    id: md5(location.pathname),
+    distractionFreeMode: false,  // Facebook-like distraction free mode
+    pagerDirection: 'last'
+  })
+
+  gitalk.render('gitalk-container')
+</script>
+
+     
+</article>
+
+</section>
+      <footer class="footer">
+  <div class="outer">
+    <ul>
+      <li>
+        Copyrights &copy;
+        2015-2024
+        <i class="ri-heart-fill heart_icon"></i> SunZhiqi
+      </li>
+    </ul>
+    <ul>
+      <li>
+        
+      </li>
+    </ul>
+    <ul>
+      <li>
+        
+      </li>
+    </ul>
+    <ul>
+      
+    </ul>
+    <ul>
+      
+    </ul>
+    <ul>
+      <li>
+        <!-- cnzz统计 -->
+        
+      </li>
+    </ul>
+  </div>
+</footer>    
+    </main>
+    <div class="float_btns">
+      <div class="totop" id="totop">
+  <i class="ri-arrow-up-line"></i>
+</div>
+
+    </div>
+    <aside class="sidebar on">
+      <button class="navbar-toggle"></button>
+<nav class="navbar">
+  
+  <div class="logo">
+    <a href="/"><img src="/images/ayer-side.png" alt="四月八日"></a>
+  </div>
+  
+  <ul class="nav nav-main">
+    
+    <li class="nav-item">
+      <a class="nav-item-link" href="/">主页</a>
+    </li>
+    
+    <li class="nav-item">
+      <a class="nav-item-link" href="/archives">归档</a>
+    </li>
+    
+    <li class="nav-item">
+      <a class="nav-item-link" href="/categories">分类</a>
+    </li>
+    
+    <li class="nav-item">
+      <a class="nav-item-link" href="/tags">标签</a>
+    </li>
+    
+    <li class="nav-item">
+      <a class="nav-item-link" href="/tags/Essay">随笔</a>
+    </li>
+    
+  </ul>
+</nav>
+<nav class="navbar navbar-bottom">
+  <ul class="nav">
+    <li class="nav-item">
+      
+      <a class="nav-item-link nav-item-search"  title="搜索">
+        <i class="ri-search-line"></i>
+      </a>
+      
+      
+    </li>
+  </ul>
+</nav>
+<div class="search-form-wrap">
+  <div class="local-search local-search-plugin">
+  <input type="search" id="local-search-input" class="local-search-input" placeholder="Search...">
+  <div id="local-search-result" class="local-search-result"></div>
+</div>
+</div>
+    </aside>
+    <div id="mask"></div>
+
+<!-- #reward -->
+<div id="reward">
+  <span class="close"><i class="ri-close-line"></i></span>
+  <p class="reward-p"><i class="ri-cup-line"></i>此时无声胜有声！</p>
+  <div class="reward-box">
+    
+    <div class="reward-item">
+      <img class="reward-img" src="/images/alipay.jpg">
+      <span class="reward-type">支付宝</span>
+    </div>
+    
+    
+    <div class="reward-item">
+      <img class="reward-img" src="/images/wechat.jpg">
+      <span class="reward-type">微信</span>
+    </div>
+    
+  </div>
+</div>
+    
+<script src="/js/jquery-3.6.0.min.js"></script>
+ 
+<script src="/js/lazyload.min.js"></script>
+
+<!-- Tocbot -->
+ 
+<script src="/js/tocbot.min.js"></script>
+
+<script>
+  tocbot.init({
+    tocSelector: ".tocbot",
+    contentSelector: ".article-entry",
+    headingSelector: "h1, h2, h3, h4, h5, h6",
+    hasInnerContainers: true,
+    scrollSmooth: true,
+    scrollContainer: "main",
+    positionFixedSelector: ".tocbot",
+    positionFixedClass: "is-position-fixed",
+    fixedSidebarOffset: "auto",
+  });
+</script>
+
+<script src="/js/jquery.modal.min.js"></script>
+<link rel="stylesheet" href="/css/jquery.modal.min.css" />
+<script src="/js/jquery.justifiedGallery.min.js"></script>
+
+<script src="/dist/main.js"></script>
+
+<!-- ImageViewer -->
+ <!-- Root element of PhotoSwipe. Must have class pswp. -->
+<div class="pswp" tabindex="-1" role="dialog" aria-hidden="true">
+  <!-- Background of PhotoSwipe. 
+         It's a separate element as animating opacity is faster than rgba(). -->
+  <div class="pswp__bg"></div>
+
+  <!-- Slides wrapper with overflow:hidden. -->
+  <div class="pswp__scroll-wrap">
+    <!-- Container that holds slides. 
+            PhotoSwipe keeps only 3 of them in the DOM to save memory.
+            Don't modify these 3 pswp__item elements, data is added later on. -->
+    <div class="pswp__container">
+      <div class="pswp__item"></div>
+      <div class="pswp__item"></div>
+      <div class="pswp__item"></div>
+    </div>
+
+    <!-- Default (PhotoSwipeUI_Default) interface on top of sliding area. Can be changed. -->
+    <div class="pswp__ui pswp__ui--hidden">
+      <div class="pswp__top-bar">
+        <!--  Controls are self-explanatory. Order can be changed. -->
+
+        <div class="pswp__counter"></div>
+
+        <button
+          class="pswp__button pswp__button--close"
+          title="Close (Esc)"
+        ></button>
+
+        <button
+          class="pswp__button pswp__button--share"
+          style="display: none"
+          title="Share"
+        ></button>
+
+        <button
+          class="pswp__button pswp__button--fs"
+          title="Toggle fullscreen"
+        ></button>
+
+        <button
+          class="pswp__button pswp__button--zoom"
+          title="Zoom in/out"
+        ></button>
+
+        <!-- Preloader demo http://codepen.io/dimsemenov/pen/yyBWoR -->
+        <!-- element will get class pswp__preloader--active when preloader is running -->
+        <div class="pswp__preloader">
+          <div class="pswp__preloader__icn">
+            <div class="pswp__preloader__cut">
+              <div class="pswp__preloader__donut"></div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <div class="pswp__share-modal pswp__share-modal--hidden pswp__single-tap">
+        <div class="pswp__share-tooltip"></div>
+      </div>
+
+      <button
+        class="pswp__button pswp__button--arrow--left"
+        title="Previous (arrow left)"
+      ></button>
+
+      <button
+        class="pswp__button pswp__button--arrow--right"
+        title="Next (arrow right)"
+      ></button>
+
+      <div class="pswp__caption">
+        <div class="pswp__caption__center"></div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<link rel="stylesheet" href="/css/photoswipe.min.css" />
+<link rel="stylesheet" href="/css/default-skin.min.css" />
+<script src="/js/photoswipe.min.js"></script>
+<script src="/js/photoswipe-ui-default.min.js"></script>
+
+<script>
+  function viewer_init() {
+    let pswpElement = document.querySelectorAll(".pswp")[0];
+    let $imgArr = document.querySelectorAll(
+      ".article-entry img:not(.reward-img)"
+    );
+
+    $imgArr.forEach(($em, i) => {
+      $em.onclick = () => {
+        // slider展开状态
+        // todo: 这样不好，后面改成状态
+        if (document.querySelector(".left-col.show")) return;
+        let items = [];
+        $imgArr.forEach(($em2, i2) => {
+          let img = $em2.getAttribute("data-idx", i2);
+          let src =
+            $em2.getAttribute("data-target") || $em2.getAttribute("src");
+          let title = $em2.getAttribute("alt");
+          // 获得原图尺寸
+          const image = new Image();
+          image.src = src;
+          items.push({
+            src: src,
+            w: image.width || $em2.width,
+            h: image.height || $em2.height,
+            title: title,
+          });
+        });
+        var gallery = new PhotoSwipe(pswpElement, PhotoSwipeUI_Default, items, {
+          index: parseInt(i),
+        });
+        gallery.init();
+      };
+    });
+  }
+  viewer_init();
+</script>
+ 
+<!-- MathJax -->
+ <script type="text/x-mathjax-config">
+  MathJax.Hub.Config({
+      tex2jax: {
+          inlineMath: [ ['$','$'], ["\\(","\\)"]  ],
+          processEscapes: true,
+          skipTags: ['script', 'noscript', 'style', 'textarea', 'pre', 'code']
+      }
+  });
+
+  MathJax.Hub.Queue(function() {
+      var all = MathJax.Hub.getAllJax(), i;
+      for(i=0; i < all.length; i += 1) {
+          all[i].SourceElement().parentNode.className += ' has-jax';
+      }
+  });
+</script>
+
+<script src="/js/MathJax.js"></script>
+<script src="/js/TeX-AMS-MML_HTMLorMML-full.js"></script>
+
+<script>
+  var ayerConfig = {
+    mathjax: true,
+  };
+</script>
+
+<!-- Katex -->
+
+<!-- busuanzi  -->
+
+<!-- ClickLove -->
+
+<!-- ClickBoom1 -->
+
+<!-- ClickBoom2 -->
+
+<!-- CodeCopy -->
+ 
+<link rel="stylesheet" href="/css/clipboard.css">
+ <script src="/js/clipboard.min.js"></script>
+<script>
+  function wait(callback, seconds) {
+    var timelag = null;
+    timelag = window.setTimeout(callback, seconds);
+  }
+  !(function (e, t, a) {
+    var initCopyCode = function () {
+      var copyHtml = "";
+      copyHtml += '<button class="btn-copy" data-clipboard-snippet="">';
+      copyHtml += '<i class="ri-file-copy-2-line"></i><span>COPY</span>';
+      copyHtml += "</button>";
+      $(".highlight .code pre").before(copyHtml);
+      $(".article pre code").before(copyHtml);
+      var clipboard = new ClipboardJS(".btn-copy", {
+        target: function (trigger) {
+          return trigger.nextElementSibling;
+        },
+      });
+      clipboard.on("success", function (e) {
+        let $btn = $(e.trigger);
+        $btn.addClass("copied");
+        let $icon = $($btn.find("i"));
+        $icon.removeClass("ri-file-copy-2-line");
+        $icon.addClass("ri-checkbox-circle-line");
+        let $span = $($btn.find("span"));
+        $span[0].innerText = "COPIED";
+
+        wait(function () {
+          // 等待两秒钟后恢复
+          $icon.removeClass("ri-checkbox-circle-line");
+          $icon.addClass("ri-file-copy-2-line");
+          $span[0].innerText = "COPY";
+        }, 2000);
+      });
+      clipboard.on("error", function (e) {
+        e.clearSelection();
+        let $btn = $(e.trigger);
+        $btn.addClass("copy-failed");
+        let $icon = $($btn.find("i"));
+        $icon.removeClass("ri-file-copy-2-line");
+        $icon.addClass("ri-time-line");
+        let $span = $($btn.find("span"));
+        $span[0].innerText = "COPY FAILED";
+
+        wait(function () {
+          // 等待两秒钟后恢复
+          $icon.removeClass("ri-time-line");
+          $icon.addClass("ri-file-copy-2-line");
+          $span[0].innerText = "COPY";
+        }, 2000);
+      });
+    };
+    initCopyCode();
+  })(window, document);
+</script>
+ 
+<!-- CanvasBackground -->
+
+<script>
+  if (window.mermaid) {
+    mermaid.initialize({ theme: "default" });
+  }
+</script>
+
+
+    
+    
+
+  </div>
+</body>
+
+</html>

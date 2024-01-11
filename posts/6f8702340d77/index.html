@@ -1,0 +1,607 @@
+<!DOCTYPE html>
+
+
+<html lang="zh-CN">
+  
+
+    <head>
+      <meta charset="utf-8" />
+       
+      <meta name="keywords" content="前端 web react" />
+       
+      <meta name="description" content="前端技术与生活。" />
+      
+      <meta
+        name="viewport"
+        content="width=device-width, initial-scale=1, maximum-scale=1"
+      />
+      <title>React源码分析 ⑧ commit阶段 |  四月八日</title>
+  <meta name="generator" content="hexo-theme-ayer">
+      
+      <link rel="shortcut icon" href="/favicon.ico" />
+       
+<link rel="stylesheet" href="/dist/main.css">
+ 
+<link rel="stylesheet" href="/css/fonts/remixicon.css">
+ 
+<link rel="stylesheet" href="/css/custom.css">
+ 
+      <script src="/js/pace.min.js"></script>
+       
+ 
+
+      <link rel="stylesheet" href="/css/bulma.min.css" />
+      <script src="/js/sweetalert2.min.js"></script>
+
+      <!-- mermaid -->
+      
+      <script src="https://cdn.staticfile.org/mermaid/8.14.0/mermaid.min.js"></script>
+      
+      <style>
+        .swal2-styled.swal2-confirm {
+          font-size: 1.6rem;
+        }
+      </style>
+    <!-- hexo injector head_end start -->
+<link rel="stylesheet" href="/css/katex.min.css">
+
+<link rel="stylesheet" href="/css/style.css">
+<!-- hexo injector head_end end --></head>
+  </html>
+</html>
+
+
+<body>
+  <div id="app">
+    
+      
+    <main class="content on">
+      <section class="outer">
+  <article
+  id="posts-source/react/⑧commit阶段"
+  class="article article-type-posts"
+  itemscope
+  itemprop="blogPost"
+  data-scroll-reveal
+>
+  <div class="article-inner">
+    
+    <header class="article-header">
+       
+<h1 class="article-title sea-center" style="border-left:0" itemprop="name">
+  React源码分析 ⑧ commit阶段
+</h1>
+ 
+
+      
+    </header>
+     
+    <div class="article-meta">
+      <a href="/posts/6f8702340d77/" class="article-date">
+  <time datetime="2022-04-21T09:26:56.000Z" itemprop="datePublished">2022-04-21</time>
+</a> 
+  <div class="article-category">
+    <a class="article-category-link" href="/categories/%E6%BA%90%E7%A0%81%E5%88%86%E6%9E%90/">源码分析</a> / <a class="article-category-link" href="/categories/%E6%BA%90%E7%A0%81%E5%88%86%E6%9E%90/React/">React</a>
+  </div>
+  
+<div class="word_count">
+    <span class="post-time">
+        <span class="post-meta-item-icon">
+            <i class="ri-quill-pen-line"></i>
+            <span class="post-meta-item-text"> 字数统计:</span>
+            <span class="post-count">1.9k</span>
+        </span>
+    </span>
+
+    <span class="post-time">
+        &nbsp; | &nbsp;
+        <span class="post-meta-item-icon">
+            <i class="ri-book-open-line"></i>
+            <span class="post-meta-item-text"> 阅读时长≈</span>
+            <span class="post-count">9 分钟</span>
+        </span>
+    </span>
+</div>
+ 
+    </div>
+      
+    <div class="tocbot"></div>
+
+
+
+
+  
+    <div class="article-entry" itemprop="articleBody">
+       
+  <p><img src="/posts/6f8702340d77/0001.png"></p>
+<h4 id="预备工作"><a href="#预备工作" class="headerlink" title="预备工作"></a>预备工作</h4><p>flushPassiveEffects 执行所有还没执行的副作用,因为执行的时候还可能产生额外的副作用,所以需要 while 判断. rootWithPendingPassiveEffect 表示是否有副作用标记</p>
+<figure class="highlight js"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">do</span> &#123;</span><br><span class="line">  <span class="title function_">flushPassiveEffects</span>();</span><br><span class="line">&#125; <span class="keyword">while</span> (rootWithPendingPassiveEffects !== <span class="literal">null</span>);</span><br><span class="line"></span><br><span class="line"><span class="comment">// 第一步执行所有的副作用销毁函数</span></span><br><span class="line"><span class="comment">// 一定要保证在执行副作用函数前,所有的销毁函数已经执行完成,但也有例外的情况</span></span><br><span class="line"><span class="comment">// 例如在兄弟组件中,一个组件的副作用销毁函数,是在兄弟组件的副作用创建函数中定义的</span></span><br><span class="line"><span class="comment">// 并且被添加在Ref 属性上通过引用的方式使用.</span></span><br><span class="line"></span><br><span class="line"><span class="keyword">var</span> unmountEffects = pendingPassiveHookEffectsUnmount;</span><br><span class="line"><span class="keyword">for</span> (<span class="keyword">var</span> i = <span class="number">0</span>; i &lt; unmountEffects.<span class="property">length</span>; i += <span class="number">2</span>) &#123;</span><br><span class="line">  <span class="keyword">var</span> destroy = _effect.<span class="property">destroy</span>;</span><br><span class="line">  <span class="title function_">destroy</span>();</span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line"><span class="comment">// 执行所有的副作用创建函数</span></span><br><span class="line"><span class="keyword">var</span> mountEffects = pendingPassiveHookEffectsMount;</span><br><span class="line"></span><br><span class="line"><span class="keyword">for</span> (<span class="keyword">var</span> _i = <span class="number">0</span>; _i &lt; mountEffects.<span class="property">length</span>; _i += <span class="number">2</span>) &#123;</span><br><span class="line">  <span class="keyword">var</span> _effect2 = mountEffects[_i];</span><br><span class="line">  <span class="keyword">var</span> create = effect.<span class="property">create</span>;</span><br><span class="line">  effect.<span class="property">destroy</span> = <span class="title function_">create</span>();</span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line"><span class="comment">// 在副作用链表上 删除, 用于内存回收</span></span><br><span class="line"><span class="keyword">while</span> (effect !== <span class="literal">null</span>) &#123;</span><br><span class="line">  <span class="keyword">var</span> nextNextEffect = effect.<span class="property">nextEffect</span>;</span><br><span class="line">  effect.<span class="property">nextEffect</span> = <span class="literal">null</span>;</span><br><span class="line">  effect = nextNextEffect;</span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line"><span class="comment">// 如果与额外的副作产生则重新发起调度</span></span><br><span class="line"><span class="title function_">flushSyncCallbackQueue</span>();</span><br></pre></td></tr></table></figure>
+
+<p>将 rootFiber 添加到 effect 链表中, completeWork 中构建的 effect 链表只包涵它的子元素, 如果 rootFiber 有副作用需要把他添加到链表的最后. 最终的 effect 链表属于 rootFiber 的父元素</p>
+<figure class="highlight js"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">if</span> (finishedWork.<span class="property">flags</span> &gt; <span class="title class_">PerformedWork</span>) &#123;</span><br><span class="line">  <span class="keyword">if</span> (finishedWork.<span class="property">lastEffect</span> !== <span class="literal">null</span>) &#123;</span><br><span class="line">    finishedWork.<span class="property">lastEffect</span>.<span class="property">nextEffect</span> = finishedWork;</span><br><span class="line">    firstEffect = finishedWork.<span class="property">firstEffect</span>;</span><br><span class="line">  &#125; <span class="keyword">else</span> &#123;</span><br><span class="line">    firstEffect = finishedWork;</span><br><span class="line">  &#125;</span><br><span class="line">&#125; <span class="keyword">else</span> &#123;</span><br><span class="line">  firstEffect = finishedWork.<span class="property">firstEffect</span>;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+<h4 id="commitBeforeMutationEffects"><a href="#commitBeforeMutationEffects" class="headerlink" title="commitBeforeMutationEffects"></a>commitBeforeMutationEffects</h4><p>尽可能早的去调度 mutation effect</p>
+<figure class="highlight js"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">while</span> (nextEffect !== <span class="literal">null</span>) &#123;</span><br><span class="line">  <span class="keyword">var</span> current = nextEffect.<span class="property">alternate</span>;</span><br><span class="line"></span><br><span class="line">  <span class="keyword">var</span> flags = nextEffect.<span class="property">flags</span>;</span><br><span class="line"></span><br><span class="line">  <span class="comment">// getSnapshotBeforeUpdate 将会执行</span></span><br><span class="line">  <span class="keyword">if</span> ((flags &amp; <span class="title class_">Snapshot</span>) !== <span class="title class_">NoFlags</span>) &#123;</span><br><span class="line">    <span class="title function_">commitBeforeMutationLifeCycles</span>(current, nextEffect);</span><br><span class="line">  &#125;</span><br><span class="line"></span><br><span class="line">  <span class="keyword">if</span> ((flags &amp; <span class="title class_">Passive</span>) !== <span class="title class_">NoFlags</span>) &#123;</span><br><span class="line">    <span class="keyword">if</span> (!rootDoesHavePassiveEffects) &#123;</span><br><span class="line">      rootDoesHavePassiveEffects = <span class="literal">true</span>;</span><br><span class="line">      <span class="title function_">scheduleCallback</span>(<span class="title class_">NormalPriority</span>$<span class="number">1</span>, <span class="keyword">function</span> (<span class="params"></span>) &#123;</span><br><span class="line">        <span class="title function_">flushPassiveEffects</span>();</span><br><span class="line">        <span class="keyword">return</span> <span class="literal">null</span>;</span><br><span class="line">      &#125;);</span><br><span class="line">    &#125;</span><br><span class="line">  &#125;</span><br><span class="line"></span><br><span class="line">  nextEffect = nextEffect.<span class="property">nextEffect</span>;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+<h4 id="commitMutationEffects"><a href="#commitMutationEffects" class="headerlink" title="commitMutationEffects"></a>commitMutationEffects</h4><p><a target="_blank" rel="noopener" href="https://reactjs.org/docs/refs-and-the-dom.html#caveats-with-callback-refs">为什么需要解绑 Ref ?</a></p>
+<p>如果 Ref 被定义为一个函数,在更新阶段会执行两次,第一次为 <code>null</code>,第二次会绑定 DOM 元素,这是因为每次渲染都会创建新的函数实例,所以 React 会先删除旧的 Ref 回收内存,再创建一个新的.</p>
+<figure class="highlight ts"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">if</span> (flags &amp; <span class="title class_">Ref</span>) &#123;</span><br><span class="line">  <span class="keyword">var</span> current = nextEffect.<span class="property">alternate</span>;</span><br><span class="line">  <span class="keyword">if</span> (current !== <span class="literal">null</span>) &#123;</span><br><span class="line">    <span class="keyword">var</span> currentRef = current.<span class="property">ref</span>;</span><br><span class="line">    <span class="keyword">if</span> (currentRef !== <span class="literal">null</span>) &#123;</span><br><span class="line">      <span class="keyword">if</span> (<span class="keyword">typeof</span> currentRef === <span class="string">&quot;function&quot;</span>) &#123;</span><br><span class="line">        <span class="title function_">currentRef</span>(<span class="literal">null</span>);</span><br><span class="line">      &#125; <span class="keyword">else</span> &#123;</span><br><span class="line">        currentRef.<span class="property">current</span> = <span class="literal">null</span>;</span><br><span class="line">      &#125;</span><br><span class="line">    &#125;</span><br><span class="line">  &#125;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+<p>不同的 Tag 对应不同的 DOM 操作</p>
+<figure class="highlight js"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br><span class="line">35</span><br><span class="line">36</span><br><span class="line">37</span><br><span class="line">38</span><br><span class="line">39</span><br><span class="line">40</span><br><span class="line">41</span><br><span class="line">42</span><br><span class="line">43</span><br><span class="line">44</span><br><span class="line">45</span><br><span class="line">46</span><br><span class="line">47</span><br><span class="line">48</span><br><span class="line">49</span><br><span class="line">50</span><br><span class="line">51</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">var</span> primaryFlags = flags &amp; (<span class="title class_">Placement</span> | <span class="title class_">Update</span> | <span class="title class_">Deletion</span> | <span class="title class_">Hydrating</span>);</span><br><span class="line"></span><br><span class="line">    <span class="keyword">switch</span> (primaryFlags) &#123;</span><br><span class="line">      <span class="keyword">case</span> <span class="title class_">Placement</span>:</span><br><span class="line">        &#123;</span><br><span class="line">          <span class="title function_">commitPlacement</span>(nextEffect);</span><br><span class="line">          nextEffect.<span class="property">flags</span> &amp;= ~<span class="title class_">Placement</span>;</span><br><span class="line">          <span class="keyword">break</span>;</span><br><span class="line">        &#125;</span><br><span class="line"></span><br><span class="line">      <span class="keyword">case</span> <span class="title class_">PlacementAndUpdate</span>:</span><br><span class="line">        &#123;</span><br><span class="line">          <span class="title function_">commitPlacement</span>(nextEffect);</span><br><span class="line">          nextEffect.<span class="property">flags</span> &amp;= ~<span class="title class_">Placement</span>;</span><br><span class="line">          <span class="keyword">var</span> _current = nextEffect.<span class="property">alternate</span>;</span><br><span class="line">          <span class="title function_">commitWork</span>(_current, nextEffect);</span><br><span class="line">          <span class="keyword">break</span>;</span><br><span class="line">        &#125;</span><br><span class="line"></span><br><span class="line">      <span class="keyword">case</span> <span class="title class_">Hydrating</span>:</span><br><span class="line">        &#123;</span><br><span class="line">          nextEffect.<span class="property">flags</span> &amp;= ~<span class="title class_">Hydrating</span>;</span><br><span class="line">          <span class="keyword">break</span>;</span><br><span class="line">        &#125;</span><br><span class="line"></span><br><span class="line">      <span class="keyword">case</span> <span class="title class_">HydratingAndUpdate</span>:</span><br><span class="line">        &#123;</span><br><span class="line">          nextEffect.<span class="property">flags</span> &amp;= ~<span class="title class_">Hydrating</span>;</span><br><span class="line"></span><br><span class="line">          <span class="keyword">var</span> _current2 = nextEffect.<span class="property">alternate</span>;</span><br><span class="line">          <span class="title function_">commitWork</span>(_current2, nextEffect);</span><br><span class="line">          <span class="keyword">break</span>;</span><br><span class="line">        &#125;</span><br><span class="line"></span><br><span class="line">      <span class="keyword">case</span> <span class="title class_">Update</span>:</span><br><span class="line">        &#123;</span><br><span class="line">          <span class="keyword">var</span> _current3 = nextEffect.<span class="property">alternate</span>;</span><br><span class="line">          <span class="title function_">commitWork</span>(_current3, nextEffect);</span><br><span class="line">          <span class="keyword">break</span>;</span><br><span class="line">        &#125;</span><br><span class="line"></span><br><span class="line">      <span class="keyword">case</span> <span class="title class_">Deletion</span>:</span><br><span class="line">        &#123;</span><br><span class="line">          <span class="title function_">commitDeletion</span>(root, nextEffect);</span><br><span class="line">          <span class="keyword">break</span>;</span><br><span class="line">        &#125;</span><br><span class="line">    &#125;</span><br><span class="line"></span><br><span class="line">    <span class="title function_">resetCurrentFiber</span>();</span><br><span class="line">    nextEffect = nextEffect.<span class="property">nextEffect</span>;</span><br><span class="line">  &#125;</span><br></pre></td></tr></table></figure>
+
+<h5 id="commitPlacement-插入"><a href="#commitPlacement-插入" class="headerlink" title="commitPlacement 插入"></a>commitPlacement 插入</h5><figure class="highlight js"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br><span class="line">35</span><br><span class="line">36</span><br><span class="line">37</span><br><span class="line">38</span><br><span class="line">39</span><br><span class="line">40</span><br><span class="line">41</span><br><span class="line">42</span><br><span class="line">43</span><br><span class="line">44</span><br><span class="line">45</span><br><span class="line">46</span><br><span class="line">47</span><br><span class="line">48</span><br><span class="line">49</span><br><span class="line">50</span><br><span class="line">51</span><br><span class="line">52</span><br><span class="line">53</span><br><span class="line">54</span><br><span class="line">55</span><br><span class="line">56</span><br><span class="line">57</span><br><span class="line">58</span><br><span class="line">59</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">function</span> <span class="title function_">commitPlacement</span>(<span class="params">finishedWork</span>) &#123;</span><br><span class="line">  <span class="comment">// 找到当前插入节点的上级节点</span></span><br><span class="line">  <span class="keyword">var</span> parentFiber = <span class="title function_">getHostParentFiber</span>(finishedWork); <span class="comment">// Note: these two variables *must* always be updated together.</span></span><br><span class="line"></span><br><span class="line">  <span class="keyword">var</span> parent;</span><br><span class="line">  <span class="keyword">var</span> isContainer;</span><br><span class="line">  <span class="keyword">var</span> parentStateNode = parentFiber.<span class="property">stateNode</span>;</span><br><span class="line"></span><br><span class="line">  <span class="comment">// 判断是不是跟节点</span></span><br><span class="line">  <span class="keyword">switch</span> (parentFiber.<span class="property">tag</span>) &#123;</span><br><span class="line">    <span class="keyword">case</span> <span class="title class_">HostComponent</span>:</span><br><span class="line">      parent = parentStateNode;</span><br><span class="line">      isContainer = <span class="literal">false</span>;</span><br><span class="line">      <span class="keyword">break</span>;</span><br><span class="line"></span><br><span class="line">    <span class="keyword">case</span> <span class="title class_">HostRoot</span>:</span><br><span class="line">      parent = parentStateNode.<span class="property">containerInfo</span>;</span><br><span class="line">      isContainer = <span class="literal">true</span>;</span><br><span class="line">      <span class="keyword">break</span>;</span><br><span class="line"></span><br><span class="line">    <span class="keyword">case</span> <span class="title class_">HostPortal</span>:</span><br><span class="line">      parent = parentStateNode.<span class="property">containerInfo</span>;</span><br><span class="line">      isContainer = <span class="literal">true</span>;</span><br><span class="line">      <span class="keyword">break</span>;</span><br><span class="line">  &#125;</span><br><span class="line"></span><br><span class="line">  <span class="comment">// 如果上级节点标记了清除内容的副作用,则先清空文本</span></span><br><span class="line">  <span class="keyword">if</span> (parentFiber.<span class="property">flags</span> &amp; <span class="title class_">ContentReset</span>) &#123;</span><br><span class="line">    <span class="title function_">resetTextContent</span>(parent);</span><br><span class="line"></span><br><span class="line">    parentFiber.<span class="property">flags</span> &amp;= ~<span class="title class_">ContentReset</span>;</span><br><span class="line">  &#125;</span><br><span class="line">  <span class="comment">// 插入有两种情况,直接插入一个元素中,或插入兄弟节点前面,这里需要获取兄弟节点</span></span><br><span class="line">  <span class="keyword">var</span> before = <span class="title function_">getHostSibling</span>(finishedWork);</span><br><span class="line"></span><br><span class="line">  <span class="keyword">if</span> (isContainer) &#123;</span><br><span class="line">    如果兄弟节点存在;</span><br><span class="line">    <span class="comment">/*</span></span><br><span class="line"><span class="comment">    如果兄弟节点存在</span></span><br><span class="line"><span class="comment">    if (container.nodeType === COMMENT_NODE) &#123;</span></span><br><span class="line"><span class="comment">      container.parentNode.insertBefore(child, beforeChild);</span></span><br><span class="line"><span class="comment">    &#125; else &#123;</span></span><br><span class="line"><span class="comment">      container.insertBefore(child, beforeChild);</span></span><br><span class="line"><span class="comment">    &#125;</span></span><br><span class="line"><span class="comment">    </span></span><br><span class="line"><span class="comment">    如果兄弟节点不存在</span></span><br><span class="line"><span class="comment">    if (container.nodeType === COMMENT_NODE) &#123;</span></span><br><span class="line"><span class="comment">      parentNode = container.parentNode;</span></span><br><span class="line"><span class="comment">      parentNode.insertBefore(child, container);</span></span><br><span class="line"><span class="comment">    &#125; else &#123;</span></span><br><span class="line"><span class="comment">      parentNode = container;</span></span><br><span class="line"><span class="comment">      parentNode.appendChild(child);</span></span><br><span class="line"><span class="comment">    &#125;</span></span><br><span class="line"><span class="comment">    */</span></span><br><span class="line">    <span class="title function_">insertOrAppendPlacementNodeIntoContainer</span>(finishedWork, before, parent);</span><br><span class="line">  &#125; <span class="keyword">else</span> &#123;</span><br><span class="line">    <span class="title function_">insertOrAppendPlacementNode</span>(finishedWork, before, parent);</span><br><span class="line">  &#125;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+<h5 id="commitWork-更新"><a href="#commitWork-更新" class="headerlink" title="commitWork 更新"></a>commitWork 更新</h5><figure class="highlight js"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br><span class="line">35</span><br><span class="line">36</span><br><span class="line">37</span><br><span class="line">38</span><br><span class="line">39</span><br><span class="line">40</span><br><span class="line">41</span><br><span class="line">42</span><br><span class="line">43</span><br><span class="line">44</span><br><span class="line">45</span><br><span class="line">46</span><br><span class="line">47</span><br><span class="line">48</span><br><span class="line">49</span><br><span class="line">50</span><br><span class="line">51</span><br><span class="line">52</span><br><span class="line">53</span><br><span class="line">54</span><br><span class="line">55</span><br><span class="line">56</span><br><span class="line">57</span><br><span class="line">58</span><br><span class="line">59</span><br><span class="line">60</span><br><span class="line">61</span><br><span class="line">62</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">function</span> <span class="title function_">commitWork</span>(<span class="params">current, finishedWork</span>) &#123;</span><br><span class="line">  <span class="keyword">switch</span> (finishedWork.<span class="property">tag</span>) &#123;</span><br><span class="line">    <span class="keyword">case</span> <span class="title class_">FunctionComponent</span>:</span><br><span class="line">    <span class="keyword">case</span> <span class="title class_">ForwardRef</span>:</span><br><span class="line">    <span class="keyword">case</span> <span class="title class_">MemoComponent</span>:</span><br><span class="line">    <span class="keyword">case</span> <span class="title class_">SimpleMemoComponent</span>:</span><br><span class="line">    <span class="keyword">case</span> <span class="title class_">Block</span>: &#123;</span><br><span class="line">      <span class="comment">// 有可能兄弟组件间的副作用会相互影响,例如在同一次 commit 阶段中</span></span><br><span class="line">      <span class="comment">// 一个组件的副作用销毁函数,不应该依赖与另一个组件的副作用创建函数,通过ref传递,因为执行时机问题造成不会执行</span></span><br><span class="line">      &#123;</span><br><span class="line">        <span class="title function_">commitHookEffectListUnmount</span>(<span class="title class_">Layout</span> | <span class="title class_">HasEffect</span>, finishedWork);</span><br><span class="line">      &#125;</span><br><span class="line"></span><br><span class="line">      <span class="keyword">return</span>;</span><br><span class="line">    &#125;</span><br><span class="line"></span><br><span class="line">    <span class="keyword">case</span> <span class="title class_">ClassComponent</span>: &#123;</span><br><span class="line">      <span class="keyword">return</span>;</span><br><span class="line">    &#125;</span><br><span class="line"></span><br><span class="line">    <span class="keyword">case</span> <span class="title class_">HostComponent</span>: &#123;</span><br><span class="line">      <span class="keyword">var</span> instance = finishedWork.<span class="property">stateNode</span>;</span><br><span class="line"></span><br><span class="line">      <span class="keyword">if</span> (instance != <span class="literal">null</span>) &#123;</span><br><span class="line">        <span class="comment">// Commit the work prepared earlier.</span></span><br><span class="line">        <span class="keyword">var</span> newProps = finishedWork.<span class="property">memoizedProps</span>; <span class="comment">// For hydration we reuse the update path but we treat the oldProps</span></span><br><span class="line">        <span class="comment">// as the newProps. The updatePayload will contain the real change in</span></span><br><span class="line">        <span class="comment">// this case.</span></span><br><span class="line"></span><br><span class="line">        <span class="keyword">var</span> oldProps = current !== <span class="literal">null</span> ? current.<span class="property">memoizedProps</span> : newProps;</span><br><span class="line">        <span class="keyword">var</span> type = finishedWork.<span class="property">type</span>; <span class="comment">// <span class="doctag">TODO:</span> Type the updateQueue to be specific to host components.</span></span><br><span class="line"></span><br><span class="line">        <span class="keyword">var</span> updatePayload = finishedWork.<span class="property">updateQueue</span>;</span><br><span class="line">        finishedWork.<span class="property">updateQueue</span> = <span class="literal">null</span>;</span><br><span class="line"></span><br><span class="line">        <span class="comment">/*</span></span><br><span class="line"><span class="comment">          最终会调用原生节点上的设置属性</span></span><br><span class="line"><span class="comment">        if (value === null) &#123;</span></span><br><span class="line"><span class="comment">          node.removeAttribute(_attributeName);</span></span><br><span class="line"><span class="comment">        &#125; else &#123;</span></span><br><span class="line"><span class="comment">          node.setAttribute(_attributeName,  &#x27;&#x27; + value);</span></span><br><span class="line"><span class="comment">        &#125;</span></span><br><span class="line"><span class="comment">        */</span></span><br><span class="line">        <span class="keyword">if</span> (updatePayload !== <span class="literal">null</span>) &#123;</span><br><span class="line">          <span class="title function_">commitUpdate</span>(instance, updatePayload, type, oldProps, newProps);</span><br><span class="line">        &#125;</span><br><span class="line">      &#125;</span><br><span class="line"></span><br><span class="line">      <span class="keyword">return</span>;</span><br><span class="line">    &#125;</span><br><span class="line"></span><br><span class="line">    <span class="keyword">case</span> <span class="title class_">HostText</span>: &#123;</span><br><span class="line">      <span class="keyword">if</span> (!(finishedWork.<span class="property">stateNode</span> !== <span class="literal">null</span>)) &#123;</span><br><span class="line"></span><br><span class="line">      <span class="keyword">var</span> textInstance = finishedWork.<span class="property">stateNode</span>;</span><br><span class="line">      <span class="keyword">var</span> newText = finishedWork.<span class="property">memoizedProps</span>;</span><br><span class="line"></span><br><span class="line">      <span class="keyword">var</span> oldText = current !== <span class="literal">null</span> ? current.<span class="property">memoizedProps</span> : newText;</span><br><span class="line">      <span class="title function_">commitTextUpdate</span>(textInstance, oldText, newText);</span><br><span class="line">      <span class="keyword">return</span>;</span><br><span class="line">    &#125;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+<h5 id="commitDeletion-删除"><a href="#commitDeletion-删除" class="headerlink" title="commitDeletion 删除"></a>commitDeletion 删除</h5><p>虽然只有当前的 Fiber 节点删除,但仍然需要遍历所有的子节点,因为可能子节点会执行 <code>componentWillUnmount</code></p>
+<figure class="highlight js"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br><span class="line">35</span><br><span class="line">36</span><br><span class="line">37</span><br><span class="line">38</span><br><span class="line">39</span><br><span class="line">40</span><br><span class="line">41</span><br><span class="line">42</span><br><span class="line">43</span><br><span class="line">44</span><br><span class="line">45</span><br><span class="line">46</span><br><span class="line">47</span><br><span class="line">48</span><br><span class="line">49</span><br><span class="line">50</span><br><span class="line">51</span><br><span class="line">52</span><br><span class="line">53</span><br><span class="line">54</span><br><span class="line">55</span><br><span class="line">56</span><br><span class="line">57</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">while</span> (<span class="literal">true</span>) &#123;</span><br><span class="line">  <span class="keyword">if</span> (node.<span class="property">tag</span> === <span class="title class_">HostComponent</span> || node.<span class="property">tag</span> === <span class="title class_">HostText</span>) &#123;</span><br><span class="line">    <span class="comment">// 执行 commitUnmount</span></span><br><span class="line">    <span class="comment">// 遍历所有子节点,删除 Ref,或执行 componentWillUnmount</span></span><br><span class="line">    <span class="comment">// HostPortal 需要删除挂载元素</span></span><br><span class="line">    <span class="comment">// 执行 useEffect销毁函数</span></span><br><span class="line">    <span class="title function_">commitNestedUnmounts</span>(finishedRoot, node);</span><br><span class="line"></span><br><span class="line">    <span class="comment">//所有子节点卸载后才能安全的从 DOM 树中删除当前节点</span></span><br><span class="line">    <span class="keyword">if</span> (currentParentIsContainer) &#123;</span><br><span class="line">      <span class="title function_">removeChildFromContainer</span>(currentParent, node.<span class="property">stateNode</span>);</span><br><span class="line">    &#125; <span class="keyword">else</span> &#123;</span><br><span class="line">      <span class="title function_">removeChild</span>(currentParent, node.<span class="property">stateNode</span>);</span><br><span class="line">    &#125; <span class="comment">// Don&#x27;t visit children because we already visited them.</span></span><br><span class="line">  &#125; <span class="keyword">else</span> <span class="keyword">if</span> (node.<span class="property">tag</span> === <span class="title class_">HostPortal</span>) &#123;</span><br><span class="line">    <span class="keyword">if</span> (node.<span class="property">child</span> !== <span class="literal">null</span>) &#123;</span><br><span class="line">      <span class="comment">// When we go into a portal, it becomes the parent to remove from.</span></span><br><span class="line">      <span class="comment">// We will reassign it back when we pop the portal on the way up.</span></span><br><span class="line">      currentParent = node.<span class="property">stateNode</span>.<span class="property">containerInfo</span>;</span><br><span class="line">      currentParentIsContainer = <span class="literal">true</span>; <span class="comment">// Visit children because portals might contain host components.</span></span><br><span class="line"></span><br><span class="line">      node.<span class="property">child</span>.<span class="property">return</span> = node;</span><br><span class="line">      node = node.<span class="property">child</span>;</span><br><span class="line">      <span class="keyword">continue</span>;</span><br><span class="line">    &#125;</span><br><span class="line">  &#125; <span class="keyword">else</span> &#123;</span><br><span class="line">    <span class="comment">// Visit children because we may find more host components below.</span></span><br><span class="line">    <span class="title function_">commitUnmount</span>(finishedRoot, node);</span><br><span class="line"></span><br><span class="line">    <span class="keyword">if</span> (node.<span class="property">child</span> !== <span class="literal">null</span>) &#123;</span><br><span class="line">      node.<span class="property">child</span>.<span class="property">return</span> = node;</span><br><span class="line">      node = node.<span class="property">child</span>;</span><br><span class="line">      <span class="keyword">continue</span>;</span><br><span class="line">    &#125;</span><br><span class="line">  &#125;</span><br><span class="line"></span><br><span class="line">  <span class="keyword">if</span> (node === current) &#123;</span><br><span class="line">    <span class="keyword">return</span>;</span><br><span class="line">  &#125;</span><br><span class="line"></span><br><span class="line">  <span class="keyword">while</span> (node.<span class="property">sibling</span> === <span class="literal">null</span>) &#123;</span><br><span class="line">    <span class="keyword">if</span> (node.<span class="property">return</span> === <span class="literal">null</span> || node.<span class="property">return</span> === current) &#123;</span><br><span class="line">      <span class="keyword">return</span>;</span><br><span class="line">    &#125;</span><br><span class="line"></span><br><span class="line">    node = node.<span class="property">return</span>;</span><br><span class="line"></span><br><span class="line">    <span class="keyword">if</span> (node.<span class="property">tag</span> === <span class="title class_">HostPortal</span>) &#123;</span><br><span class="line">      <span class="comment">// When we go out of the portal, we need to restore the parent.</span></span><br><span class="line">      <span class="comment">// Since we don&#x27;t keep a stack of them, we will search for it.</span></span><br><span class="line">      currentParentIsValid = <span class="literal">false</span>;</span><br><span class="line">    &#125;</span><br><span class="line">  &#125;</span><br><span class="line"></span><br><span class="line">  node.<span class="property">sibling</span>.<span class="property">return</span> = node.<span class="property">return</span>;</span><br><span class="line">  node = node.<span class="property">sibling</span>;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+<h4 id="commitLayoutEffects"><a href="#commitLayoutEffects" class="headerlink" title="commitLayoutEffects"></a>commitLayoutEffects</h4><p>执行前会将 current 指向 finishedWork, 在 <code>componentDidMount/Update.</code> 执行結束后, work-in-progress tree 已经变为最终的状态了,可以安全的指向 current</p>
+<figure class="highlight js"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">root.<span class="property">current</span> = finishedWork;</span><br></pre></td></tr></table></figure>
+
+<p>下一个阶段是 layout 节点,会在已经改变的树上读取 effect 执行,这也是为什么此时能获取到 DOM 的最新状态</p>
+<figure class="highlight js"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br><span class="line">35</span><br><span class="line">36</span><br><span class="line">37</span><br><span class="line">38</span><br><span class="line">39</span><br><span class="line">40</span><br><span class="line">41</span><br><span class="line">42</span><br><span class="line">43</span><br><span class="line">44</span><br><span class="line">45</span><br><span class="line">46</span><br><span class="line">47</span><br><span class="line">48</span><br><span class="line">49</span><br><span class="line">50</span><br><span class="line">51</span><br><span class="line">52</span><br><span class="line">53</span><br><span class="line">54</span><br><span class="line">55</span><br><span class="line">56</span><br><span class="line">57</span><br><span class="line">58</span><br><span class="line">59</span><br><span class="line">60</span><br><span class="line">61</span><br><span class="line">62</span><br><span class="line">63</span><br><span class="line">64</span><br><span class="line">65</span><br><span class="line">66</span><br><span class="line">67</span><br><span class="line">68</span><br><span class="line">69</span><br><span class="line">70</span><br><span class="line">71</span><br></pre></td><td class="code"><pre><span class="line">&#123;</span><br><span class="line">  <span class="keyword">switch</span> (finishedWork.<span class="property">tag</span>) &#123;</span><br><span class="line">    <span class="keyword">case</span> <span class="title class_">FunctionComponent</span>:</span><br><span class="line">    <span class="keyword">case</span> <span class="title class_">ForwardRef</span>:</span><br><span class="line">    <span class="keyword">case</span> <span class="title class_">SimpleMemoComponent</span>:</span><br><span class="line">    <span class="keyword">case</span> <span class="title class_">Block</span>: &#123;</span><br><span class="line">      <span class="comment">// 同步执行 layoutEffect</span></span><br><span class="line">      &#123;</span><br><span class="line">        <span class="title function_">commitHookEffectListMount</span>(<span class="title class_">Layout</span> | <span class="title class_">HasEffect</span>, finishedWork);</span><br><span class="line">      &#125;</span><br><span class="line">      <span class="comment">// 将 mutation effects 创建函数和销毁函数添加到队列中,并执行调度</span></span><br><span class="line">      <span class="title function_">schedulePassiveEffects</span>(finishedWork);</span><br><span class="line">      <span class="keyword">return</span>;</span><br><span class="line">    &#125;</span><br><span class="line"></span><br><span class="line">    <span class="keyword">case</span> <span class="title class_">ClassComponent</span>:</span><br><span class="line">      &#123;</span><br><span class="line">        <span class="keyword">var</span> instance = finishedWork.<span class="property">stateNode</span>;</span><br><span class="line"></span><br><span class="line">        <span class="keyword">if</span> (finishedWork.<span class="property">flags</span> &amp; <span class="title class_">Update</span>) &#123;</span><br><span class="line">          <span class="keyword">if</span> (current === <span class="literal">null</span>) &#123;</span><br><span class="line">            <span class="comment">// current 不存在表示首次挂载</span></span><br><span class="line">            instance.<span class="title function_">componentDidMount</span>();</span><br><span class="line">          &#125; <span class="keyword">else</span> &#123;</span><br><span class="line">            <span class="keyword">var</span> prevProps =</span><br><span class="line">              finishedWork.<span class="property">elementType</span> === finishedWork.<span class="property">type</span></span><br><span class="line">                ? current.<span class="property">memoizedProps</span></span><br><span class="line">                : <span class="title function_">resolveDefaultProps</span>(finishedWork.<span class="property">type</span>, current.<span class="property">memoizedProps</span>);</span><br><span class="line">            <span class="keyword">var</span> prevState = current.<span class="property">memoizedState</span>; <span class="comment">// We could update instance props and state here,</span></span><br><span class="line">            <span class="comment">// but instead we rely on them being set during last render.</span></span><br><span class="line">            <span class="comment">// <span class="doctag">TODO:</span> revisit this when we implement resuming.</span></span><br><span class="line"></span><br><span class="line">            <span class="comment">// 组件更新</span></span><br><span class="line">            instance.<span class="title function_">componentDidUpdate</span>(</span><br><span class="line">              prevProps,</span><br><span class="line">              prevState,</span><br><span class="line">              instance.<span class="property">__reactInternalSnapshotBeforeUpdate</span></span><br><span class="line">            );</span><br><span class="line">          &#125;</span><br><span class="line">        &#125;</span><br><span class="line">        <span class="title function_">commitUpdateQueue</span>(finishedWork, updateQueue, instance);</span><br><span class="line">      &#125;</span><br><span class="line"></span><br><span class="line">      <span class="keyword">return</span>;</span><br><span class="line">  &#125;</span><br><span class="line"></span><br><span class="line">  <span class="comment">// 重新绑定 Ref</span></span><br><span class="line">  <span class="keyword">if</span> (flags &amp; <span class="title class_">Ref</span>) &#123;</span><br><span class="line">    <span class="keyword">var</span> ref = finishedWork.<span class="property">ref</span>;</span><br><span class="line"></span><br><span class="line">    <span class="keyword">if</span> (ref !== <span class="literal">null</span>) &#123;</span><br><span class="line">      <span class="keyword">var</span> instance = finishedWork.<span class="property">stateNode</span>;</span><br><span class="line">      <span class="keyword">var</span> instanceToUse;</span><br><span class="line"></span><br><span class="line">      <span class="keyword">switch</span> (finishedWork.<span class="property">tag</span>) &#123;</span><br><span class="line">        <span class="keyword">case</span> <span class="title class_">HostComponent</span>:</span><br><span class="line">          instanceToUse = <span class="title function_">getPublicInstance</span>(instance);</span><br><span class="line">          <span class="keyword">break</span>;</span><br><span class="line"></span><br><span class="line">        <span class="attr">default</span>:</span><br><span class="line">          instanceToUse = instance;</span><br><span class="line">      &#125; <span class="comment">// Moved outside to ensure DCE works with this flag</span></span><br><span class="line"></span><br><span class="line">      <span class="keyword">if</span> (<span class="keyword">typeof</span> ref === <span class="string">&quot;function&quot;</span>) &#123;</span><br><span class="line">        <span class="title function_">ref</span>(instanceToUse);</span><br><span class="line">      &#125; <span class="keyword">else</span> &#123;</span><br><span class="line">        ref.<span class="property">current</span> = instanceToUse;</span><br><span class="line">      &#125;</span><br><span class="line">    &#125;</span><br><span class="line">  &#125;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+<h4 id="requestPaint"><a href="#requestPaint" class="headerlink" title="requestPaint"></a>requestPaint</h4><p>在上面三个阶段执行結束后,会执行请求绘制的方法, 通过 Scheduler 模块调度, 这也是 <code>useLayoutEffect</code> 会在 DOM 绘制前执行的原因</p>
+<figure class="highlight js"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br></pre></td><td class="code"><pre><span class="line"><span class="title function_">requestPaint</span>();</span><br><span class="line"></span><br><span class="line"><span class="keyword">var</span> rootDidHavePassiveEffects = rootDoesHavePassiveEffects;</span><br><span class="line"></span><br><span class="line"><span class="keyword">if</span> (rootDoesHavePassiveEffects) &#123;</span><br><span class="line">  <span class="comment">// 在所有阶段执行结束后 root 节点上还有副作用, 先保存一个引用,在 layout 结束后再去调度</span></span><br><span class="line">  rootDoesHavePassiveEffects = <span class="literal">false</span>;</span><br><span class="line">  rootWithPendingPassiveEffects = root;</span><br><span class="line">  pendingPassiveEffectsLanes = lanes;</span><br><span class="line">  pendingPassiveEffectsRenderPriority = renderPriorityLevel;</span><br><span class="line">&#125; <span class="keyword">else</span> &#123;</span><br><span class="line">  <span class="comment">// We are done with the effect chain at this point so let&#x27;s clear the</span></span><br><span class="line">  <span class="comment">// nextEffect pointers to assist with GC. If we have passive effects, we&#x27;ll</span></span><br><span class="line">  <span class="comment">// clear this in flushPassiveEffects.</span></span><br><span class="line">  nextEffect = firstEffect;</span><br><span class="line"></span><br><span class="line">  <span class="keyword">while</span> (nextEffect !== <span class="literal">null</span>) &#123;</span><br><span class="line">    <span class="keyword">var</span> nextNextEffect = nextEffect.<span class="property">nextEffect</span>;</span><br><span class="line">    nextEffect.<span class="property">nextEffect</span> = <span class="literal">null</span>;</span><br><span class="line"></span><br><span class="line">    <span class="keyword">if</span> (nextEffect.<span class="property">flags</span> &amp; <span class="title class_">Deletion</span>) &#123;</span><br><span class="line">      <span class="title function_">detachFiberAfterEffects</span>(nextEffect);</span><br><span class="line">    &#125;</span><br><span class="line"></span><br><span class="line">    nextEffect = nextNextEffect;</span><br><span class="line">  &#125;</span><br><span class="line">&#125; <span class="comment">// Read this again, since an effect might have updated it</span></span><br></pre></td></tr></table></figure>
+ 
+      <!-- reward -->
+      
+      <div id="reword-out">
+        <div id="reward-btn">
+          打赏
+        </div>
+      </div>
+      
+    </div>
+    
+
+    <!-- copyright -->
+    
+    <div class="declare">
+      <ul class="post-copyright">
+        <li>
+          <i class="ri-copyright-line"></i>
+          <strong>版权声明： </strong>
+          
+          本博客所有文章除特别声明外，著作权归作者所有。转载请注明出处！
+          
+        </li>
+      </ul>
+    </div>
+    
+    <footer class="article-footer">
+       
+  <ul class="article-tag-list" itemprop="keywords"><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/React/" rel="tag">React</a></li><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/%E6%BA%90%E7%A0%81%E5%88%86%E6%9E%90/" rel="tag">源码分析</a></li></ul>
+
+    </footer>
+  </div>
+
+   
+  <nav class="article-nav">
+    
+      <a href="/posts/1033523a61a7/" class="article-nav-link">
+        <strong class="article-nav-caption">上一篇</strong>
+        <div class="article-nav-title">
+          
+            d3-dispatch 源码分析
+          
+        </div>
+      </a>
+    
+    
+      <a href="/posts/a5ff14c8459e/" class="article-nav-link">
+        <strong class="article-nav-caption">下一篇</strong>
+        <div class="article-nav-title">TS extends 使用技巧</div>
+      </a>
+    
+  </nav>
+
+  
+   
+<div class="gitalk" id="gitalk-container"></div>
+
+<link rel="stylesheet" href="https://cdn.staticfile.org/gitalk/1.7.2/gitalk.min.css">
+
+
+<script src="https://cdn.staticfile.org/gitalk/1.7.2/gitalk.min.js"></script>
+
+
+<script src="https://cdn.staticfile.org/blueimp-md5/2.19.0/js/md5.min.js"></script>
+
+<script type="text/javascript">
+  var gitalk = new Gitalk({
+    clientID: 'bce2317b25da7c3c18f6',
+    clientSecret: 'e0ab868ca9054234798be82c2b1c0c9dd8632307',
+    repo: 'noopn.github.io',
+    owner: 'noopn',
+    admin: ['noopn'],
+    // id: location.pathname,      // Ensure uniqueness and length less than 50
+    id: md5(location.pathname),
+    distractionFreeMode: false,  // Facebook-like distraction free mode
+    pagerDirection: 'last'
+  })
+
+  gitalk.render('gitalk-container')
+</script>
+
+     
+</article>
+
+</section>
+      <footer class="footer">
+  <div class="outer">
+    <ul>
+      <li>
+        Copyrights &copy;
+        2015-2024
+        <i class="ri-heart-fill heart_icon"></i> SunZhiqi
+      </li>
+    </ul>
+    <ul>
+      <li>
+        
+      </li>
+    </ul>
+    <ul>
+      <li>
+        
+      </li>
+    </ul>
+    <ul>
+      
+    </ul>
+    <ul>
+      
+    </ul>
+    <ul>
+      <li>
+        <!-- cnzz统计 -->
+        
+      </li>
+    </ul>
+  </div>
+</footer>    
+    </main>
+    <div class="float_btns">
+      <div class="totop" id="totop">
+  <i class="ri-arrow-up-line"></i>
+</div>
+
+    </div>
+    <aside class="sidebar on">
+      <button class="navbar-toggle"></button>
+<nav class="navbar">
+  
+  <div class="logo">
+    <a href="/"><img src="/images/ayer-side.png" alt="四月八日"></a>
+  </div>
+  
+  <ul class="nav nav-main">
+    
+    <li class="nav-item">
+      <a class="nav-item-link" href="/">主页</a>
+    </li>
+    
+    <li class="nav-item">
+      <a class="nav-item-link" href="/archives">归档</a>
+    </li>
+    
+    <li class="nav-item">
+      <a class="nav-item-link" href="/categories">分类</a>
+    </li>
+    
+    <li class="nav-item">
+      <a class="nav-item-link" href="/tags">标签</a>
+    </li>
+    
+    <li class="nav-item">
+      <a class="nav-item-link" href="/tags/Essay">随笔</a>
+    </li>
+    
+  </ul>
+</nav>
+<nav class="navbar navbar-bottom">
+  <ul class="nav">
+    <li class="nav-item">
+      
+      <a class="nav-item-link nav-item-search"  title="搜索">
+        <i class="ri-search-line"></i>
+      </a>
+      
+      
+    </li>
+  </ul>
+</nav>
+<div class="search-form-wrap">
+  <div class="local-search local-search-plugin">
+  <input type="search" id="local-search-input" class="local-search-input" placeholder="Search...">
+  <div id="local-search-result" class="local-search-result"></div>
+</div>
+</div>
+    </aside>
+    <div id="mask"></div>
+
+<!-- #reward -->
+<div id="reward">
+  <span class="close"><i class="ri-close-line"></i></span>
+  <p class="reward-p"><i class="ri-cup-line"></i>此时无声胜有声！</p>
+  <div class="reward-box">
+    
+    <div class="reward-item">
+      <img class="reward-img" src="/images/alipay.jpg">
+      <span class="reward-type">支付宝</span>
+    </div>
+    
+    
+    <div class="reward-item">
+      <img class="reward-img" src="/images/wechat.jpg">
+      <span class="reward-type">微信</span>
+    </div>
+    
+  </div>
+</div>
+    
+<script src="/js/jquery-3.6.0.min.js"></script>
+ 
+<script src="/js/lazyload.min.js"></script>
+
+<!-- Tocbot -->
+ 
+<script src="/js/tocbot.min.js"></script>
+
+<script>
+  tocbot.init({
+    tocSelector: ".tocbot",
+    contentSelector: ".article-entry",
+    headingSelector: "h1, h2, h3, h4, h5, h6",
+    hasInnerContainers: true,
+    scrollSmooth: true,
+    scrollContainer: "main",
+    positionFixedSelector: ".tocbot",
+    positionFixedClass: "is-position-fixed",
+    fixedSidebarOffset: "auto",
+  });
+</script>
+
+<script src="/js/jquery.modal.min.js"></script>
+<link rel="stylesheet" href="/css/jquery.modal.min.css" />
+<script src="/js/jquery.justifiedGallery.min.js"></script>
+
+<script src="/dist/main.js"></script>
+
+<!-- ImageViewer -->
+ <!-- Root element of PhotoSwipe. Must have class pswp. -->
+<div class="pswp" tabindex="-1" role="dialog" aria-hidden="true">
+  <!-- Background of PhotoSwipe. 
+         It's a separate element as animating opacity is faster than rgba(). -->
+  <div class="pswp__bg"></div>
+
+  <!-- Slides wrapper with overflow:hidden. -->
+  <div class="pswp__scroll-wrap">
+    <!-- Container that holds slides. 
+            PhotoSwipe keeps only 3 of them in the DOM to save memory.
+            Don't modify these 3 pswp__item elements, data is added later on. -->
+    <div class="pswp__container">
+      <div class="pswp__item"></div>
+      <div class="pswp__item"></div>
+      <div class="pswp__item"></div>
+    </div>
+
+    <!-- Default (PhotoSwipeUI_Default) interface on top of sliding area. Can be changed. -->
+    <div class="pswp__ui pswp__ui--hidden">
+      <div class="pswp__top-bar">
+        <!--  Controls are self-explanatory. Order can be changed. -->
+
+        <div class="pswp__counter"></div>
+
+        <button
+          class="pswp__button pswp__button--close"
+          title="Close (Esc)"
+        ></button>
+
+        <button
+          class="pswp__button pswp__button--share"
+          style="display: none"
+          title="Share"
+        ></button>
+
+        <button
+          class="pswp__button pswp__button--fs"
+          title="Toggle fullscreen"
+        ></button>
+
+        <button
+          class="pswp__button pswp__button--zoom"
+          title="Zoom in/out"
+        ></button>
+
+        <!-- Preloader demo http://codepen.io/dimsemenov/pen/yyBWoR -->
+        <!-- element will get class pswp__preloader--active when preloader is running -->
+        <div class="pswp__preloader">
+          <div class="pswp__preloader__icn">
+            <div class="pswp__preloader__cut">
+              <div class="pswp__preloader__donut"></div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <div class="pswp__share-modal pswp__share-modal--hidden pswp__single-tap">
+        <div class="pswp__share-tooltip"></div>
+      </div>
+
+      <button
+        class="pswp__button pswp__button--arrow--left"
+        title="Previous (arrow left)"
+      ></button>
+
+      <button
+        class="pswp__button pswp__button--arrow--right"
+        title="Next (arrow right)"
+      ></button>
+
+      <div class="pswp__caption">
+        <div class="pswp__caption__center"></div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<link rel="stylesheet" href="/css/photoswipe.min.css" />
+<link rel="stylesheet" href="/css/default-skin.min.css" />
+<script src="/js/photoswipe.min.js"></script>
+<script src="/js/photoswipe-ui-default.min.js"></script>
+
+<script>
+  function viewer_init() {
+    let pswpElement = document.querySelectorAll(".pswp")[0];
+    let $imgArr = document.querySelectorAll(
+      ".article-entry img:not(.reward-img)"
+    );
+
+    $imgArr.forEach(($em, i) => {
+      $em.onclick = () => {
+        // slider展开状态
+        // todo: 这样不好，后面改成状态
+        if (document.querySelector(".left-col.show")) return;
+        let items = [];
+        $imgArr.forEach(($em2, i2) => {
+          let img = $em2.getAttribute("data-idx", i2);
+          let src =
+            $em2.getAttribute("data-target") || $em2.getAttribute("src");
+          let title = $em2.getAttribute("alt");
+          // 获得原图尺寸
+          const image = new Image();
+          image.src = src;
+          items.push({
+            src: src,
+            w: image.width || $em2.width,
+            h: image.height || $em2.height,
+            title: title,
+          });
+        });
+        var gallery = new PhotoSwipe(pswpElement, PhotoSwipeUI_Default, items, {
+          index: parseInt(i),
+        });
+        gallery.init();
+      };
+    });
+  }
+  viewer_init();
+</script>
+ 
+<!-- MathJax -->
+ <script type="text/x-mathjax-config">
+  MathJax.Hub.Config({
+      tex2jax: {
+          inlineMath: [ ['$','$'], ["\\(","\\)"]  ],
+          processEscapes: true,
+          skipTags: ['script', 'noscript', 'style', 'textarea', 'pre', 'code']
+      }
+  });
+
+  MathJax.Hub.Queue(function() {
+      var all = MathJax.Hub.getAllJax(), i;
+      for(i=0; i < all.length; i += 1) {
+          all[i].SourceElement().parentNode.className += ' has-jax';
+      }
+  });
+</script>
+
+<script src="/js/MathJax.js"></script>
+<script src="/js/TeX-AMS-MML_HTMLorMML-full.js"></script>
+
+<script>
+  var ayerConfig = {
+    mathjax: true,
+  };
+</script>
+
+<!-- Katex -->
+
+<!-- busuanzi  -->
+
+<!-- ClickLove -->
+
+<!-- ClickBoom1 -->
+
+<!-- ClickBoom2 -->
+
+<!-- CodeCopy -->
+ 
+<link rel="stylesheet" href="/css/clipboard.css">
+ <script src="/js/clipboard.min.js"></script>
+<script>
+  function wait(callback, seconds) {
+    var timelag = null;
+    timelag = window.setTimeout(callback, seconds);
+  }
+  !(function (e, t, a) {
+    var initCopyCode = function () {
+      var copyHtml = "";
+      copyHtml += '<button class="btn-copy" data-clipboard-snippet="">';
+      copyHtml += '<i class="ri-file-copy-2-line"></i><span>COPY</span>';
+      copyHtml += "</button>";
+      $(".highlight .code pre").before(copyHtml);
+      $(".article pre code").before(copyHtml);
+      var clipboard = new ClipboardJS(".btn-copy", {
+        target: function (trigger) {
+          return trigger.nextElementSibling;
+        },
+      });
+      clipboard.on("success", function (e) {
+        let $btn = $(e.trigger);
+        $btn.addClass("copied");
+        let $icon = $($btn.find("i"));
+        $icon.removeClass("ri-file-copy-2-line");
+        $icon.addClass("ri-checkbox-circle-line");
+        let $span = $($btn.find("span"));
+        $span[0].innerText = "COPIED";
+
+        wait(function () {
+          // 等待两秒钟后恢复
+          $icon.removeClass("ri-checkbox-circle-line");
+          $icon.addClass("ri-file-copy-2-line");
+          $span[0].innerText = "COPY";
+        }, 2000);
+      });
+      clipboard.on("error", function (e) {
+        e.clearSelection();
+        let $btn = $(e.trigger);
+        $btn.addClass("copy-failed");
+        let $icon = $($btn.find("i"));
+        $icon.removeClass("ri-file-copy-2-line");
+        $icon.addClass("ri-time-line");
+        let $span = $($btn.find("span"));
+        $span[0].innerText = "COPY FAILED";
+
+        wait(function () {
+          // 等待两秒钟后恢复
+          $icon.removeClass("ri-time-line");
+          $icon.addClass("ri-file-copy-2-line");
+          $span[0].innerText = "COPY";
+        }, 2000);
+      });
+    };
+    initCopyCode();
+  })(window, document);
+</script>
+ 
+<!-- CanvasBackground -->
+
+<script>
+  if (window.mermaid) {
+    mermaid.initialize({ theme: "default" });
+  }
+</script>
+
+
+    
+    
+
+  </div>
+</body>
+
+</html>

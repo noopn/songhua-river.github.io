@@ -1,0 +1,624 @@
+<!DOCTYPE html>
+
+
+<html lang="zh-CN">
+  
+
+    <head>
+      <meta charset="utf-8" />
+       
+      <meta name="keywords" content="前端 web react" />
+       
+      <meta name="description" content="前端技术与生活。" />
+      
+      <meta
+        name="viewport"
+        content="width=device-width, initial-scale=1, maximum-scale=1"
+      />
+      <title>wordcloud2 源码分析 |  四月八日</title>
+  <meta name="generator" content="hexo-theme-ayer">
+      
+      <link rel="shortcut icon" href="/favicon.ico" />
+       
+<link rel="stylesheet" href="/dist/main.css">
+ 
+<link rel="stylesheet" href="/css/fonts/remixicon.css">
+ 
+<link rel="stylesheet" href="/css/custom.css">
+ 
+      <script src="/js/pace.min.js"></script>
+       
+ 
+
+      <link rel="stylesheet" href="/css/bulma.min.css" />
+      <script src="/js/sweetalert2.min.js"></script>
+
+      <!-- mermaid -->
+      
+      <script src="https://cdn.staticfile.org/mermaid/8.14.0/mermaid.min.js"></script>
+      
+      <style>
+        .swal2-styled.swal2-confirm {
+          font-size: 1.6rem;
+        }
+      </style>
+    <!-- hexo injector head_end start -->
+<link rel="stylesheet" href="/css/katex.min.css">
+
+<link rel="stylesheet" href="/css/style.css">
+<!-- hexo injector head_end end --></head>
+  </html>
+</html>
+
+
+<body>
+  <div id="app">
+    
+      
+    <main class="content on">
+      <section class="outer">
+  <article
+  id="posts-source/wordcloud"
+  class="article article-type-posts"
+  itemscope
+  itemprop="blogPost"
+  data-scroll-reveal
+>
+  <div class="article-inner">
+    
+    <header class="article-header">
+       
+<h1 class="article-title sea-center" style="border-left:0" itemprop="name">
+  wordcloud2 源码分析
+</h1>
+ 
+
+      
+    </header>
+     
+    <div class="article-meta">
+      <a href="/posts/630054399431/" class="article-date">
+  <time datetime="2022-04-27T05:36:43.000Z" itemprop="datePublished">2022-04-27</time>
+</a> 
+  <div class="article-category">
+    <a class="article-category-link" href="/categories/%E6%BA%90%E7%A0%81%E5%88%86%E6%9E%90/">源码分析</a> / <a class="article-category-link" href="/categories/%E6%BA%90%E7%A0%81%E5%88%86%E6%9E%90/%E5%85%B6%E4%BB%96/">其他</a>
+  </div>
+  
+<div class="word_count">
+    <span class="post-time">
+        <span class="post-meta-item-icon">
+            <i class="ri-quill-pen-line"></i>
+            <span class="post-meta-item-text"> 字数统计:</span>
+            <span class="post-count">2.6k</span>
+        </span>
+    </span>
+
+    <span class="post-time">
+        &nbsp; | &nbsp;
+        <span class="post-meta-item-icon">
+            <i class="ri-book-open-line"></i>
+            <span class="post-meta-item-text"> 阅读时长≈</span>
+            <span class="post-count">12 分钟</span>
+        </span>
+    </span>
+</div>
+ 
+    </div>
+      
+    <div class="tocbot"></div>
+
+
+
+
+  
+    <div class="article-entry" itemprop="articleBody">
+       
+  <p><a target="_blank" rel="noopener" href="https://github.com/timdream/wordcloud2.js">wordcloud2</a> 是一个词云工具,根据文字的不同权重,铺满整个图形.</p>
+<p>与 jquery 类似,通过立即执行函数,根据不同的模块化规范导出 WordCloud 方法</p>
+<figure class="highlight ts"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br></pre></td><td class="code"><pre><span class="line">(<span class="function">() =&gt;</span> &#123;</span><br><span class="line">  <span class="comment">// ...</span></span><br><span class="line"></span><br><span class="line">  <span class="comment">// Expose the library as an AMD module</span></span><br><span class="line">  <span class="keyword">if</span> (<span class="keyword">typeof</span> define === <span class="string">&quot;function&quot;</span> &amp;&amp; define.<span class="property">amd</span>) &#123;</span><br><span class="line">    <span class="variable language_">global</span>.<span class="property">WordCloud</span> = <span class="title class_">WordCloud</span>;</span><br><span class="line">    <span class="title function_">define</span>(<span class="string">&quot;wordcloud&quot;</span>, [], <span class="keyword">function</span> (<span class="params"></span>) &#123;</span><br><span class="line">      <span class="keyword">return</span> <span class="title class_">WordCloud</span>;</span><br><span class="line">    &#125;);</span><br><span class="line">  &#125; <span class="keyword">else</span> <span class="keyword">if</span> (<span class="keyword">typeof</span> <span class="variable language_">module</span> !== <span class="string">&quot;undefined&quot;</span> &amp;&amp; <span class="variable language_">module</span>.<span class="property">exports</span>) &#123;</span><br><span class="line">    <span class="variable language_">module</span>.<span class="property">exports</span> = <span class="title class_">WordCloud</span>;</span><br><span class="line">  &#125; <span class="keyword">else</span> &#123;</span><br><span class="line">    <span class="variable language_">global</span>.<span class="property">WordCloud</span> = <span class="title class_">WordCloud</span>;</span><br><span class="line">  &#125;</span><br><span class="line">&#125;)();</span><br></pre></td></tr></table></figure>
+
+<h4 id="事件设计"><a href="#事件设计" class="headerlink" title="事件设计"></a>事件设计</h4><p>实现 setImmediate , 为了保证每次绘制一个单词,需要在每次绘制之后,重新调用绘制方法, 并传入下一个单词.</p>
+<p>源码中使用 postMessage 事件模拟, 回比 <code>setTimeout(fn,0)</code> 执行时机提前一些,如果不支持则回退到 <code>setTimeout</code></p>
+<figure class="highlight ts"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br><span class="line">35</span><br><span class="line">36</span><br><span class="line">37</span><br><span class="line">38</span><br><span class="line">39</span><br><span class="line">40</span><br><span class="line">41</span><br><span class="line">42</span><br><span class="line">43</span><br><span class="line">44</span><br><span class="line">45</span><br><span class="line">46</span><br><span class="line">47</span><br><span class="line">48</span><br><span class="line">49</span><br><span class="line">50</span><br><span class="line">51</span><br><span class="line">52</span><br><span class="line">53</span><br><span class="line">54</span><br><span class="line">55</span><br></pre></td><td class="code"><pre><span class="line"><span class="variable language_">window</span>.<span class="property">setImmediate</span> = (<span class="keyword">function</span> <span class="title function_">setupSetImmediate</span> () &#123;</span><br><span class="line">    <span class="keyword">return</span> <span class="variable language_">window</span>.<span class="property">msSetImmediate</span> ||</span><br><span class="line">    <span class="variable language_">window</span>.<span class="property">webkitSetImmediate</span> ||</span><br><span class="line">    <span class="variable language_">window</span>.<span class="property">mozSetImmediate</span> ||</span><br><span class="line">    <span class="variable language_">window</span>.<span class="property">oSetImmediate</span> ||</span><br><span class="line">    (<span class="keyword">function</span> <span class="title function_">setupSetZeroTimeout</span> () &#123;</span><br><span class="line">        <span class="keyword">if</span> (!<span class="variable language_">window</span>.<span class="property">postMessage</span> || !<span class="variable language_">window</span>.<span class="property">addEventListener</span>) &#123;</span><br><span class="line">        <span class="keyword">return</span> <span class="literal">null</span></span><br><span class="line">        &#125;</span><br><span class="line"></span><br><span class="line">        <span class="keyword">var</span> callbacks = [<span class="literal">undefined</span>]</span><br><span class="line">        <span class="keyword">var</span> message = <span class="string">&#x27;zero-timeout-message&#x27;</span></span><br><span class="line"></span><br><span class="line">        <span class="comment">// Like setTimeout, but only takes a function argument.  There&#x27;s</span></span><br><span class="line">        <span class="comment">// no time argument (always zero) and no arguments (you have to</span></span><br><span class="line">        <span class="comment">// use a closure).</span></span><br><span class="line">        <span class="keyword">var</span> setZeroTimeout = <span class="keyword">function</span> <span class="title function_">setZeroTimeout</span> (callback) &#123;</span><br><span class="line">        <span class="keyword">var</span> id = callbacks.<span class="property">length</span></span><br><span class="line">        callbacks.<span class="title function_">push</span>(callback)</span><br><span class="line">        <span class="variable language_">window</span>.<span class="title function_">postMessage</span>(message + id.<span class="title function_">toString</span>(<span class="number">36</span>), <span class="string">&#x27;*&#x27;</span>)</span><br><span class="line"></span><br><span class="line">        <span class="keyword">return</span> id</span><br><span class="line">        &#125;</span><br><span class="line"></span><br><span class="line">        <span class="variable language_">window</span>.<span class="title function_">addEventListener</span>(<span class="string">&#x27;message&#x27;</span>, <span class="keyword">function</span> <span class="title function_">setZeroTimeoutMessage</span> (evt) &#123;</span><br><span class="line">        <span class="comment">// Skipping checking event source, retarded IE confused this window</span></span><br><span class="line">        <span class="comment">// object with another in the presence of iframe</span></span><br><span class="line">        <span class="keyword">if</span> (<span class="keyword">typeof</span> evt.<span class="property">data</span> !== <span class="string">&#x27;string&#x27;</span> ||</span><br><span class="line">            evt.<span class="property">data</span>.<span class="title function_">substr</span>(<span class="number">0</span>, message.<span class="property">length</span>) !== message<span class="comment">/* ||</span></span><br><span class="line"><span class="comment">            evt.source !== window */</span>) &#123;</span><br><span class="line">            <span class="keyword">return</span></span><br><span class="line">        &#125;</span><br><span class="line"></span><br><span class="line">        evt.<span class="title function_">stopImmediatePropagation</span>()</span><br><span class="line"></span><br><span class="line">        <span class="keyword">var</span> id = <span class="built_in">parseInt</span>(evt.<span class="property">data</span>.<span class="title function_">substr</span>(message.<span class="property">length</span>), <span class="number">36</span>)</span><br><span class="line">        <span class="keyword">if</span> (!callbacks[id]) &#123;</span><br><span class="line">            <span class="keyword">return</span></span><br><span class="line">        &#125;</span><br><span class="line"></span><br><span class="line">        callbacks[id]()</span><br><span class="line">        callbacks[id] = <span class="literal">undefined</span></span><br><span class="line">        &#125;, <span class="literal">true</span>)</span><br><span class="line"></span><br><span class="line">        <span class="comment">/* specify clearImmediate() here since we need the scope */</span></span><br><span class="line">        <span class="variable language_">window</span>.<span class="property">clearImmediate</span> = <span class="keyword">function</span> <span class="title function_">clearZeroTimeout</span> (id) &#123;</span><br><span class="line">        <span class="keyword">if</span> (!callbacks[id]) &#123;</span><br><span class="line">            <span class="keyword">return</span></span><br><span class="line">        &#125;</span><br><span class="line"></span><br><span class="line">        callbacks[id] = <span class="literal">undefined</span></span><br><span class="line">        &#125;</span><br><span class="line"></span><br><span class="line">        <span class="keyword">return</span> setZeroTimeout</span><br><span class="line">    &#125;)()</span><br></pre></td></tr></table></figure>
+
+<p>list 是需要渲染词条的数组, 事件绑定在 canvas 元素上, 如果还有词条需要渲染就递归执行渲染方法. 超出长度或超时则停止执行.</p>
+<figure class="highlight js"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">function</span> <span class="title function_">start</span>(<span class="params"></span>) &#123;</span><br><span class="line">  <span class="title function_">addEventListener</span>(<span class="string">&quot;wordcloudstart&quot;</span>, anotherWordCloudStart);</span><br><span class="line">  timer[timerId] = <span class="title function_">loopingFunction</span>(<span class="keyword">function</span> <span class="title function_">loop</span>(<span class="params"></span>) &#123;</span><br><span class="line">    <span class="keyword">if</span> (i &gt;= settings.<span class="property">list</span>.<span class="property">length</span>) &#123;</span><br><span class="line">      <span class="title function_">stoppingFunction</span>(timer[timerId]);</span><br><span class="line">      <span class="title function_">removeEventListener</span>(<span class="string">&quot;wordcloudstart&quot;</span>, anotherWordCloudStart);</span><br><span class="line">      <span class="keyword">delete</span> timer[timerId];</span><br><span class="line">      <span class="keyword">return</span>;</span><br><span class="line">    &#125;</span><br><span class="line">    <span class="keyword">var</span> drawn = <span class="title function_">putWord</span>(settings.<span class="property">list</span>[i]);</span><br><span class="line"></span><br><span class="line">    <span class="keyword">if</span> (<span class="title function_">exceedTime</span>() || canceled) &#123;</span><br><span class="line">      <span class="title function_">stoppingFunction</span>(timer[timerId]);</span><br><span class="line">      <span class="title function_">removeEventListener</span>(<span class="string">&quot;wordcloudstart&quot;</span>, anotherWordCloudStart);</span><br><span class="line">      <span class="keyword">delete</span> timer[timerId];</span><br><span class="line">      <span class="keyword">return</span>;</span><br><span class="line">    &#125;</span><br><span class="line">    i++;</span><br><span class="line">    timer[timerId] = <span class="title function_">loopingFunction</span>(loop, settings.<span class="property">wait</span>);</span><br><span class="line">  &#125;, settings.<span class="property">wait</span>);</span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line"><span class="title function_">start</span>();</span><br></pre></td></tr></table></figure>
+
+<h4 id="源码设计"><a href="#源码设计" class="headerlink" title="源码设计"></a>源码设计</h4><ul>
+<li><p>合并初始化和默认参数,判断元素合法性</p>
+</li>
+<li><p>定义默认图形的<a target="_blank" rel="noopener" href="http://www.wolframalpha.com/">函数表达式</a>,</p>
+<figure class="highlight js"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">switch</span> (settings.<span class="property">shape</span>) &#123;</span><br><span class="line">  <span class="keyword">case</span> <span class="string">&quot;cardioid&quot;</span>:</span><br><span class="line">    settings.<span class="property">shape</span> = <span class="keyword">function</span> <span class="title function_">shapeCardioid</span>(<span class="params">theta</span>) &#123;</span><br><span class="line">      <span class="keyword">return</span> <span class="number">1</span> - <span class="title class_">Math</span>.<span class="title function_">sin</span>(theta);</span><br><span class="line">    &#125;;</span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line"><span class="comment">// 如果不是极坐标表示的方式,需要自行转换 \</span></span><br><span class="line"><span class="comment">// http://timdream.org/wordcloud2.js/shape-generator.html 用于生成图形坐标</span></span><br><span class="line"><span class="keyword">const</span> <span class="title function_">shape</span> = (<span class="params"></span>) =&gt; &#123;</span><br><span class="line">  <span class="keyword">const</span> max = <span class="number">1026</span>;</span><br><span class="line">  <span class="keyword">const</span> leng = [</span><br><span class="line">    <span class="number">290</span>, <span class="number">296</span>, <span class="number">299</span>, <span class="number">301</span>, <span class="number">305</span>, <span class="number">309</span>, <span class="number">311</span>, <span class="number">313</span>, <span class="number">315</span>, <span class="number">316</span>, <span class="number">318</span>, <span class="number">321</span>, <span class="number">325</span>, <span class="number">326</span>, <span class="number">327</span>,</span><br><span class="line">    <span class="number">328</span>, <span class="number">330</span>, <span class="number">330</span>, <span class="number">331</span>, <span class="number">334</span>, <span class="number">335</span>, <span class="number">338</span>, <span class="number">340</span>, <span class="number">343</span>, <span class="number">343</span>, <span class="number">343</span>, <span class="number">346</span>, <span class="number">349</span>, <span class="number">353</span>, <span class="number">356</span>,</span><br><span class="line">    <span class="number">360</span>, <span class="number">365</span>, <span class="number">378</span>, <span class="number">380</span>, <span class="number">381</span>, <span class="number">381</span>,</span><br><span class="line">  ];</span><br><span class="line">  <span class="keyword">return</span> leng[((theta / (<span class="number">2</span> * <span class="title class_">Math</span>.<span class="property">PI</span>)) * leng.<span class="property">length</span>) | <span class="number">0</span>] / max;</span><br><span class="line">&#125;;</span><br></pre></td></tr></table></figure>
+</li>
+<li><p>随机颜色方法 <strong>randomHslColor</strong></p>
+<figure class="highlight js"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">function</span> <span class="title function_">randomHslColor</span>(<span class="params">min, max</span>) &#123;</span><br><span class="line">  <span class="keyword">return</span> (</span><br><span class="line">    <span class="string">&quot;hsl(&quot;</span> +</span><br><span class="line">    (<span class="title class_">Math</span>.<span class="title function_">random</span>() * <span class="number">360</span>).<span class="title function_">toFixed</span>() +</span><br><span class="line">    <span class="string">&quot;,&quot;</span> +</span><br><span class="line">    (<span class="title class_">Math</span>.<span class="title function_">random</span>() * <span class="number">30</span> + <span class="number">70</span>).<span class="title function_">toFixed</span>() +</span><br><span class="line">    <span class="string">&quot;%,&quot;</span> +</span><br><span class="line">    (<span class="title class_">Math</span>.<span class="title function_">random</span>() * (max - min) + min).<span class="title function_">toFixed</span>() +</span><br><span class="line">    <span class="string">&quot;%)&quot;</span></span><br><span class="line">  );</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+</li>
+<li><p>获取随机角度 <strong>getRotateDeg</strong></p>
+<p>有几个变量可以控制这个值:</p>
+<p><code>rotateRatio</code> 旋转角度的概率<br><code>maxRotation</code> 最大值 <code>Math.PI / 2</code><br><code>minRotation</code> 最小值 <code>-Math.PI / 2</code><br><code>rotationRange</code> 旋转角度区间默认在 <code>[-Math.PI / 2 , Math.PI / 2]</code><br><code>rotationSteps</code> 固定递进旋转角度, 如果是 3 旋转角度只会是 <code>[-90deg,-30deg,30deg,90deg]</code></p>
+<figure class="highlight js"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">function</span> <span class="title function_">getRotateDeg</span>(<span class="params"></span>) &#123;</span><br><span class="line">  <span class="comment">// 最大角度和最小角度相同</span></span><br><span class="line">  <span class="keyword">if</span> (rotationRange === <span class="number">0</span>) &#123;</span><br><span class="line">    <span class="keyword">return</span> minRotation;</span><br><span class="line">  &#125;</span><br><span class="line">  <span class="comment">// 概率以外不旋转</span></span><br><span class="line">  <span class="keyword">if</span> (<span class="title class_">Math</span>.<span class="title function_">random</span>() &gt; settings.<span class="property">rotateRatio</span>) &#123;</span><br><span class="line">    <span class="keyword">return</span> <span class="number">0</span>;</span><br><span class="line">  &#125;</span><br><span class="line">  <span class="comment">//固定角度区随机值</span></span><br><span class="line">  <span class="keyword">if</span> (rotationSteps &gt; <span class="number">0</span>) &#123;</span><br><span class="line">    <span class="keyword">return</span> (</span><br><span class="line">      minRotation +</span><br><span class="line">      (<span class="title class_">Math</span>.<span class="title function_">floor</span>(<span class="title class_">Math</span>.<span class="title function_">random</span>() * rotationSteps) * rotationRange) /</span><br><span class="line">        (rotationSteps - <span class="number">1</span>)</span><br><span class="line">    );</span><br><span class="line">  &#125; <span class="keyword">else</span> &#123;</span><br><span class="line">    <span class="keyword">return</span> minRotation + <span class="title class_">Math</span>.<span class="title function_">random</span>() * rotationRange;</span><br><span class="line">  &#125;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+</li>
+<li><p>获取渲染相关数据 <strong>getTextInfo</strong></p>
+<p>传入需要渲染的 词条,权重,旋转角度</p>
+<p>采用双缓存的方法,创建另一个不可见的 canvas 画布,将词条绘制在另一个画布上,将画布转成图片,并分析像素点信息,最终返回文字信息</p>
+<p>定义一个网格大小,将画布分成若干个格子,一旦一个有效像素点落在格子中,那么这个格子中的其他像素点无需在判断,从而优化性能</p>
+<figure class="highlight js"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br><span class="line">35</span><br><span class="line">36</span><br><span class="line">37</span><br><span class="line">38</span><br><span class="line">39</span><br><span class="line">40</span><br><span class="line">41</span><br><span class="line">42</span><br><span class="line">43</span><br><span class="line">44</span><br><span class="line">45</span><br><span class="line">46</span><br><span class="line">47</span><br><span class="line">48</span><br><span class="line">49</span><br><span class="line">50</span><br><span class="line">51</span><br><span class="line">52</span><br><span class="line">53</span><br><span class="line">54</span><br><span class="line">55</span><br><span class="line">56</span><br><span class="line">57</span><br><span class="line">58</span><br><span class="line">59</span><br><span class="line">60</span><br><span class="line">61</span><br><span class="line">62</span><br><span class="line">63</span><br><span class="line">64</span><br><span class="line">65</span><br><span class="line">66</span><br><span class="line">67</span><br><span class="line">68</span><br><span class="line">69</span><br><span class="line">70</span><br><span class="line">71</span><br><span class="line">72</span><br><span class="line">73</span><br><span class="line">74</span><br><span class="line">75</span><br><span class="line">76</span><br><span class="line">77</span><br><span class="line">78</span><br><span class="line">79</span><br><span class="line">80</span><br><span class="line">81</span><br><span class="line">82</span><br><span class="line">83</span><br><span class="line">84</span><br><span class="line">85</span><br><span class="line">86</span><br><span class="line">87</span><br><span class="line">88</span><br><span class="line">89</span><br><span class="line">90</span><br><span class="line">91</span><br><span class="line">92</span><br><span class="line">93</span><br><span class="line">94</span><br><span class="line">95</span><br><span class="line">96</span><br><span class="line">97</span><br><span class="line">98</span><br><span class="line">99</span><br><span class="line">100</span><br><span class="line">101</span><br><span class="line">102</span><br><span class="line">103</span><br><span class="line">104</span><br><span class="line">105</span><br><span class="line">106</span><br><span class="line">107</span><br><span class="line">108</span><br><span class="line">109</span><br><span class="line">110</span><br><span class="line">111</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">function</span> <span class="title function_">getTextInfo</span>(<span class="params"></span>) &#123;</span><br><span class="line">  <span class="comment">// 根据权重计算字体大小 weightFactor 指定权重基数</span></span><br><span class="line">  <span class="keyword">var</span> fontSize = weight * weightFactor;</span><br><span class="line">  <span class="comment">// 不绘制</span></span><br><span class="line">  <span class="keyword">if</span> (fontSize &lt;= settings.<span class="property">minSize</span>) &#123;</span><br><span class="line">    <span class="keyword">return</span> <span class="literal">false</span>;</span><br><span class="line">  &#125;</span><br><span class="line">  <span class="keyword">var</span> mu = <span class="number">1</span>;</span><br><span class="line">  <span class="comment">// 网格大小</span></span><br><span class="line">  <span class="keyword">var</span> g = settings.<span class="property">gridSize</span>;</span><br><span class="line">  <span class="comment">// 创建新画布</span></span><br><span class="line">  <span class="keyword">var</span> fcanvas = <span class="variable language_">document</span>.<span class="title function_">createElement</span>(<span class="string">&quot;canvas&quot;</span>);</span><br><span class="line"></span><br><span class="line">  <span class="comment">// 绘制词条前获取词条的宽高</span></span><br><span class="line">  <span class="keyword">var</span> fw = fctx.<span class="title function_">measureText</span>(word).<span class="property">width</span> / mu;</span><br><span class="line">  <span class="keyword">var</span> fh =</span><br><span class="line">    <span class="title class_">Math</span>.<span class="title function_">max</span>(</span><br><span class="line">      fontSize * mu,</span><br><span class="line">      fctx.<span class="title function_">measureText</span>(<span class="string">&quot;m&quot;</span>).<span class="property">width</span>,</span><br><span class="line">      fctx.<span class="title function_">measureText</span>(<span class="string">&quot;\uFF37&quot;</span>).<span class="property">width</span></span><br><span class="line">    ) / mu;</span><br><span class="line">  <span class="comment">// 创建一个包围盒, 让他足够容纳文字</span></span><br><span class="line">  <span class="keyword">var</span> boxWidth = fw + fh * <span class="number">2</span>;</span><br><span class="line">  <span class="keyword">var</span> boxHeight = fh * <span class="number">3</span>;</span><br><span class="line"></span><br><span class="line">  <span class="comment">// 计算网格的长宽个数</span></span><br><span class="line">  <span class="keyword">var</span> fgw = <span class="title class_">Math</span>.<span class="title function_">ceil</span>(boxWidth / g);</span><br><span class="line">  <span class="keyword">var</span> fgh = <span class="title class_">Math</span>.<span class="title function_">ceil</span>(boxHeight / g);</span><br><span class="line">  boxWidth = fgw * g;</span><br><span class="line">  boxHeight = fgh * g;</span><br><span class="line">  <span class="comment">// 绘制文字时候的偏移量</span></span><br><span class="line">  <span class="keyword">var</span> fillTextOffsetX = -fw / <span class="number">2</span>;</span><br><span class="line">  <span class="comment">// 希腊字母在 0.4 高度的位置,视觉效果会在中间位置</span></span><br><span class="line">  <span class="keyword">var</span> fillTextOffsetY = -fh * <span class="number">0.4</span>;</span><br><span class="line"></span><br><span class="line">  <span class="comment">// 计算考虑到旋转角度后的盒子大小</span></span><br><span class="line">  <span class="keyword">var</span> cgh = <span class="title class_">Math</span>.<span class="title function_">ceil</span>(</span><br><span class="line">    (boxWidth * <span class="title class_">Math</span>.<span class="title function_">abs</span>(<span class="title class_">Math</span>.<span class="title function_">sin</span>(rotateDeg)) +</span><br><span class="line">      boxHeight * <span class="title class_">Math</span>.<span class="title function_">abs</span>(<span class="title class_">Math</span>.<span class="title function_">cos</span>(rotateDeg))) /</span><br><span class="line">      g</span><br><span class="line">  );</span><br><span class="line">  <span class="keyword">var</span> cgw = <span class="title class_">Math</span>.<span class="title function_">ceil</span>(</span><br><span class="line">    (boxWidth * <span class="title class_">Math</span>.<span class="title function_">abs</span>(<span class="title class_">Math</span>.<span class="title function_">cos</span>(rotateDeg)) +</span><br><span class="line">      boxHeight * <span class="title class_">Math</span>.<span class="title function_">abs</span>(<span class="title class_">Math</span>.<span class="title function_">sin</span>(rotateDeg))) /</span><br><span class="line">      g</span><br><span class="line">  );</span><br><span class="line">  <span class="keyword">var</span> width = cgw * g;</span><br><span class="line">  <span class="keyword">var</span> height = cgh * g;</span><br><span class="line"></span><br><span class="line">  <span class="comment">// 把文字绘制到临时画布上</span></span><br><span class="line">  fctx.<span class="property">fillStyle</span> = <span class="string">&quot;#000&quot;</span>;</span><br><span class="line">  fctx.<span class="property">textBaseline</span> = <span class="string">&quot;middle&quot;</span>;</span><br><span class="line">  fctx.<span class="title function_">fillText</span>(</span><br><span class="line">    word,</span><br><span class="line">    fillTextOffsetX * mu,</span><br><span class="line">    (fillTextOffsetY + fontSize * <span class="number">0.5</span>) * mu</span><br><span class="line">  );</span><br><span class="line"></span><br><span class="line">  <span class="comment">// 将画布转为 像素点</span></span><br><span class="line"></span><br><span class="line">  <span class="keyword">var</span> imageData = fctx.<span class="title function_">getImageData</span>(<span class="number">0</span>, <span class="number">0</span>, width, height).<span class="property">data</span>;</span><br><span class="line"></span><br><span class="line">  <span class="comment">// 计算像素占据的网格</span></span><br><span class="line">  <span class="keyword">var</span> occupied = [];</span><br><span class="line">  <span class="keyword">var</span> gx = cgw;</span><br><span class="line">  <span class="keyword">var</span> gy, x, y;</span><br><span class="line">  <span class="comment">//  文字占据区域的网格坐标 [x1,x2,y1,y2]</span></span><br><span class="line">  <span class="keyword">var</span> bounds = [cgh / <span class="number">2</span>, cgw / <span class="number">2</span>, cgh / <span class="number">2</span>, cgw / <span class="number">2</span>];</span><br><span class="line">  <span class="keyword">while</span> (gx--) &#123;</span><br><span class="line">    gy = cgh;</span><br><span class="line">    <span class="keyword">while</span> (gy--) &#123;</span><br><span class="line">      y = g;</span><br><span class="line">      <span class="attr">singleGridLoop</span>: <span class="keyword">while</span> (y--) &#123;</span><br><span class="line">        x = g;</span><br><span class="line">        <span class="keyword">while</span> (x--) &#123;</span><br><span class="line">          <span class="keyword">if</span> (imageData[((gy * g + y) * width + (gx * g + x)) * <span class="number">4</span> + <span class="number">3</span>]) &#123;</span><br><span class="line">            <span class="comment">// 如果像素点落在格子中则添加到数列中</span></span><br><span class="line">            occupied.<span class="title function_">push</span>([gx, gy]);</span><br><span class="line"></span><br><span class="line">            <span class="keyword">if</span> (gx &lt; bounds[<span class="number">3</span>]) &#123;</span><br><span class="line">              bounds[<span class="number">3</span>] = gx;</span><br><span class="line">            &#125;</span><br><span class="line">            <span class="keyword">if</span> (gx &gt; bounds[<span class="number">1</span>]) &#123;</span><br><span class="line">              bounds[<span class="number">1</span>] = gx;</span><br><span class="line">            &#125;</span><br><span class="line">            <span class="keyword">if</span> (gy &lt; bounds[<span class="number">0</span>]) &#123;</span><br><span class="line">              bounds[<span class="number">0</span>] = gy;</span><br><span class="line">            &#125;</span><br><span class="line">            <span class="keyword">if</span> (gy &gt; bounds[<span class="number">2</span>]) &#123;</span><br><span class="line">              bounds[<span class="number">2</span>] = gy;</span><br><span class="line">            &#125;</span><br><span class="line"></span><br><span class="line">            <span class="keyword">break</span> singleGridLoop;</span><br><span class="line">          &#125;</span><br><span class="line">        &#125;</span><br><span class="line">      &#125;</span><br><span class="line">    &#125;</span><br><span class="line">  &#125;</span><br><span class="line">  <span class="keyword">return</span> &#123;</span><br><span class="line">    <span class="attr">mu</span>: mu,</span><br><span class="line">    <span class="attr">occupied</span>: occupied,</span><br><span class="line">    <span class="attr">bounds</span>: bounds,</span><br><span class="line">    <span class="attr">gw</span>: cgw,</span><br><span class="line">    <span class="attr">gh</span>: cgh,</span><br><span class="line">    <span class="attr">fillTextOffsetX</span>: fillTextOffsetX,</span><br><span class="line">    <span class="attr">fillTextOffsetY</span>: fillTextOffsetY,</span><br><span class="line">    <span class="attr">fillTextWidth</span>: fw,</span><br><span class="line">    <span class="attr">fillTextHeight</span>: fh,</span><br><span class="line">    <span class="attr">fontSize</span>: fontSize,</span><br><span class="line">  &#125;;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+<p><img src="/posts/630054399431/0001.png"><br><img src="/posts/630054399431/0002.png"></p>
+</li>
+<li><p>绘制策略</p>
+<p>现在有了文字包围盒的尺寸和坐标,需要利用这些信息将图形填充满</p>
+<p>首先拿到一个词条, 以中心点为圆心,这个中心点可能是用户自定义的中心点,所以不一定在图形的中心. 以指定的半径画圆 (也可能是其他图形的极坐标表达式产生的图形),在这个圆上平均取若干个采样点,半径越大采样点越多.</p>
+<p>从圆心开始,初始半径为 0,也就表示词条放在中心点. 下一个词条进来的时候,因为半径为 0 的圆上已经有了一个词条,所以扩大半径画圆,产生采样点,循环这些采样点,并检测词条是否发生碰撞.</p>
+<p>如果不能放下就继续循环采样点,如果所有采样点都不符合条件,则扩大半径重新读取采样点,重新遍历</p>
+<p>如果可以放下,则跳出所有循环,传入下一个词条,重复以上过程</p>
+</li>
+<li><p>计算绘制点</p>
+<p>最终绘制的过程,是以中心点为原点,指定半径长度画圆, 在圆周上平均取八个点作为绘制点,半径每增加一次,绘制点增加 8 个,其中半径的最大值是包围盒对角线的长度(当中心点在包围盒的一个顶点时)</p>
+<figure class="highlight js"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br><span class="line">35</span><br><span class="line">36</span><br><span class="line">37</span><br><span class="line">38</span><br><span class="line">39</span><br><span class="line">40</span><br><span class="line">41</span><br><span class="line">42</span><br><span class="line">43</span><br><span class="line">44</span><br><span class="line">45</span><br><span class="line">46</span><br><span class="line">47</span><br><span class="line">48</span><br><span class="line">49</span><br><span class="line">50</span><br><span class="line">51</span><br><span class="line">52</span><br><span class="line">53</span><br><span class="line">54</span><br><span class="line">55</span><br><span class="line">56</span><br><span class="line">57</span><br><span class="line">58</span><br><span class="line">59</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment">// 绘制的中心点</span></span><br><span class="line">center = settings.<span class="property">origin</span></span><br><span class="line">  ? [settings.<span class="property">origin</span>[<span class="number">0</span>] / g, settings.<span class="property">origin</span>[<span class="number">1</span>] / g]</span><br><span class="line">  : [ngx / <span class="number">2</span>, ngy / <span class="number">2</span>];</span><br><span class="line"></span><br><span class="line"><span class="comment">// 最大绘制半径,当中心点在包围盒的四个顶点时,绘制最大半径就是对角线的长度</span></span><br><span class="line"><span class="comment">//</span></span><br><span class="line">maxRadius = <span class="title class_">Math</span>.<span class="title function_">floor</span>(<span class="title class_">Math</span>.<span class="title function_">sqrt</span>(ngx * ngx + ngy * ngy));</span><br><span class="line"></span><br><span class="line"><span class="keyword">var</span> r = maxRadius + <span class="number">1</span>;</span><br><span class="line"></span><br><span class="line"><span class="keyword">while</span> (r--) &#123;</span><br><span class="line">  <span class="comment">// 获取不同半径圆周上的点的坐标</span></span><br><span class="line">  <span class="keyword">var</span> points = <span class="title function_">getPointsAtRadius</span>(maxRadius - r);</span><br><span class="line"></span><br><span class="line">  <span class="comment">// 检查是否可以绘制</span></span><br><span class="line">  <span class="keyword">var</span> drawn = points.<span class="title function_">some</span>(tryToPutWordAtPoint);</span><br><span class="line"></span><br><span class="line">  <span class="keyword">if</span> (drawn) &#123;</span><br><span class="line">    <span class="comment">// leave putWord() and return true</span></span><br><span class="line">    <span class="keyword">return</span> <span class="literal">true</span>;</span><br><span class="line">  &#125;</span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line"><span class="keyword">var</span> getPointsAtRadius = <span class="keyword">function</span> <span class="title function_">getPointsAtRadius</span>(<span class="params">radius</span>) &#123;</span><br><span class="line">  <span class="comment">// 采样点的个数随半径的增加增大</span></span><br><span class="line">  <span class="keyword">var</span> T = radius * <span class="number">8</span>;</span><br><span class="line"></span><br><span class="line">  <span class="comment">// Getting all the points at this radius</span></span><br><span class="line">  <span class="keyword">var</span> t = T;</span><br><span class="line">  <span class="keyword">var</span> points = [];</span><br><span class="line"></span><br><span class="line">  <span class="comment">// 半径为 0 时,词条放在中心点</span></span><br><span class="line">  <span class="keyword">if</span> (radius === <span class="number">0</span>) &#123;</span><br><span class="line">    points.<span class="title function_">push</span>([center[<span class="number">0</span>], center[<span class="number">1</span>], <span class="number">0</span>]);</span><br><span class="line">  &#125;</span><br><span class="line"></span><br><span class="line">  <span class="comment">// 半径不为 0 时获取采样点的坐标,共有t个采样点</span></span><br><span class="line">  <span class="keyword">while</span> (t--) &#123;</span><br><span class="line">    <span class="keyword">var</span> rx = <span class="number">1</span>;</span><br><span class="line">    <span class="comment">// 图形的数学表达式建立在极坐标系中, x 的取值范围 [0, 2*Math.PI] 值域为 [0,1]</span></span><br><span class="line">    <span class="comment">// 这个值会和半径相乘,得到半径的实际长度</span></span><br><span class="line">    <span class="comment">// 这个过程可以想象乘等比放大一个图形的过程,而在放大的过程中,图形上的采样点也越来越多</span></span><br><span class="line">    <span class="keyword">if</span> (settings.<span class="property">shape</span> !== <span class="string">&quot;circle&quot;</span>) &#123;</span><br><span class="line">      rx = settings.<span class="title function_">shape</span>((t / T) * <span class="number">2</span> * <span class="title class_">Math</span>.<span class="property">PI</span>); <span class="comment">// 0 to 1</span></span><br><span class="line">    &#125;</span><br><span class="line"></span><br><span class="line">    <span class="comment">// Push [x, y, t] t is used solely for getTextColor()</span></span><br><span class="line">    points.<span class="title function_">push</span>([</span><br><span class="line">      center[<span class="number">0</span>] + radius * rx * <span class="title class_">Math</span>.<span class="title function_">cos</span>((-t / T) * <span class="number">2</span> * <span class="title class_">Math</span>.<span class="property">PI</span>),</span><br><span class="line">      center[<span class="number">1</span>] +</span><br><span class="line">        radius * rx * <span class="title class_">Math</span>.<span class="title function_">sin</span>((-t / T) * <span class="number">2</span> * <span class="title class_">Math</span>.<span class="property">PI</span>) * settings.<span class="property">ellipticity</span>,</span><br><span class="line">      (t / T) * <span class="number">2</span> * <span class="title class_">Math</span>.<span class="property">PI</span>,</span><br><span class="line">    ]);</span><br><span class="line">  &#125;</span><br><span class="line"></span><br><span class="line">  pointsAtRadius[radius] = points;</span><br><span class="line">  <span class="keyword">return</span> points;</span><br><span class="line">&#125;;</span><br></pre></td></tr></table></figure>
+</li>
+<li><p>碰撞检测</p>
+<figure class="highlight js"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br><span class="line">35</span><br><span class="line">36</span><br><span class="line">37</span><br><span class="line">38</span><br><span class="line">39</span><br><span class="line">40</span><br><span class="line">41</span><br><span class="line">42</span><br><span class="line">43</span><br><span class="line">44</span><br><span class="line">45</span><br><span class="line">46</span><br><span class="line">47</span><br><span class="line">48</span><br><span class="line">49</span><br><span class="line">50</span><br><span class="line">51</span><br><span class="line">52</span><br><span class="line">53</span><br><span class="line">54</span><br><span class="line">55</span><br><span class="line">56</span><br><span class="line">57</span><br><span class="line">58</span><br><span class="line">59</span><br><span class="line">60</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">var</span> tryToPutWordAtPoint = <span class="keyword">function</span> (<span class="params">gxy</span>) &#123;</span><br><span class="line">  <span class="comment">// gxy [x1,y1] 采样点坐标</span></span><br><span class="line"></span><br><span class="line">  <span class="comment">// info.gw info.gh 旋转周的包围和宽度和高度</span></span><br><span class="line">  <span class="comment">// 将包围盒中心和采样点对其</span></span><br><span class="line">  <span class="keyword">var</span> gx = <span class="title class_">Math</span>.<span class="title function_">floor</span>(gxy[<span class="number">0</span>] - info.<span class="property">gw</span> / <span class="number">2</span>);</span><br><span class="line">  <span class="keyword">var</span> gy = <span class="title class_">Math</span>.<span class="title function_">floor</span>(gxy[<span class="number">1</span>] - info.<span class="property">gh</span> / <span class="number">2</span>);</span><br><span class="line">  <span class="keyword">var</span> gw = info.<span class="property">gw</span>;</span><br><span class="line">  <span class="keyword">var</span> gh = info.<span class="property">gh</span>;</span><br><span class="line"></span><br><span class="line">  <span class="comment">// occupied 所有包含有效像素的格子的坐标</span></span><br><span class="line">  <span class="comment">// ngx ngy 整个画布被分成的格子数</span></span><br><span class="line">  <span class="comment">// grid 所有格子的二维数组</span></span><br><span class="line">  <span class="keyword">var</span> canFitText = <span class="keyword">function</span> <span class="title function_">canFitText</span>(<span class="params">gx, gy, gw, gh, occupied</span>) &#123;</span><br><span class="line">    <span class="keyword">var</span> i = occupied.<span class="property">length</span>;</span><br><span class="line">    <span class="keyword">while</span> (i--) &#123;</span><br><span class="line">      <span class="comment">// 从偏移后的采样点位置,每次加上格子的坐标</span></span><br><span class="line">      <span class="keyword">var</span> px = gx + occupied[i][<span class="number">0</span>];</span><br><span class="line">      <span class="keyword">var</span> py = gy + occupied[i][<span class="number">1</span>];</span><br><span class="line"></span><br><span class="line">      <span class="comment">// 是否超出画布的情况</span></span><br><span class="line">      <span class="keyword">if</span> (px &gt;= ngx || py &gt;= ngy || px &lt; <span class="number">0</span> || py &lt; <span class="number">0</span>) &#123;</span><br><span class="line">        <span class="keyword">if</span> (!settings.<span class="property">drawOutOfBound</span>) &#123;</span><br><span class="line">          <span class="keyword">return</span> <span class="literal">false</span>;</span><br><span class="line">        &#125;</span><br><span class="line">        <span class="keyword">continue</span>;</span><br><span class="line">      &#125;</span><br><span class="line"></span><br><span class="line">      <span class="comment">// 只要有一个格子放不下就是重叠的情况直接跳出</span></span><br><span class="line">      <span class="keyword">if</span> (!grid[px][py]) &#123;</span><br><span class="line">        <span class="keyword">return</span> <span class="literal">false</span>;</span><br><span class="line">      &#125;</span><br><span class="line">    &#125;</span><br><span class="line">    <span class="keyword">return</span> <span class="literal">true</span>;</span><br><span class="line">  &#125;;</span><br><span class="line">  <span class="comment">// If we cannot fit the text at this position, return false</span></span><br><span class="line">  <span class="comment">// and go to the next position.</span></span><br><span class="line">  <span class="keyword">if</span> (!<span class="title function_">canFitText</span>(gx, gy, gw, gh, info.<span class="property">occupied</span>)) &#123;</span><br><span class="line">    <span class="keyword">return</span> <span class="literal">false</span>;</span><br><span class="line">  &#125;</span><br><span class="line"></span><br><span class="line">  <span class="comment">// Actually put the text on the canvas</span></span><br><span class="line">  <span class="title function_">drawText</span>(</span><br><span class="line">    gx,</span><br><span class="line">    gy,</span><br><span class="line">    info,</span><br><span class="line">    word,</span><br><span class="line">    weight,</span><br><span class="line">    maxRadius - r,</span><br><span class="line">    gxy[<span class="number">2</span>],</span><br><span class="line">    rotateDeg,</span><br><span class="line">    attributes,</span><br><span class="line">    extraDataArray</span><br><span class="line">  );</span><br><span class="line"></span><br><span class="line">  <span class="comment">// Mark the spaces on the grid as filled</span></span><br><span class="line">  <span class="title function_">updateGrid</span>(gx, gy, gw, gh, info, item);</span><br><span class="line">  <span class="comment">// Return true so some() will stop and also return true.</span></span><br><span class="line">  <span class="keyword">return</span> <span class="literal">true</span>;</span><br><span class="line">&#125;;</span><br></pre></td></tr></table></figure></li>
+</ul>
+<h4 id="其他实现思路"><a href="#其他实现思路" class="headerlink" title="其他实现思路"></a>其他实现思路</h4><p>填充过程可以使用 阿基米德螺线</p>
+<figure class="highlight js"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">const</span> points = []; <span class="comment">// 所有放置点</span></span><br><span class="line"></span><br><span class="line"><span class="keyword">let</span> dxdy,</span><br><span class="line">  maxDelta = <span class="title class_">Math</span>.<span class="title function_">sqrt</span>(size[<span class="number">0</span>] * size[<span class="number">0</span>] + size[<span class="number">1</span>] * size[<span class="number">1</span>]), <span class="comment">// 最大半径</span></span><br><span class="line">  t = <span class="number">1</span>, <span class="comment">// 阿基米德弧度</span></span><br><span class="line">  index = <span class="number">0</span>, <span class="comment">// 当前位置序号</span></span><br><span class="line">  dx, <span class="comment">// x坐标</span></span><br><span class="line">  dy; <span class="comment">// y坐标</span></span><br><span class="line"></span><br><span class="line"><span class="comment">// 通过每次增加的步长固定为1，实际步长为 step * 1，来获取下一个放置点</span></span><br><span class="line"></span><br><span class="line"><span class="keyword">while</span> ((dxdy = <span class="title function_">getPosition</span>((t += <span class="number">1</span>)))) &#123;</span><br><span class="line">  dx = dxdy[<span class="number">0</span>];</span><br><span class="line"></span><br><span class="line">  dy = dxdy[<span class="number">1</span>];</span><br><span class="line"></span><br><span class="line">  <span class="keyword">if</span> (<span class="title class_">Math</span>.<span class="title function_">min</span>(<span class="title class_">Math</span>.<span class="title function_">abs</span>(dx), <span class="title class_">Math</span>.<span class="title function_">abs</span>(dy)) &gt;= maxDelta) <span class="keyword">break</span>; <span class="comment">// (dx, dy)距离中心超过maxDelta，跳出螺旋返回false</span></span><br><span class="line"></span><br><span class="line">  points.<span class="title function_">push</span>([dx, dy, index++]);</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+ 
+      <!-- reward -->
+      
+      <div id="reword-out">
+        <div id="reward-btn">
+          打赏
+        </div>
+      </div>
+      
+    </div>
+    
+
+    <!-- copyright -->
+    
+    <div class="declare">
+      <ul class="post-copyright">
+        <li>
+          <i class="ri-copyright-line"></i>
+          <strong>版权声明： </strong>
+          
+          本博客所有文章除特别声明外，著作权归作者所有。转载请注明出处！
+          
+        </li>
+      </ul>
+    </div>
+    
+    <footer class="article-footer">
+       
+  <ul class="article-tag-list" itemprop="keywords"><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/wordcloud/" rel="tag">wordcloud</a></li></ul>
+
+    </footer>
+  </div>
+
+   
+  <nav class="article-nav">
+    
+      <a href="/posts/cf96f98c6826/" class="article-nav-link">
+        <strong class="article-nav-caption">上一篇</strong>
+        <div class="article-nav-title">
+          
+            React源码分析 ⑨ 组件生命周期
+          
+        </div>
+      </a>
+    
+    
+      <a href="/posts/1033523a61a7/" class="article-nav-link">
+        <strong class="article-nav-caption">下一篇</strong>
+        <div class="article-nav-title">d3-dispatch 源码分析</div>
+      </a>
+    
+  </nav>
+
+  
+   
+<div class="gitalk" id="gitalk-container"></div>
+
+<link rel="stylesheet" href="https://cdn.staticfile.org/gitalk/1.7.2/gitalk.min.css">
+
+
+<script src="https://cdn.staticfile.org/gitalk/1.7.2/gitalk.min.js"></script>
+
+
+<script src="https://cdn.staticfile.org/blueimp-md5/2.19.0/js/md5.min.js"></script>
+
+<script type="text/javascript">
+  var gitalk = new Gitalk({
+    clientID: 'bce2317b25da7c3c18f6',
+    clientSecret: 'e0ab868ca9054234798be82c2b1c0c9dd8632307',
+    repo: 'noopn.github.io',
+    owner: 'noopn',
+    admin: ['noopn'],
+    // id: location.pathname,      // Ensure uniqueness and length less than 50
+    id: md5(location.pathname),
+    distractionFreeMode: false,  // Facebook-like distraction free mode
+    pagerDirection: 'last'
+  })
+
+  gitalk.render('gitalk-container')
+</script>
+
+     
+</article>
+
+</section>
+      <footer class="footer">
+  <div class="outer">
+    <ul>
+      <li>
+        Copyrights &copy;
+        2015-2024
+        <i class="ri-heart-fill heart_icon"></i> SunZhiqi
+      </li>
+    </ul>
+    <ul>
+      <li>
+        
+      </li>
+    </ul>
+    <ul>
+      <li>
+        
+      </li>
+    </ul>
+    <ul>
+      
+    </ul>
+    <ul>
+      
+    </ul>
+    <ul>
+      <li>
+        <!-- cnzz统计 -->
+        
+      </li>
+    </ul>
+  </div>
+</footer>    
+    </main>
+    <div class="float_btns">
+      <div class="totop" id="totop">
+  <i class="ri-arrow-up-line"></i>
+</div>
+
+    </div>
+    <aside class="sidebar on">
+      <button class="navbar-toggle"></button>
+<nav class="navbar">
+  
+  <div class="logo">
+    <a href="/"><img src="/images/ayer-side.png" alt="四月八日"></a>
+  </div>
+  
+  <ul class="nav nav-main">
+    
+    <li class="nav-item">
+      <a class="nav-item-link" href="/">主页</a>
+    </li>
+    
+    <li class="nav-item">
+      <a class="nav-item-link" href="/archives">归档</a>
+    </li>
+    
+    <li class="nav-item">
+      <a class="nav-item-link" href="/categories">分类</a>
+    </li>
+    
+    <li class="nav-item">
+      <a class="nav-item-link" href="/tags">标签</a>
+    </li>
+    
+    <li class="nav-item">
+      <a class="nav-item-link" href="/tags/Essay">随笔</a>
+    </li>
+    
+  </ul>
+</nav>
+<nav class="navbar navbar-bottom">
+  <ul class="nav">
+    <li class="nav-item">
+      
+      <a class="nav-item-link nav-item-search"  title="搜索">
+        <i class="ri-search-line"></i>
+      </a>
+      
+      
+    </li>
+  </ul>
+</nav>
+<div class="search-form-wrap">
+  <div class="local-search local-search-plugin">
+  <input type="search" id="local-search-input" class="local-search-input" placeholder="Search...">
+  <div id="local-search-result" class="local-search-result"></div>
+</div>
+</div>
+    </aside>
+    <div id="mask"></div>
+
+<!-- #reward -->
+<div id="reward">
+  <span class="close"><i class="ri-close-line"></i></span>
+  <p class="reward-p"><i class="ri-cup-line"></i>此时无声胜有声！</p>
+  <div class="reward-box">
+    
+    <div class="reward-item">
+      <img class="reward-img" src="/images/alipay.jpg">
+      <span class="reward-type">支付宝</span>
+    </div>
+    
+    
+    <div class="reward-item">
+      <img class="reward-img" src="/images/wechat.jpg">
+      <span class="reward-type">微信</span>
+    </div>
+    
+  </div>
+</div>
+    
+<script src="/js/jquery-3.6.0.min.js"></script>
+ 
+<script src="/js/lazyload.min.js"></script>
+
+<!-- Tocbot -->
+ 
+<script src="/js/tocbot.min.js"></script>
+
+<script>
+  tocbot.init({
+    tocSelector: ".tocbot",
+    contentSelector: ".article-entry",
+    headingSelector: "h1, h2, h3, h4, h5, h6",
+    hasInnerContainers: true,
+    scrollSmooth: true,
+    scrollContainer: "main",
+    positionFixedSelector: ".tocbot",
+    positionFixedClass: "is-position-fixed",
+    fixedSidebarOffset: "auto",
+  });
+</script>
+
+<script src="/js/jquery.modal.min.js"></script>
+<link rel="stylesheet" href="/css/jquery.modal.min.css" />
+<script src="/js/jquery.justifiedGallery.min.js"></script>
+
+<script src="/dist/main.js"></script>
+
+<!-- ImageViewer -->
+ <!-- Root element of PhotoSwipe. Must have class pswp. -->
+<div class="pswp" tabindex="-1" role="dialog" aria-hidden="true">
+  <!-- Background of PhotoSwipe. 
+         It's a separate element as animating opacity is faster than rgba(). -->
+  <div class="pswp__bg"></div>
+
+  <!-- Slides wrapper with overflow:hidden. -->
+  <div class="pswp__scroll-wrap">
+    <!-- Container that holds slides. 
+            PhotoSwipe keeps only 3 of them in the DOM to save memory.
+            Don't modify these 3 pswp__item elements, data is added later on. -->
+    <div class="pswp__container">
+      <div class="pswp__item"></div>
+      <div class="pswp__item"></div>
+      <div class="pswp__item"></div>
+    </div>
+
+    <!-- Default (PhotoSwipeUI_Default) interface on top of sliding area. Can be changed. -->
+    <div class="pswp__ui pswp__ui--hidden">
+      <div class="pswp__top-bar">
+        <!--  Controls are self-explanatory. Order can be changed. -->
+
+        <div class="pswp__counter"></div>
+
+        <button
+          class="pswp__button pswp__button--close"
+          title="Close (Esc)"
+        ></button>
+
+        <button
+          class="pswp__button pswp__button--share"
+          style="display: none"
+          title="Share"
+        ></button>
+
+        <button
+          class="pswp__button pswp__button--fs"
+          title="Toggle fullscreen"
+        ></button>
+
+        <button
+          class="pswp__button pswp__button--zoom"
+          title="Zoom in/out"
+        ></button>
+
+        <!-- Preloader demo http://codepen.io/dimsemenov/pen/yyBWoR -->
+        <!-- element will get class pswp__preloader--active when preloader is running -->
+        <div class="pswp__preloader">
+          <div class="pswp__preloader__icn">
+            <div class="pswp__preloader__cut">
+              <div class="pswp__preloader__donut"></div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <div class="pswp__share-modal pswp__share-modal--hidden pswp__single-tap">
+        <div class="pswp__share-tooltip"></div>
+      </div>
+
+      <button
+        class="pswp__button pswp__button--arrow--left"
+        title="Previous (arrow left)"
+      ></button>
+
+      <button
+        class="pswp__button pswp__button--arrow--right"
+        title="Next (arrow right)"
+      ></button>
+
+      <div class="pswp__caption">
+        <div class="pswp__caption__center"></div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<link rel="stylesheet" href="/css/photoswipe.min.css" />
+<link rel="stylesheet" href="/css/default-skin.min.css" />
+<script src="/js/photoswipe.min.js"></script>
+<script src="/js/photoswipe-ui-default.min.js"></script>
+
+<script>
+  function viewer_init() {
+    let pswpElement = document.querySelectorAll(".pswp")[0];
+    let $imgArr = document.querySelectorAll(
+      ".article-entry img:not(.reward-img)"
+    );
+
+    $imgArr.forEach(($em, i) => {
+      $em.onclick = () => {
+        // slider展开状态
+        // todo: 这样不好，后面改成状态
+        if (document.querySelector(".left-col.show")) return;
+        let items = [];
+        $imgArr.forEach(($em2, i2) => {
+          let img = $em2.getAttribute("data-idx", i2);
+          let src =
+            $em2.getAttribute("data-target") || $em2.getAttribute("src");
+          let title = $em2.getAttribute("alt");
+          // 获得原图尺寸
+          const image = new Image();
+          image.src = src;
+          items.push({
+            src: src,
+            w: image.width || $em2.width,
+            h: image.height || $em2.height,
+            title: title,
+          });
+        });
+        var gallery = new PhotoSwipe(pswpElement, PhotoSwipeUI_Default, items, {
+          index: parseInt(i),
+        });
+        gallery.init();
+      };
+    });
+  }
+  viewer_init();
+</script>
+ 
+<!-- MathJax -->
+ <script type="text/x-mathjax-config">
+  MathJax.Hub.Config({
+      tex2jax: {
+          inlineMath: [ ['$','$'], ["\\(","\\)"]  ],
+          processEscapes: true,
+          skipTags: ['script', 'noscript', 'style', 'textarea', 'pre', 'code']
+      }
+  });
+
+  MathJax.Hub.Queue(function() {
+      var all = MathJax.Hub.getAllJax(), i;
+      for(i=0; i < all.length; i += 1) {
+          all[i].SourceElement().parentNode.className += ' has-jax';
+      }
+  });
+</script>
+
+<script src="/js/MathJax.js"></script>
+<script src="/js/TeX-AMS-MML_HTMLorMML-full.js"></script>
+
+<script>
+  var ayerConfig = {
+    mathjax: true,
+  };
+</script>
+
+<!-- Katex -->
+
+<!-- busuanzi  -->
+
+<!-- ClickLove -->
+
+<!-- ClickBoom1 -->
+
+<!-- ClickBoom2 -->
+
+<!-- CodeCopy -->
+ 
+<link rel="stylesheet" href="/css/clipboard.css">
+ <script src="/js/clipboard.min.js"></script>
+<script>
+  function wait(callback, seconds) {
+    var timelag = null;
+    timelag = window.setTimeout(callback, seconds);
+  }
+  !(function (e, t, a) {
+    var initCopyCode = function () {
+      var copyHtml = "";
+      copyHtml += '<button class="btn-copy" data-clipboard-snippet="">';
+      copyHtml += '<i class="ri-file-copy-2-line"></i><span>COPY</span>';
+      copyHtml += "</button>";
+      $(".highlight .code pre").before(copyHtml);
+      $(".article pre code").before(copyHtml);
+      var clipboard = new ClipboardJS(".btn-copy", {
+        target: function (trigger) {
+          return trigger.nextElementSibling;
+        },
+      });
+      clipboard.on("success", function (e) {
+        let $btn = $(e.trigger);
+        $btn.addClass("copied");
+        let $icon = $($btn.find("i"));
+        $icon.removeClass("ri-file-copy-2-line");
+        $icon.addClass("ri-checkbox-circle-line");
+        let $span = $($btn.find("span"));
+        $span[0].innerText = "COPIED";
+
+        wait(function () {
+          // 等待两秒钟后恢复
+          $icon.removeClass("ri-checkbox-circle-line");
+          $icon.addClass("ri-file-copy-2-line");
+          $span[0].innerText = "COPY";
+        }, 2000);
+      });
+      clipboard.on("error", function (e) {
+        e.clearSelection();
+        let $btn = $(e.trigger);
+        $btn.addClass("copy-failed");
+        let $icon = $($btn.find("i"));
+        $icon.removeClass("ri-file-copy-2-line");
+        $icon.addClass("ri-time-line");
+        let $span = $($btn.find("span"));
+        $span[0].innerText = "COPY FAILED";
+
+        wait(function () {
+          // 等待两秒钟后恢复
+          $icon.removeClass("ri-time-line");
+          $icon.addClass("ri-file-copy-2-line");
+          $span[0].innerText = "COPY";
+        }, 2000);
+      });
+    };
+    initCopyCode();
+  })(window, document);
+</script>
+ 
+<!-- CanvasBackground -->
+
+<script>
+  if (window.mermaid) {
+    mermaid.initialize({ theme: "default" });
+  }
+</script>
+
+
+    
+    
+
+  </div>
+</body>
+
+</html>

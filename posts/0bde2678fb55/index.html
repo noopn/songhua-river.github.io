@@ -1,0 +1,596 @@
+<!DOCTYPE html>
+
+
+<html lang="zh-CN">
+  
+
+    <head>
+      <meta charset="utf-8" />
+       
+      <meta name="keywords" content="前端 web react" />
+       
+      <meta name="description" content="前端技术与生活。" />
+      
+      <meta
+        name="viewport"
+        content="width=device-width, initial-scale=1, maximum-scale=1"
+      />
+      <title>React源码分析 $1 全局对象或变量 |  四月八日</title>
+  <meta name="generator" content="hexo-theme-ayer">
+      
+      <link rel="shortcut icon" href="/favicon.ico" />
+       
+<link rel="stylesheet" href="/dist/main.css">
+ 
+<link rel="stylesheet" href="/css/fonts/remixicon.css">
+ 
+<link rel="stylesheet" href="/css/custom.css">
+ 
+      <script src="/js/pace.min.js"></script>
+       
+ 
+
+      <link rel="stylesheet" href="/css/bulma.min.css" />
+      <script src="/js/sweetalert2.min.js"></script>
+
+      <!-- mermaid -->
+      
+      <script src="https://cdn.staticfile.org/mermaid/8.14.0/mermaid.min.js"></script>
+      
+      <style>
+        .swal2-styled.swal2-confirm {
+          font-size: 1.6rem;
+        }
+      </style>
+    <!-- hexo injector head_end start -->
+<link rel="stylesheet" href="/css/katex.min.css">
+
+<link rel="stylesheet" href="/css/style.css">
+<!-- hexo injector head_end end --></head>
+  </html>
+</html>
+
+
+<body>
+  <div id="app">
+    
+      
+    <main class="content on">
+      <section class="outer">
+  <article
+  id="posts-source/react/全局变量"
+  class="article article-type-posts"
+  itemscope
+  itemprop="blogPost"
+  data-scroll-reveal
+>
+  <div class="article-inner">
+    
+    <header class="article-header">
+       
+<h1 class="article-title sea-center" style="border-left:0" itemprop="name">
+  React源码分析 $1 全局对象或变量
+</h1>
+ 
+
+      
+    </header>
+     
+    <div class="article-meta">
+      <a href="/posts/0bde2678fb55/" class="article-date">
+  <time datetime="2022-03-06T06:27:09.000Z" itemprop="datePublished">2022-03-06</time>
+</a> 
+  <div class="article-category">
+    <a class="article-category-link" href="/categories/%E6%BA%90%E7%A0%81%E5%88%86%E6%9E%90/">源码分析</a> / <a class="article-category-link" href="/categories/%E6%BA%90%E7%A0%81%E5%88%86%E6%9E%90/React/">React</a>
+  </div>
+  
+<div class="word_count">
+    <span class="post-time">
+        <span class="post-meta-item-icon">
+            <i class="ri-quill-pen-line"></i>
+            <span class="post-meta-item-text"> 字数统计:</span>
+            <span class="post-count">1.3k</span>
+        </span>
+    </span>
+
+    <span class="post-time">
+        &nbsp; | &nbsp;
+        <span class="post-meta-item-icon">
+            <i class="ri-book-open-line"></i>
+            <span class="post-meta-item-text"> 阅读时长≈</span>
+            <span class="post-count">6 分钟</span>
+        </span>
+    </span>
+</div>
+ 
+    </div>
+      
+    <div class="tocbot"></div>
+
+
+
+
+  
+    <div class="article-entry" itemprop="articleBody">
+       
+  <h4 id="FiberRoot"><a href="#FiberRoot" class="headerlink" title="FiberRoot"></a>FiberRoot</h4><figure class="highlight javascript"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">function</span> <span class="title function_">FiberRootNode</span>(<span class="params">containerInfo, tag, hydrate</span>) &#123;</span><br><span class="line">  <span class="variable language_">this</span>.<span class="property">tag</span> = tag;</span><br><span class="line">  <span class="variable language_">this</span>.<span class="property">containerInfo</span> = containerInfo;</span><br><span class="line">  <span class="variable language_">this</span>.<span class="property">pendingChildren</span> = <span class="literal">null</span>;</span><br><span class="line">  <span class="variable language_">this</span>.<span class="property">current</span> = <span class="literal">null</span>;</span><br><span class="line">  <span class="variable language_">this</span>.<span class="property">pingCache</span> = <span class="literal">null</span>;</span><br><span class="line">  <span class="variable language_">this</span>.<span class="property">finishedWork</span> = <span class="literal">null</span>;</span><br><span class="line">  <span class="variable language_">this</span>.<span class="property">timeoutHandle</span> = noTimeout;</span><br><span class="line">  <span class="variable language_">this</span>.<span class="property">context</span> = <span class="literal">null</span>;</span><br><span class="line">  <span class="variable language_">this</span>.<span class="property">pendingContext</span> = <span class="literal">null</span>;</span><br><span class="line">  <span class="variable language_">this</span>.<span class="property">hydrate</span> = hydrate;</span><br><span class="line">  <span class="variable language_">this</span>.<span class="property">callbackNode</span> = <span class="literal">null</span>;</span><br><span class="line">  <span class="variable language_">this</span>.<span class="property">callbackPriority</span> = <span class="title class_">NoLanePriority</span>;</span><br><span class="line">  <span class="variable language_">this</span>.<span class="property">eventTimes</span> = <span class="title function_">createLaneMap</span>(<span class="title class_">NoLanes</span>);</span><br><span class="line">  <span class="variable language_">this</span>.<span class="property">expirationTimes</span> = <span class="title function_">createLaneMap</span>(<span class="title class_">NoTimestamp</span>);</span><br><span class="line">  <span class="variable language_">this</span>.<span class="property">pendingLanes</span> = <span class="title class_">NoLanes</span>;</span><br><span class="line">  <span class="variable language_">this</span>.<span class="property">suspendedLanes</span> = <span class="title class_">NoLanes</span>;</span><br><span class="line">  <span class="variable language_">this</span>.<span class="property">pingedLanes</span> = <span class="title class_">NoLanes</span>;</span><br><span class="line">  <span class="variable language_">this</span>.<span class="property">expiredLanes</span> = <span class="title class_">NoLanes</span>;</span><br><span class="line">  <span class="variable language_">this</span>.<span class="property">mutableReadLanes</span> = <span class="title class_">NoLanes</span>;</span><br><span class="line">  <span class="variable language_">this</span>.<span class="property">finishedLanes</span> = <span class="title class_">NoLanes</span>;</span><br><span class="line">  <span class="variable language_">this</span>.<span class="property">entangledLanes</span> = <span class="title class_">NoLanes</span>;</span><br><span class="line">  <span class="variable language_">this</span>.<span class="property">entanglements</span> = <span class="title function_">createLaneMap</span>(<span class="title class_">NoLanes</span>);</span><br></pre></td></tr></table></figure>
+
+<h4 id="Fiber"><a href="#Fiber" class="headerlink" title="Fiber"></a>Fiber</h4><p>react15 在 render 阶段的 reconcile 是不可打断的，这会在进行大量节点的 reconcile 时可能产生卡顿，因为浏览器所有的时间都交给了 js 执行，并且 js 的执行时单线程。为此 react16 之后就有了 scheduler 进行时间片的调度，给每个 task（工作单元）一定的时间，如果在这个时间内没执行完，也要交出执行权给浏览器进行绘制和重排，所以异步可中断的更新需要一定的数据结构在内存中来保存工作单元的信息，这个数据结构就是 Fiber。</p>
+<ul>
+<li>工作单元：Fiber 最重要的功能就是作为工作单元，保存原生节点或者组件节点对应信息（包括优先级），这些节点通过指针的形似形成 Fiber 树</li>
+<li>增量渲染：通过 jsx 对象和 current Fiber 的对比，生成最小的差异补丁，应用到真实节点上</li>
+<li>根据优先级暂停、继续、排列优先级：Fiber 节点上保存了优先级，能通过不同节点优先级的对比，达到任务的暂停、继续、排列优先级等能力，也为上层实现批量更新、Suspense 提供了基础</li>
+<li><strong>保存状态：</strong> : 因为 Fiber 能保存状态和更新的信息，所以就能实现函数组件的状态更新，也就是 hooks</li>
+</ul>
+<figure class="highlight javascript"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br><span class="line">35</span><br><span class="line">36</span><br><span class="line">37</span><br><span class="line">38</span><br><span class="line">39</span><br><span class="line">40</span><br><span class="line">41</span><br><span class="line">42</span><br><span class="line">43</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">function</span> <span class="title function_">FiberNode</span>(<span class="params"></span></span><br><span class="line"><span class="params">  tag: WorkTag,</span></span><br><span class="line"><span class="params">  pendingProps: mixed,</span></span><br><span class="line"><span class="params">  key: <span class="literal">null</span> | string,</span></span><br><span class="line"><span class="params">  mode: TypeOfMode</span></span><br><span class="line"><span class="params"></span>) &#123;</span><br><span class="line">  <span class="comment">//作为静态的数据结构 保存节点的信息</span></span><br><span class="line">  <span class="variable language_">this</span>.<span class="property">tag</span> = tag; <span class="comment">//对应组件的类型</span></span><br><span class="line">  <span class="variable language_">this</span>.<span class="property">key</span> = key; <span class="comment">//key属性</span></span><br><span class="line">  <span class="variable language_">this</span>.<span class="property">elementType</span> = <span class="literal">null</span>; <span class="comment">//元素类型</span></span><br><span class="line">  <span class="variable language_">this</span>.<span class="property">type</span> = <span class="literal">null</span>; <span class="comment">//func或者class</span></span><br><span class="line">  <span class="variable language_">this</span>.<span class="property">stateNode</span> = <span class="literal">null</span>; <span class="comment">//真实dom节点</span></span><br><span class="line"></span><br><span class="line">  <span class="comment">//作为fiber数架构 连接成fiber树</span></span><br><span class="line">  <span class="variable language_">this</span>.<span class="property">return</span> = <span class="literal">null</span>; <span class="comment">//指向父节点</span></span><br><span class="line">  <span class="variable language_">this</span>.<span class="property">child</span> = <span class="literal">null</span>; <span class="comment">//指向child</span></span><br><span class="line">  <span class="variable language_">this</span>.<span class="property">sibling</span> = <span class="literal">null</span>; <span class="comment">//指向兄弟节点</span></span><br><span class="line">  <span class="variable language_">this</span>.<span class="property">index</span> = <span class="number">0</span>;</span><br><span class="line"></span><br><span class="line">  <span class="variable language_">this</span>.<span class="property">ref</span> = <span class="literal">null</span>;</span><br><span class="line"></span><br><span class="line">  <span class="comment">//用作为工作单元 来计算state</span></span><br><span class="line">  <span class="variable language_">this</span>.<span class="property">pendingProps</span> = pendingProps;</span><br><span class="line">  <span class="variable language_">this</span>.<span class="property">memoizedProps</span> = <span class="literal">null</span>;</span><br><span class="line">  <span class="variable language_">this</span>.<span class="property">updateQueue</span> = <span class="literal">null</span>;</span><br><span class="line">  <span class="variable language_">this</span>.<span class="property">memoizedState</span> = <span class="literal">null</span>;</span><br><span class="line">  <span class="variable language_">this</span>.<span class="property">dependencies</span> = <span class="literal">null</span>;</span><br><span class="line"></span><br><span class="line">  <span class="variable language_">this</span>.<span class="property">mode</span> = mode;</span><br><span class="line"></span><br><span class="line">  <span class="comment">//effect相关</span></span><br><span class="line">  <span class="variable language_">this</span>.<span class="property">effectTag</span> = <span class="title class_">NoEffect</span>;</span><br><span class="line">  <span class="variable language_">this</span>.<span class="property">nextEffect</span> = <span class="literal">null</span>;</span><br><span class="line">  <span class="variable language_">this</span>.<span class="property">firstEffect</span> = <span class="literal">null</span>;</span><br><span class="line">  <span class="variable language_">this</span>.<span class="property">lastEffect</span> = <span class="literal">null</span>;</span><br><span class="line"></span><br><span class="line">  <span class="comment">//优先级相关的属性</span></span><br><span class="line">  <span class="variable language_">this</span>.<span class="property">lanes</span> = <span class="title class_">NoLanes</span>;</span><br><span class="line">  <span class="variable language_">this</span>.<span class="property">childLanes</span> = <span class="title class_">NoLanes</span>;</span><br><span class="line"></span><br><span class="line">  <span class="comment">//current和workInProgress的指针</span></span><br><span class="line">  <span class="variable language_">this</span>.<span class="property">alternate</span> = <span class="literal">null</span>;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+<h4 id="updateQueue"><a href="#updateQueue" class="headerlink" title="updateQueue"></a>updateQueue</h4><p>另外 <code>updateQueue</code> 属性在节点创建的时候添加 Fiber 对象上</p>
+<figure class="highlight javascript"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">function</span> <span class="title function_">initializeUpdateQueue</span>(<span class="params">fiber</span>) &#123;</span><br><span class="line">  <span class="keyword">var</span> queue = &#123;</span><br><span class="line">    <span class="attr">baseState</span>: fiber.<span class="property">memoizedState</span>,</span><br><span class="line">    <span class="attr">firstBaseUpdate</span>: <span class="literal">null</span>,</span><br><span class="line">    <span class="attr">lastBaseUpdate</span>: <span class="literal">null</span>,</span><br><span class="line">    <span class="attr">shared</span>: &#123;</span><br><span class="line">      <span class="attr">pending</span>: <span class="literal">null</span>,</span><br><span class="line">    &#125;,</span><br><span class="line">    <span class="attr">effects</span>: <span class="literal">null</span>,</span><br><span class="line">  &#125;;</span><br><span class="line">  fiber.<span class="property">updateQueue</span> = queue;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+<h4 id="优先级"><a href="#优先级" class="headerlink" title="优先级"></a>优先级</h4><figure class="highlight js"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">export</span> <span class="keyword">const</span> <span class="title class_">NoPriority</span> = <span class="number">0</span>;</span><br><span class="line"><span class="keyword">export</span> <span class="keyword">const</span> <span class="title class_">ImmediatePriority</span> = <span class="number">1</span>;</span><br><span class="line"><span class="keyword">export</span> <span class="keyword">const</span> <span class="title class_">UserBlockingPriority</span> = <span class="number">2</span>;</span><br><span class="line"><span class="keyword">export</span> <span class="keyword">const</span> <span class="title class_">NormalPriority</span> = <span class="number">3</span>;</span><br><span class="line"><span class="keyword">export</span> <span class="keyword">const</span> <span class="title class_">LowPriority</span> = <span class="number">4</span>;</span><br><span class="line"><span class="keyword">export</span> <span class="keyword">const</span> <span class="title class_">IdlePriority</span> = <span class="number">5</span>;</span><br></pre></td></tr></table></figure>
+
+<h4 id="Flags"><a href="#Flags" class="headerlink" title="Flags"></a>Flags</h4><figure class="highlight js"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br><span class="line">35</span><br><span class="line">36</span><br><span class="line">37</span><br><span class="line">38</span><br><span class="line">39</span><br><span class="line">40</span><br><span class="line">41</span><br><span class="line">42</span><br><span class="line">43</span><br><span class="line">44</span><br><span class="line">45</span><br><span class="line">46</span><br><span class="line">47</span><br><span class="line">48</span><br><span class="line">49</span><br><span class="line">50</span><br><span class="line">51</span><br><span class="line">52</span><br><span class="line">53</span><br><span class="line">54</span><br><span class="line">55</span><br><span class="line">56</span><br><span class="line">57</span><br><span class="line">58</span><br><span class="line">59</span><br><span class="line">60</span><br><span class="line">61</span><br><span class="line">62</span><br><span class="line">63</span><br><span class="line">64</span><br><span class="line">65</span><br><span class="line">66</span><br><span class="line">67</span><br><span class="line">68</span><br><span class="line">69</span><br><span class="line">70</span><br><span class="line">71</span><br><span class="line">72</span><br><span class="line">73</span><br><span class="line">74</span><br><span class="line">75</span><br><span class="line">76</span><br><span class="line">77</span><br><span class="line">78</span><br><span class="line">79</span><br><span class="line">80</span><br><span class="line">81</span><br><span class="line">82</span><br><span class="line">83</span><br><span class="line">84</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment">// Don&#x27;t change these two values. They&#x27;re used by React Dev Tools.</span></span><br><span class="line"><span class="keyword">export</span> <span class="keyword">const</span> <span class="title class_">NoFlags</span> = <span class="comment">/*                      */</span> <span class="number">0b00000000000000000000000000</span>;</span><br><span class="line"><span class="keyword">export</span> <span class="keyword">const</span> <span class="title class_">PerformedWork</span> = <span class="comment">/*                */</span> <span class="number">0b00000000000000000000000001</span>;</span><br><span class="line"></span><br><span class="line"><span class="comment">// You can change the rest (and add more).</span></span><br><span class="line"><span class="keyword">export</span> <span class="keyword">const</span> <span class="title class_">Placement</span> = <span class="comment">/*                    */</span> <span class="number">0b00000000000000000000000010</span>;</span><br><span class="line"><span class="keyword">export</span> <span class="keyword">const</span> <span class="title class_">Update</span> = <span class="comment">/*                       */</span> <span class="number">0b00000000000000000000000100</span>;</span><br><span class="line"><span class="keyword">export</span> <span class="keyword">const</span> <span class="title class_">PlacementAndUpdate</span> = <span class="comment">/*           */</span> <span class="title class_">Placement</span> | <span class="title class_">Update</span>;</span><br><span class="line"><span class="keyword">export</span> <span class="keyword">const</span> <span class="title class_">Deletion</span> = <span class="comment">/*                     */</span> <span class="number">0b00000000000000000000001000</span>;</span><br><span class="line"><span class="keyword">export</span> <span class="keyword">const</span> <span class="title class_">ChildDeletion</span> = <span class="comment">/*                */</span> <span class="number">0b00000000000000000000010000</span>;</span><br><span class="line"><span class="keyword">export</span> <span class="keyword">const</span> <span class="title class_">ContentReset</span> = <span class="comment">/*                 */</span> <span class="number">0b00000000000000000000100000</span>;</span><br><span class="line"><span class="keyword">export</span> <span class="keyword">const</span> <span class="title class_">Callback</span> = <span class="comment">/*                     */</span> <span class="number">0b00000000000000000001000000</span>;</span><br><span class="line"><span class="keyword">export</span> <span class="keyword">const</span> <span class="title class_">DidCapture</span> = <span class="comment">/*                   */</span> <span class="number">0b00000000000000000010000000</span>;</span><br><span class="line"><span class="keyword">export</span> <span class="keyword">const</span> <span class="title class_">ForceClientRender</span> = <span class="comment">/*            */</span> <span class="number">0b00000000000000000100000000</span>;</span><br><span class="line"><span class="keyword">export</span> <span class="keyword">const</span> <span class="title class_">Ref</span> = <span class="comment">/*                          */</span> <span class="number">0b00000000000000001000000000</span>;</span><br><span class="line"><span class="keyword">export</span> <span class="keyword">const</span> <span class="title class_">Snapshot</span> = <span class="comment">/*                     */</span> <span class="number">0b00000000000000010000000000</span>;</span><br><span class="line"><span class="keyword">export</span> <span class="keyword">const</span> <span class="title class_">Passive</span> = <span class="comment">/*                      */</span> <span class="number">0b00000000000000100000000000</span>;</span><br><span class="line"><span class="keyword">export</span> <span class="keyword">const</span> <span class="title class_">Hydrating</span> = <span class="comment">/*                    */</span> <span class="number">0b00000000000001000000000000</span>;</span><br><span class="line"><span class="keyword">export</span> <span class="keyword">const</span> <span class="title class_">HydratingAndUpdate</span> = <span class="comment">/*           */</span> <span class="title class_">Hydrating</span> | <span class="title class_">Update</span>;</span><br><span class="line"><span class="keyword">export</span> <span class="keyword">const</span> <span class="title class_">Visibility</span> = <span class="comment">/*                   */</span> <span class="number">0b00000000000010000000000000</span>;</span><br><span class="line"><span class="keyword">export</span> <span class="keyword">const</span> <span class="title class_">StoreConsistency</span> = <span class="comment">/*             */</span> <span class="number">0b00000000000100000000000000</span>;</span><br><span class="line"></span><br><span class="line"><span class="keyword">export</span> <span class="keyword">const</span> <span class="title class_">LifecycleEffectMask</span> =</span><br><span class="line">  <span class="title class_">Passive</span> | <span class="title class_">Update</span> | <span class="title class_">Callback</span> | <span class="title class_">Ref</span> | <span class="title class_">Snapshot</span> | <span class="title class_">StoreConsistency</span>;</span><br><span class="line"></span><br><span class="line"><span class="comment">// Union of all commit flags (flags with the lifetime of a particular commit)</span></span><br><span class="line"><span class="keyword">export</span> <span class="keyword">const</span> <span class="title class_">HostEffectMask</span> = <span class="comment">/*               */</span> <span class="number">0b00000000000111111111111111</span>;</span><br><span class="line"></span><br><span class="line"><span class="comment">// These are not really side effects, but we still reuse this field.</span></span><br><span class="line"><span class="keyword">export</span> <span class="keyword">const</span> <span class="title class_">Incomplete</span> = <span class="comment">/*                   */</span> <span class="number">0b00000000001000000000000000</span>;</span><br><span class="line"><span class="keyword">export</span> <span class="keyword">const</span> <span class="title class_">ShouldCapture</span> = <span class="comment">/*                */</span> <span class="number">0b00000000010000000000000000</span>;</span><br><span class="line"><span class="keyword">export</span> <span class="keyword">const</span> <span class="title class_">ForceUpdateForLegacySuspense</span> = <span class="comment">/* */</span> <span class="number">0b00000000100000000000000000</span>;</span><br><span class="line"><span class="keyword">export</span> <span class="keyword">const</span> <span class="title class_">DidPropagateContext</span> = <span class="comment">/*          */</span> <span class="number">0b00000001000000000000000000</span>;</span><br><span class="line"><span class="keyword">export</span> <span class="keyword">const</span> <span class="title class_">NeedsPropagation</span> = <span class="comment">/*             */</span> <span class="number">0b00000010000000000000000000</span>;</span><br><span class="line"><span class="keyword">export</span> <span class="keyword">const</span> <span class="title class_">Forked</span> = <span class="comment">/*                       */</span> <span class="number">0b00000100000000000000000000</span>;</span><br><span class="line"></span><br><span class="line"><span class="comment">// Static tags describe aspects of a fiber that are not specific to a render,</span></span><br><span class="line"><span class="comment">// e.g. a fiber uses a passive effect (even if there are no updates on this particular render).</span></span><br><span class="line"><span class="comment">// This enables us to defer more work in the unmount case,</span></span><br><span class="line"><span class="comment">// since we can defer traversing the tree during layout to look for Passive effects,</span></span><br><span class="line"><span class="comment">// and instead rely on the static flag as a signal that there may be cleanup work.</span></span><br><span class="line"><span class="keyword">export</span> <span class="keyword">const</span> <span class="title class_">RefStatic</span> = <span class="comment">/*                    */</span> <span class="number">0b00001000000000000000000000</span>;</span><br><span class="line"><span class="keyword">export</span> <span class="keyword">const</span> <span class="title class_">LayoutStatic</span> = <span class="comment">/*                 */</span> <span class="number">0b00010000000000000000000000</span>;</span><br><span class="line"><span class="keyword">export</span> <span class="keyword">const</span> <span class="title class_">PassiveStatic</span> = <span class="comment">/*                */</span> <span class="number">0b00100000000000000000000000</span>;</span><br><span class="line"></span><br><span class="line"><span class="comment">// These flags allow us to traverse to fibers that have effects on mount</span></span><br><span class="line"><span class="comment">// without traversing the entire tree after every commit for</span></span><br><span class="line"><span class="comment">// double invoking</span></span><br><span class="line"><span class="keyword">export</span> <span class="keyword">const</span> <span class="title class_">MountLayoutDev</span> = <span class="comment">/*               */</span> <span class="number">0b01000000000000000000000000</span>;</span><br><span class="line"><span class="keyword">export</span> <span class="keyword">const</span> <span class="title class_">MountPassiveDev</span> = <span class="comment">/*              */</span> <span class="number">0b10000000000000000000000000</span>;</span><br><span class="line"></span><br><span class="line"><span class="comment">// Groups of flags that are used in the commit phase to skip over trees that</span></span><br><span class="line"><span class="comment">// don&#x27;t contain effects, by checking subtreeFlags.</span></span><br><span class="line"></span><br><span class="line"><span class="keyword">export</span> <span class="keyword">const</span> <span class="title class_">BeforeMutationMask</span> =</span><br><span class="line">  <span class="comment">// <span class="doctag">TODO:</span> Remove Update flag from before mutation phase by re-landing Visibility</span></span><br><span class="line">  <span class="comment">// flag logic (see #20043)</span></span><br><span class="line">  <span class="title class_">Update</span> |</span><br><span class="line">  <span class="title class_">Snapshot</span> |</span><br><span class="line">  (enableCreateEventHandleAPI</span><br><span class="line">    ? <span class="comment">// createEventHandle needs to visit deleted and hidden trees to</span></span><br><span class="line">      <span class="comment">// fire beforeblur</span></span><br><span class="line">      <span class="comment">// <span class="doctag">TODO:</span> Only need to visit Deletions during BeforeMutation phase if an</span></span><br><span class="line">      <span class="comment">// element is focused.</span></span><br><span class="line">      <span class="title class_">ChildDeletion</span> | <span class="title class_">Visibility</span></span><br><span class="line">    : <span class="number">0</span>);</span><br><span class="line"></span><br><span class="line"><span class="keyword">export</span> <span class="keyword">const</span> <span class="title class_">MutationMask</span> =</span><br><span class="line">  <span class="title class_">Placement</span> |</span><br><span class="line">  <span class="title class_">Update</span> |</span><br><span class="line">  <span class="title class_">ChildDeletion</span> |</span><br><span class="line">  <span class="title class_">ContentReset</span> |</span><br><span class="line">  <span class="title class_">Ref</span> |</span><br><span class="line">  <span class="title class_">Hydrating</span> |</span><br><span class="line">  <span class="title class_">Visibility</span>;</span><br><span class="line"><span class="keyword">export</span> <span class="keyword">const</span> <span class="title class_">LayoutMask</span> = <span class="title class_">Update</span> | <span class="title class_">Callback</span> | <span class="title class_">Ref</span> | <span class="title class_">Visibility</span>;</span><br><span class="line"></span><br><span class="line"><span class="comment">// <span class="doctag">TODO:</span> Split into PassiveMountMask and PassiveUnmountMask</span></span><br><span class="line"><span class="keyword">export</span> <span class="keyword">const</span> <span class="title class_">PassiveMask</span> = <span class="title class_">Passive</span> | <span class="title class_">ChildDeletion</span>;</span><br><span class="line"></span><br><span class="line"><span class="comment">// Union of tags that don&#x27;t get reset on clones.</span></span><br><span class="line"><span class="comment">// This allows certain concepts to persist without recalculating them,</span></span><br><span class="line"><span class="comment">// e.g. whether a subtree contains passive effects or portals.</span></span><br><span class="line"><span class="keyword">export</span> <span class="keyword">const</span> <span class="title class_">StaticMask</span> = <span class="title class_">LayoutStatic</span> | <span class="title class_">PassiveStatic</span> | <span class="title class_">RefStatic</span>;</span><br></pre></td></tr></table></figure>
+
+<h4 id="RootTag"><a href="#RootTag" class="headerlink" title="RootTag"></a>RootTag</h4><figure class="highlight ts"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">export</span> <span class="keyword">type</span> <span class="title class_">RootTag</span> = <span class="number">0</span> | <span class="number">1</span>;</span><br><span class="line"></span><br><span class="line"><span class="keyword">export</span> <span class="keyword">const</span> <span class="title class_">LegacyRoot</span> = <span class="number">0</span>;</span><br><span class="line"><span class="keyword">export</span> <span class="keyword">const</span> <span class="title class_">ConcurrentRoot</span> = <span class="number">1</span>;</span><br></pre></td></tr></table></figure>
+
+<h4 id="simpleEventPluginEvents"><a href="#simpleEventPluginEvents" class="headerlink" title="simpleEventPluginEvents"></a>simpleEventPluginEvents</h4><figure class="highlight js"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br><span class="line">35</span><br><span class="line">36</span><br><span class="line">37</span><br><span class="line">38</span><br><span class="line">39</span><br><span class="line">40</span><br><span class="line">41</span><br><span class="line">42</span><br><span class="line">43</span><br><span class="line">44</span><br><span class="line">45</span><br><span class="line">46</span><br><span class="line">47</span><br><span class="line">48</span><br><span class="line">49</span><br><span class="line">50</span><br><span class="line">51</span><br><span class="line">52</span><br><span class="line">53</span><br><span class="line">54</span><br><span class="line">55</span><br><span class="line">56</span><br><span class="line">57</span><br><span class="line">58</span><br><span class="line">59</span><br><span class="line">60</span><br><span class="line">61</span><br><span class="line">62</span><br><span class="line">63</span><br><span class="line">64</span><br><span class="line">65</span><br><span class="line">66</span><br><span class="line">67</span><br><span class="line">68</span><br><span class="line">69</span><br><span class="line">70</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">const</span> simpleEventPluginEvents = [</span><br><span class="line">  <span class="string">&quot;abort&quot;</span>,</span><br><span class="line">  <span class="string">&quot;auxClick&quot;</span>,</span><br><span class="line">  <span class="string">&quot;cancel&quot;</span>,</span><br><span class="line">  <span class="string">&quot;canPlay&quot;</span>,</span><br><span class="line">  <span class="string">&quot;canPlayThrough&quot;</span>,</span><br><span class="line">  <span class="string">&quot;click&quot;</span>,</span><br><span class="line">  <span class="string">&quot;close&quot;</span>,</span><br><span class="line">  <span class="string">&quot;contextMenu&quot;</span>,</span><br><span class="line">  <span class="string">&quot;copy&quot;</span>,</span><br><span class="line">  <span class="string">&quot;cut&quot;</span>,</span><br><span class="line">  <span class="string">&quot;drag&quot;</span>,</span><br><span class="line">  <span class="string">&quot;dragEnd&quot;</span>,</span><br><span class="line">  <span class="string">&quot;dragEnter&quot;</span>,</span><br><span class="line">  <span class="string">&quot;dragExit&quot;</span>,</span><br><span class="line">  <span class="string">&quot;dragLeave&quot;</span>,</span><br><span class="line">  <span class="string">&quot;dragOver&quot;</span>,</span><br><span class="line">  <span class="string">&quot;dragStart&quot;</span>,</span><br><span class="line">  <span class="string">&quot;drop&quot;</span>,</span><br><span class="line">  <span class="string">&quot;durationChange&quot;</span>,</span><br><span class="line">  <span class="string">&quot;emptied&quot;</span>,</span><br><span class="line">  <span class="string">&quot;encrypted&quot;</span>,</span><br><span class="line">  <span class="string">&quot;ended&quot;</span>,</span><br><span class="line">  <span class="string">&quot;error&quot;</span>,</span><br><span class="line">  <span class="string">&quot;gotPointerCapture&quot;</span>,</span><br><span class="line">  <span class="string">&quot;input&quot;</span>,</span><br><span class="line">  <span class="string">&quot;invalid&quot;</span>,</span><br><span class="line">  <span class="string">&quot;keyDown&quot;</span>,</span><br><span class="line">  <span class="string">&quot;keyPress&quot;</span>,</span><br><span class="line">  <span class="string">&quot;keyUp&quot;</span>,</span><br><span class="line">  <span class="string">&quot;load&quot;</span>,</span><br><span class="line">  <span class="string">&quot;loadedData&quot;</span>,</span><br><span class="line">  <span class="string">&quot;loadedMetadata&quot;</span>,</span><br><span class="line">  <span class="string">&quot;loadStart&quot;</span>,</span><br><span class="line">  <span class="string">&quot;lostPointerCapture&quot;</span>,</span><br><span class="line">  <span class="string">&quot;mouseDown&quot;</span>,</span><br><span class="line">  <span class="string">&quot;mouseMove&quot;</span>,</span><br><span class="line">  <span class="string">&quot;mouseOut&quot;</span>,</span><br><span class="line">  <span class="string">&quot;mouseOver&quot;</span>,</span><br><span class="line">  <span class="string">&quot;mouseUp&quot;</span>,</span><br><span class="line">  <span class="string">&quot;paste&quot;</span>,</span><br><span class="line">  <span class="string">&quot;pause&quot;</span>,</span><br><span class="line">  <span class="string">&quot;play&quot;</span>,</span><br><span class="line">  <span class="string">&quot;playing&quot;</span>,</span><br><span class="line">  <span class="string">&quot;pointerCancel&quot;</span>,</span><br><span class="line">  <span class="string">&quot;pointerDown&quot;</span>,</span><br><span class="line">  <span class="string">&quot;pointerMove&quot;</span>,</span><br><span class="line">  <span class="string">&quot;pointerOut&quot;</span>,</span><br><span class="line">  <span class="string">&quot;pointerOver&quot;</span>,</span><br><span class="line">  <span class="string">&quot;pointerUp&quot;</span>,</span><br><span class="line">  <span class="string">&quot;progress&quot;</span>,</span><br><span class="line">  <span class="string">&quot;rateChange&quot;</span>,</span><br><span class="line">  <span class="string">&quot;reset&quot;</span>,</span><br><span class="line">  <span class="string">&quot;resize&quot;</span>,</span><br><span class="line">  <span class="string">&quot;seeked&quot;</span>,</span><br><span class="line">  <span class="string">&quot;seeking&quot;</span>,</span><br><span class="line">  <span class="string">&quot;stalled&quot;</span>,</span><br><span class="line">  <span class="string">&quot;submit&quot;</span>,</span><br><span class="line">  <span class="string">&quot;suspend&quot;</span>,</span><br><span class="line">  <span class="string">&quot;timeUpdate&quot;</span>,</span><br><span class="line">  <span class="string">&quot;touchCancel&quot;</span>,</span><br><span class="line">  <span class="string">&quot;touchEnd&quot;</span>,</span><br><span class="line">  <span class="string">&quot;touchStart&quot;</span>,</span><br><span class="line">  <span class="string">&quot;volumeChange&quot;</span>,</span><br><span class="line">  <span class="string">&quot;scroll&quot;</span>,</span><br><span class="line">  <span class="string">&quot;toggle&quot;</span>,</span><br><span class="line">  <span class="string">&quot;touchMove&quot;</span>,</span><br><span class="line">  <span class="string">&quot;waiting&quot;</span>,</span><br><span class="line">  <span class="string">&quot;wheel&quot;</span>,</span><br><span class="line">];</span><br></pre></td></tr></table></figure>
+ 
+      <!-- reward -->
+      
+      <div id="reword-out">
+        <div id="reward-btn">
+          打赏
+        </div>
+      </div>
+      
+    </div>
+    
+
+    <!-- copyright -->
+    
+    <div class="declare">
+      <ul class="post-copyright">
+        <li>
+          <i class="ri-copyright-line"></i>
+          <strong>版权声明： </strong>
+          
+          本博客所有文章除特别声明外，著作权归作者所有。转载请注明出处！
+          
+        </li>
+      </ul>
+    </div>
+    
+    <footer class="article-footer">
+       
+  <ul class="article-tag-list" itemprop="keywords"><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/React/" rel="tag">React</a></li><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/%E6%BA%90%E7%A0%81%E5%88%86%E6%9E%90/" rel="tag">源码分析</a></li></ul>
+
+    </footer>
+  </div>
+
+   
+  <nav class="article-nav">
+    
+      <a href="/posts/f50453852f11/" class="article-nav-link">
+        <strong class="article-nav-caption">上一篇</strong>
+        <div class="article-nav-title">
+          
+            CSS艺术 绘制形状
+          
+        </div>
+      </a>
+    
+    
+      <a href="/posts/e9338ef539b2/" class="article-nav-link">
+        <strong class="article-nav-caption">下一篇</strong>
+        <div class="article-nav-title">React源码分析 ⑤ Fiber与双缓存结构</div>
+      </a>
+    
+  </nav>
+
+  
+   
+<div class="gitalk" id="gitalk-container"></div>
+
+<link rel="stylesheet" href="https://cdn.staticfile.org/gitalk/1.7.2/gitalk.min.css">
+
+
+<script src="https://cdn.staticfile.org/gitalk/1.7.2/gitalk.min.js"></script>
+
+
+<script src="https://cdn.staticfile.org/blueimp-md5/2.19.0/js/md5.min.js"></script>
+
+<script type="text/javascript">
+  var gitalk = new Gitalk({
+    clientID: 'bce2317b25da7c3c18f6',
+    clientSecret: 'e0ab868ca9054234798be82c2b1c0c9dd8632307',
+    repo: 'noopn.github.io',
+    owner: 'noopn',
+    admin: ['noopn'],
+    // id: location.pathname,      // Ensure uniqueness and length less than 50
+    id: md5(location.pathname),
+    distractionFreeMode: false,  // Facebook-like distraction free mode
+    pagerDirection: 'last'
+  })
+
+  gitalk.render('gitalk-container')
+</script>
+
+     
+</article>
+
+</section>
+      <footer class="footer">
+  <div class="outer">
+    <ul>
+      <li>
+        Copyrights &copy;
+        2015-2024
+        <i class="ri-heart-fill heart_icon"></i> SunZhiqi
+      </li>
+    </ul>
+    <ul>
+      <li>
+        
+      </li>
+    </ul>
+    <ul>
+      <li>
+        
+      </li>
+    </ul>
+    <ul>
+      
+    </ul>
+    <ul>
+      
+    </ul>
+    <ul>
+      <li>
+        <!-- cnzz统计 -->
+        
+      </li>
+    </ul>
+  </div>
+</footer>    
+    </main>
+    <div class="float_btns">
+      <div class="totop" id="totop">
+  <i class="ri-arrow-up-line"></i>
+</div>
+
+    </div>
+    <aside class="sidebar on">
+      <button class="navbar-toggle"></button>
+<nav class="navbar">
+  
+  <div class="logo">
+    <a href="/"><img src="/images/ayer-side.png" alt="四月八日"></a>
+  </div>
+  
+  <ul class="nav nav-main">
+    
+    <li class="nav-item">
+      <a class="nav-item-link" href="/">主页</a>
+    </li>
+    
+    <li class="nav-item">
+      <a class="nav-item-link" href="/archives">归档</a>
+    </li>
+    
+    <li class="nav-item">
+      <a class="nav-item-link" href="/categories">分类</a>
+    </li>
+    
+    <li class="nav-item">
+      <a class="nav-item-link" href="/tags">标签</a>
+    </li>
+    
+    <li class="nav-item">
+      <a class="nav-item-link" href="/tags/Essay">随笔</a>
+    </li>
+    
+  </ul>
+</nav>
+<nav class="navbar navbar-bottom">
+  <ul class="nav">
+    <li class="nav-item">
+      
+      <a class="nav-item-link nav-item-search"  title="搜索">
+        <i class="ri-search-line"></i>
+      </a>
+      
+      
+    </li>
+  </ul>
+</nav>
+<div class="search-form-wrap">
+  <div class="local-search local-search-plugin">
+  <input type="search" id="local-search-input" class="local-search-input" placeholder="Search...">
+  <div id="local-search-result" class="local-search-result"></div>
+</div>
+</div>
+    </aside>
+    <div id="mask"></div>
+
+<!-- #reward -->
+<div id="reward">
+  <span class="close"><i class="ri-close-line"></i></span>
+  <p class="reward-p"><i class="ri-cup-line"></i>此时无声胜有声！</p>
+  <div class="reward-box">
+    
+    <div class="reward-item">
+      <img class="reward-img" src="/images/alipay.jpg">
+      <span class="reward-type">支付宝</span>
+    </div>
+    
+    
+    <div class="reward-item">
+      <img class="reward-img" src="/images/wechat.jpg">
+      <span class="reward-type">微信</span>
+    </div>
+    
+  </div>
+</div>
+    
+<script src="/js/jquery-3.6.0.min.js"></script>
+ 
+<script src="/js/lazyload.min.js"></script>
+
+<!-- Tocbot -->
+ 
+<script src="/js/tocbot.min.js"></script>
+
+<script>
+  tocbot.init({
+    tocSelector: ".tocbot",
+    contentSelector: ".article-entry",
+    headingSelector: "h1, h2, h3, h4, h5, h6",
+    hasInnerContainers: true,
+    scrollSmooth: true,
+    scrollContainer: "main",
+    positionFixedSelector: ".tocbot",
+    positionFixedClass: "is-position-fixed",
+    fixedSidebarOffset: "auto",
+  });
+</script>
+
+<script src="/js/jquery.modal.min.js"></script>
+<link rel="stylesheet" href="/css/jquery.modal.min.css" />
+<script src="/js/jquery.justifiedGallery.min.js"></script>
+
+<script src="/dist/main.js"></script>
+
+<!-- ImageViewer -->
+ <!-- Root element of PhotoSwipe. Must have class pswp. -->
+<div class="pswp" tabindex="-1" role="dialog" aria-hidden="true">
+  <!-- Background of PhotoSwipe. 
+         It's a separate element as animating opacity is faster than rgba(). -->
+  <div class="pswp__bg"></div>
+
+  <!-- Slides wrapper with overflow:hidden. -->
+  <div class="pswp__scroll-wrap">
+    <!-- Container that holds slides. 
+            PhotoSwipe keeps only 3 of them in the DOM to save memory.
+            Don't modify these 3 pswp__item elements, data is added later on. -->
+    <div class="pswp__container">
+      <div class="pswp__item"></div>
+      <div class="pswp__item"></div>
+      <div class="pswp__item"></div>
+    </div>
+
+    <!-- Default (PhotoSwipeUI_Default) interface on top of sliding area. Can be changed. -->
+    <div class="pswp__ui pswp__ui--hidden">
+      <div class="pswp__top-bar">
+        <!--  Controls are self-explanatory. Order can be changed. -->
+
+        <div class="pswp__counter"></div>
+
+        <button
+          class="pswp__button pswp__button--close"
+          title="Close (Esc)"
+        ></button>
+
+        <button
+          class="pswp__button pswp__button--share"
+          style="display: none"
+          title="Share"
+        ></button>
+
+        <button
+          class="pswp__button pswp__button--fs"
+          title="Toggle fullscreen"
+        ></button>
+
+        <button
+          class="pswp__button pswp__button--zoom"
+          title="Zoom in/out"
+        ></button>
+
+        <!-- Preloader demo http://codepen.io/dimsemenov/pen/yyBWoR -->
+        <!-- element will get class pswp__preloader--active when preloader is running -->
+        <div class="pswp__preloader">
+          <div class="pswp__preloader__icn">
+            <div class="pswp__preloader__cut">
+              <div class="pswp__preloader__donut"></div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <div class="pswp__share-modal pswp__share-modal--hidden pswp__single-tap">
+        <div class="pswp__share-tooltip"></div>
+      </div>
+
+      <button
+        class="pswp__button pswp__button--arrow--left"
+        title="Previous (arrow left)"
+      ></button>
+
+      <button
+        class="pswp__button pswp__button--arrow--right"
+        title="Next (arrow right)"
+      ></button>
+
+      <div class="pswp__caption">
+        <div class="pswp__caption__center"></div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<link rel="stylesheet" href="/css/photoswipe.min.css" />
+<link rel="stylesheet" href="/css/default-skin.min.css" />
+<script src="/js/photoswipe.min.js"></script>
+<script src="/js/photoswipe-ui-default.min.js"></script>
+
+<script>
+  function viewer_init() {
+    let pswpElement = document.querySelectorAll(".pswp")[0];
+    let $imgArr = document.querySelectorAll(
+      ".article-entry img:not(.reward-img)"
+    );
+
+    $imgArr.forEach(($em, i) => {
+      $em.onclick = () => {
+        // slider展开状态
+        // todo: 这样不好，后面改成状态
+        if (document.querySelector(".left-col.show")) return;
+        let items = [];
+        $imgArr.forEach(($em2, i2) => {
+          let img = $em2.getAttribute("data-idx", i2);
+          let src =
+            $em2.getAttribute("data-target") || $em2.getAttribute("src");
+          let title = $em2.getAttribute("alt");
+          // 获得原图尺寸
+          const image = new Image();
+          image.src = src;
+          items.push({
+            src: src,
+            w: image.width || $em2.width,
+            h: image.height || $em2.height,
+            title: title,
+          });
+        });
+        var gallery = new PhotoSwipe(pswpElement, PhotoSwipeUI_Default, items, {
+          index: parseInt(i),
+        });
+        gallery.init();
+      };
+    });
+  }
+  viewer_init();
+</script>
+ 
+<!-- MathJax -->
+ <script type="text/x-mathjax-config">
+  MathJax.Hub.Config({
+      tex2jax: {
+          inlineMath: [ ['$','$'], ["\\(","\\)"]  ],
+          processEscapes: true,
+          skipTags: ['script', 'noscript', 'style', 'textarea', 'pre', 'code']
+      }
+  });
+
+  MathJax.Hub.Queue(function() {
+      var all = MathJax.Hub.getAllJax(), i;
+      for(i=0; i < all.length; i += 1) {
+          all[i].SourceElement().parentNode.className += ' has-jax';
+      }
+  });
+</script>
+
+<script src="/js/MathJax.js"></script>
+<script src="/js/TeX-AMS-MML_HTMLorMML-full.js"></script>
+
+<script>
+  var ayerConfig = {
+    mathjax: true,
+  };
+</script>
+
+<!-- Katex -->
+
+<!-- busuanzi  -->
+
+<!-- ClickLove -->
+
+<!-- ClickBoom1 -->
+
+<!-- ClickBoom2 -->
+
+<!-- CodeCopy -->
+ 
+<link rel="stylesheet" href="/css/clipboard.css">
+ <script src="/js/clipboard.min.js"></script>
+<script>
+  function wait(callback, seconds) {
+    var timelag = null;
+    timelag = window.setTimeout(callback, seconds);
+  }
+  !(function (e, t, a) {
+    var initCopyCode = function () {
+      var copyHtml = "";
+      copyHtml += '<button class="btn-copy" data-clipboard-snippet="">';
+      copyHtml += '<i class="ri-file-copy-2-line"></i><span>COPY</span>';
+      copyHtml += "</button>";
+      $(".highlight .code pre").before(copyHtml);
+      $(".article pre code").before(copyHtml);
+      var clipboard = new ClipboardJS(".btn-copy", {
+        target: function (trigger) {
+          return trigger.nextElementSibling;
+        },
+      });
+      clipboard.on("success", function (e) {
+        let $btn = $(e.trigger);
+        $btn.addClass("copied");
+        let $icon = $($btn.find("i"));
+        $icon.removeClass("ri-file-copy-2-line");
+        $icon.addClass("ri-checkbox-circle-line");
+        let $span = $($btn.find("span"));
+        $span[0].innerText = "COPIED";
+
+        wait(function () {
+          // 等待两秒钟后恢复
+          $icon.removeClass("ri-checkbox-circle-line");
+          $icon.addClass("ri-file-copy-2-line");
+          $span[0].innerText = "COPY";
+        }, 2000);
+      });
+      clipboard.on("error", function (e) {
+        e.clearSelection();
+        let $btn = $(e.trigger);
+        $btn.addClass("copy-failed");
+        let $icon = $($btn.find("i"));
+        $icon.removeClass("ri-file-copy-2-line");
+        $icon.addClass("ri-time-line");
+        let $span = $($btn.find("span"));
+        $span[0].innerText = "COPY FAILED";
+
+        wait(function () {
+          // 等待两秒钟后恢复
+          $icon.removeClass("ri-time-line");
+          $icon.addClass("ri-file-copy-2-line");
+          $span[0].innerText = "COPY";
+        }, 2000);
+      });
+    };
+    initCopyCode();
+  })(window, document);
+</script>
+ 
+<!-- CanvasBackground -->
+
+<script>
+  if (window.mermaid) {
+    mermaid.initialize({ theme: "default" });
+  }
+</script>
+
+
+    
+    
+
+  </div>
+</body>
+
+</html>

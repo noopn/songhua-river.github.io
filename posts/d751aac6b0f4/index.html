@@ -1,0 +1,655 @@
+<!DOCTYPE html>
+
+
+<html lang="zh-CN">
+  
+
+    <head>
+      <meta charset="utf-8" />
+       
+      <meta name="keywords" content="前端 web react" />
+       
+      <meta name="description" content="前端技术与生活。" />
+      
+      <meta
+        name="viewport"
+        content="width=device-width, initial-scale=1, maximum-scale=1"
+      />
+      <title>React源码分析 ① 从入口开始认识React |  四月八日</title>
+  <meta name="generator" content="hexo-theme-ayer">
+      
+      <link rel="shortcut icon" href="/favicon.ico" />
+       
+<link rel="stylesheet" href="/dist/main.css">
+ 
+<link rel="stylesheet" href="/css/fonts/remixicon.css">
+ 
+<link rel="stylesheet" href="/css/custom.css">
+ 
+      <script src="/js/pace.min.js"></script>
+       
+ 
+
+      <link rel="stylesheet" href="/css/bulma.min.css" />
+      <script src="/js/sweetalert2.min.js"></script>
+
+      <!-- mermaid -->
+      
+      <script src="https://cdn.staticfile.org/mermaid/8.14.0/mermaid.min.js"></script>
+      
+      <style>
+        .swal2-styled.swal2-confirm {
+          font-size: 1.6rem;
+        }
+      </style>
+    <!-- hexo injector head_end start -->
+<link rel="stylesheet" href="/css/katex.min.css">
+
+<link rel="stylesheet" href="/css/style.css">
+<!-- hexo injector head_end end --></head>
+  </html>
+</html>
+
+
+<body>
+  <div id="app">
+    
+      
+    <main class="content on">
+      <section class="outer">
+  <article
+  id="post-source/react/①认识React"
+  class="article article-type-post"
+  itemscope
+  itemprop="blogPost"
+  data-scroll-reveal
+>
+  <div class="article-inner">
+    
+    <header class="article-header">
+       
+<h1 class="article-title sea-center" style="border-left:0" itemprop="name">
+  React源码分析 ① 从入口开始认识React
+</h1>
+ 
+
+      
+    </header>
+     
+    <div class="article-meta">
+      <a href="/posts/d751aac6b0f4/" class="article-date">
+  <time datetime="2021-10-22T11:04:28.000Z" itemprop="datePublished">2021-10-22</time>
+</a> 
+  <div class="article-category">
+    <a class="article-category-link" href="/categories/%E6%BA%90%E7%A0%81%E5%88%86%E6%9E%90/">源码分析</a> / <a class="article-category-link" href="/categories/%E6%BA%90%E7%A0%81%E5%88%86%E6%9E%90/React/">React</a>
+  </div>
+  
+<div class="word_count">
+    <span class="post-time">
+        <span class="post-meta-item-icon">
+            <i class="ri-quill-pen-line"></i>
+            <span class="post-meta-item-text"> 字数统计:</span>
+            <span class="post-count">2.2k</span>
+        </span>
+    </span>
+
+    <span class="post-time">
+        &nbsp; | &nbsp;
+        <span class="post-meta-item-icon">
+            <i class="ri-book-open-line"></i>
+            <span class="post-meta-item-text"> 阅读时长≈</span>
+            <span class="post-count">8 分钟</span>
+        </span>
+    </span>
+</div>
+ 
+    </div>
+      
+    <div class="tocbot"></div>
+
+
+
+
+  
+    <div class="article-entry" itemprop="articleBody">
+       
+  <h4 id="render-方法"><a href="#render-方法" class="headerlink" title="render 方法"></a>render 方法</h4><p>当我们打开 React 的<a target="_blank" rel="noopener" href="https://reactjs.org/docs/hello-world.html">官方文档</a>看到的第一个例子便是 Hello World：</p>
+<figure class="highlight javascript"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line"><span class="title class_">ReactDOM</span>.<span class="title function_">render</span>(<span class="language-xml"><span class="tag">&lt;<span class="name">h1</span>&gt;</span>Hello, world!<span class="tag">&lt;/<span class="name">h1</span>&gt;</span></span>, <span class="variable language_">document</span>.<span class="title function_">getElementById</span>(<span class="string">&quot;root&quot;</span>));</span><br></pre></td></tr></table></figure>
+
+<p><code>render</code>函数将<code>h1</code>标签和<code>Hello World</code>文本渲染在了页面的<code>root</code>元素中，但很显然这段代码没有看到的那么简单，<code>js</code>并不会认识<code>html</code>元素，这个标签最终会被转换成 js 对象，然后通过<code>render</code>方法后面的一系列函数调用，最终被插入到页面中。</p>
+<h4 id="JSX"><a href="#JSX" class="headerlink" title="JSX"></a>JSX</h4><p>刚才看到的 <code>h1</code> 标签，严格说来并不是<code>html</code>,因为他写在 js 语法中，可以把它叫做标签语法，也就是 JSX。</p>
+<p>为什么 JSX 的出现好像又让页面开发回到了刀耕火种的<code>jquery</code>时代，<code>js</code>与<code>html</code>混合在一起，UI(视图)与逻辑耦合。</p>
+<p>但实际上 React 认为，渲染逻辑与 UI 的逻辑是耦合的，比如需要在 UI 中绑定事件，数据改变时通知 UI 发生改变，而 React 并没有将这两点分离到不同的文件中，而是通过组件的概念，实现关注点分离，也就是设计原则的分离，每一部分都有自己的关注点。</p>
+<p>我们可以在<a target="_blank" rel="noopener" href="https://www.babeljs.cn/">Babel</a>中，看一下 JSX 最终变成了什么。</p>
+<figure class="highlight javascript"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">const</span> <span class="title class_">CompA</span> = (</span><br><span class="line">  <span class="language-xml"><span class="tag">&lt;<span class="name">div</span>&gt;</span></span></span><br><span class="line"><span class="language-xml">    <span class="tag">&lt;<span class="name">p</span>&gt;</span>p<span class="tag">&lt;/<span class="name">p</span>&gt;</span>div</span></span><br><span class="line"><span class="language-xml">  <span class="tag">&lt;/<span class="name">div</span>&gt;</span></span></span><br><span class="line">);</span><br><span class="line"></span><br><span class="line"><span class="keyword">const</span> <span class="title function_">CompB</span> = (<span class="params"></span>) =&gt; <span class="language-xml"><span class="tag">&lt;<span class="name">a</span>&gt;</span>a<span class="tag">&lt;/<span class="name">a</span>&gt;</span></span>;</span><br><span class="line"><span class="keyword">const</span> <span class="title function_">App</span> = (<span class="params"></span>) =&gt; &#123;</span><br><span class="line">  <span class="keyword">return</span> (</span><br><span class="line">    <span class="language-xml"><span class="tag">&lt;&gt;</span></span></span><br><span class="line"><span class="language-xml">      <span class="tag">&lt;<span class="name">CompA</span> /&gt;</span></span></span><br><span class="line"><span class="language-xml">      <span class="tag">&lt;<span class="name">CompB</span> /&gt;</span></span></span><br><span class="line"><span class="language-xml">    <span class="tag">&lt;/&gt;</span></span></span><br><span class="line">  );</span><br><span class="line">&#125;;</span><br></pre></td></tr></table></figure>
+
+<p>转化为</p>
+<figure class="highlight javascript"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br></pre></td><td class="code"><pre><span class="line"><span class="meta">&quot;use strict&quot;</span>;</span><br><span class="line"></span><br><span class="line"><span class="keyword">const</span> <span class="title class_">CompA</span> = <span class="comment">/*#__PURE__*/</span> <span class="title class_">React</span>.<span class="title function_">createElement</span>(</span><br><span class="line">  <span class="string">&quot;div&quot;</span>,</span><br><span class="line">  <span class="literal">null</span>,</span><br><span class="line">  <span class="comment">/*#__PURE__*/</span> <span class="title class_">React</span>.<span class="title function_">createElement</span>(<span class="string">&quot;p&quot;</span>, <span class="literal">null</span>, <span class="string">&quot;p&quot;</span>),</span><br><span class="line">  <span class="string">&quot;div&quot;</span></span><br><span class="line">);</span><br><span class="line"></span><br><span class="line"><span class="keyword">const</span> <span class="title function_">CompB</span> = (<span class="params"></span>) =&gt; <span class="comment">/*#__PURE__*/</span> <span class="title class_">React</span>.<span class="title function_">createElement</span>(<span class="string">&quot;a&quot;</span>, <span class="literal">null</span>, <span class="string">&quot;a&quot;</span>);</span><br><span class="line"></span><br><span class="line"><span class="keyword">const</span> <span class="title function_">App</span> = (<span class="params"></span>) =&gt; &#123;</span><br><span class="line">  <span class="keyword">return</span> <span class="comment">/*#__PURE__*/</span> <span class="title class_">React</span>.<span class="title function_">createElement</span>(</span><br><span class="line">    <span class="title class_">React</span>.<span class="property">Fragment</span>,</span><br><span class="line">    <span class="literal">null</span>,</span><br><span class="line">    <span class="comment">/*#__PURE__*/</span> <span class="title class_">React</span>.<span class="title function_">createElement</span>(<span class="title class_">CompA</span>, <span class="literal">null</span>),</span><br><span class="line">    <span class="comment">/*#__PURE__*/</span> <span class="title class_">React</span>.<span class="title function_">createElement</span>(<span class="title class_">CompB</span>, <span class="literal">null</span>)</span><br><span class="line">  );</span><br><span class="line">&#125;;</span><br></pre></td></tr></table></figure>
+
+<p>可以注意到组件被转化为<code>React.createElement</code>方法的第一个参数，这也是为什么组件的第一个字母需要大写的原因，Babel 会通过大小写来区分原生组件和 React 组件</p>
+<p>而正因为 JSX 语法被转换成了<code>React.createElement</code>的函数调用，因此在写 JSX 的时候必须要<code>import React from react</code></p>
+<p>而 React 17-RC 以及之后的版本将采用<a target="_blank" rel="noopener" href="https://reactjs.org/blog/2020/09/22/introducing-the-new-jsx-transform.html">新的 JSX 转换</a>，从而无需在引入 React</p>
+<h4 id="Virtual-DOM"><a href="#Virtual-DOM" class="headerlink" title="Virtual DOM"></a>Virtual DOM</h4><p>通过 React.createElement 处理的节点，会被转换成 Virtual DOM 也可以称为虚拟 DOM</p>
+<p>Virtual DOM 是一种编程概念,它与真是的 DOM 一一对应，而且他是保存在内存中的，当 DOM 的属性发生改变的时候，React 会在内存中把改变映射成 Virtual DOM,在把最终状态渲染在页面中，从而保证最小的 DOM 操作</p>
+<p>实际上 React 中的 Fiber,也是属于 Virtual DOM 概念的一部分，在 React.createElement 创建的对象上添加了，更多的属性，例如优先级，副作用，更新队列等。</p>
+<blockquote>
+<p>React.createElement &#x2F;react&#x2F;packages&#x2F;react&#x2F;src&#x2F;React.js 在源码中非常简单 </p>
+</blockquote>
+<figure class="highlight javascript"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br><span class="line">35</span><br><span class="line">36</span><br><span class="line">37</span><br><span class="line">38</span><br><span class="line">39</span><br><span class="line">40</span><br><span class="line">41</span><br><span class="line">42</span><br><span class="line">43</span><br><span class="line">44</span><br><span class="line">45</span><br><span class="line">46</span><br><span class="line">47</span><br><span class="line">48</span><br><span class="line">49</span><br><span class="line">50</span><br><span class="line">51</span><br><span class="line">52</span><br><span class="line">53</span><br><span class="line">54</span><br><span class="line">55</span><br><span class="line">56</span><br><span class="line">57</span><br><span class="line">58</span><br><span class="line">59</span><br><span class="line">60</span><br><span class="line">61</span><br><span class="line">62</span><br><span class="line">63</span><br><span class="line">64</span><br><span class="line">65</span><br><span class="line">66</span><br><span class="line">67</span><br><span class="line">68</span><br><span class="line">69</span><br><span class="line">70</span><br><span class="line">71</span><br><span class="line">72</span><br><span class="line">73</span><br><span class="line">74</span><br><span class="line">75</span><br><span class="line">76</span><br><span class="line">77</span><br><span class="line">78</span><br><span class="line">79</span><br><span class="line">80</span><br><span class="line">81</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">export</span> <span class="keyword">function</span> <span class="title function_">createElement</span>(<span class="params">type, config, children</span>) &#123;</span><br><span class="line">  <span class="keyword">let</span> propName;</span><br><span class="line"></span><br><span class="line">  <span class="comment">// 用于提取保留字段</span></span><br><span class="line">  <span class="keyword">const</span> props = &#123;&#125;;</span><br><span class="line"></span><br><span class="line">  <span class="keyword">let</span> key = <span class="literal">null</span>;</span><br><span class="line">  <span class="keyword">let</span> ref = <span class="literal">null</span>;</span><br><span class="line">  <span class="keyword">let</span> self = <span class="literal">null</span>;</span><br><span class="line">  <span class="keyword">let</span> source = <span class="literal">null</span>;</span><br><span class="line"></span><br><span class="line">  <span class="keyword">if</span> (config != <span class="literal">null</span>) &#123;</span><br><span class="line">    <span class="keyword">if</span> (<span class="title function_">hasValidRef</span>(config)) &#123;</span><br><span class="line">      ref = config.<span class="property">ref</span>;</span><br><span class="line">    &#125;</span><br><span class="line">    <span class="keyword">if</span> (<span class="title function_">hasValidKey</span>(config)) &#123;</span><br><span class="line">      <span class="comment">// 转换为字符串</span></span><br><span class="line">      key = <span class="string">&quot;&quot;</span> + config.<span class="property">key</span>;</span><br><span class="line">    &#125;</span><br><span class="line"></span><br><span class="line">    self = config.<span class="property">__self</span> === <span class="literal">undefined</span> ? <span class="literal">null</span> : config.<span class="property">__self</span>;</span><br><span class="line">    source = config.<span class="property">__source</span> === <span class="literal">undefined</span> ? <span class="literal">null</span> : config.<span class="property">__source</span>;</span><br><span class="line">    </span><br><span class="line">    <span class="comment">// 拷贝外部传入的props属性(这里的形参是config)到props对象上</span></span><br><span class="line">    <span class="keyword">for</span> (propName <span class="keyword">in</span> config) &#123;</span><br><span class="line">      <span class="keyword">if</span> (</span><br><span class="line">        hasOwnProperty.<span class="title function_">call</span>(config, propName) &amp;&amp;</span><br><span class="line">        !<span class="variable constant_">RESERVED_PROPS</span>.<span class="title function_">hasOwnProperty</span>(propName)</span><br><span class="line">      ) &#123;</span><br><span class="line">        props[propName] = config[propName];</span><br><span class="line">      &#125;</span><br><span class="line">    &#125;</span><br><span class="line">  &#125;</span><br><span class="line"></span><br><span class="line">  <span class="comment">// 子元素的个数</span></span><br><span class="line">  <span class="keyword">const</span> childrenLength = <span class="variable language_">arguments</span>.<span class="property">length</span> - <span class="number">2</span>;</span><br><span class="line"></span><br><span class="line">  <span class="comment">// 如果只有一个子元素直接赋值</span></span><br><span class="line">  <span class="keyword">if</span> (childrenLength === <span class="number">1</span>) &#123;</span><br><span class="line">    props.<span class="property">children</span> = children;</span><br><span class="line">  &#125; <span class="keyword">else</span> <span class="keyword">if</span> (childrenLength &gt; <span class="number">1</span>) &#123;</span><br><span class="line">    <span class="keyword">const</span> childArray = <span class="title class_">Array</span>(childrenLength);</span><br><span class="line">    <span class="keyword">for</span> (<span class="keyword">let</span> i = <span class="number">0</span>; i &lt; childrenLength; i++) &#123;</span><br><span class="line">      childArray[i] = <span class="variable language_">arguments</span>[i + <span class="number">2</span>];</span><br><span class="line">    &#125;</span><br><span class="line">    <span class="comment">// 如果大于一个则插入到一个数组中</span></span><br><span class="line">    props.<span class="property">children</span> = childArray;</span><br><span class="line">  &#125;</span><br><span class="line"></span><br><span class="line">  <span class="comment">// 如果定义了默认属性，则用默认属性覆盖掉，</span></span><br><span class="line">  <span class="keyword">if</span> (type &amp;&amp; type.<span class="property">defaultProps</span>) &#123;</span><br><span class="line">    <span class="keyword">const</span> defaultProps = type.<span class="property">defaultProps</span>;</span><br><span class="line">    <span class="keyword">for</span> (propName <span class="keyword">in</span> defaultProps) &#123;</span><br><span class="line">      <span class="keyword">if</span> (props[propName] === <span class="literal">undefined</span>) &#123;</span><br><span class="line">        props[propName] = defaultProps[propName];</span><br><span class="line">      &#125;</span><br><span class="line">    &#125;</span><br><span class="line">  &#125;</span><br><span class="line">  <span class="keyword">return</span> <span class="title class_">ReactElement</span>(</span><br><span class="line">    type,                     <span class="comment">// 组件类型 可能是元素标签，也可能是类组件或函数组件的引用</span></span><br><span class="line">    key,                      <span class="comment">// 字符串key</span></span><br><span class="line">    ref,                      <span class="comment">// ref对象 </span></span><br><span class="line">    self,                     <span class="comment">// 内部属性初始化null</span></span><br><span class="line">    source,                   <span class="comment">// 内部属性初始化null</span></span><br><span class="line">    <span class="title class_">ReactCurrentOwner</span>.<span class="property">current</span>,<span class="comment">// 用于跟踪拥有当前正在被构建组件的组件</span></span><br><span class="line">    props                     <span class="comment">// 属性集合</span></span><br><span class="line">  );</span><br><span class="line">&#125;</span><br><span class="line">                         </span><br><span class="line"><span class="keyword">const</span> <span class="title class_">ReactElement</span> = <span class="keyword">function</span>(<span class="params">type, key, ref, self, source, owner, props</span>) &#123;</span><br><span class="line">  <span class="keyword">const</span> element = &#123;</span><br><span class="line">    <span class="attr">$$typeof</span>: <span class="variable constant_">REACT_ELEMENT_TYPE</span>,</span><br><span class="line">    <span class="attr">type</span>: type,</span><br><span class="line">    <span class="attr">key</span>: key,</span><br><span class="line">    <span class="attr">ref</span>: ref,</span><br><span class="line">    <span class="attr">props</span>: props,</span><br><span class="line">    <span class="attr">_owner</span>: owner,</span><br><span class="line">  &#125;;</span><br><span class="line"></span><br><span class="line">  <span class="keyword">return</span> element;</span><br><span class="line">&#125;;</span><br></pre></td></tr></table></figure>
+
+<p>当type是一个react组件的时候，他会被赋值到type属性上，最终被实例化。现在看一下，这个组件被定义时的样子</p>
+<figure class="highlight javascript"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">class</span> <span class="title class_">App</span> <span class="keyword">extends</span> <span class="title class_ inherited__">React.Component</span> &#123;&#125;</span><br></pre></td></tr></table></figure>
+
+<blockquote>
+<p>React.Component  &#x2F;react&#x2F;packages&#x2F;react&#x2F;src&#x2F;ReactBaseClasses.js</p>
+</blockquote>
+<figure class="highlight javascript"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br><span class="line">35</span><br><span class="line">36</span><br><span class="line">37</span><br><span class="line">38</span><br><span class="line">39</span><br><span class="line">40</span><br><span class="line">41</span><br><span class="line">42</span><br><span class="line">43</span><br><span class="line">44</span><br><span class="line">45</span><br></pre></td><td class="code"><pre><span class="line"></span><br><span class="line"><span class="comment">// 基本类，用于帮助更新组件的状态</span></span><br><span class="line"><span class="keyword">function</span> <span class="title function_">Component</span>(<span class="params">props, context, updater</span>) &#123;</span><br><span class="line">  <span class="variable language_">this</span>.<span class="property">props</span> = props;</span><br><span class="line">  <span class="variable language_">this</span>.<span class="property">context</span> = context;</span><br><span class="line">  <span class="comment">// 如果refs是一个已经过时的string类型，晚一点的时候会重新分配一个不同的对象</span></span><br><span class="line">  <span class="variable language_">this</span>.<span class="property">refs</span> = emptyObject;</span><br><span class="line">  <span class="comment">// 初始化一个默认updater对象，但真实的对象会在渲染的时候被插入</span></span><br><span class="line">  <span class="variable language_">this</span>.<span class="property">updater</span> = updater || <span class="title class_">ReactNoopUpdateQueue</span>;</span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line"><span class="title class_">Component</span>.<span class="property"><span class="keyword">prototype</span></span>.<span class="property">isReactComponent</span> = &#123;&#125;;</span><br><span class="line"></span><br><span class="line"><span class="comment">/**</span></span><br><span class="line"><span class="comment"> * 设置一个状态的子集，必须使用这个方法，你应该确保&#x27;this.state&#x27;是不可变的，也就是不能修改，每次修改必须返回一个新的传入一个新的state</span></span><br><span class="line"><span class="comment"> * </span></span><br><span class="line"><span class="comment"> * setState没有确保立即更新，所以在调用这个方法后使用数据可能是旧的。也没有确保setState会立即执行，实际上最终可能会一起执行</span></span><br><span class="line"><span class="comment"> * 你可以提供一个回调函数，他将在setState真正完成后执行。</span></span><br><span class="line"><span class="comment"> * </span></span><br><span class="line"><span class="comment"> * 当setState传入一个函数，他将在未来的某一时间执行，并不是同步，它将使用最新的组件参数（state, props, context）被调用</span></span><br><span class="line"><span class="comment"> * 这些参数与this对象上的可以是不同的，因为他可能在receiveProps之后但在shouldComponentUpdate之前，这些新的state, props, and context还没来得及合并到this对象</span></span><br><span class="line"><span class="comment"> */</span></span><br><span class="line"><span class="title class_">Component</span>.<span class="property"><span class="keyword">prototype</span></span>.<span class="property">setState</span> = <span class="keyword">function</span>(<span class="params">partialState, callback</span>) &#123;</span><br><span class="line">  <span class="keyword">if</span> (</span><br><span class="line">    <span class="keyword">typeof</span> partialState !== <span class="string">&#x27;object&#x27;</span> &amp;&amp;</span><br><span class="line">    <span class="keyword">typeof</span> partialState !== <span class="string">&#x27;function&#x27;</span> &amp;&amp;</span><br><span class="line">    partialState != <span class="literal">null</span></span><br><span class="line">  ) &#123;</span><br><span class="line">    <span class="keyword">throw</span> <span class="keyword">new</span> <span class="title class_">Error</span>(</span><br><span class="line">      <span class="string">&#x27;setState(...): takes an object of state variables to update or a &#x27;</span> +</span><br><span class="line">        <span class="string">&#x27;function which returns an object of state variables.&#x27;</span>,</span><br><span class="line">    );</span><br><span class="line">  &#125;</span><br><span class="line"></span><br><span class="line">  <span class="comment">// 更新会被添加到队列，在未来的某一时间更新</span></span><br><span class="line">  <span class="variable language_">this</span>.<span class="property">updater</span>.<span class="title function_">enqueueSetState</span>(<span class="variable language_">this</span>, partialState, callback, <span class="string">&#x27;setState&#x27;</span>);</span><br><span class="line">&#125;;</span><br><span class="line"></span><br><span class="line"><span class="comment">/**</span></span><br><span class="line"><span class="comment"> * 强制更新，它应该只当明确知道我们不在一个DOM事务中才被使用，你可能会想，当你知道一些深层组件的状态已经改变但是setState没有调用的时候去调用它。</span></span><br><span class="line"><span class="comment"> * 它将不会触发shouldComponentUpdate，但会触发 `componentWillUpdate` 和 `componentDidUpdate`</span></span><br><span class="line"><span class="comment"> */</span></span><br><span class="line"><span class="title class_">Component</span>.<span class="property"><span class="keyword">prototype</span></span>.<span class="property">forceUpdate</span> = <span class="keyword">function</span>(<span class="params">callback</span>) &#123;</span><br><span class="line">  <span class="variable language_">this</span>.<span class="property">updater</span>.<span class="title function_">enqueueForceUpdate</span>(<span class="variable language_">this</span>, callback, <span class="string">&#x27;forceUpdate&#x27;</span>);</span><br><span class="line">&#125;;</span><br></pre></td></tr></table></figure>
+
+<h4 id="执行流程"><a href="#执行流程" class="headerlink" title="执行流程"></a>执行流程</h4><p>现在已经知道了render执行时的大部分必要信息，那render背后的逻辑又是怎样的，这显然是一个复杂的调用过程，但是我们可以通过浏览器的性能分析去查看render函数的调用那个过程</p>
+<p>现在你只需要大概了解调用了哪些方法，这些方法会组成后面的调用流程图，后面会详细的描述</p>
+<p><img src="/posts/d751aac6b0f4/0001.png"></p>
+<h5 id="初始化事件相关对象"><a href="#初始化事件相关对象" class="headerlink" title="初始化事件相关对象"></a>初始化事件相关对象</h5><p><img src="/posts/d751aac6b0f4/0002.png"></p>
+<ul>
+<li>registerSimpleEvents 创建对象相关对象</li>
+</ul>
+<table>
+<thead>
+<tr>
+<th>变量名称</th>
+<th>变量对象</th>
+<th>说明</th>
+</tr>
+</thead>
+<tbody><tr>
+<td>allNativeEvents</td>
+<td>Set 集合</td>
+<td><div style='width:600px'>保存所有原生事件的名称 例如 <code>0:&quot;cancel&quot;</code></div></td>
+</tr>
+<tr>
+<td>eventPriorities</td>
+<td>Map 集</td>
+<td><div style='width:600px'>保存事件名称和事件优先级对应关系 例如 <code>click=&gt;0</code> </div></td>
+</tr>
+<tr>
+<td>topLevelEventsToReactNames</td>
+<td>Map 集</td>
+<td><div style='width:600px'>保存原始事件名称和 React 事件的对应关系 例如 <code>&quot;cancel&quot; =&gt; &quot;onCancel&quot;</code> </div></td>
+</tr>
+<tr>
+<td>registrationNameDependencies</td>
+<td>Object</td>
+<td><div style='width:600px'>保存 React 事件和原生事件的对应关系 例如 <code>onClick:(1) [&#39;click&#39;]</code> 每个 React 事件对应一个数组用于保存合成事件对应关系</div></td>
+</tr>
+<tr>
+<td>possibleRegistrationNames</td>
+<td>Object</td>
+<td><div style='width:600px'>保存小写的 React 事件名称和正确的驼峰命名事件的对应关系，用于校验用户输入 例如 <code>onclick:onClick</code></div></td>
+</tr>
+</tbody></table>
+<h5 id="入口"><a href="#入口" class="headerlink" title="入口"></a>入口</h5><p><img src="/posts/d751aac6b0f4/0003.png"></p>
+<p><strong>render</strong> : ReactDom.render()<br><strong>createRootImpl</strong> : 创建 FiberRootNode 根节点<br><strong>listenToAllSupportedEvents</strong> : 绑定所有原生事件在 root 节点上</p>
+<h5 id="render-阶段"><a href="#render-阶段" class="headerlink" title="render 阶段"></a>render 阶段</h5><p><img src="/posts/d751aac6b0f4/0004.png"></p>
+<p><strong>unbatchedUpdates</strong> : 非批量更新，让用户尽早看见页面内容，如果是 batchedUpdates 会以异步执行<br><strong>scheduleUpdateOnFiber</strong> : 调度 Fiber 节点更新优先级<br><strong>performUnitOfWork</strong> : 以 Fiber 节点为单位，深度优先递归遍历每一个节点<br><strong>reconcileChildren</strong> ： 创建对比 Fiber 节点，标记有副作用的节点 （添加，删除，移动，更新）<br><strong>completeUnitOfWork</strong> ： 从下至上遍历节点，创建相应的 DOM 节点，并创建 Effects 链表，交给 commit 阶段使用</p>
+<h5 id="commit-阶段"><a href="#commit-阶段" class="headerlink" title="commit 阶段"></a>commit 阶段</h5><p><img src="/posts/d751aac6b0f4/0005.png"></p>
+<p><strong>commitBeforeMutationEffects</strong>: 操作真实节点前执行，会执行<code>getSnapshotBeforeUpdate</code><br><strong>commitMutationEffects</strong>: 执行节点操作<br><strong>commitLayoutEffects：</strong> 执行副作用函数，包括 <code>componentDidUpdate</code> 或 <code>effect</code>回调函数</p>
+<p>如此复杂的调用栈，是为了解决哪些问题。下一章，让我们感受一下react的设计理念</p>
+ 
+      <!-- reward -->
+      
+      <div id="reword-out">
+        <div id="reward-btn">
+          打赏
+        </div>
+      </div>
+      
+    </div>
+    
+
+    <!-- copyright -->
+    
+    <div class="declare">
+      <ul class="post-copyright">
+        <li>
+          <i class="ri-copyright-line"></i>
+          <strong>版权声明： </strong>
+          
+          本博客所有文章除特别声明外，著作权归作者所有。转载请注明出处！
+          
+        </li>
+      </ul>
+    </div>
+    
+    <footer class="article-footer">
+       
+  <ul class="article-tag-list" itemprop="keywords"><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/React/" rel="tag">React</a></li><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/%E6%BA%90%E7%A0%81%E5%88%86%E6%9E%90/" rel="tag">源码分析</a></li></ul>
+
+    </footer>
+  </div>
+
+   
+  <nav class="article-nav">
+    
+      <a href="/posts/94ab7cddc99f/" class="article-nav-link">
+        <strong class="article-nav-caption">上一篇</strong>
+        <div class="article-nav-title">
+          
+            React原理 执行流程与架构
+          
+        </div>
+      </a>
+    
+    
+      <a href="/posts/f95bd5c5972e/" class="article-nav-link">
+        <strong class="article-nav-caption">下一篇</strong>
+        <div class="article-nav-title">React原理 事件系统</div>
+      </a>
+    
+  </nav>
+
+  
+   
+<div class="gitalk" id="gitalk-container"></div>
+
+<link rel="stylesheet" href="https://cdn.staticfile.org/gitalk/1.7.2/gitalk.min.css">
+
+
+<script src="https://cdn.staticfile.org/gitalk/1.7.2/gitalk.min.js"></script>
+
+
+<script src="https://cdn.staticfile.org/blueimp-md5/2.19.0/js/md5.min.js"></script>
+
+<script type="text/javascript">
+  var gitalk = new Gitalk({
+    clientID: 'bce2317b25da7c3c18f6',
+    clientSecret: 'e0ab868ca9054234798be82c2b1c0c9dd8632307',
+    repo: 'noopn.github.io',
+    owner: 'noopn',
+    admin: ['noopn'],
+    // id: location.pathname,      // Ensure uniqueness and length less than 50
+    id: md5(location.pathname),
+    distractionFreeMode: false,  // Facebook-like distraction free mode
+    pagerDirection: 'last'
+  })
+
+  gitalk.render('gitalk-container')
+</script>
+
+     
+</article>
+
+</section>
+      <footer class="footer">
+  <div class="outer">
+    <ul>
+      <li>
+        Copyrights &copy;
+        2015-2024
+        <i class="ri-heart-fill heart_icon"></i> SunZhiqi
+      </li>
+    </ul>
+    <ul>
+      <li>
+        
+      </li>
+    </ul>
+    <ul>
+      <li>
+        
+      </li>
+    </ul>
+    <ul>
+      
+    </ul>
+    <ul>
+      
+    </ul>
+    <ul>
+      <li>
+        <!-- cnzz统计 -->
+        
+      </li>
+    </ul>
+  </div>
+</footer>    
+    </main>
+    <div class="float_btns">
+      <div class="totop" id="totop">
+  <i class="ri-arrow-up-line"></i>
+</div>
+
+    </div>
+    <aside class="sidebar on">
+      <button class="navbar-toggle"></button>
+<nav class="navbar">
+  
+  <div class="logo">
+    <a href="/"><img src="/images/ayer-side.png" alt="四月八日"></a>
+  </div>
+  
+  <ul class="nav nav-main">
+    
+    <li class="nav-item">
+      <a class="nav-item-link" href="/">主页</a>
+    </li>
+    
+    <li class="nav-item">
+      <a class="nav-item-link" href="/archives">归档</a>
+    </li>
+    
+    <li class="nav-item">
+      <a class="nav-item-link" href="/categories">分类</a>
+    </li>
+    
+    <li class="nav-item">
+      <a class="nav-item-link" href="/tags">标签</a>
+    </li>
+    
+    <li class="nav-item">
+      <a class="nav-item-link" href="/tags/Essay">随笔</a>
+    </li>
+    
+  </ul>
+</nav>
+<nav class="navbar navbar-bottom">
+  <ul class="nav">
+    <li class="nav-item">
+      
+      <a class="nav-item-link nav-item-search"  title="搜索">
+        <i class="ri-search-line"></i>
+      </a>
+      
+      
+    </li>
+  </ul>
+</nav>
+<div class="search-form-wrap">
+  <div class="local-search local-search-plugin">
+  <input type="search" id="local-search-input" class="local-search-input" placeholder="Search...">
+  <div id="local-search-result" class="local-search-result"></div>
+</div>
+</div>
+    </aside>
+    <div id="mask"></div>
+
+<!-- #reward -->
+<div id="reward">
+  <span class="close"><i class="ri-close-line"></i></span>
+  <p class="reward-p"><i class="ri-cup-line"></i>此时无声胜有声！</p>
+  <div class="reward-box">
+    
+    <div class="reward-item">
+      <img class="reward-img" src="/images/alipay.jpg">
+      <span class="reward-type">支付宝</span>
+    </div>
+    
+    
+    <div class="reward-item">
+      <img class="reward-img" src="/images/wechat.jpg">
+      <span class="reward-type">微信</span>
+    </div>
+    
+  </div>
+</div>
+    
+<script src="/js/jquery-3.6.0.min.js"></script>
+ 
+<script src="/js/lazyload.min.js"></script>
+
+<!-- Tocbot -->
+ 
+<script src="/js/tocbot.min.js"></script>
+
+<script>
+  tocbot.init({
+    tocSelector: ".tocbot",
+    contentSelector: ".article-entry",
+    headingSelector: "h1, h2, h3, h4, h5, h6",
+    hasInnerContainers: true,
+    scrollSmooth: true,
+    scrollContainer: "main",
+    positionFixedSelector: ".tocbot",
+    positionFixedClass: "is-position-fixed",
+    fixedSidebarOffset: "auto",
+  });
+</script>
+
+<script src="/js/jquery.modal.min.js"></script>
+<link rel="stylesheet" href="/css/jquery.modal.min.css" />
+<script src="/js/jquery.justifiedGallery.min.js"></script>
+
+<script src="/dist/main.js"></script>
+
+<!-- ImageViewer -->
+ <!-- Root element of PhotoSwipe. Must have class pswp. -->
+<div class="pswp" tabindex="-1" role="dialog" aria-hidden="true">
+  <!-- Background of PhotoSwipe. 
+         It's a separate element as animating opacity is faster than rgba(). -->
+  <div class="pswp__bg"></div>
+
+  <!-- Slides wrapper with overflow:hidden. -->
+  <div class="pswp__scroll-wrap">
+    <!-- Container that holds slides. 
+            PhotoSwipe keeps only 3 of them in the DOM to save memory.
+            Don't modify these 3 pswp__item elements, data is added later on. -->
+    <div class="pswp__container">
+      <div class="pswp__item"></div>
+      <div class="pswp__item"></div>
+      <div class="pswp__item"></div>
+    </div>
+
+    <!-- Default (PhotoSwipeUI_Default) interface on top of sliding area. Can be changed. -->
+    <div class="pswp__ui pswp__ui--hidden">
+      <div class="pswp__top-bar">
+        <!--  Controls are self-explanatory. Order can be changed. -->
+
+        <div class="pswp__counter"></div>
+
+        <button
+          class="pswp__button pswp__button--close"
+          title="Close (Esc)"
+        ></button>
+
+        <button
+          class="pswp__button pswp__button--share"
+          style="display: none"
+          title="Share"
+        ></button>
+
+        <button
+          class="pswp__button pswp__button--fs"
+          title="Toggle fullscreen"
+        ></button>
+
+        <button
+          class="pswp__button pswp__button--zoom"
+          title="Zoom in/out"
+        ></button>
+
+        <!-- Preloader demo http://codepen.io/dimsemenov/pen/yyBWoR -->
+        <!-- element will get class pswp__preloader--active when preloader is running -->
+        <div class="pswp__preloader">
+          <div class="pswp__preloader__icn">
+            <div class="pswp__preloader__cut">
+              <div class="pswp__preloader__donut"></div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <div class="pswp__share-modal pswp__share-modal--hidden pswp__single-tap">
+        <div class="pswp__share-tooltip"></div>
+      </div>
+
+      <button
+        class="pswp__button pswp__button--arrow--left"
+        title="Previous (arrow left)"
+      ></button>
+
+      <button
+        class="pswp__button pswp__button--arrow--right"
+        title="Next (arrow right)"
+      ></button>
+
+      <div class="pswp__caption">
+        <div class="pswp__caption__center"></div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<link rel="stylesheet" href="/css/photoswipe.min.css" />
+<link rel="stylesheet" href="/css/default-skin.min.css" />
+<script src="/js/photoswipe.min.js"></script>
+<script src="/js/photoswipe-ui-default.min.js"></script>
+
+<script>
+  function viewer_init() {
+    let pswpElement = document.querySelectorAll(".pswp")[0];
+    let $imgArr = document.querySelectorAll(
+      ".article-entry img:not(.reward-img)"
+    );
+
+    $imgArr.forEach(($em, i) => {
+      $em.onclick = () => {
+        // slider展开状态
+        // todo: 这样不好，后面改成状态
+        if (document.querySelector(".left-col.show")) return;
+        let items = [];
+        $imgArr.forEach(($em2, i2) => {
+          let img = $em2.getAttribute("data-idx", i2);
+          let src =
+            $em2.getAttribute("data-target") || $em2.getAttribute("src");
+          let title = $em2.getAttribute("alt");
+          // 获得原图尺寸
+          const image = new Image();
+          image.src = src;
+          items.push({
+            src: src,
+            w: image.width || $em2.width,
+            h: image.height || $em2.height,
+            title: title,
+          });
+        });
+        var gallery = new PhotoSwipe(pswpElement, PhotoSwipeUI_Default, items, {
+          index: parseInt(i),
+        });
+        gallery.init();
+      };
+    });
+  }
+  viewer_init();
+</script>
+ 
+<!-- MathJax -->
+ <script type="text/x-mathjax-config">
+  MathJax.Hub.Config({
+      tex2jax: {
+          inlineMath: [ ['$','$'], ["\\(","\\)"]  ],
+          processEscapes: true,
+          skipTags: ['script', 'noscript', 'style', 'textarea', 'pre', 'code']
+      }
+  });
+
+  MathJax.Hub.Queue(function() {
+      var all = MathJax.Hub.getAllJax(), i;
+      for(i=0; i < all.length; i += 1) {
+          all[i].SourceElement().parentNode.className += ' has-jax';
+      }
+  });
+</script>
+
+<script src="/js/MathJax.js"></script>
+<script src="/js/TeX-AMS-MML_HTMLorMML-full.js"></script>
+
+<script>
+  var ayerConfig = {
+    mathjax: true,
+  };
+</script>
+
+<!-- Katex -->
+
+<!-- busuanzi  -->
+
+<!-- ClickLove -->
+
+<!-- ClickBoom1 -->
+
+<!-- ClickBoom2 -->
+
+<!-- CodeCopy -->
+ 
+<link rel="stylesheet" href="/css/clipboard.css">
+ <script src="/js/clipboard.min.js"></script>
+<script>
+  function wait(callback, seconds) {
+    var timelag = null;
+    timelag = window.setTimeout(callback, seconds);
+  }
+  !(function (e, t, a) {
+    var initCopyCode = function () {
+      var copyHtml = "";
+      copyHtml += '<button class="btn-copy" data-clipboard-snippet="">';
+      copyHtml += '<i class="ri-file-copy-2-line"></i><span>COPY</span>';
+      copyHtml += "</button>";
+      $(".highlight .code pre").before(copyHtml);
+      $(".article pre code").before(copyHtml);
+      var clipboard = new ClipboardJS(".btn-copy", {
+        target: function (trigger) {
+          return trigger.nextElementSibling;
+        },
+      });
+      clipboard.on("success", function (e) {
+        let $btn = $(e.trigger);
+        $btn.addClass("copied");
+        let $icon = $($btn.find("i"));
+        $icon.removeClass("ri-file-copy-2-line");
+        $icon.addClass("ri-checkbox-circle-line");
+        let $span = $($btn.find("span"));
+        $span[0].innerText = "COPIED";
+
+        wait(function () {
+          // 等待两秒钟后恢复
+          $icon.removeClass("ri-checkbox-circle-line");
+          $icon.addClass("ri-file-copy-2-line");
+          $span[0].innerText = "COPY";
+        }, 2000);
+      });
+      clipboard.on("error", function (e) {
+        e.clearSelection();
+        let $btn = $(e.trigger);
+        $btn.addClass("copy-failed");
+        let $icon = $($btn.find("i"));
+        $icon.removeClass("ri-file-copy-2-line");
+        $icon.addClass("ri-time-line");
+        let $span = $($btn.find("span"));
+        $span[0].innerText = "COPY FAILED";
+
+        wait(function () {
+          // 等待两秒钟后恢复
+          $icon.removeClass("ri-time-line");
+          $icon.addClass("ri-file-copy-2-line");
+          $span[0].innerText = "COPY";
+        }, 2000);
+      });
+    };
+    initCopyCode();
+  })(window, document);
+</script>
+ 
+<!-- CanvasBackground -->
+
+<script>
+  if (window.mermaid) {
+    mermaid.initialize({ theme: "default" });
+  }
+</script>
+
+
+    
+    
+
+  </div>
+</body>
+
+</html>

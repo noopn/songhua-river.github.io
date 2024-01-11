@@ -1,0 +1,608 @@
+<!DOCTYPE html>
+
+
+<html lang="zh-CN">
+  
+
+    <head>
+      <meta charset="utf-8" />
+       
+      <meta name="keywords" content="前端 web react" />
+       
+      <meta name="description" content="前端技术与生活。" />
+      
+      <meta
+        name="viewport"
+        content="width=device-width, initial-scale=1, maximum-scale=1"
+      />
+      <title>Ramda 私有方法源码分析 |  四月八日</title>
+  <meta name="generator" content="hexo-theme-ayer">
+      
+      <link rel="shortcut icon" href="/favicon.ico" />
+       
+<link rel="stylesheet" href="/dist/main.css">
+ 
+<link rel="stylesheet" href="/css/fonts/remixicon.css">
+ 
+<link rel="stylesheet" href="/css/custom.css">
+ 
+      <script src="/js/pace.min.js"></script>
+       
+ 
+
+      <link rel="stylesheet" href="/css/bulma.min.css" />
+      <script src="/js/sweetalert2.min.js"></script>
+
+      <!-- mermaid -->
+      
+      <script src="https://cdn.staticfile.org/mermaid/8.14.0/mermaid.min.js"></script>
+      
+      <style>
+        .swal2-styled.swal2-confirm {
+          font-size: 1.6rem;
+        }
+      </style>
+    <!-- hexo injector head_end start -->
+<link rel="stylesheet" href="/css/katex.min.css">
+
+<link rel="stylesheet" href="/css/style.css">
+<!-- hexo injector head_end end --></head>
+  </html>
+</html>
+
+
+<body>
+  <div id="app">
+    
+      
+    <main class="content on">
+      <section class="outer">
+  <article
+  id="post-javascript/fp/Ramda_私有方法"
+  class="article article-type-post"
+  itemscope
+  itemprop="blogPost"
+  data-scroll-reveal
+>
+  <div class="article-inner">
+    
+    <header class="article-header">
+       
+<h1 class="article-title sea-center" style="border-left:0" itemprop="name">
+  Ramda 私有方法源码分析
+</h1>
+ 
+
+      
+    </header>
+     
+    <div class="article-meta">
+      <a href="/posts/312326484d2c/" class="article-date">
+  <time datetime="2021-01-16T08:26:50.000Z" itemprop="datePublished">2021-01-16</time>
+</a> 
+  <div class="article-category">
+    <a class="article-category-link" href="/categories/JavaScript/">JavaScript</a> / <a class="article-category-link" href="/categories/JavaScript/%E5%87%BD%E6%95%B0%E5%BC%8F%E7%BC%96%E7%A8%8B/">函数式编程</a>
+  </div>
+  
+<div class="word_count">
+    <span class="post-time">
+        <span class="post-meta-item-icon">
+            <i class="ri-quill-pen-line"></i>
+            <span class="post-meta-item-text"> 字数统计:</span>
+            <span class="post-count">1.3k</span>
+        </span>
+    </span>
+
+    <span class="post-time">
+        &nbsp; | &nbsp;
+        <span class="post-meta-item-icon">
+            <i class="ri-book-open-line"></i>
+            <span class="post-meta-item-text"> 阅读时长≈</span>
+            <span class="post-count">7 分钟</span>
+        </span>
+    </span>
+</div>
+ 
+    </div>
+      
+    <div class="tocbot"></div>
+
+
+
+
+  
+    <div class="article-entry" itemprop="articleBody">
+       
+  <h4 id="objectIs"><a href="#objectIs" class="headerlink" title="_objectIs"></a>_objectIs</h4><p><a target="_blank" rel="noopener" href="https://developer.mozilla.org/zh-cn/docs/web/javascript/reference/global_objects/object/is">Object.is</a> 用于判断两值是否项等</p>
+<figure class="highlight javascript"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">function</span> <span class="title function_">_objectIs</span>(<span class="params">a, b</span>) &#123;</span><br><span class="line">  <span class="comment">// MDN polyfill</span></span><br><span class="line">  <span class="keyword">if</span> (a === b) &#123;</span><br><span class="line">    <span class="comment">// Steps 6.b-6.e: +0 != -0</span></span><br><span class="line">    <span class="keyword">return</span> a !== <span class="number">0</span> || <span class="number">1</span> / a === <span class="number">1</span> / b;</span><br><span class="line">  &#125; <span class="keyword">else</span> &#123;</span><br><span class="line">    <span class="comment">// Step 6.a: NaN == NaN</span></span><br><span class="line">    <span class="keyword">return</span> a !== a &amp;&amp; b !== b;</span><br><span class="line">  &#125;</span><br><span class="line">&#125;</span><br><span class="line"><span class="keyword">export</span> <span class="keyword">default</span> <span class="keyword">typeof</span> <span class="title class_">Object</span>.<span class="property">is</span> === <span class="string">&#x27;function&#x27;</span> ? <span class="title class_">Object</span>.<span class="property">is</span> : _objectIs;</span><br><span class="line"></span><br></pre></td></tr></table></figure>
+
+<h4 id="arrayFromIterator"><a href="#arrayFromIterator" class="headerlink" title="_arrayFromIterator"></a>_arrayFromIterator</h4><figure class="highlight javascript"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">export</span> <span class="keyword">default</span> <span class="keyword">function</span> <span class="title function_">_arrayFromIterator</span>(<span class="params">iter</span>) &#123;</span><br><span class="line">  <span class="keyword">var</span> list = [];</span><br><span class="line">  <span class="keyword">var</span> next;</span><br><span class="line">  <span class="keyword">while</span> (!(next = iter.<span class="title function_">next</span>()).<span class="property">done</span>) &#123;</span><br><span class="line">    list.<span class="title function_">push</span>(next.<span class="property">value</span>);</span><br><span class="line">  &#125;</span><br><span class="line">  <span class="keyword">return</span> list;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+<h4 id="functionName"><a href="#functionName" class="headerlink" title="_functionName"></a>_functionName</h4><p><a target="_blank" rel="noopener" href="https://developer.mozilla.org/zh-cn/docs/web/javascript/reference/global_objects/function/name">function.name</a> 可能被压缩工具修改，不能依赖函数名来判断函数</p>
+<p>作者通过正则方式判断</p>
+<figure class="highlight javascript"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">export</span> <span class="keyword">default</span> <span class="keyword">function</span> <span class="title function_">_functionName</span>(<span class="params">f</span>) &#123;</span><br><span class="line">  <span class="comment">// String(x =&gt; x) evaluates to &quot;x =&gt; x&quot;, so the pattern may not match.</span></span><br><span class="line">  <span class="keyword">var</span> match = <span class="title class_">String</span>(f).<span class="title function_">match</span>(<span class="regexp">/^function (\w*)/</span>);</span><br><span class="line">  <span class="keyword">return</span> match == <span class="literal">null</span> ? <span class="string">&#x27;&#x27;</span> : match[<span class="number">1</span>];</span><br><span class="line">&#125;</span><br><span class="line"></span><br></pre></td></tr></table></figure>
+
+<h4 id="has"><a href="#has" class="headerlink" title="_has"></a>_has</h4><p>判断属性在对象的实例上，而不是在原型上</p>
+<figure class="highlight javascript"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">export</span> <span class="keyword">default</span> <span class="keyword">function</span> <span class="title function_">_has</span>(<span class="params">prop, obj</span>) &#123;</span><br><span class="line">  <span class="keyword">return</span> <span class="title class_">Object</span>.<span class="property"><span class="keyword">prototype</span></span>.<span class="property">hasOwnProperty</span>.<span class="title function_">call</span>(obj, prop);</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+<p>等价于</p>
+<figure class="highlight javascript"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line"><span class="title class_">Reflect</span>.<span class="title function_">has</span>(obj, prop)</span><br></pre></td></tr></table></figure>
+
+
+<h4 id="isArguments"><a href="#isArguments" class="headerlink" title="_isArguments"></a>_isArguments</h4><p>实现了 <code>callee</code> 方法数组也可以当作是形式参数</p>
+<figure class="highlight javascript"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">var</span> toString = <span class="title class_">Object</span>.<span class="property"><span class="keyword">prototype</span></span>.<span class="property">toString</span>;</span><br><span class="line"><span class="keyword">var</span> _isArguments = (<span class="keyword">function</span>(<span class="params"></span>) &#123;</span><br><span class="line">  <span class="keyword">return</span> toString.<span class="title function_">call</span>(<span class="variable language_">arguments</span>) === <span class="string">&#x27;[object Arguments]&#x27;</span> ?</span><br><span class="line">    <span class="keyword">function</span> <span class="title function_">_isArguments</span>(<span class="params">x</span>) &#123; <span class="keyword">return</span> toString.<span class="title function_">call</span>(x) === <span class="string">&#x27;[object Arguments]&#x27;</span>; &#125; :</span><br><span class="line">    <span class="keyword">function</span> <span class="title function_">_isArguments</span>(<span class="params">x</span>) &#123; <span class="keyword">return</span> <span class="title function_">_has</span>(<span class="string">&#x27;callee&#x27;</span>, x); &#125;;</span><br><span class="line">&#125;());</span><br></pre></td></tr></table></figure>
+
+<h4 id="concat"><a href="#concat" class="headerlink" title="_concat"></a>_concat</h4><p>通过双循环，涵盖了array-like类型，</p>
+<figure class="highlight javascript"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment">/**</span></span><br><span class="line"><span class="comment"> * Private `concat` function to merge two array-like objects.</span></span><br><span class="line"><span class="comment"> *</span></span><br><span class="line"><span class="comment"> * <span class="doctag">@private</span></span></span><br><span class="line"><span class="comment"> * <span class="doctag">@param</span> &#123;<span class="type">Array|Arguments</span>&#125; [set1=[]] An array-like object.</span></span><br><span class="line"><span class="comment"> * <span class="doctag">@param</span> &#123;<span class="type">Array|Arguments</span>&#125; [set2=[]] An array-like object.</span></span><br><span class="line"><span class="comment"> * <span class="doctag">@return</span> &#123;<span class="type">Array</span>&#125; A new, merged array.</span></span><br><span class="line"><span class="comment"> * <span class="doctag">@example</span></span></span><br><span class="line"><span class="comment"> *</span></span><br><span class="line"><span class="comment"> *      _concat([4, 5, 6], [1, 2, 3]); //=&gt; [4, 5, 6, 1, 2, 3]</span></span><br><span class="line"><span class="comment"> */</span></span><br><span class="line"><span class="keyword">export</span> <span class="keyword">default</span> <span class="keyword">function</span> <span class="title function_">_concat</span>(<span class="params">set1, set2</span>) &#123;</span><br><span class="line">  set1 = set1 || [];</span><br><span class="line">  set2 = set2 || [];</span><br><span class="line">  <span class="keyword">var</span> idx;</span><br><span class="line">  <span class="keyword">var</span> len1 = set1.<span class="property">length</span>;</span><br><span class="line">  <span class="keyword">var</span> len2 = set2.<span class="property">length</span>;</span><br><span class="line">  <span class="keyword">var</span> result = [];</span><br><span class="line"></span><br><span class="line">  idx = <span class="number">0</span>;</span><br><span class="line">  <span class="keyword">while</span> (idx &lt; len1) &#123;</span><br><span class="line">    result[result.<span class="property">length</span>] = set1[idx];</span><br><span class="line">    idx += <span class="number">1</span>;</span><br><span class="line">  &#125;</span><br><span class="line">  idx = <span class="number">0</span>;</span><br><span class="line">  <span class="keyword">while</span> (idx &lt; len2) &#123;</span><br><span class="line">    result[result.<span class="property">length</span>] = set2[idx];</span><br><span class="line">    idx += <span class="number">1</span>;</span><br><span class="line">  &#125;</span><br><span class="line">  <span class="keyword">return</span> result;</span><br><span class="line">&#125;</span><br><span class="line"></span><br></pre></td></tr></table></figure>
+
+
+<h4 id="dispatchable"><a href="#dispatchable" class="headerlink" title="_dispatchable"></a>_dispatchable</h4><p>dispatchable翻译为调度单元，这个方法用在了类似 <a href="/posts/6ac7a6cf/#all"><code>R.all</code></a> 遍历每一项的方法上</p>
+<p>如果如参是一个数组会按照常规循环方式处理，如果不是数组但是对象携带了传入的方法s数组(<code>[all]</code>)其中的一个，将会调用对象携带的方法</p>
+<figure class="highlight javascript"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">export</span> <span class="keyword">default</span> <span class="keyword">function</span> <span class="title function_">_dispatchable</span>(<span class="params">methodNames, transducerCreator, fn</span>) &#123;</span><br><span class="line">  <span class="keyword">return</span> <span class="keyword">function</span>(<span class="params"></span>) &#123;</span><br><span class="line">    <span class="keyword">if</span> (<span class="variable language_">arguments</span>.<span class="property">length</span> === <span class="number">0</span>) &#123;</span><br><span class="line">      <span class="keyword">return</span> <span class="title function_">fn</span>();</span><br><span class="line">    &#125;</span><br><span class="line">    <span class="keyword">var</span> obj = <span class="variable language_">arguments</span>[<span class="variable language_">arguments</span>.<span class="property">length</span> - <span class="number">1</span>];</span><br><span class="line">    <span class="keyword">if</span> (!<span class="title function_">_isArray</span>(obj)) &#123;</span><br><span class="line">      <span class="keyword">var</span> idx = <span class="number">0</span>;</span><br><span class="line">      <span class="keyword">while</span> (idx &lt; methodNames.<span class="property">length</span>) &#123;</span><br><span class="line">        <span class="keyword">if</span> (<span class="keyword">typeof</span> obj[methodNames[idx]] === <span class="string">&#x27;function&#x27;</span>) &#123;</span><br><span class="line">          <span class="keyword">return</span> obj[methodNames[idx]].<span class="title function_">apply</span>(obj, <span class="title class_">Array</span>.<span class="property"><span class="keyword">prototype</span></span>.<span class="property">slice</span>.<span class="title function_">call</span>(<span class="variable language_">arguments</span>, <span class="number">0</span>, -<span class="number">1</span>));</span><br><span class="line">        &#125;</span><br><span class="line">        idx += <span class="number">1</span>;</span><br><span class="line">      &#125;</span><br><span class="line">      <span class="keyword">if</span> (<span class="title function_">_isTransformer</span>(obj)) &#123;</span><br><span class="line">        <span class="keyword">var</span> transducer = transducerCreator.<span class="title function_">apply</span>(<span class="literal">null</span>, <span class="title class_">Array</span>.<span class="property"><span class="keyword">prototype</span></span>.<span class="property">slice</span>.<span class="title function_">call</span>(<span class="variable language_">arguments</span>, <span class="number">0</span>, -<span class="number">1</span>));</span><br><span class="line">        <span class="keyword">return</span> <span class="title function_">transducer</span>(obj);</span><br><span class="line">      &#125;</span><br><span class="line">    &#125;</span><br><span class="line">    <span class="keyword">return</span> fn.<span class="title function_">apply</span>(<span class="variable language_">this</span>, <span class="variable language_">arguments</span>);</span><br><span class="line">  &#125;;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+<h4 id="arrayFromIterator-1"><a href="#arrayFromIterator-1" class="headerlink" title="_arrayFromIterator"></a>_arrayFromIterator</h4><figure class="highlight javascript"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">export</span> <span class="keyword">default</span> <span class="keyword">function</span> <span class="title function_">_arrayFromIterator</span>(<span class="params">iter</span>) &#123;</span><br><span class="line">  <span class="keyword">var</span> list = [];</span><br><span class="line">  <span class="keyword">var</span> next;</span><br><span class="line">  <span class="keyword">while</span> (!(next = iter.<span class="title function_">next</span>()).<span class="property">done</span>) &#123;</span><br><span class="line">    list.<span class="title function_">push</span>(next.<span class="property">value</span>);</span><br><span class="line">  &#125;</span><br><span class="line">  <span class="keyword">return</span> list;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+<h4 id="equals"><a href="#equals" class="headerlink" title="_equals"></a>_equals</h4><p>用在了涉及到比较的方法上,例如 <code>R.equals</code></p>
+<p><a href="/posts/2b6baf0c/#_objectIs">_objectIs</a></p>
+<p><a href="/posts/54a7cf63/#type">type</a></p>
+<p><a href="/posts/54a7cf63/#_arrayFromIterator">_arrayFromIterator</a></p>
+<figure class="highlight javascript"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br><span class="line">35</span><br><span class="line">36</span><br><span class="line">37</span><br><span class="line">38</span><br><span class="line">39</span><br><span class="line">40</span><br><span class="line">41</span><br><span class="line">42</span><br><span class="line">43</span><br><span class="line">44</span><br><span class="line">45</span><br><span class="line">46</span><br><span class="line">47</span><br><span class="line">48</span><br><span class="line">49</span><br><span class="line">50</span><br><span class="line">51</span><br><span class="line">52</span><br><span class="line">53</span><br><span class="line">54</span><br><span class="line">55</span><br><span class="line">56</span><br><span class="line">57</span><br><span class="line">58</span><br><span class="line">59</span><br><span class="line">60</span><br><span class="line">61</span><br><span class="line">62</span><br><span class="line">63</span><br><span class="line">64</span><br><span class="line">65</span><br><span class="line">66</span><br><span class="line">67</span><br><span class="line">68</span><br><span class="line">69</span><br><span class="line">70</span><br><span class="line">71</span><br><span class="line">72</span><br><span class="line">73</span><br><span class="line">74</span><br><span class="line">75</span><br><span class="line">76</span><br><span class="line">77</span><br><span class="line">78</span><br><span class="line">79</span><br><span class="line">80</span><br><span class="line">81</span><br><span class="line">82</span><br><span class="line">83</span><br><span class="line">84</span><br><span class="line">85</span><br><span class="line">86</span><br><span class="line">87</span><br><span class="line">88</span><br><span class="line">89</span><br><span class="line">90</span><br><span class="line">91</span><br><span class="line">92</span><br><span class="line">93</span><br><span class="line">94</span><br><span class="line">95</span><br><span class="line">96</span><br><span class="line">97</span><br><span class="line">98</span><br><span class="line">99</span><br><span class="line">100</span><br><span class="line">101</span><br><span class="line">102</span><br><span class="line">103</span><br><span class="line">104</span><br><span class="line">105</span><br><span class="line">106</span><br><span class="line">107</span><br><span class="line">108</span><br><span class="line">109</span><br><span class="line">110</span><br><span class="line">111</span><br><span class="line">112</span><br><span class="line">113</span><br><span class="line">114</span><br><span class="line">115</span><br><span class="line">116</span><br><span class="line">117</span><br><span class="line">118</span><br><span class="line">119</span><br><span class="line">120</span><br><span class="line">121</span><br><span class="line">122</span><br><span class="line">123</span><br><span class="line">124</span><br><span class="line">125</span><br><span class="line">126</span><br><span class="line">127</span><br><span class="line">128</span><br><span class="line">129</span><br><span class="line">130</span><br><span class="line">131</span><br><span class="line">132</span><br><span class="line">133</span><br><span class="line">134</span><br><span class="line">135</span><br><span class="line">136</span><br><span class="line">137</span><br><span class="line">138</span><br><span class="line">139</span><br><span class="line">140</span><br><span class="line">141</span><br><span class="line">142</span><br><span class="line">143</span><br><span class="line">144</span><br><span class="line">145</span><br><span class="line">146</span><br><span class="line">147</span><br><span class="line">148</span><br><span class="line">149</span><br><span class="line">150</span><br></pre></td><td class="code"><pre><span class="line"></span><br><span class="line"><span class="comment">// 处理map set 集合</span></span><br><span class="line"></span><br><span class="line"><span class="keyword">function</span> <span class="title function_">_uniqContentEquals</span>(<span class="params">aIterator, bIterator, stackA, stackB</span>) &#123;</span><br><span class="line">  <span class="keyword">var</span> a = <span class="title function_">_arrayFromIterator</span>(aIterator);</span><br><span class="line">  <span class="keyword">var</span> b = <span class="title function_">_arrayFromIterator</span>(bIterator);</span><br><span class="line"></span><br><span class="line">  <span class="keyword">function</span> <span class="title function_">eq</span>(<span class="params">_a, _b</span>) &#123;</span><br><span class="line">    <span class="keyword">return</span> <span class="title function_">_equals</span>(_a, _b, stackA.<span class="title function_">slice</span>(), stackB.<span class="title function_">slice</span>());</span><br><span class="line">  &#125;</span><br><span class="line"></span><br><span class="line">  <span class="comment">// if *a* array contains any element that is not included in *b*</span></span><br><span class="line">  <span class="keyword">return</span> !<span class="title function_">_includesWith</span>(<span class="keyword">function</span>(<span class="params">b, aItem</span>) &#123;</span><br><span class="line">    <span class="keyword">return</span> !<span class="title function_">_includesWith</span>(eq, aItem, b);</span><br><span class="line">  &#125;, b, a);</span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line"><span class="keyword">export</span> <span class="keyword">default</span> <span class="keyword">function</span> <span class="title function_">_equals</span>(<span class="params">a, b, stackA, stackB</span>) &#123;</span><br><span class="line">  <span class="comment">// 引用相同，基本类型的值相同</span></span><br><span class="line">  <span class="keyword">if</span> (<span class="title function_">_objectIs</span>(a, b)) &#123;</span><br><span class="line">    <span class="keyword">return</span> <span class="literal">true</span>;</span><br><span class="line">  &#125;</span><br><span class="line"></span><br><span class="line">  <span class="comment">// 类型不同</span></span><br><span class="line">  <span class="keyword">var</span> typeA = <span class="title function_">type</span>(a);</span><br><span class="line"></span><br><span class="line">  <span class="keyword">if</span> (typeA !== <span class="title function_">type</span>(b)) &#123;</span><br><span class="line">    <span class="keyword">return</span> <span class="literal">false</span>;</span><br><span class="line">  &#125;</span><br><span class="line"></span><br><span class="line">  <span class="comment">// 引用不同的情况</span></span><br><span class="line">  <span class="comment">//  ??????</span></span><br><span class="line">  <span class="keyword">if</span> (<span class="keyword">typeof</span> a[<span class="string">&#x27;fantasy-land/equals&#x27;</span>] === <span class="string">&#x27;function&#x27;</span> || <span class="keyword">typeof</span> b[<span class="string">&#x27;fantasy-land/equals&#x27;</span>] === <span class="string">&#x27;function&#x27;</span>) &#123;</span><br><span class="line">    <span class="keyword">return</span> <span class="keyword">typeof</span> a[<span class="string">&#x27;fantasy-land/equals&#x27;</span>] === <span class="string">&#x27;function&#x27;</span> &amp;&amp; a[<span class="string">&#x27;fantasy-land/equals&#x27;</span>](b) &amp;&amp;</span><br><span class="line">      <span class="keyword">typeof</span> b[<span class="string">&#x27;fantasy-land/equals&#x27;</span>] === <span class="string">&#x27;function&#x27;</span> &amp;&amp; b[<span class="string">&#x27;fantasy-land/equals&#x27;</span>](a);</span><br><span class="line">  &#125;</span><br><span class="line"></span><br><span class="line">  <span class="comment">// 如果自身实现了equals方法</span></span><br><span class="line">  <span class="keyword">if</span> (<span class="keyword">typeof</span> a.<span class="property">equals</span> === <span class="string">&#x27;function&#x27;</span> || <span class="keyword">typeof</span> b.<span class="property">equals</span> === <span class="string">&#x27;function&#x27;</span>) &#123;</span><br><span class="line">    <span class="keyword">return</span> <span class="keyword">typeof</span> a.<span class="property">equals</span> === <span class="string">&#x27;function&#x27;</span> &amp;&amp; a.<span class="title function_">equals</span>(b) &amp;&amp;</span><br><span class="line">      <span class="keyword">typeof</span> b.<span class="property">equals</span> === <span class="string">&#x27;function&#x27;</span> &amp;&amp; b.<span class="title function_">equals</span>(a);</span><br><span class="line">  &#125;</span><br><span class="line"></span><br><span class="line">  <span class="comment">// 其他引用类型</span></span><br><span class="line">  <span class="keyword">switch</span> (typeA) &#123;</span><br><span class="line">    <span class="keyword">case</span> <span class="string">&#x27;Arguments&#x27;</span>:</span><br><span class="line">    <span class="keyword">case</span> <span class="string">&#x27;Array&#x27;</span>:</span><br><span class="line">    <span class="keyword">case</span> <span class="string">&#x27;Object&#x27;</span>:</span><br><span class="line">      <span class="comment">// 引用类型如果为Promise实例，看作是项等的</span></span><br><span class="line">      <span class="keyword">if</span> (<span class="keyword">typeof</span> a.<span class="property">constructor</span> === <span class="string">&#x27;function&#x27;</span> &amp;&amp;</span><br><span class="line">        <span class="title function_">_functionName</span>(a.<span class="property">constructor</span>) === <span class="string">&#x27;Promise&#x27;</span>) &#123;</span><br><span class="line">        <span class="keyword">return</span> a === b;</span><br><span class="line">      &#125;</span><br><span class="line">      <span class="keyword">break</span>;</span><br><span class="line">    <span class="comment">// 基本类型的装箱对象</span></span><br><span class="line">    <span class="keyword">case</span> <span class="string">&#x27;Boolean&#x27;</span>:</span><br><span class="line">    <span class="keyword">case</span> <span class="string">&#x27;Number&#x27;</span>:</span><br><span class="line">    <span class="keyword">case</span> <span class="string">&#x27;String&#x27;</span>:</span><br><span class="line">      <span class="keyword">if</span> (!(<span class="keyword">typeof</span> a === <span class="keyword">typeof</span> b &amp;&amp; <span class="title function_">_objectIs</span>(a.<span class="title function_">valueOf</span>(), b.<span class="title function_">valueOf</span>()))) &#123;</span><br><span class="line">        <span class="keyword">return</span> <span class="literal">false</span>;</span><br><span class="line">      &#125;</span><br><span class="line">      <span class="keyword">break</span>;</span><br><span class="line">    <span class="keyword">case</span> <span class="string">&#x27;Date&#x27;</span>:</span><br><span class="line">    <span class="comment">// 时间类型转为事件戳</span></span><br><span class="line">      <span class="keyword">if</span> (!<span class="title function_">_objectIs</span>(a.<span class="title function_">valueOf</span>(), b.<span class="title function_">valueOf</span>())) &#123;</span><br><span class="line">        <span class="keyword">return</span> <span class="literal">false</span>;</span><br><span class="line">      &#125;</span><br><span class="line">      <span class="keyword">break</span>;</span><br><span class="line">    <span class="keyword">case</span> <span class="string">&#x27;Error&#x27;</span>:</span><br><span class="line">      <span class="keyword">return</span> a.<span class="property">name</span> === b.<span class="property">name</span> &amp;&amp; a.<span class="property">message</span> === b.<span class="property">message</span>;</span><br><span class="line">    <span class="keyword">case</span> <span class="string">&#x27;RegExp&#x27;</span>:</span><br><span class="line">    <span class="comment">// 正则类型的所有实例方法的实现相同</span></span><br><span class="line">      <span class="keyword">if</span> (!(a.<span class="property">source</span> === b.<span class="property">source</span> &amp;&amp;</span><br><span class="line">          a.<span class="property">global</span> === b.<span class="property">global</span> &amp;&amp;</span><br><span class="line">          a.<span class="property">ignoreCase</span> === b.<span class="property">ignoreCase</span> &amp;&amp;</span><br><span class="line">          a.<span class="property">multiline</span> === b.<span class="property">multiline</span> &amp;&amp;</span><br><span class="line">          a.<span class="property">sticky</span> === b.<span class="property">sticky</span> &amp;&amp;</span><br><span class="line">          a.<span class="property">unicode</span> === b.<span class="property">unicode</span>)) &#123;</span><br><span class="line">        <span class="keyword">return</span> <span class="literal">false</span>;</span><br><span class="line">      &#125;</span><br><span class="line">      <span class="keyword">break</span>;</span><br><span class="line">  &#125;</span><br><span class="line">  <span class="comment">// 处理map set集合</span></span><br><span class="line">  <span class="keyword">var</span> idx = stackA.<span class="property">length</span> - <span class="number">1</span>;</span><br><span class="line">  <span class="keyword">while</span> (idx &gt;= <span class="number">0</span>) &#123;</span><br><span class="line">    <span class="keyword">if</span> (stackA[idx] === a) &#123;</span><br><span class="line">      <span class="keyword">return</span> stackB[idx] === b;</span><br><span class="line">    &#125;</span><br><span class="line">    idx -= <span class="number">1</span>;</span><br><span class="line">  &#125;</span><br><span class="line"></span><br><span class="line">  <span class="keyword">switch</span> (typeA) &#123;</span><br><span class="line">    <span class="keyword">case</span> <span class="string">&#x27;Map&#x27;</span>:</span><br><span class="line">      <span class="keyword">if</span> (a.<span class="property">size</span> !== b.<span class="property">size</span>) &#123;</span><br><span class="line">        <span class="keyword">return</span> <span class="literal">false</span>;</span><br><span class="line">      &#125;</span><br><span class="line"></span><br><span class="line">      <span class="keyword">return</span> <span class="title function_">_uniqContentEquals</span>(a.<span class="title function_">entries</span>(), b.<span class="title function_">entries</span>(), stackA.<span class="title function_">concat</span>([a]), stackB.<span class="title function_">concat</span>([b]));</span><br><span class="line">    <span class="keyword">case</span> <span class="string">&#x27;Set&#x27;</span>:</span><br><span class="line">      <span class="keyword">if</span> (a.<span class="property">size</span> !== b.<span class="property">size</span>) &#123;</span><br><span class="line">        <span class="keyword">return</span> <span class="literal">false</span>;</span><br><span class="line">      &#125;</span><br><span class="line"></span><br><span class="line">      <span class="keyword">return</span> <span class="title function_">_uniqContentEquals</span>(a.<span class="title function_">values</span>(), b.<span class="title function_">values</span>(), stackA.<span class="title function_">concat</span>([a]), stackB.<span class="title function_">concat</span>([b]));</span><br><span class="line">    <span class="keyword">case</span> <span class="string">&#x27;Arguments&#x27;</span>:</span><br><span class="line">    <span class="keyword">case</span> <span class="string">&#x27;Array&#x27;</span>:</span><br><span class="line">    <span class="keyword">case</span> <span class="string">&#x27;Object&#x27;</span>:</span><br><span class="line">    <span class="keyword">case</span> <span class="string">&#x27;Boolean&#x27;</span>:</span><br><span class="line">    <span class="keyword">case</span> <span class="string">&#x27;Number&#x27;</span>:</span><br><span class="line">    <span class="keyword">case</span> <span class="string">&#x27;String&#x27;</span>:</span><br><span class="line">    <span class="keyword">case</span> <span class="string">&#x27;Date&#x27;</span>:</span><br><span class="line">    <span class="keyword">case</span> <span class="string">&#x27;Error&#x27;</span>:</span><br><span class="line">    <span class="keyword">case</span> <span class="string">&#x27;RegExp&#x27;</span>:</span><br><span class="line">    <span class="keyword">case</span> <span class="string">&#x27;Int8Array&#x27;</span>:</span><br><span class="line">    <span class="keyword">case</span> <span class="string">&#x27;Uint8Array&#x27;</span>:</span><br><span class="line">    <span class="keyword">case</span> <span class="string">&#x27;Uint8ClampedArray&#x27;</span>:</span><br><span class="line">    <span class="keyword">case</span> <span class="string">&#x27;Int16Array&#x27;</span>:</span><br><span class="line">    <span class="keyword">case</span> <span class="string">&#x27;Uint16Array&#x27;</span>:</span><br><span class="line">    <span class="keyword">case</span> <span class="string">&#x27;Int32Array&#x27;</span>:</span><br><span class="line">    <span class="keyword">case</span> <span class="string">&#x27;Uint32Array&#x27;</span>:</span><br><span class="line">    <span class="keyword">case</span> <span class="string">&#x27;Float32Array&#x27;</span>:</span><br><span class="line">    <span class="keyword">case</span> <span class="string">&#x27;Float64Array&#x27;</span>:</span><br><span class="line">    <span class="keyword">case</span> <span class="string">&#x27;ArrayBuffer&#x27;</span>:</span><br><span class="line">      <span class="keyword">break</span>;</span><br><span class="line">    <span class="attr">default</span>:</span><br><span class="line">      <span class="comment">// Values of other types are only equal if identical.</span></span><br><span class="line">      <span class="comment">// 其他类型只有引用相同才算项等</span></span><br><span class="line">      <span class="keyword">return</span> <span class="literal">false</span>;</span><br><span class="line">  &#125;</span><br><span class="line"></span><br><span class="line">  <span class="comment">// 处理数组或对象的每一个值是否项等</span></span><br><span class="line">  <span class="keyword">var</span> keysA = <span class="title function_">keys</span>(a);</span><br><span class="line">  <span class="keyword">if</span> (keysA.<span class="property">length</span> !== <span class="title function_">keys</span>(b).<span class="property">length</span>) &#123;</span><br><span class="line">    <span class="keyword">return</span> <span class="literal">false</span>;</span><br><span class="line">  &#125;</span><br><span class="line"></span><br><span class="line">  <span class="keyword">var</span> extendedStackA = stackA.<span class="title function_">concat</span>([a]);</span><br><span class="line">  <span class="keyword">var</span> extendedStackB = stackB.<span class="title function_">concat</span>([b]);</span><br><span class="line"></span><br><span class="line">  idx = keysA.<span class="property">length</span> - <span class="number">1</span>;</span><br><span class="line">  <span class="keyword">while</span> (idx &gt;= <span class="number">0</span>) &#123;</span><br><span class="line">    <span class="keyword">var</span> key = keysA[idx];</span><br><span class="line">    <span class="keyword">if</span> (!(<span class="title function_">_has</span>(key, b) &amp;&amp; <span class="title function_">_equals</span>(b[key], a[key], extendedStackA, extendedStackB))) &#123;</span><br><span class="line">      <span class="keyword">return</span> <span class="literal">false</span>;</span><br><span class="line">    &#125;</span><br><span class="line">    idx -= <span class="number">1</span>;</span><br><span class="line">  &#125;</span><br><span class="line">  <span class="keyword">return</span> <span class="literal">true</span>;</span><br><span class="line">&#125;</span><br><span class="line"></span><br></pre></td></tr></table></figure> 
+      <!-- reward -->
+      
+      <div id="reword-out">
+        <div id="reward-btn">
+          打赏
+        </div>
+      </div>
+      
+    </div>
+    
+
+    <!-- copyright -->
+    
+    <div class="declare">
+      <ul class="post-copyright">
+        <li>
+          <i class="ri-copyright-line"></i>
+          <strong>版权声明： </strong>
+          
+          本博客所有文章除特别声明外，著作权归作者所有。转载请注明出处！
+          
+        </li>
+      </ul>
+    </div>
+    
+    <footer class="article-footer">
+       
+  <ul class="article-tag-list" itemprop="keywords"><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/Ramda/" rel="tag">Ramda</a></li><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/%E5%87%BD%E6%95%B0%E5%BC%8F%E7%BC%96%E7%A8%8B/" rel="tag">函数式编程</a></li></ul>
+
+    </footer>
+  </div>
+
+   
+  <nav class="article-nav">
+    
+      <a href="/posts/e6040cb144b2/" class="article-nav-link">
+        <strong class="article-nav-caption">上一篇</strong>
+        <div class="article-nav-title">
+          
+            Ramda Object方法源码分析
+          
+        </div>
+      </a>
+    
+    
+      <a href="/posts/ed6e00869a2c/" class="article-nav-link">
+        <strong class="article-nav-caption">下一篇</strong>
+        <div class="article-nav-title">Ramda Relation 方法源码分析</div>
+      </a>
+    
+  </nav>
+
+  
+   
+<div class="gitalk" id="gitalk-container"></div>
+
+<link rel="stylesheet" href="https://cdn.staticfile.org/gitalk/1.7.2/gitalk.min.css">
+
+
+<script src="https://cdn.staticfile.org/gitalk/1.7.2/gitalk.min.js"></script>
+
+
+<script src="https://cdn.staticfile.org/blueimp-md5/2.19.0/js/md5.min.js"></script>
+
+<script type="text/javascript">
+  var gitalk = new Gitalk({
+    clientID: 'bce2317b25da7c3c18f6',
+    clientSecret: 'e0ab868ca9054234798be82c2b1c0c9dd8632307',
+    repo: 'noopn.github.io',
+    owner: 'noopn',
+    admin: ['noopn'],
+    // id: location.pathname,      // Ensure uniqueness and length less than 50
+    id: md5(location.pathname),
+    distractionFreeMode: false,  // Facebook-like distraction free mode
+    pagerDirection: 'last'
+  })
+
+  gitalk.render('gitalk-container')
+</script>
+
+     
+</article>
+
+</section>
+      <footer class="footer">
+  <div class="outer">
+    <ul>
+      <li>
+        Copyrights &copy;
+        2015-2024
+        <i class="ri-heart-fill heart_icon"></i> SunZhiqi
+      </li>
+    </ul>
+    <ul>
+      <li>
+        
+      </li>
+    </ul>
+    <ul>
+      <li>
+        
+      </li>
+    </ul>
+    <ul>
+      
+    </ul>
+    <ul>
+      
+    </ul>
+    <ul>
+      <li>
+        <!-- cnzz统计 -->
+        
+      </li>
+    </ul>
+  </div>
+</footer>    
+    </main>
+    <div class="float_btns">
+      <div class="totop" id="totop">
+  <i class="ri-arrow-up-line"></i>
+</div>
+
+    </div>
+    <aside class="sidebar on">
+      <button class="navbar-toggle"></button>
+<nav class="navbar">
+  
+  <div class="logo">
+    <a href="/"><img src="/images/ayer-side.png" alt="四月八日"></a>
+  </div>
+  
+  <ul class="nav nav-main">
+    
+    <li class="nav-item">
+      <a class="nav-item-link" href="/">主页</a>
+    </li>
+    
+    <li class="nav-item">
+      <a class="nav-item-link" href="/archives">归档</a>
+    </li>
+    
+    <li class="nav-item">
+      <a class="nav-item-link" href="/categories">分类</a>
+    </li>
+    
+    <li class="nav-item">
+      <a class="nav-item-link" href="/tags">标签</a>
+    </li>
+    
+    <li class="nav-item">
+      <a class="nav-item-link" href="/tags/Essay">随笔</a>
+    </li>
+    
+  </ul>
+</nav>
+<nav class="navbar navbar-bottom">
+  <ul class="nav">
+    <li class="nav-item">
+      
+      <a class="nav-item-link nav-item-search"  title="搜索">
+        <i class="ri-search-line"></i>
+      </a>
+      
+      
+    </li>
+  </ul>
+</nav>
+<div class="search-form-wrap">
+  <div class="local-search local-search-plugin">
+  <input type="search" id="local-search-input" class="local-search-input" placeholder="Search...">
+  <div id="local-search-result" class="local-search-result"></div>
+</div>
+</div>
+    </aside>
+    <div id="mask"></div>
+
+<!-- #reward -->
+<div id="reward">
+  <span class="close"><i class="ri-close-line"></i></span>
+  <p class="reward-p"><i class="ri-cup-line"></i>此时无声胜有声！</p>
+  <div class="reward-box">
+    
+    <div class="reward-item">
+      <img class="reward-img" src="/images/alipay.jpg">
+      <span class="reward-type">支付宝</span>
+    </div>
+    
+    
+    <div class="reward-item">
+      <img class="reward-img" src="/images/wechat.jpg">
+      <span class="reward-type">微信</span>
+    </div>
+    
+  </div>
+</div>
+    
+<script src="/js/jquery-3.6.0.min.js"></script>
+ 
+<script src="/js/lazyload.min.js"></script>
+
+<!-- Tocbot -->
+ 
+<script src="/js/tocbot.min.js"></script>
+
+<script>
+  tocbot.init({
+    tocSelector: ".tocbot",
+    contentSelector: ".article-entry",
+    headingSelector: "h1, h2, h3, h4, h5, h6",
+    hasInnerContainers: true,
+    scrollSmooth: true,
+    scrollContainer: "main",
+    positionFixedSelector: ".tocbot",
+    positionFixedClass: "is-position-fixed",
+    fixedSidebarOffset: "auto",
+  });
+</script>
+
+<script src="/js/jquery.modal.min.js"></script>
+<link rel="stylesheet" href="/css/jquery.modal.min.css" />
+<script src="/js/jquery.justifiedGallery.min.js"></script>
+
+<script src="/dist/main.js"></script>
+
+<!-- ImageViewer -->
+ <!-- Root element of PhotoSwipe. Must have class pswp. -->
+<div class="pswp" tabindex="-1" role="dialog" aria-hidden="true">
+  <!-- Background of PhotoSwipe. 
+         It's a separate element as animating opacity is faster than rgba(). -->
+  <div class="pswp__bg"></div>
+
+  <!-- Slides wrapper with overflow:hidden. -->
+  <div class="pswp__scroll-wrap">
+    <!-- Container that holds slides. 
+            PhotoSwipe keeps only 3 of them in the DOM to save memory.
+            Don't modify these 3 pswp__item elements, data is added later on. -->
+    <div class="pswp__container">
+      <div class="pswp__item"></div>
+      <div class="pswp__item"></div>
+      <div class="pswp__item"></div>
+    </div>
+
+    <!-- Default (PhotoSwipeUI_Default) interface on top of sliding area. Can be changed. -->
+    <div class="pswp__ui pswp__ui--hidden">
+      <div class="pswp__top-bar">
+        <!--  Controls are self-explanatory. Order can be changed. -->
+
+        <div class="pswp__counter"></div>
+
+        <button
+          class="pswp__button pswp__button--close"
+          title="Close (Esc)"
+        ></button>
+
+        <button
+          class="pswp__button pswp__button--share"
+          style="display: none"
+          title="Share"
+        ></button>
+
+        <button
+          class="pswp__button pswp__button--fs"
+          title="Toggle fullscreen"
+        ></button>
+
+        <button
+          class="pswp__button pswp__button--zoom"
+          title="Zoom in/out"
+        ></button>
+
+        <!-- Preloader demo http://codepen.io/dimsemenov/pen/yyBWoR -->
+        <!-- element will get class pswp__preloader--active when preloader is running -->
+        <div class="pswp__preloader">
+          <div class="pswp__preloader__icn">
+            <div class="pswp__preloader__cut">
+              <div class="pswp__preloader__donut"></div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <div class="pswp__share-modal pswp__share-modal--hidden pswp__single-tap">
+        <div class="pswp__share-tooltip"></div>
+      </div>
+
+      <button
+        class="pswp__button pswp__button--arrow--left"
+        title="Previous (arrow left)"
+      ></button>
+
+      <button
+        class="pswp__button pswp__button--arrow--right"
+        title="Next (arrow right)"
+      ></button>
+
+      <div class="pswp__caption">
+        <div class="pswp__caption__center"></div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<link rel="stylesheet" href="/css/photoswipe.min.css" />
+<link rel="stylesheet" href="/css/default-skin.min.css" />
+<script src="/js/photoswipe.min.js"></script>
+<script src="/js/photoswipe-ui-default.min.js"></script>
+
+<script>
+  function viewer_init() {
+    let pswpElement = document.querySelectorAll(".pswp")[0];
+    let $imgArr = document.querySelectorAll(
+      ".article-entry img:not(.reward-img)"
+    );
+
+    $imgArr.forEach(($em, i) => {
+      $em.onclick = () => {
+        // slider展开状态
+        // todo: 这样不好，后面改成状态
+        if (document.querySelector(".left-col.show")) return;
+        let items = [];
+        $imgArr.forEach(($em2, i2) => {
+          let img = $em2.getAttribute("data-idx", i2);
+          let src =
+            $em2.getAttribute("data-target") || $em2.getAttribute("src");
+          let title = $em2.getAttribute("alt");
+          // 获得原图尺寸
+          const image = new Image();
+          image.src = src;
+          items.push({
+            src: src,
+            w: image.width || $em2.width,
+            h: image.height || $em2.height,
+            title: title,
+          });
+        });
+        var gallery = new PhotoSwipe(pswpElement, PhotoSwipeUI_Default, items, {
+          index: parseInt(i),
+        });
+        gallery.init();
+      };
+    });
+  }
+  viewer_init();
+</script>
+ 
+<!-- MathJax -->
+ <script type="text/x-mathjax-config">
+  MathJax.Hub.Config({
+      tex2jax: {
+          inlineMath: [ ['$','$'], ["\\(","\\)"]  ],
+          processEscapes: true,
+          skipTags: ['script', 'noscript', 'style', 'textarea', 'pre', 'code']
+      }
+  });
+
+  MathJax.Hub.Queue(function() {
+      var all = MathJax.Hub.getAllJax(), i;
+      for(i=0; i < all.length; i += 1) {
+          all[i].SourceElement().parentNode.className += ' has-jax';
+      }
+  });
+</script>
+
+<script src="/js/MathJax.js"></script>
+<script src="/js/TeX-AMS-MML_HTMLorMML-full.js"></script>
+
+<script>
+  var ayerConfig = {
+    mathjax: true,
+  };
+</script>
+
+<!-- Katex -->
+
+<!-- busuanzi  -->
+
+<!-- ClickLove -->
+
+<!-- ClickBoom1 -->
+
+<!-- ClickBoom2 -->
+
+<!-- CodeCopy -->
+ 
+<link rel="stylesheet" href="/css/clipboard.css">
+ <script src="/js/clipboard.min.js"></script>
+<script>
+  function wait(callback, seconds) {
+    var timelag = null;
+    timelag = window.setTimeout(callback, seconds);
+  }
+  !(function (e, t, a) {
+    var initCopyCode = function () {
+      var copyHtml = "";
+      copyHtml += '<button class="btn-copy" data-clipboard-snippet="">';
+      copyHtml += '<i class="ri-file-copy-2-line"></i><span>COPY</span>';
+      copyHtml += "</button>";
+      $(".highlight .code pre").before(copyHtml);
+      $(".article pre code").before(copyHtml);
+      var clipboard = new ClipboardJS(".btn-copy", {
+        target: function (trigger) {
+          return trigger.nextElementSibling;
+        },
+      });
+      clipboard.on("success", function (e) {
+        let $btn = $(e.trigger);
+        $btn.addClass("copied");
+        let $icon = $($btn.find("i"));
+        $icon.removeClass("ri-file-copy-2-line");
+        $icon.addClass("ri-checkbox-circle-line");
+        let $span = $($btn.find("span"));
+        $span[0].innerText = "COPIED";
+
+        wait(function () {
+          // 等待两秒钟后恢复
+          $icon.removeClass("ri-checkbox-circle-line");
+          $icon.addClass("ri-file-copy-2-line");
+          $span[0].innerText = "COPY";
+        }, 2000);
+      });
+      clipboard.on("error", function (e) {
+        e.clearSelection();
+        let $btn = $(e.trigger);
+        $btn.addClass("copy-failed");
+        let $icon = $($btn.find("i"));
+        $icon.removeClass("ri-file-copy-2-line");
+        $icon.addClass("ri-time-line");
+        let $span = $($btn.find("span"));
+        $span[0].innerText = "COPY FAILED";
+
+        wait(function () {
+          // 等待两秒钟后恢复
+          $icon.removeClass("ri-time-line");
+          $icon.addClass("ri-file-copy-2-line");
+          $span[0].innerText = "COPY";
+        }, 2000);
+      });
+    };
+    initCopyCode();
+  })(window, document);
+</script>
+ 
+<!-- CanvasBackground -->
+
+<script>
+  if (window.mermaid) {
+    mermaid.initialize({ theme: "default" });
+  }
+</script>
+
+
+    
+    
+
+  </div>
+</body>
+
+</html>
