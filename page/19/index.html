@@ -112,6 +112,268 @@
     
     
     <article
+  id="post-linux/question/进程,线程,协程"
+  class="article article-type-post"
+  itemscope
+  itemprop="blogPost"
+  data-scroll-reveal
+>
+  <div class="article-inner">
+    
+    <header class="article-header">
+       
+<h2 itemprop="name">
+  <a class="article-title" href="/posts/81b36d65b913/"
+    >进程，线程，协程</a> 
+</h2>
+ 
+
+      
+    </header>
+     
+    <div class="article-meta">
+      <a href="/posts/81b36d65b913/" class="article-date">
+  <time datetime="2020-12-03T02:54:42.000Z" itemprop="datePublished">2020-12-03</time>
+</a> 
+  <div class="article-category">
+    <a class="article-category-link" href="/categories/Linux/">Linux</a> / <a class="article-category-link" href="/categories/Linux/%E5%B8%B8%E8%A7%81%E9%97%AE%E9%A2%98/">常见问题</a>
+  </div>
+   
+    </div>
+      
+    <div class="article-entry" itemprop="articleBody">
+       
+  <p><strong>程序执行</strong></p>
+<ul>
+<li>写在硬盘上的静态程序文件 </li>
+<li>cpu从磁盘上找到程序文件</li>
+<li>.exe 文件中包含操作cpu的指令</li>
+<li>把指令放到内存中</li>
+<li>在内存中的指令就可以叫做cpu的<strong>进程</strong></li>
+</ul>
+<h4 id="进程"><a href="#进程" class="headerlink" title="进程"></a>进程</h4><p>对于cpu来讲，有一个时间线的概念，时间线上的每一个点对应着一个操作指令</p>
+<p>操作系统把时间线分割为不同的时间片，时间片是执行程序的小单位</p>
+<p>按照 1，2，1，2的顺序，来回切换任务的分配，可以让cpu调度进程，看起来在同时执行多个操作</p>
+<p>进程比较重，每个任务分配一个进程，频繁切换的时候损耗比较大，所以有了线程的概念</p>
+<p>进程之间内存相互独立，进程之间相互通信需要内核转发（系统调用）。也就是进程之间的通信需要经过操作系统，损耗比较大</p>
+<p>进程主要占据的内存代码（进程的实现代码），数据（需要处理的数据），文件（和硬盘文件关联的文件句柄，需要通过系统内核，来完成文件的操作）</p>
+<p>执行的时候需要写寄存器，在进程切换的时候需要保存寄存器中信息的状态，把寄存器中的数据写到内存中。</p>
+<p>栈 函数调用栈</p>
+<h4 id="线程"><a href="#线程" class="headerlink" title="线程"></a>线程</h4><p>线程比较轻，线程依附与进程，是多个线程对应一个进程的关系，</p>
+<p>线程共享进程的内存（代码，数据，文件），但是有自己独立的寄存器和栈，所以线程比较轻</p>
+<p>线程共享数据存在的问题，可能读写同时操作，需要线程锁</p>
+<h4 id="IO-密集型"><a href="#IO-密集型" class="headerlink" title="IO 密集型"></a>IO 密集型</h4><p>输入输出的速度远小于CPU的速度。 </p>
+<p>多任务 -&gt; 多线程 -&gt; 时间驱动 -&gt; 协程</p>
+<h4 id="CPU密集型"><a href="#CPU密集型" class="headerlink" title="CPU密集型"></a>CPU密集型</h4><p>多进程 -&gt; 多线程</p>
+ 
+      <!-- reward -->
+      
+    </div>
+    
+
+    <!-- copyright -->
+    
+    <footer class="article-footer">
+       
+  <ul class="article-tag-list" itemprop="keywords"><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/Linux/" rel="tag">Linux</a></li></ul>
+
+    </footer>
+  </div>
+
+   
+    
+</article>
+
+    
+    <article
+  id="post-linux/question/网络配置问题"
+  class="article article-type-post"
+  itemscope
+  itemprop="blogPost"
+  data-scroll-reveal
+>
+  <div class="article-inner">
+    
+    <header class="article-header">
+       
+<h2 itemprop="name">
+  <a class="article-title" href="/posts/4bb1fde2ca9b/"
+    >网络配置问题</a> 
+</h2>
+ 
+
+      
+    </header>
+     
+    <div class="article-meta">
+      <a href="/posts/4bb1fde2ca9b/" class="article-date">
+  <time datetime="2020-12-03T01:39:04.000Z" itemprop="datePublished">2020-12-03</time>
+</a> 
+  <div class="article-category">
+    <a class="article-category-link" href="/categories/Linux/">Linux</a> / <a class="article-category-link" href="/categories/Linux/%E5%B8%B8%E8%A7%81%E9%97%AE%E9%A2%98/">常见问题</a>
+  </div>
+   
+    </div>
+      
+    <div class="article-entry" itemprop="articleBody">
+       
+  <p><strong>可以使用<code>type +命令</code>来查看命令所在目录</strong></p>
+<h4 id="查看网络配置基本信息"><a href="#查看网络配置基本信息" class="headerlink" title="查看网络配置基本信息"></a>查看网络配置基本信息</h4><p>centenOS 6 之前使用 <code>ifconfg</code> 命令, 之后使用<code>ip</code> 命令， 也可以安装 <code>ifconfig</code>命令包</p>
+<h4 id="重启网卡"><a href="#重启网卡" class="headerlink" title="重启网卡"></a>重启网卡</h4><p>如果可以直接操作服务其 可以使用 <code>ifup</code> ,<code>ifdown</code></p>
+<p>如果提示系统没有命令可以使用 <code>apt install ifupdown</code>安装</p>
+<p><strong>如果是远程不能使用这个两个命令重启网卡，使用ifdown后会断开网络连接</strong></p>
+<p>可以在确保网络配置修改成功之后，使用 <code>systemctl restar network</code></p>
+<p>如果命令不可用可以使用 <code>service network-manager restart</code></p>
+<p>如果是 Kali Linux（Debian），则需要<code>service networking restart</code></p>
+<p>如果是Centos 8 需要<code>nmcli c reload</code></p>
+<h4 id="查找占用端口"><a href="#查找占用端口" class="headerlink" title="查找占用端口"></a>查找占用端口</h4><p>可以使用 <code>ss</code> 或 <code>netstat</code> 命令 后面加 <code> -anp</code> </p>
+<p>如果没有 <code>netstat</code> 命令，可以通过 <code>apt install net-tools</code> 安装</p>
+<p>最后使用 <code>kill</code> 命令杀掉端口</p>
+ 
+      <!-- reward -->
+      
+    </div>
+    
+
+    <!-- copyright -->
+    
+    <footer class="article-footer">
+       
+  <ul class="article-tag-list" itemprop="keywords"><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/Linux/" rel="tag">Linux</a></li></ul>
+
+    </footer>
+  </div>
+
+   
+    
+</article>
+
+    
+    <article
+  id="post-dev/工程化中的linux"
+  class="article article-type-post"
+  itemscope
+  itemprop="blogPost"
+  data-scroll-reveal
+>
+  <div class="article-inner">
+    
+    <header class="article-header">
+       
+<h2 itemprop="name">
+  <a class="article-title" href="/posts/304ae342300f/"
+    >工程化中的linux</a> 
+</h2>
+ 
+
+      
+    </header>
+     
+    <div class="article-meta">
+      <a href="/posts/304ae342300f/" class="article-date">
+  <time datetime="2020-12-02T08:52:11.000Z" itemprop="datePublished">2020-12-02</time>
+</a> 
+  <div class="article-category">
+    <a class="article-category-link" href="/categories/DevOps/">DevOps</a>
+  </div>
+   
+    </div>
+      
+    <div class="article-entry" itemprop="articleBody">
+       
+  <h4 id="ps"><a href="#ps" class="headerlink" title="ps"></a>ps</h4><p>查看进程</p>
+<figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">ps aux</span><br></pre></td></tr></table></figure>
+
+<h4 id="kill-pkill"><a href="#kill-pkill" class="headerlink" title="kill pkill"></a>kill pkill</h4><figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line"><span class="built_in">kill</span> -9 pid</span><br></pre></td></tr></table></figure>
+
+<p>pkill 后面可以直接写进程的名字</p>
+<p>如果是一个服务使用 <code>systemctl stop</code></p>
+<h4 id="w-who"><a href="#w-who" class="headerlink" title="w who"></a>w who</h4><p>看谁正在连接系统</p>
+<h4 id="lsof-查看端口占用"><a href="#lsof-查看端口占用" class="headerlink" title="lsof 查看端口占用"></a>lsof 查看端口占用</h4><figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br><span class="line">35</span><br><span class="line">36</span><br><span class="line">37</span><br><span class="line">38</span><br><span class="line">39</span><br><span class="line">40</span><br><span class="line">41</span><br><span class="line">42</span><br><span class="line">43</span><br><span class="line">44</span><br><span class="line">45</span><br><span class="line">46</span><br><span class="line">47</span><br><span class="line">48</span><br><span class="line">49</span><br><span class="line">50</span><br><span class="line">51</span><br><span class="line">52</span><br><span class="line">53</span><br><span class="line">54</span><br><span class="line">55</span><br><span class="line">56</span><br><span class="line">57</span><br><span class="line">58</span><br><span class="line">59</span><br><span class="line">60</span><br><span class="line">61</span><br><span class="line">62</span><br><span class="line">63</span><br><span class="line">64</span><br><span class="line">65</span><br><span class="line">66</span><br><span class="line">67</span><br><span class="line">68</span><br><span class="line">69</span><br><span class="line">70</span><br><span class="line">71</span><br><span class="line">72</span><br><span class="line">73</span><br><span class="line">74</span><br><span class="line">75</span><br><span class="line">76</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment">#列出所有打开的文件:</span></span><br><span class="line">lsof</span><br><span class="line">备注: 如果不加任何参数，就会打开所有被打开的文件，建议加上一下参数来具体定位</span><br><span class="line"></span><br><span class="line"><span class="comment"># 查看谁正在使用某个文件</span></span><br><span class="line">lsof   /filepath/file</span><br><span class="line"></span><br><span class="line"><span class="comment">#递归查看某个目录的文件信息</span></span><br><span class="line">lsof +D /filepath/filepath2/</span><br><span class="line">备注: 使用了+D，对应目录下的所有子目录和文件都会被列出</span><br><span class="line"></span><br><span class="line"><span class="comment"># 比使用+D选项，遍历查看某个目录的所有文件信息 的方法</span></span><br><span class="line">lsof | grep ‘/filepath/filepath2/’</span><br><span class="line"></span><br><span class="line"><span class="comment"># 列出某个用户打开的文件信息</span></span><br><span class="line">lsof  -u username</span><br><span class="line">备注: -u 选项，u其实是user的缩写</span><br><span class="line"></span><br><span class="line"><span class="comment"># 列出某个程序所打开的文件信息</span></span><br><span class="line">lsof -c mysql</span><br><span class="line">备注: -c 选项将会列出所有以mysql开头的程序的文件，其实你也可以写成lsof | grep mysql,但是第一种方法明显比第二种方法要少打几个字符了</span><br><span class="line"></span><br><span class="line"><span class="comment"># 列出多个程序多打开的文件信息</span></span><br><span class="line">lsof -c mysql -c apache</span><br><span class="line"></span><br><span class="line"><span class="comment"># 列出某个用户以及某个程序所打开的文件信息</span></span><br><span class="line">lsof -u <span class="built_in">test</span> -c mysql</span><br><span class="line"></span><br><span class="line"><span class="comment"># 列出除了某个用户外的被打开的文件信息</span></span><br><span class="line">lsof   -u ^root</span><br><span class="line">备注：^这个符号在用户名之前，将会把是root用户打开的进程不让显示</span><br><span class="line"></span><br><span class="line"><span class="comment"># 通过某个进程号显示该进行打开的文件</span></span><br><span class="line">lsof -p 1</span><br><span class="line"></span><br><span class="line"><span class="comment"># 列出多个进程号对应的文件信息</span></span><br><span class="line">lsof -p 123,456,789</span><br><span class="line"></span><br><span class="line"><span class="comment"># 列出除了某个进程号，其他进程号所打开的文件信息</span></span><br><span class="line">lsof -p ^1</span><br><span class="line"></span><br><span class="line"><span class="comment"># 列出所有的网络连接</span></span><br><span class="line">lsof -i</span><br><span class="line"></span><br><span class="line"><span class="comment"># 列出所有tcp 网络连接信息</span></span><br><span class="line">lsof  -i tcp</span><br><span class="line"></span><br><span class="line"><span class="comment"># 列出所有udp网络连接信息</span></span><br><span class="line">lsof  -i udp</span><br><span class="line"></span><br><span class="line"><span class="comment"># 列出谁在使用某个端口</span></span><br><span class="line">lsof -i :3306</span><br><span class="line"></span><br><span class="line"><span class="comment"># 列出谁在使用某个特定的udp端口</span></span><br><span class="line">lsof -i udp:55</span><br><span class="line"></span><br><span class="line"><span class="comment"># 特定的tcp端口</span></span><br><span class="line">lsof -i tcp:80</span><br><span class="line"></span><br><span class="line"><span class="comment"># 列出某个用户的所有活跃的网络端口</span></span><br><span class="line">lsof  -a -u <span class="built_in">test</span> -i</span><br><span class="line"></span><br><span class="line"><span class="comment"># 列出所有网络文件系统</span></span><br><span class="line">lsof -N</span><br><span class="line"></span><br><span class="line"><span class="comment">#域名socket文件</span></span><br><span class="line">lsof -u</span><br><span class="line"></span><br><span class="line"><span class="comment">#某个用户组所打开的文件信息</span></span><br><span class="line">lsof -g 5555</span><br><span class="line"></span><br><span class="line"><span class="comment"># 根据文件描述列出对应的文件信息</span></span><br><span class="line">lsof -d description(like 2)</span><br><span class="line"></span><br><span class="line"><span class="comment"># 根据文件描述范围列出文件信息</span></span><br><span class="line">lsof -d 2-3</span><br></pre></td></tr></table></figure>
+
+<h4 id="免密登陆"><a href="#免密登陆" class="headerlink" title="免密登陆"></a>免密登陆</h4><ul>
+<li>生成密钥对</li>
+</ul>
+<p>-t 指定密钥类型，默认是 rsa ，可以省略。<br>-C 设置注释文字，比如邮箱。<br>-f 指定密钥文件存储文件名。</p>
+<p><strong>默认生成在home文件加下面</strong></p>
+<figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">ssh-keygen -t rsa -C <span class="string">&quot;自己的名字&quot;</span> -f <span class="string">&quot;名字_rsa(自定义文件名)&quot;</span></span><br></pre></td></tr></table></figure>
+
+<ul>
+<li>上传共钥到服务器对应账号的home目录下.ssh文件夹下面</li>
+</ul>
+<p>公钥的权限为600</p>
+<figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">ssh-copy-id -i mykey_rsa.pub user@xxx.xxx.xxx.xxx </span><br></pre></td></tr></table></figure>
+
+<ul>
+<li>指定私钥登陆</li>
+</ul>
+<p>私钥的权限为600</p>
+<figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">ssh -i 私钥 user@xxx.xxx.xxx.xxx</span><br></pre></td></tr></table></figure>
+
+<ul>
+<li>通过配置文件免密登陆</li>
+</ul>
+<p>把私钥复制到home下的.ssh文件夹下面</p>
+<p>创建cnofig文件</p>
+<p>配置单一服务器免密登陆</p>
+<figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br></pre></td><td class="code"><pre><span class="line">Host 别名</span><br><span class="line">　　HostName IP</span><br><span class="line">　　Port 端口</span><br><span class="line">　　User 用户名</span><br><span class="line">　　IdentitiesOnly <span class="built_in">yes</span></span><br><span class="line">   IdentityFile ~/.ssh/user_rsa  (私钥路径)</span><br><span class="line">   Protocal 2 (协议版本号)</span><br><span class="line">   Compression <span class="built_in">yes</span> </span><br><span class="line">   ServerAliveInterval 60 （防止被踢配置，长时间没有操作会被踢掉，每隔60秒发一个信号）</span><br><span class="line">   ServerAliveCountMax 20 (最大连接数)</span><br><span class="line">   LogLevel INFO</span><br></pre></td></tr></table></figure>
+
+<p>多个账号的免密的登陆</p>
+<p>分别配置部分</p>
+<figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><span class="line">Host xxx-produce</span><br><span class="line">HostName IP</span><br><span class="line">Port 端口</span><br></pre></td></tr></table></figure>
+
+<p>公共配置部分</p>
+<figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line">Host *_produce</span><br><span class="line">其他配置相同</span><br></pre></td></tr></table></figure>
+
+<p>config的权限为 644</p>
+<h4 id="wget"><a href="#wget" class="headerlink" title="wget"></a>wget</h4><p>wget 是一个从网络上自动下载文件的自由工具，支持通过 HTTP、HTTPS、FTP 三个最常见的 TCP&#x2F;IP协议 下载，并可以使用 HTTP 代理。”wget” 这个名称来源于 “World Wide Web” 与 “get” 的结合。</p>
+<p>wget可以在用户退出系统的之后在后台执行。这意味这你可以登录系统，启动一个wget下载任务，然后退出系统，wget将在后台执行直到任务完成，相对于其它大部分浏览器在下载大量数据时需要用户一直的参与.</p>
+<figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">wget (选项) (参数)</span><br></pre></td></tr></table></figure>
+
+<p>其中选项如下：</p>
+<p>-a&lt;日志文件&gt;：在指定的日志文件中记录资料的执行过程；</p>
+<p>-A&lt;后缀名&gt;：指定要下载文件的后缀名，多个后缀名之间使用逗号进行分隔；</p>
+<p>-b：进行后台的方式运行wget；</p>
+<p>-B&lt;连接地址&gt;：设置参考的连接地址的基地地址；</p>
+<p>-c：继续执行上次终端的任务；</p>
+<p>-C&lt;标志&gt;：设置服务器数据块功能标志on为激活，off为关闭，默认值为on；</p>
+<p>-d：调试模式运行指令；</p>
+<p>-D&lt;域名列表&gt;：设置顺着的域名列表，域名之间用“，”分隔；</p>
+<p>-e&lt;指令&gt;：作为文件“.wgetrc”中的一部分执行指定的指令；</p>
+<p>-h：显示指令帮助信息；</p>
+<p>-i&lt;文件&gt;：从指定文件获取要下载的URL地址；</p>
+<p>-l&lt;目录列表&gt;：设置顺着的目录列表，多个目录用“，”分隔；</p>
+<p>-L：仅顺着关联的连接；</p>
+<p>-r：递归下载方式；</p>
+<p>-nc：文件存在时，下载文件不覆盖原有文件；</p>
+<p>-nv：下载时只显示更新和出错信息，不显示指令的详细执行过程；</p>
+<p>-q：不显示指令执行过程；</p>
+<p>-nh：不查询主机名称；</p>
+<p>-v：显示详细执行过程；</p>
+<p>-V：显示版本信息；</p>
+<p>–passive-ftp：使用被动模式PASV连接FTP服务器；</p>
+<p>–follow-ftp：从HTML文件中下载FTP连接文件。</p>
+<figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br></pre></td><td class="code"><pre><span class="line">wget http://test.com/testfile.zip -&gt;下载指定文件到当前文件夹</span><br><span class="line">wget -O wordpress.zip http://test.com/download -&gt;指定保存名字</span><br><span class="line">wget --limit-rate=300k http://www.linuxde.net/testfile.zip -&gt;限制下载速度</span><br><span class="line">wget -c http://www.linuxde.net/testfile.zip -&gt;断点续传</span><br><span class="line">wget -b http://www.linuxde.net/testfile.zip -&gt;后台下载</span><br><span class="line"></span><br><span class="line"><span class="comment"># 设置使用指定浏览器下载（伪装下载）</span></span><br><span class="line">wget --user-agent=<span class="string">&quot;Mozilla/5.0 (Windows; U; Windows NT 6.1; en-US) AppleWebKit/534.16 (KHTML, like Gecko) Chrome/10.0.648.204 Safari/534.16&quot;</span> http://www.linuxde.net/testfile.zip</span><br><span class="line"></span><br><span class="line">wget --spider url -&gt;测试下载</span><br><span class="line">wget --tries=40 URL -&gt;设置重试次数为40</span><br><span class="line">wget -i filelist.txt -&gt;从filelist.txt获取下载地址</span><br><span class="line"></span><br><span class="line"><span class="comment"># 镜像网站</span></span><br><span class="line"><span class="comment"># --miror开户镜像下载。</span></span><br><span class="line"><span class="comment"># -p下载所有为了html页面显示正常的文件。</span></span><br><span class="line"><span class="comment"># --convert-links下载后，转换成本地的链接。</span></span><br><span class="line"><span class="comment"># -P ./LOCAL保存所有文件和目录到本地指定目录</span></span><br><span class="line">wget --mirror -p --convert-links -P ./LOCAL URL</span><br><span class="line"></span><br><span class="line">wget --reject=gif ur -&gt;下载一个网站，但你不希望下载图片，可以使用这条命令</span><br><span class="line">wget -o download.log URL -&gt;把下载信息存入日志文件</span><br><span class="line">wget -Q5m -i filelist.txt -&gt;限制总下载文件大小</span><br><span class="line">wget -r -A.pdf url -&gt;下载指定格式文件</span><br><span class="line"></span><br><span class="line"><span class="comment"># FTP下载</span></span><br><span class="line">wget ftp-url</span><br><span class="line">wget --ftp-user=USERNAME --ftp-password=PASSWORD url</span><br></pre></td></tr></table></figure> 
+      <!-- reward -->
+      
+    </div>
+    
+
+    <!-- copyright -->
+    
+    <footer class="article-footer">
+       
+  <ul class="article-tag-list" itemprop="keywords"><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/DevOps/" rel="tag">DevOps</a></li><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/%E5%B7%A5%E7%A8%8B%E5%8C%96/" rel="tag">工程化</a></li></ul>
+
+    </footer>
+  </div>
+
+   
+    
+</article>
+
+    
+    <article
   id="post-javascript/underscore设计"
   class="article article-type-post"
   itemscope
@@ -717,391 +979,6 @@
     <footer class="article-footer">
        
   <ul class="article-tag-list" itemprop="keywords"><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/ES6%E5%9F%BA%E7%A1%80/" rel="tag">ES6基础</a></li><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/JavaScript/" rel="tag">JavaScript</a></li></ul>
-
-    </footer>
-  </div>
-
-   
-    
-</article>
-
-    
-    <article
-  id="post-javascript/你不知道的JavaScript"
-  class="article article-type-post"
-  itemscope
-  itemprop="blogPost"
-  data-scroll-reveal
->
-  <div class="article-inner">
-    
-    <header class="article-header">
-       
-<h2 itemprop="name">
-  <a class="article-title" href="/posts/8fcbb8daddf5/"
-    >你不知道的JavaScript</a> 
-</h2>
- 
-
-      
-    </header>
-     
-    <div class="article-meta">
-      <a href="/posts/8fcbb8daddf5/" class="article-date">
-  <time datetime="2020-11-14T13:07:30.000Z" itemprop="datePublished">2020-11-14</time>
-</a> 
-  <div class="article-category">
-    <a class="article-category-link" href="/categories/JavaScript/">JavaScript</a>
-  </div>
-   
-    </div>
-      
-    <div class="article-entry" itemprop="articleBody">
-       
-  <h5 id="变量提升"><a href="#变量提升" class="headerlink" title="变量提升"></a>变量提升</h5><p>如果在函数声明后有同名的变量被定义，但是没有赋值，则不会被覆盖，如果同名变量被赋值这函数声明被覆盖</p>
-<figure class="highlight javascript"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">function</span> <span class="title function_">a</span>(<span class="params"></span>) &#123;</span><br><span class="line">    <span class="title function_">alert</span>(<span class="number">10</span>)</span><br><span class="line">&#125;</span><br><span class="line"><span class="keyword">var</span> a;</span><br><span class="line"><span class="variable language_">console</span>.<span class="title function_">log</span>(a);<span class="comment">//function a()&#123;&#125;</span></span><br><span class="line">a = <span class="number">1</span>;</span><br><span class="line"><span class="variable language_">console</span>.<span class="title function_">log</span>(a)<span class="comment">//1</span></span><br></pre></td></tr></table></figure>
-
-<figure class="highlight javascript"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br></pre></td><td class="code"><pre><span class="line"><span class="title function_">alert</span>(a)</span><br><span class="line"><span class="title function_">a</span>();</span><br><span class="line"><span class="keyword">var</span> a = <span class="number">3</span>;</span><br><span class="line"></span><br><span class="line"><span class="keyword">function</span> <span class="title function_">a</span>(<span class="params"></span>) &#123;</span><br><span class="line">    <span class="title function_">alert</span>(<span class="number">10</span>)</span><br><span class="line">&#125;</span><br><span class="line"><span class="title function_">alert</span>(a)</span><br><span class="line">a = <span class="number">6</span>;</span><br><span class="line"><span class="title function_">a</span>();</span><br></pre></td></tr></table></figure>
-
-<p>等价于</p>
-<figure class="highlight javascript"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">var</span> a</span><br><span class="line"><span class="keyword">function</span> <span class="title function_">a</span>(<span class="params"></span>) &#123;</span><br><span class="line">    <span class="title function_">alert</span>(<span class="number">10</span>)</span><br><span class="line">&#125;</span><br><span class="line"><span class="title function_">alert</span>(a)<span class="comment">//function a()&#123;&#125;</span></span><br><span class="line"><span class="title function_">a</span>();</span><br><span class="line">a = <span class="number">3</span>;</span><br><span class="line"><span class="title function_">alert</span>(a)<span class="comment">//3</span></span><br><span class="line">a = <span class="number">6</span>;</span><br><span class="line"><span class="title function_">a</span>();<span class="comment">//TypeError</span></span><br></pre></td></tr></table></figure>
-
-<p><code>alert</code>会把函数转为字符串<code>function a()&#123;...&#125;</code>,对象会调用<code>toString</code>方法转为<code>[object Object]</code></p>
-<figure class="highlight javascript"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">var</span> x = <span class="number">1</span>,</span><br><span class="line">    y = <span class="number">0</span>,</span><br><span class="line">    z = <span class="number">0</span>;</span><br><span class="line"></span><br><span class="line"><span class="keyword">function</span> <span class="title function_">add</span>(<span class="params">x</span>) &#123;</span><br><span class="line">    <span class="keyword">return</span> (x = x + <span class="number">1</span>);</span><br><span class="line">&#125;</span><br><span class="line">y = <span class="title function_">add</span>(x);</span><br><span class="line"><span class="variable language_">console</span>.<span class="title function_">log</span>(y)</span><br><span class="line"></span><br><span class="line"><span class="keyword">function</span> <span class="title function_">add</span>(<span class="params">x</span>) &#123;</span><br><span class="line">    <span class="keyword">return</span> (x = x + <span class="number">3</span>);</span><br><span class="line">&#125;</span><br><span class="line">z = <span class="title function_">add</span>(x);</span><br><span class="line"><span class="variable language_">console</span>.<span class="title function_">log</span>(z)</span><br></pre></td></tr></table></figure>
-
-<p>等价于</p>
-<figure class="highlight javascript"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">function</span> <span class="title function_">add</span>(<span class="params">x</span>) &#123;</span><br><span class="line">    <span class="keyword">return</span> (x = x + <span class="number">1</span>);</span><br><span class="line">&#125;</span><br><span class="line"><span class="comment">// 上面函数被覆盖</span></span><br><span class="line"><span class="keyword">function</span> <span class="title function_">add</span>(<span class="params">x</span>) &#123;</span><br><span class="line">    <span class="keyword">return</span> (x = x + <span class="number">3</span>);</span><br><span class="line">&#125;      </span><br><span class="line"><span class="keyword">var</span> x = <span class="number">1</span>,</span><br><span class="line">    y = <span class="number">0</span>,</span><br><span class="line">    z = <span class="number">0</span>;</span><br><span class="line">y = <span class="title function_">add</span>(x);</span><br><span class="line"><span class="variable language_">console</span>.<span class="title function_">log</span>(y)</span><br><span class="line">z = <span class="title function_">add</span>(x);</span><br><span class="line"><span class="variable language_">console</span>.<span class="title function_">log</span>(z)</span><br></pre></td></tr></table></figure>
-
-<h5 id="this指向"><a href="#this指向" class="headerlink" title="this指向"></a>this指向</h5><p>在构造函数中，如果在<code>this</code>指定属性前访问，会返回<code>undefined</code></p>
-<figure class="highlight javascript"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">function</span> <span class="title function_">go</span>(<span class="params"></span>) &#123;</span><br><span class="line">    <span class="variable language_">console</span>.<span class="title function_">log</span>(<span class="variable language_">this</span>.<span class="property">a</span>);</span><br><span class="line">    <span class="variable language_">this</span>.<span class="property">a</span> = <span class="number">30</span>;</span><br><span class="line">&#125;</span><br><span class="line"><span class="keyword">new</span> <span class="title function_">go</span>()<span class="comment">//undefined</span></span><br></pre></td></tr></table></figure>
-
-<p>如果在原型连上定义，则会去原型链上查找，找不到会返回<code>undefined</code>,<strong>但是不会去查找全局作用域，因为通过 new 操作符，this 指向生成的对象实例</strong></p>
-<figure class="highlight javascript"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">function</span> <span class="title function_">go</span>(<span class="params"></span>) &#123;</span><br><span class="line">    <span class="variable language_">console</span>.<span class="title function_">log</span>(<span class="variable language_">this</span>.<span class="property">a</span>);</span><br><span class="line">    <span class="variable language_">this</span>.<span class="property">a</span> = <span class="number">30</span>;</span><br><span class="line">&#125;</span><br><span class="line">go.<span class="property"><span class="keyword">prototype</span></span>.<span class="property">a</span> = <span class="number">40</span></span><br><span class="line"><span class="keyword">new</span> <span class="title function_">go</span>()<span class="comment">//40</span></span><br></pre></td></tr></table></figure>
-
-<figure class="highlight javascript"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br></pre></td><td class="code"><pre><span class="line"><span class="variable language_">this</span>.<span class="property">a</span> = <span class="number">20</span>;</span><br><span class="line"></span><br><span class="line"><span class="keyword">function</span> <span class="title function_">go</span>(<span class="params"></span>) &#123;</span><br><span class="line">    <span class="variable language_">console</span>.<span class="title function_">log</span>(<span class="variable language_">this</span>.<span class="property">a</span>);</span><br><span class="line">    <span class="variable language_">this</span>.<span class="property">a</span> = <span class="number">30</span>;</span><br><span class="line">&#125;</span><br><span class="line">go.<span class="property"><span class="keyword">prototype</span></span>.<span class="property">a</span> = <span class="number">40</span>;</span><br><span class="line"><span class="keyword">var</span> test = &#123;</span><br><span class="line">    <span class="attr">a</span>: <span class="number">50</span>,</span><br><span class="line">    <span class="attr">init</span>: <span class="keyword">function</span> (<span class="params">fn</span>) &#123;</span><br><span class="line">        <span class="title function_">fn</span>();</span><br><span class="line">        <span class="variable language_">console</span>.<span class="title function_">log</span>(<span class="variable language_">this</span>.<span class="property">a</span>);</span><br><span class="line">        <span class="keyword">return</span> fn;</span><br><span class="line">    &#125;</span><br><span class="line">&#125;;</span><br><span class="line"></span><br><span class="line"><span class="comment">//在执行new构造函数时，this.a还没有被赋值，所以去原型链上查找返回40</span></span><br><span class="line"><span class="comment">//在读取对象实例的a属性时，this.a 已经被赋值，所以返回30</span></span><br><span class="line"><span class="variable language_">console</span>.<span class="title function_">log</span>((<span class="keyword">new</span> <span class="title function_">go</span>()).<span class="property">a</span>); <span class="comment">//40 30</span></span><br><span class="line"></span><br><span class="line"><span class="comment">//在init方法中fn没有被具体对象调用，所以fn执行时，go方法中this指向全局，返回20</span></span><br><span class="line"><span class="comment">//在下一步中对this.a赋值，this指向window对象所以把全局的a修改为30</span></span><br><span class="line"><span class="comment">//init中的this指向调用init方法的test对象返回50</span></span><br><span class="line">test.<span class="title function_">init</span>(go);<span class="comment">//20 50</span></span><br><span class="line"></span><br><span class="line"><span class="comment">//再次执行fn即go方法，这时this.a已经被修改为30</span></span><br><span class="line"><span class="comment">//init中的this还是指向test对象返回test.a = 50</span></span><br><span class="line"><span class="keyword">var</span> p = test.<span class="title function_">init</span>(go);<span class="comment">//30 50</span></span><br><span class="line"></span><br><span class="line"><span class="comment">//用一个p变量接受最后返回的go方法，在调用时相当于window调用，最终返回被修改后的a属性为30</span></span><br><span class="line"><span class="title function_">p</span>();<span class="comment">//30</span></span><br></pre></td></tr></table></figure>
-
-<p><strong>一些常见的变量</strong></p>
-<p>可以通过<code>self</code>判断时否时windows环境</p>
-<figure class="highlight javascript"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">self.<span class="property">self</span>===self</span><br></pre></td></tr></table></figure>
-
-<p>由于<code>self</code>变量经常被修改所以又创建了一个新变量表示全局对象 <code>globalThis</code>,也是为了和 Node 环境靠拢</p>
-<figure class="highlight javascript"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><span class="line">self === globalThis</span><br><span class="line">top === globalThis</span><br><span class="line">parent===globalThis</span><br></pre></td></tr></table></figure>
-
-<h5 id="严格模式"><a href="#严格模式" class="headerlink" title="严格模式"></a>严格模式</h5><p>函数中的严格模式只对函数作用域生效，如果在函数中调用其他函数，其他函数不受严格模式影响 <strong>ES6不建议使用局部严格模式</strong></p>
-<h5 id="参数传递"><a href="#参数传递" class="headerlink" title="参数传递"></a>参数传递</h5><p>js中基本类型时按值传递的，引用类型是按地址传递的，形参和实参没有关系</p>
-<figure class="highlight javascript"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">function</span> <span class="title function_">test</span>(<span class="params">m</span>) &#123;</span><br><span class="line">    m = &#123;</span><br><span class="line">        <span class="attr">v</span>: <span class="number">5</span></span><br><span class="line">    &#125;</span><br><span class="line">&#125;</span><br><span class="line"><span class="keyword">var</span> m = &#123;</span><br><span class="line">    <span class="attr">k</span>: <span class="number">30</span></span><br><span class="line">&#125;;</span><br><span class="line"><span class="title function_">test</span>(m);</span><br><span class="line"><span class="title function_">alert</span>(m.<span class="property">v</span>);<span class="comment">//undefined</span></span><br></pre></td></tr></table></figure>
-
-<h5 id="块级作用域"><a href="#块级作用域" class="headerlink" title="块级作用域"></a>块级作用域</h5><figure class="highlight javascript"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br></pre></td><td class="code"><pre><span class="line">&#123;</span><br><span class="line">    <span class="keyword">function</span> <span class="title function_">init</span>(<span class="params"></span>)&#123;&#125;</span><br><span class="line">    init = <span class="number">4</span></span><br><span class="line">&#125;</span><br><span class="line"><span class="variable language_">console</span>.<span class="title function_">log</span>(init);<span class="comment">// function init()&#123;&#125;</span></span><br></pre></td></tr></table></figure>
-
-<figure class="highlight javascript"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment">// 在块级作用域中，如果在函数声明前变量已经定义，则函数声明和后面的赋值都不会执行</span></span><br><span class="line">&#123;</span><br><span class="line">    init = <span class="number">6</span></span><br><span class="line">    <span class="keyword">function</span> <span class="title function_">init</span>(<span class="params"></span>) &#123;&#125;</span><br><span class="line">    init = <span class="number">4</span></span><br><span class="line">    <span class="comment">// 如果重新定义会报错Identifier &#x27;init&#x27; has already been declared</span></span><br><span class="line">    <span class="comment">// const init = 7</span></span><br><span class="line">    init = <span class="number">7</span></span><br><span class="line">    <span class="variable language_">console</span>.<span class="title function_">log</span>(init); <span class="comment">//7</span></span><br><span class="line">&#125;</span><br><span class="line"><span class="variable language_">console</span>.<span class="title function_">log</span>(init);<span class="comment">//6</span></span><br></pre></td></tr></table></figure>
-
-<p>类似于函数的声明不能覆盖变量的定义</p>
-<figure class="highlight javascript"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">var</span> init = <span class="number">1</span>;</span><br><span class="line"><span class="keyword">function</span> <span class="title function_">init</span>(<span class="params"></span>) &#123;&#125;</span><br><span class="line"><span class="variable language_">console</span>.<span class="title function_">log</span>(init)</span><br></pre></td></tr></table></figure>
-
-<h5 id="条件语句中的函数声明"><a href="#条件语句中的函数声明" class="headerlink" title="条件语句中的函数声明"></a>条件语句中的函数声明</h5><figure class="highlight javascript"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">function</span> <span class="title function_">init</span>(<span class="params"></span>)&#123;</span><br><span class="line">    <span class="variable language_">console</span>.<span class="title function_">log</span>(<span class="number">1</span>);</span><br><span class="line">&#125;</span><br><span class="line"><span class="keyword">if</span>(<span class="literal">false</span>)&#123;</span><br><span class="line">    <span class="keyword">function</span> <span class="title function_">init</span>(<span class="params"></span>)&#123;</span><br><span class="line">        <span class="variable language_">console</span>.<span class="title function_">log</span>(<span class="number">2</span>);</span><br><span class="line">    &#125;</span><br><span class="line">&#125;</span><br><span class="line"><span class="title function_">init</span>()</span><br></pre></td></tr></table></figure>
-
-<p>变量被提升，函数不会被提升，等价于：</p>
-<figure class="highlight javascript"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">function</span> <span class="title function_">init</span>(<span class="params"></span>)&#123;</span><br><span class="line">    <span class="variable language_">console</span>.<span class="title function_">log</span>(<span class="number">1</span>);</span><br><span class="line">&#125;</span><br><span class="line"><span class="keyword">var</span> init;</span><br><span class="line"><span class="keyword">if</span>(<span class="literal">false</span>)&#123;</span><br><span class="line">    <span class="keyword">function</span> <span class="title function_">init</span>(<span class="params"></span>)&#123;</span><br><span class="line">        <span class="variable language_">console</span>.<span class="title function_">log</span>(<span class="number">2</span>);</span><br><span class="line">    &#125;</span><br><span class="line">&#125;</span><br><span class="line"><span class="title function_">init</span>()</span><br></pre></td></tr></table></figure>
-
-<p>如果在函数体内部，会被提升至作用域顶端</p>
-<figure class="highlight javascript"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">function</span> <span class="title function_">init</span>(<span class="params"></span>)&#123;</span><br><span class="line">    <span class="variable language_">console</span>.<span class="title function_">log</span>(<span class="number">1</span>);</span><br><span class="line">&#125;</span><br><span class="line">(<span class="keyword">function</span>(<span class="params"></span>)&#123;</span><br><span class="line">  <span class="keyword">if</span>(<span class="literal">false</span>)&#123;</span><br><span class="line">      <span class="keyword">function</span> <span class="title function_">init</span>(<span class="params"></span>)&#123;</span><br><span class="line">          <span class="variable language_">console</span>.<span class="title function_">log</span>(<span class="number">2</span>);</span><br><span class="line">      &#125;</span><br><span class="line">  &#125;</span><br><span class="line">  <span class="title function_">init</span>()</span><br><span class="line">&#125;)</span><br></pre></td></tr></table></figure>
-
-<p>等价于</p>
-<figure class="highlight javascript"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">function</span> <span class="title function_">init</span>(<span class="params"></span>)&#123;</span><br><span class="line">    <span class="variable language_">console</span>.<span class="title function_">log</span>(<span class="number">1</span>);</span><br><span class="line">&#125;</span><br><span class="line">(<span class="keyword">function</span>(<span class="params"></span>)&#123;</span><br><span class="line">  <span class="keyword">var</span> init;</span><br><span class="line">  <span class="keyword">if</span>(<span class="literal">false</span>)&#123;</span><br><span class="line">      <span class="keyword">function</span> <span class="title function_">init</span>(<span class="params"></span>)&#123;</span><br><span class="line">          <span class="variable language_">console</span>.<span class="title function_">log</span>(<span class="number">2</span>);</span><br><span class="line">      &#125;</span><br><span class="line">  &#125;</span><br><span class="line">  <span class="title function_">init</span>() <span class="comment">//TypeError</span></span><br><span class="line">&#125;)</span><br></pre></td></tr></table></figure>
-
-<h5 id="继承"><a href="#继承" class="headerlink" title="继承"></a>继承</h5><figure class="highlight javascript"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">function</span> <span class="title function_">extend</span>(<span class="params">sup, sub</span>) &#123;</span><br><span class="line">    <span class="keyword">var</span> F = <span class="keyword">function</span> (<span class="params"></span>) &#123;&#125;</span><br><span class="line">    F.<span class="property"><span class="keyword">prototype</span></span> = sup.<span class="property"><span class="keyword">prototype</span></span>;</span><br><span class="line">    F.<span class="property"><span class="keyword">prototype</span></span>.<span class="property">constructor</span> = sub;</span><br><span class="line">    sub.<span class="property"><span class="keyword">prototype</span></span> = <span class="keyword">new</span> <span class="title function_">F</span>();</span><br><span class="line">    <span class="keyword">const</span> stck = <span class="title class_">Object</span>.<span class="title function_">keys</span>(<span class="title class_">Super</span>);</span><br><span class="line">    <span class="keyword">for</span> (<span class="keyword">var</span> i = <span class="number">0</span>; i &lt; stck.<span class="property">length</span>; i++) &#123;</span><br><span class="line">        sub[stck[i]] = sup[stck[i]]</span><br><span class="line">    &#125;</span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line"><span class="keyword">function</span> <span class="title function_">Super</span>(<span class="params"></span>) &#123;</span><br><span class="line">    <span class="variable language_">this</span>.<span class="property">color</span> = <span class="string">&#x27;red&#x27;</span></span><br><span class="line">&#125;</span><br><span class="line"><span class="title class_">Super</span>.<span class="property"><span class="keyword">prototype</span></span>.<span class="property">init</span> = <span class="keyword">function</span> (<span class="params"></span>) &#123;&#125;</span><br><span class="line"><span class="title class_">Super</span>.<span class="property">time</span> = <span class="title class_">Date</span>.<span class="title function_">now</span>();</span><br><span class="line"></span><br><span class="line"><span class="keyword">function</span> <span class="title function_">Sub</span>(<span class="params"></span>) &#123;</span><br><span class="line">    <span class="title class_">Super</span>.<span class="title function_">call</span>(<span class="variable language_">this</span>);</span><br><span class="line">&#125;</span><br><span class="line"><span class="title function_">extend</span>(<span class="title class_">Super</span>, <span class="title class_">Sub</span>);</span><br><span class="line"><span class="variable language_">console</span>.<span class="title function_">log</span>(<span class="keyword">new</span> <span class="title class_">Sub</span>())</span><br></pre></td></tr></table></figure>
-
-
-<h5 id="正则的拷贝"><a href="#正则的拷贝" class="headerlink" title="正则的拷贝"></a>正则的拷贝</h5><figure class="highlight javascript"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment">/** Used to match `RegExp` flags from their coerced string values. */</span></span><br><span class="line"><span class="keyword">var</span> reFlags = <span class="regexp">/\w*$/</span>;</span><br><span class="line"></span><br><span class="line"><span class="comment">/**</span></span><br><span class="line"><span class="comment"> * <span class="doctag">@private</span></span></span><br><span class="line"><span class="comment"> * <span class="doctag">@param</span> &#123;<span class="type">Object</span>&#125; regexp The regexp to clone.</span></span><br><span class="line"><span class="comment"> * <span class="doctag">@returns</span> &#123;<span class="type">Object</span>&#125; Returns the cloned regexp.</span></span><br><span class="line"><span class="comment"> */</span></span><br><span class="line"><span class="keyword">function</span> <span class="title function_">cloneRegExp</span>(<span class="params">regexp</span>) &#123;</span><br><span class="line">    <span class="keyword">var</span> result = <span class="keyword">new</span> regexp.<span class="title function_">constructor</span>(<span class="params">regexp.source, reFlags.exec(regexp)</span>);</span><br><span class="line">    result.<span class="property">lastIndex</span> = regexp.<span class="property">lastIndex</span>;</span><br><span class="line">    <span class="keyword">return</span> result;</span><br><span class="line">&#125;</span><br><span class="line"><span class="keyword">const</span> reg = <span class="regexp">/foo/g</span></span><br><span class="line"><span class="keyword">let</span> reg2 = <span class="title function_">cloneRegExp</span>(reg) <span class="comment">// /foo/g</span></span><br><span class="line"><span class="variable language_">console</span>.<span class="title function_">log</span>(reg2);</span><br></pre></td></tr></table></figure>
-
-<h5 id="柯理化"><a href="#柯理化" class="headerlink" title="柯理化"></a>柯理化</h5><p>实现 before after</p>
-<figure class="highlight javascript"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br><span class="line">35</span><br><span class="line">36</span><br><span class="line">37</span><br><span class="line">38</span><br><span class="line">39</span><br><span class="line">40</span><br><span class="line">41</span><br><span class="line">42</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">function</span> <span class="title function_">test</span>(<span class="params">a, b, c</span>) &#123;</span><br><span class="line">  <span class="variable language_">console</span>.<span class="title function_">log</span>(<span class="string">&#x27;test&#x27;</span>, a, b, c);</span><br><span class="line">  <span class="keyword">return</span> <span class="string">&#x27;test&#x27;</span>;</span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line"><span class="title class_">Function</span>.<span class="property"><span class="keyword">prototype</span></span>.<span class="property">after</span> = <span class="keyword">function</span> (<span class="params">cb</span>) &#123;</span><br><span class="line">  <span class="keyword">const</span> _this = <span class="variable language_">this</span>;</span><br><span class="line">  <span class="keyword">return</span> <span class="keyword">function</span> <span class="title function_">_after</span>(<span class="params"></span>) &#123;</span><br><span class="line">    <span class="keyword">if</span> (_this.<span class="property">name</span> !== <span class="string">&#x27;_before&#x27;</span>) &#123;</span><br><span class="line">      <span class="title function_">cb</span>();</span><br><span class="line">      <span class="keyword">const</span> res = _this.<span class="title function_">apply</span>(_this, <span class="variable language_">arguments</span>);</span><br><span class="line">      <span class="keyword">return</span> res;</span><br><span class="line">    &#125;</span><br><span class="line">    <span class="keyword">const</span> res = _this.<span class="title function_">apply</span>(_this, <span class="variable language_">arguments</span>);</span><br><span class="line">    <span class="title function_">cb</span>(res);</span><br><span class="line">  &#125;</span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line"><span class="title class_">Function</span>.<span class="property"><span class="keyword">prototype</span></span>.<span class="property">before</span> = <span class="keyword">function</span> (<span class="params">cb</span>) &#123;</span><br><span class="line">  <span class="keyword">const</span> _this = <span class="variable language_">this</span>;</span><br><span class="line">  <span class="keyword">function</span> <span class="title function_">_before</span>(<span class="params"></span>) &#123;</span><br><span class="line">    <span class="keyword">if</span> (_this.<span class="property">name</span> === <span class="string">&#x27;_after&#x27;</span>) &#123;</span><br><span class="line">      <span class="keyword">const</span> res = _this.<span class="title function_">apply</span>(_this, <span class="variable language_">arguments</span>);</span><br><span class="line">      <span class="title function_">cb</span>(res);</span><br><span class="line">      <span class="keyword">return</span></span><br><span class="line">    &#125;</span><br><span class="line">    <span class="keyword">const</span> res = <span class="title function_">cb</span>();</span><br><span class="line">    _this.<span class="title function_">apply</span>(_this, <span class="variable language_">arguments</span>);</span><br><span class="line">    <span class="keyword">return</span> res;</span><br><span class="line">  &#125;</span><br><span class="line">  <span class="keyword">return</span> _before</span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line">test</span><br><span class="line">  .<span class="title function_">before</span>(<span class="keyword">function</span> (<span class="params"></span>) &#123;</span><br><span class="line">    <span class="variable language_">console</span>.<span class="title function_">log</span>(<span class="string">&#x27;before&#x27;</span>);</span><br><span class="line">    <span class="keyword">return</span> <span class="number">10</span>;</span><br><span class="line">  &#125;)</span><br><span class="line">  .<span class="title function_">after</span>(<span class="keyword">function</span> (<span class="params">res</span>) &#123;</span><br><span class="line">    <span class="variable language_">console</span>.<span class="title function_">log</span>(<span class="string">&#x27;after&#x27;</span>);</span><br><span class="line">  &#125;)</span><br><span class="line">  (<span class="number">1</span>, <span class="number">2</span>, <span class="number">3</span>)</span><br></pre></td></tr></table></figure>
-
-<h5 id="反柯理化"><a href="#反柯理化" class="headerlink" title="反柯理化"></a>反柯理化</h5><p>从字面讲，意义和用法跟函数柯里化相比正好相反，扩大适用范围，创建一个应用范围更广的函数。使本来只有特定对象才适用的方法，扩展到更多的对象。或者说让一个对象去借用一个原本不属于他的方法。</p>
-<figure class="highlight javascript"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment">//简单实现</span></span><br><span class="line"><span class="keyword">var</span> <span class="title function_">uncurrying</span> = (<span class="params">fn</span>) =&gt; <span class="function">(<span class="params">context,...rest</span>)=&gt;</span>fn.<span class="title function_">apply</span>(context,rest);</span><br><span class="line"></span><br><span class="line"><span class="comment">//使用call.apply省略context参数</span></span><br><span class="line"><span class="comment">//调用fn的call方法，和Funcion的call方法是同理的，省略了一步原型链查找的过程</span></span><br><span class="line"><span class="comment">//call方法需要执行call执行时候的上下文即fn函数，并把其他参数分别传入</span></span><br><span class="line"><span class="comment">//加上apply方法，重指定call执行时候的上下文，并且call方法的参数可以用数组的形式传入 也就是rest包含[context,...rest]</span></span><br><span class="line"><span class="keyword">var</span> <span class="title function_">uncurrying</span> = fn =&gt; <span class="function">(<span class="params">...rest</span>)=&gt;</span> fn.<span class="property">call</span>.<span class="title function_">apply</span>(fn,rest)</span><br><span class="line"></span><br><span class="line"><span class="keyword">var</span> <span class="title function_">uncurrying</span> = fn =&gt; <span class="function">(<span class="params">...rest</span>)=&gt;</span> <span class="title class_">Function</span>.<span class="property"><span class="keyword">prototype</span></span>.<span class="property">call</span>.<span class="title function_">apply</span>(fn,rest)</span><br><span class="line"></span><br><span class="line"><span class="comment">//也可以直接挂载在Function上面</span></span><br><span class="line"><span class="title class_">Function</span>.<span class="property"><span class="keyword">prototype</span></span>.<span class="property">uncurrying</span> = <span class="keyword">function</span> (<span class="params"></span>)&#123;</span><br><span class="line">    <span class="keyword">return</span> <span class="variable language_">this</span>.<span class="property">call</span>.<span class="title function_">bind</span>(<span class="variable language_">this</span>)</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
-
-<p>使用场景</p>
-<figure class="highlight javascript"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment">//借用自己</span></span><br><span class="line"><span class="keyword">var</span> un = <span class="title class_">Function</span>.<span class="property"><span class="keyword">prototype</span></span>.<span class="property">uncurrying</span>.<span class="title function_">uncurrying</span>();</span><br><span class="line"><span class="keyword">var</span> a = <span class="title function_">un</span>(<span class="title class_">Array</span>.<span class="property"><span class="keyword">prototype</span></span>.<span class="property">map</span>)([<span class="number">1</span>,<span class="number">2</span>],<span class="keyword">function</span>(<span class="params">i</span>)&#123;<span class="variable language_">console</span>.<span class="title function_">log</span>(i)&#125;);</span><br><span class="line"></span><br><span class="line"><span class="comment">//改变函数的执行上下文</span></span><br><span class="line"><span class="keyword">function</span> <span class="title function_">sayHi</span> () &#123;</span><br><span class="line">    <span class="keyword">return</span> <span class="string">&quot;Hello &quot;</span> + <span class="variable language_">this</span>.<span class="property">value</span> +<span class="string">&quot; &quot;</span>+[].<span class="property">slice</span>.<span class="title function_">call</span>(<span class="variable language_">arguments</span>);</span><br><span class="line">&#125;</span><br><span class="line"><span class="keyword">var</span> sayHiuncurrying=sayHi.<span class="title function_">uncurrying</span>();</span><br><span class="line"><span class="variable language_">console</span>.<span class="title function_">log</span>(<span class="title function_">sayHiuncurrying</span>(&#123;<span class="attr">value</span>:<span class="string">&#x27;world&#x27;</span>&#125;,<span class="string">&quot;hahaha&quot;</span>));</span><br><span class="line"></span><br><span class="line"><span class="comment">//借用方法</span></span><br><span class="line"><span class="keyword">var</span> obj = &#123;</span><br><span class="line">    <span class="attr">push</span>:<span class="keyword">function</span>(<span class="params">v</span>)&#123;</span><br><span class="line">          <span class="keyword">return</span>  <span class="title class_">Array</span>.<span class="property"><span class="keyword">prototype</span></span>.<span class="property">push</span>.<span class="title function_">uncurrying</span>()(<span class="variable language_">this</span>,v)</span><br><span class="line">    &#125; </span><br><span class="line">&#125;</span><br><span class="line">obj.<span class="title function_">push</span>(<span class="string">&#x27;first&#x27;</span>);</span><br></pre></td></tr></table></figure>
-
- 
-      <!-- reward -->
-      
-    </div>
-    
-
-    <!-- copyright -->
-    
-    <footer class="article-footer">
-       
-  <ul class="article-tag-list" itemprop="keywords"><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/JavaScript/" rel="tag">JavaScript</a></li><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/%E5%BA%94%E7%94%A8%E6%A1%88%E4%BE%8B/" rel="tag">应用案例</a></li></ul>
-
-    </footer>
-  </div>
-
-   
-    
-</article>
-
-    
-    <article
-  id="post-javascript/基于流式布局得轮播图实现思路"
-  class="article article-type-post"
-  itemscope
-  itemprop="blogPost"
-  data-scroll-reveal
->
-  <div class="article-inner">
-    
-    <header class="article-header">
-       
-<h2 itemprop="name">
-  <a class="article-title" href="/posts/11613865a688/"
-    >基于流式布局的轮播图实现思路</a> 
-</h2>
- 
-
-      
-    </header>
-     
-    <div class="article-meta">
-      <a href="/posts/11613865a688/" class="article-date">
-  <time datetime="2020-11-09T01:07:53.000Z" itemprop="datePublished">2020-11-09</time>
-</a> 
-  <div class="article-category">
-    <a class="article-category-link" href="/categories/JavaScript/">JavaScript</a>
-  </div>
-   
-    </div>
-      
-    <div class="article-entry" itemprop="articleBody">
-       
-  <iframe  
- height=300 
- width=100% 
- src="/demo/基于流式布局得轮播图实现思路/index.html"  
- frameborder=0  
- allowfullscreen>
- </iframe>
-
-<h4 id="布局"><a href="#布局" class="headerlink" title="布局"></a>布局</h4><p>这是一个流式布局下得轮播图案例，问题还比较多，可以提供一种不错的思路</p>
-<p>通过让父元素禁止换行，每个图片子元素设置<code>inline-block</code>,流式排列</p>
-<figure class="highlight css"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br></pre></td><td class="code"><pre><span class="line">* &#123;</span><br><span class="line">  <span class="attribute">padding</span>: <span class="number">0</span>;</span><br><span class="line">  <span class="attribute">margin</span>: <span class="number">0</span>;</span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line"><span class="selector-id">#root</span> &#123;</span><br><span class="line">  <span class="attribute">width</span>: <span class="number">500px</span>;</span><br><span class="line">  <span class="attribute">height</span>: <span class="number">280px</span>;</span><br><span class="line">  <span class="attribute">margin</span>:auto;</span><br><span class="line">  <span class="attribute">white-space</span>: nowrap;</span><br><span class="line">  <span class="attribute">overflow</span>: hidden;</span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line"><span class="selector-id">#root</span>&gt;<span class="selector-tag">div</span> &#123;</span><br><span class="line">  <span class="attribute">width</span>: <span class="number">500px</span>;</span><br><span class="line">  <span class="attribute">height</span>: <span class="number">280px</span>;</span><br><span class="line">  <span class="attribute">display</span>: inline-block;</span><br><span class="line">  <span class="attribute">transition</span>: .<span class="number">5s</span> linear;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
-
-<figure class="highlight html"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br></pre></td><td class="code"><pre><span class="line"><span class="tag">&lt;<span class="name">div</span> <span class="attr">id</span>=<span class="string">&#x27;root&#x27;</span>&gt;</span></span><br><span class="line">  <span class="tag">&lt;<span class="name">div</span> <span class="attr">style</span>=<span class="string">&#x27;background: url(./assets/1b809d9a2bdf3ecc481322d7c9223c21)&#x27;</span>&gt;</span><span class="tag">&lt;/<span class="name">div</span>&gt;</span></span><br><span class="line">  <span class="tag">&lt;<span class="name">div</span> <span class="attr">style</span>=<span class="string">&#x27;background: url(./assets/1b809d9a2bdf3ecc481322d7c9223c21)&#x27;</span>&gt;</span><span class="tag">&lt;/<span class="name">div</span>&gt;</span></span><br><span class="line">  <span class="tag">&lt;<span class="name">div</span> <span class="attr">style</span>=<span class="string">&#x27;background: url(./assets/1b809d9a2bdf3ecc481322d7c9223c21)&#x27;</span>&gt;</span><span class="tag">&lt;/<span class="name">div</span>&gt;</span></span><br><span class="line">  <span class="tag">&lt;<span class="name">div</span> <span class="attr">style</span>=<span class="string">&#x27;background: url(./assets/1b809d9a2bdf3ecc481322d7c9223c21)&#x27;</span>&gt;</span><span class="tag">&lt;/<span class="name">div</span>&gt;</span></span><br><span class="line"><span class="tag">&lt;/<span class="name">div</span>&gt;</span></span><br></pre></td></tr></table></figure>
-
-<h4 id="开始拖动"><a href="#开始拖动" class="headerlink" title="开始拖动"></a>开始拖动</h4><p>通过CSS的<code>transform</code>属性来改变图片的位置，这里我们不让如父元素一起滚动，而是控制每一个元素的滚动，来看一下实现的思路</p>
-<p>在鼠标按下的时候加一个标识，表示正在拖动,并且记录下鼠标点击的位置</p>
-<figure class="highlight javascript"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br></pre></td><td class="code"><pre><span class="line">root.<span class="title function_">addEventListener</span>(<span class="string">&#x27;mousedown&#x27;</span>, <span class="function"><span class="params">event</span> =&gt;</span> &#123;</span><br><span class="line">  mark = <span class="literal">true</span>;</span><br><span class="line">  startX= event.<span class="property">clientX</span>;</span><br><span class="line">&#125;)</span><br></pre></td></tr></table></figure>
-
-<p>在鼠标移动的时候,判断是否，已经开始移动</p>
-<figure class="highlight javascript"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><span class="line"><span class="variable language_">document</span>.<span class="title function_">addEventListener</span>(<span class="string">&#x27;mousemove&#x27;</span>, <span class="keyword">function</span> (<span class="params">event</span>) &#123;</span><br><span class="line">  <span class="keyword">if</span> (!mark) <span class="keyword">return</span> <span class="literal">false</span></span><br><span class="line">&#125;);</span><br></pre></td></tr></table></figure>
-
-<p>由于是使用流式布局，每一个元素都在自己的位置上，而且偏移量为0</p>
-<p>那么当前正在窗口中的图片的索引标记为pos,初始化为0</p>
-<p>再滑动的时候需要知道当前窗口内的图片索引，当滑动距离的绝对值超过500，则pos切换为上一张图片，或下一张图片，</p>
-<figure class="highlight javascript"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment">//错误，不能直接向下取整，因为向左滑动的时候不足500不能算作前一张，向上也同理</span></span><br><span class="line"><span class="keyword">let</span> current = position - <span class="title class_">Math</span>.<span class="title function_">floor</span>(x / <span class="number">500</span>);</span><br><span class="line"></span><br><span class="line"><span class="comment">// 需要去掉偏移量之后，看是否超过了500</span></span><br><span class="line"><span class="keyword">let</span> current = position - <span class="title class_">Math</span>.<span class="title function_">ceil</span>((x-x % <span class="number">500</span>) / <span class="number">500</span>);</span><br></pre></td></tr></table></figure>
-
-<p>下面，我们只关心pos左侧和右侧的图片是哪一张</p>
-<p>如果是右边的一张图片，那索引就会 +1, 按照<code>[1,2,3,0,1,2,3,0,...]</code>的顺序循环，需要让他在到达最后索引的时候归零，这里可以通过取余实现</p>
-<figure class="highlight javascript"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">const</span> right = (pos+<span class="number">1</span>)%length</span><br></pre></td></tr></table></figure>
-
-<p>但是左边的一张图片，是按倒叙排列的 <code>[3,2,1,0,3,2,1,0,...]</code> 当<code>pos===0</code>左边一张图片的索引为3，也就是让位置<code>[-1]</code>和 图片索引<code>[3]</code>对应，这里我们还是通过取余操作，但是要先加上子元素的长度length,把它转为整数，对于右边的图片来说，对于多加的长度没有影响，因为加了一倍的长度，最终取余的时候还是可以约调</p>
-<figure class="highlight javascript"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">const</span> index = (pos+ offset + lenth) % length</span><br></pre></td></tr></table></figure>
-
-<p>下面是如何把中间位置，和左右两张图片放到对应的位置</p>
-<p>首先减去偏移量，把图片移动到窗口位置，类似绝对定位的效果,500为图片的宽度</p>
-<figure class="highlight javascript"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">let</span> dx = - index * <span class="number">500</span></span><br></pre></td></tr></table></figure>
-
-<p>在加上左右位置的偏移量，和鼠标滑动的偏移量</p>
-<p><strong>注意：</strong>为了学习理解，滑动的事件实在document上面的，所以滑动距离可能会超过<code>500px</code>,这里需要取余计算剩余偏移量</p>
-<figure class="highlight javascript"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">let</span> dx  = -index * <span class="number">500</span> + offset * <span class="number">500</span> + x % <span class="number">500</span> </span><br></pre></td></tr></table></figure>
-
-<p>最终滑动事件为</p>
-<figure class="highlight javascript"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br></pre></td><td class="code"><pre><span class="line"><span class="variable language_">document</span>.<span class="title function_">addEventListener</span>(<span class="string">&#x27;mousemove&#x27;</span>, <span class="keyword">function</span> (<span class="params">event</span>) &#123;</span><br><span class="line">  <span class="keyword">if</span> (!mark) <span class="keyword">return</span> <span class="literal">false</span></span><br><span class="line">  <span class="keyword">let</span> x = event.<span class="property">clientX</span> - startX;</span><br><span class="line">  <span class="keyword">let</span> current = position - <span class="title class_">Math</span>.<span class="title function_">ceil</span>((x - x % <span class="number">500</span>) / <span class="number">500</span>);</span><br><span class="line">  <span class="keyword">for</span> (<span class="keyword">let</span> offset <span class="keyword">of</span> [-<span class="number">1</span>, <span class="number">0</span>, <span class="number">1</span>]) &#123;</span><br><span class="line">    <span class="keyword">let</span> pos = current + offset;</span><br><span class="line">    pos = (pos + children.<span class="property">length</span>) % children.<span class="property">length</span></span><br><span class="line">    children[pos].<span class="property">style</span>.<span class="property">transition</span> = <span class="string">&#x27;none&#x27;</span>;</span><br><span class="line">    children[pos].<span class="property">style</span>.<span class="property">transform</span> = <span class="string">`translateX(<span class="subst">$&#123;- pos * <span class="number">500</span> + offset * <span class="number">500</span> + x % <span class="number">500</span>&#125;</span>px)`</span></span><br><span class="line">  &#125;</span><br><span class="line">&#125;);</span><br></pre></td></tr></table></figure>
-
-<h4 id="结束拖动"><a href="#结束拖动" class="headerlink" title="结束拖动"></a>结束拖动</h4><p>鼠标松开的时候，需要知道偏移量是否超过组件宽度的一半，如果偏移量大于250就是下一张，如果小于-250就是前一张,有四种情况可以画数轴感受一下</p>
-<figure class="highlight javascript"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">if</span> (x % <span class="number">500</span> &gt;= -<span class="number">250</span> &amp;&amp; x % <span class="number">500</span> &lt;= <span class="number">0</span>) c = <span class="number">1</span>;</span><br><span class="line"><span class="keyword">if</span> (x % <span class="number">500</span> &lt;= <span class="number">250</span> &amp;&amp; x % <span class="number">500</span> &gt;= <span class="number">0</span>) c = -<span class="number">1</span></span><br><span class="line"><span class="keyword">if</span> (x % <span class="number">500</span> &lt; -<span class="number">250</span>) c = -<span class="number">1</span></span><br><span class="line"><span class="keyword">if</span> (x % <span class="number">500</span> &gt; <span class="number">250</span>) c = <span class="number">1</span></span><br></pre></td></tr></table></figure>
-
-<p>最终滚动时候开启动画，并且忽略鼠标拖动的偏移量，通过css动画让图片恢复到对应的位置上</p>
-<figure class="highlight javascript"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br></pre></td><td class="code"><pre><span class="line"><span class="variable language_">document</span>.<span class="title function_">addEventListener</span>(<span class="string">&#x27;mouseup&#x27;</span>, <span class="keyword">function</span> (<span class="params">event</span>) &#123;</span><br><span class="line">  mark = <span class="literal">false</span>;</span><br><span class="line">  <span class="keyword">let</span> x = event.<span class="property">clientX</span> - startX;</span><br><span class="line">  position = position - <span class="title class_">Math</span>.<span class="title function_">round</span>(x / <span class="number">500</span>);</span><br><span class="line">  <span class="keyword">for</span> (<span class="keyword">let</span> offset <span class="keyword">of</span> [<span class="number">0</span>, c]) &#123;</span><br><span class="line">    <span class="keyword">let</span> pos = position + offset;</span><br><span class="line">    pos = (pos + children.<span class="property">length</span>) % children.<span class="property">length</span></span><br><span class="line">    children[pos].<span class="property">style</span>.<span class="property">transition</span> = <span class="string">&#x27;&#x27;</span>;</span><br><span class="line">    children[pos].<span class="property">style</span>.<span class="property">transform</span> = <span class="string">`translateX(<span class="subst">$&#123;- pos * <span class="number">500</span> + offset * <span class="number">500</span>&#125;</span>px)`</span></span><br><span class="line">  &#125;</span><br><span class="line">&#125;);</span><br></pre></td></tr></table></figure>
-
-<p>上面判断前后哪一张的条件语句可以用数学的算法优化</p>
-<figure class="highlight javascript"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br></pre></td><td class="code"><pre><span class="line"><span class="variable language_">document</span>.<span class="title function_">addEventListener</span>(<span class="string">&#x27;mouseup&#x27;</span>, <span class="keyword">function</span> (<span class="params">event</span>) &#123;</span><br><span class="line">  mark = <span class="literal">false</span>;</span><br><span class="line">  <span class="keyword">let</span> x = event.<span class="property">clientX</span> - startX;</span><br><span class="line">  position = position - <span class="title class_">Math</span>.<span class="title function_">round</span>(x / <span class="number">500</span>);</span><br><span class="line">  <span class="keyword">for</span> (<span class="keyword">let</span> offset <span class="keyword">of</span> [<span class="number">0</span>, <span class="title class_">Math</span>.<span class="title function_">sign</span>(x % <span class="number">500</span> - <span class="title class_">Math</span>.<span class="title function_">sign</span>(x) * <span class="number">250</span>)]) &#123;</span><br><span class="line">    <span class="keyword">let</span> pos = position + offset;</span><br><span class="line">    pos = (pos + children.<span class="property">length</span>) % children.<span class="property">length</span></span><br><span class="line">    children[pos].<span class="property">style</span>.<span class="property">transition</span> = <span class="string">&#x27;&#x27;</span>;</span><br><span class="line">    children[pos].<span class="property">style</span>.<span class="property">transform</span> = <span class="string">`translateX(<span class="subst">$&#123;- pos * <span class="number">500</span> + offset * <span class="number">500</span>&#125;</span>px)`</span></span><br><span class="line">  &#125;</span><br><span class="line">&#125;);</span><br></pre></td></tr></table></figure> 
-      <!-- reward -->
-      
-    </div>
-    
-
-    <!-- copyright -->
-    
-    <footer class="article-footer">
-       
-  <ul class="article-tag-list" itemprop="keywords"><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/JavaScript/" rel="tag">JavaScript</a></li><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/%E5%BA%94%E7%94%A8%E6%A1%88%E4%BE%8B/" rel="tag">应用案例</a></li></ul>
-
-    </footer>
-  </div>
-
-   
-    
-</article>
-
-    
-    <article
-  id="post-javascript/(5)针对复杂应用的设计模式"
-  class="article article-type-post"
-  itemscope
-  itemprop="blogPost"
-  data-scroll-reveal
->
-  <div class="article-inner">
-    
-    <header class="article-header">
-       
-<h2 itemprop="name">
-  <a class="article-title" href="/posts/ba396347e37d/"
-    >5.针对复杂应用的设计模式</a> 
-</h2>
- 
-
-      
-    </header>
-     
-    <div class="article-meta">
-      <a href="/posts/ba396347e37d/" class="article-date">
-  <time datetime="2020-11-08T06:57:07.000Z" itemprop="datePublished">2020-11-08</time>
-</a> 
-  <div class="article-category">
-    <a class="article-category-link" href="/categories/JavaScript/">JavaScript</a>
-  </div>
-   
-    </div>
-      
-    <div class="article-entry" itemprop="articleBody">
-       
-  <p>命令式处理异常方式的问题<br>使用容器，以防访问无效数据<br>用Functor的实现来做数据转换<br>利于组合的Monad数据类型<br>使用Monadic类型来巩固错误处理策略<br>Monadic类型的组合与交错</p>
-<h4 id="命令式错误处理的不足"><a href="#命令式错误处理的不足" class="headerlink" title="命令式错误处理的不足"></a>命令式错误处理的不足</h4><p>函数式编程其实可以把错误处理得比任何其他开发风格更为优雅，软件中的许多问题都是由于数据不经意地变成了<code>null</code>或<code>undefined</code>、出现了异常、失去网络连接等情况造成的。所以需要大量得错误捕获代码，在每一个使用引用得地方判断<code>null</code>或<code>undefined</code>,是的代码得逻辑越来月复杂</p>
-<h5 id="try-catch"><a href="#try-catch" class="headerlink" title="try catch"></a>try catch</h5><p>我们尝试使用try,catch来捕获错误</p>
-<figure class="highlight javascript"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">try</span> &#123;</span><br><span class="line">  <span class="keyword">var</span> student = <span class="title function_">findStudent</span>(<span class="string">&#x27;444-44-4444&#x27;</span>);</span><br><span class="line">&#125; <span class="keyword">catch</span> (e) &#123;</span><br><span class="line">  <span class="variable language_">console</span>.<span class="title function_">log</span>(<span class="string">&#x27;ERROR&#x27;</span> + e.<span class="property">message</span>);</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
-
-<p>但这样会与函数式的设计有兼容性问题。</p>
-<ul>
-<li>难以与其他函数组合或链接。</li>
-<li>违反了引用透明性，因为抛出异常会导致函数调用出现另一出口，所以不能确保单一的可预测的返回值。</li>
-<li>会引起副作用，因为异常会在函数调用之外对堆栈引发不可预料的影响。</li>
-<li>违反非局域性的原则，因为用于恢复异常的代码与原始的函数调用渐行渐远。当发生错误时，函数离开局部栈与环境。即 <code>try</code> 中的逻辑会在遇到错误时停止执行，转移到<code>catch</code>处理错误逻辑</li>
-<li>不能只关注函数的返回值，调用者需要负责声明catch块中的异常匹配类型来管理特定的异常。</li>
-<li>当有多个异常条件时会出现嵌套的异常处理块</li>
-</ul>
-<p>其中一个常见的场景是JavaScript中因在null对象上调用函数所产生的TypeError。</p>
-<h5 id="空值（null）检查问题"><a href="#空值（null）检查问题" class="headerlink" title="空值（null）检查问题"></a>空值（null）检查问题</h5><p>本来可以简单地创建一个lens来获取该属性，若是<code>null</code>即返回<code>undefined</code>，但它并不会打印任何错误信息。</p>
-<p>这使代码需要大量的判空检查代码。不管是使用<code>try-catch</code>还是<code>null</code>检查，都是被动的解决方式。</p>
-<h5 id="Functor-一种更好得解决方案"><a href="#Functor-一种更好得解决方案" class="headerlink" title="Functor 一种更好得解决方案"></a>Functor 一种更好得解决方案</h5><p>思想说起来也非常简单，创建一个安全的容器，来存放危险代码</p>
-<h5 id="包裹不安全的值"><a href="#包裹不安全的值" class="headerlink" title="包裹不安全的值"></a>包裹不安全的值</h5><p>map可以是一个更广义的map的概念，而不仅仅是数组。在函数式JavaScript中，map只不过是一个函数，由于引用透明性，只要输入相同，map永远会返回相同的结果。当然，还可以认为map是可以使用lambda表达式变换容器内的值的途径。比如，对于数组，就可以通过map转换值，返回包含新值的新数组。</p>
-<figure class="highlight javascript"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">class</span> <span class="title class_">Wrapper</span> &#123;</span><br><span class="line">  <span class="title function_">constructor</span>(<span class="params">value</span>) &#123;<span class="comment">//存储任意类型值的简单类型</span></span><br><span class="line">    <span class="variable language_">this</span>.<span class="property">_value</span> = value;</span><br><span class="line">  &#125;</span><br><span class="line">  <span class="comment">// map :: (A -&gt; B) -&gt; A -&gt; B</span></span><br><span class="line">  <span class="title function_">map</span>(<span class="params">f</span>) &#123; <span class="comment">//用一个函数来 map 该类型（就像数组一样）</span></span><br><span class="line">    <span class="keyword">return</span> <span class="title function_">f</span>(<span class="variable language_">this</span>.<span class="property">val</span>);</span><br><span class="line">  &#125;;</span><br><span class="line">  <span class="title function_">toString</span>(<span class="params"></span>) &#123;</span><br><span class="line">    <span class="keyword">return</span> <span class="string">&#x27;Wrapper (&#x27;</span> + <span class="variable language_">this</span>.<span class="property">value</span> + <span class="string">&#x27;)&#x27;</span>;</span><br><span class="line">  &#125;</span><br><span class="line">&#125;</span><br><span class="line"><span class="keyword">const</span> <span class="title function_">wrap</span> = (<span class="params">val</span>) =&gt; <span class="keyword">new</span> <span class="title class_">Wrapper</span>(val); <span class="comment">//能够根据值快速创建Wrapper 的帮助函数</span></span><br></pre></td></tr></table></figure>
-
-<p><img src="/posts/ba396347e37d/0001.jpg"></p>
-<p>Wrapper类型使用map安全地访问和操作值。在这种情况下，通过映射 identity 函数就能在容器中提取值</p>
-<p>取值得方法</p>
-<figure class="highlight javascript"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">const</span> wrappedValue = <span class="title function_">wrap</span>(<span class="string">&#x27;Get Functional&#x27;</span>);</span><br><span class="line">wrappedValue.<span class="title function_">map</span>(R.<span class="property">identity</span>); <span class="comment">//-&gt; &#x27;Get Functional&#x27; &lt;--- 值的提取</span></span><br></pre></td></tr></table></figure>
-
-<p>映射任何函数到该容器，比如记录日志或是变换该值：</p>
-<figure class="highlight javascript"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line">wrappedValue.<span class="title function_">map</span>(log);</span><br><span class="line">wrappedValue.<span class="title function_">map</span>(R.<span class="property">toUpper</span>); <span class="comment">//-&gt; &#x27;GET FUNCTIONAL&#x27; &lt;--- 对内部值应用函数</span></span><br></pre></td></tr></table></figure>
-
-<p>现在所有得对值操作都与要通过<code>map</code>方法先伸入到容器中取值，可以说得到了一定得保护，但现在还没有对<code>null</code>,和<code>undefined</code>得处理</p>
-<p>当初始化一个空值得时候</p>
-<figure class="highlight javascript"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">const</span> wrappedNull = <span class="title function_">wrap</span>(<span class="literal">null</span>);</span><br><span class="line">wrappedNull.<span class="title function_">map</span>(doWork); <span class="comment">// doWork 被赋予了空值检查的责任</span></span><br></pre></td></tr></table></figure>
-
-<p>不应该通过<code>dowork</code>来检查，完全可以交给Wrapper类型来做错误处理。换句话说，可以在调用函数之前，检查<code>null</code>、空字符串或者负数，等等。因此，<code>Wrapper.map</code>的语义就由具体的<code>Wrapper</code>类型来确定。</p>
-<p>map的变种——fmap</p>
-<figure class="highlight javascript"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment">// fmap :: (A -&gt; B) -&gt; Wrapper[A] -&gt; Wrapper[B]</span></span><br><span class="line"><span class="title class_">Wrapper</span>.<span class="property"><span class="keyword">prototype</span></span>.<span class="property">fmap</span> = <span class="keyword">function</span> (<span class="params">f</span>) &#123;</span><br><span class="line">  <span class="keyword">return</span> <span class="title function_">wrap</span>(<span class="title function_">f</span>(<span class="variable language_">this</span>.<span class="property">val</span>)); <span class="comment">// 先将返回值包裹到容器中，再返回给调用者</span></span><br><span class="line">&#125;;</span><br></pre></td></tr></table></figure>
-
-<p>fmap知道如何在上下文中应用函数值。它会先打开该容器，应用函数到值，最后把返回的值包裹到一个新的同类型容器中。拥有这种函数的类型称为Functor。</p>
-<h5 id="Functor定义"><a href="#Functor定义" class="headerlink" title="Functor定义"></a>Functor定义</h5><p>Functor 只是一个可以将函数应用到它包裹的值上，并将结果再包裹起来的数据结构。下面是fmap的一般定义：</p>
-<figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">fmap :: (A -&gt; B) -&gt; Wrapper(A) -&gt; Wrapper(B) // Wrapper 可以是任何容器类型</span><br></pre></td></tr></table></figure>
-
-<p>fmap函数接受一个从A-&gt;B的函数，以及一个Wrapper(A) Functor，然后返回包裹着结果的新FunctorWrapper(B)。下图显示了用increment函数作为A-&gt;B的映射函数，只是这里的A和B为同一类型。</p>
-<p><img src="/posts/ba396347e37d/0002.jpg"></p>
-<p>一个简单得例子</p>
-<p>通过柯里化初始化一个求和函数</p>
-<figure class="highlight javascript"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">const</span> plus = R.<span class="title function_">curry</span>(<span class="function">(<span class="params">a, b</span>) =&gt;</span> a + b);</span><br><span class="line"><span class="keyword">const</span> plus3 = <span class="title function_">plus</span>(<span class="number">3</span>);</span><br></pre></td></tr></table></figure>
-
-<p>把数字2放到wrap中</p>
-<figure class="highlight javascript"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">const</span> two = <span class="title function_">wrap</span>(<span class="number">2</span>);</span><br></pre></td></tr></table></figure>
-
-<p>再调用fmap把plus3映射到容器上</p>
-<figure class="highlight javascript"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">const</span> five = two.<span class="title function_">fmap</span>(plus3); <span class="comment">//-&gt; Wrapper(5) &lt;--- 返回一个具有上下文包裹的值</span></span><br><span class="line">five.<span class="title function_">map</span>(R.<span class="property">identity</span>); <span class="comment">//-&gt; 5</span></span><br></pre></td></tr></table></figure>
-
-<p>fmap返回同样类型的结果，可以通过映射R.identity来提取它的值。不过需要注意的是，值会一直在容器中，因此可以 fmap 任意次函数来转换值。</p>
-<figure class="highlight javascript"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">two.<span class="title function_">fmap</span>(plus3).<span class="title function_">fmap</span>(plus10); <span class="comment">//-&gt; Wrapper(15)</span></span><br></pre></td></tr></table></figure>
-
-
-<p>Functor有如下一些重要的属性约束。</p>
-<ul>
-<li>必须是无副作用的。若映射R.identity函数可以获得上下文中相同的值，即可证明Functor是无副作用的：</li>
-</ul>
-<figure class="highlight javascript"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line"><span class="title function_">wrap</span>(<span class="string">&#x27;Get Functional&#x27;</span>).<span class="title function_">fmap</span>(R.<span class="property">identity</span>); <span class="comment">//-&gt; Wrapper(&#x27;Get Functional&#x27;)</span></span><br></pre></td></tr></table></figure>
-
-<ul>
-<li>必须是可组合的。这个属性的意思是fmap 函数的组合，与分别fmap函数是一样的</li>
-</ul>
-<figure class="highlight javascript"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">two.<span class="title function_">fmap</span>(R.<span class="title function_">compose</span>(plus3, R.<span class="title function_">tap</span>(infoLogger))).<span class="title function_">map</span>(R.<span class="property">identity</span>); <span class="comment">//-&gt; 5</span></span><br></pre></td></tr></table></figure>
-
-
-<p>Functor的这些属性并不奇怪。遵守这些规则，可以免于抛出异常、篡改元素或者改变函数的行为。<strong>其实际目的只是创建一个上下文或一个抽象，以便可以安全地应用操作到值，而又不改变原始值。这也是map可以将一个数组转换到另一个数组，而不改变原数组的原因。而Functor就是这个概念的推广。</strong></p>
-<h4 id="使用Monad函数式地处理错误"><a href="#使用Monad函数式地处理错误" class="headerlink" title="使用Monad函数式地处理错误"></a>使用Monad函数式地处理错误</h4><p>Functor本身并不需要知道如何处理null。例如Ramda中的R.compose，在收到为null的函数引用时就会抛出异常。</p>
-<figure class="highlight javascript"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">const</span> findStudent = R.<span class="title function_">curry</span>(<span class="keyword">function</span>(<span class="params">db, ssn</span>) &#123;</span><br><span class="line"><span class="keyword">return</span> <span class="title function_">wrap</span>(<span class="title function_">find</span>(db, ssn)); <span class="comment">//包裹对象获取逻辑，以避免找不到对象所造成的问题</span></span><br><span class="line">&#125;);</span><br><span class="line"><span class="keyword">const</span> getAddress = <span class="keyword">function</span>(<span class="params">student</span>) &#123;</span><br><span class="line"><span class="keyword">return</span> <span class="title function_">wrap</span>(student.<span class="title function_">fmap</span>(R.<span class="title function_">prop</span>(<span class="string">&#x27;address&#x27;</span>))); <span class="comment">//用 Ramda 的 R.prop()函数来map 对象以获取其地址， 再将结果包裹起来</span></span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line"><span class="keyword">const</span> studentAddress = R.<span class="title function_">compose</span>(</span><br><span class="line">  getAddress,</span><br><span class="line">  <span class="title function_">findStudent</span>(<span class="title function_">DB</span>(<span class="string">&#x27;student&#x27;</span>))</span><br><span class="line">);</span><br><span class="line"></span><br><span class="line"><span class="comment">//返回的值是被包裹了两层的address对象</span></span><br><span class="line"></span><br><span class="line"><span class="title function_">studentAddress</span>(<span class="string">&#x27;444-44-4444&#x27;</span>).<span class="title function_">map</span>(R.<span class="property">identity</span>).<span class="title function_">map</span>(R.<span class="property">identity</span>)</span><br></pre></td></tr></table></figure>
-
-<h5 id="Monad：从控制流到数据流"><a href="#Monad：从控制流到数据流" class="headerlink" title="Monad：从控制流到数据流"></a>Monad：从控制流到数据流</h5><figure class="highlight javascript"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">const</span> R = ramda;</span><br><span class="line"><span class="keyword">const</span> <span class="title class_">Wrap</span> = <span class="keyword">function</span> (<span class="params">value</span>) &#123;</span><br><span class="line">    <span class="variable language_">this</span>.<span class="property">_value</span> = value</span><br><span class="line">&#125;</span><br><span class="line"><span class="title class_">Wrap</span>.<span class="property">of</span> = <span class="function">(<span class="params">value</span>) =&gt;</span> <span class="keyword">new</span> <span class="title class_">Wrap</span>(value)</span><br><span class="line"><span class="title class_">Wrap</span>.<span class="property"><span class="keyword">prototype</span></span>.<span class="property">fmap</span> = <span class="keyword">function</span> (<span class="params">f</span>) &#123;</span><br><span class="line">    <span class="keyword">return</span> <span class="title class_">Wrap</span>.<span class="title function_">of</span>(<span class="title function_">f</span>(<span class="variable language_">this</span>.<span class="property">_value</span>))</span><br><span class="line">&#125;</span><br><span class="line"><span class="title class_">Wrap</span>.<span class="property"><span class="keyword">prototype</span></span>.<span class="property">map</span> = <span class="keyword">function</span> (<span class="params">f</span>) &#123;</span><br><span class="line">    <span class="keyword">return</span> <span class="title function_">f</span>(<span class="variable language_">this</span>.<span class="property">_value</span>)</span><br><span class="line">&#125;</span><br><span class="line"><span class="comment">// console.log(wrap)</span></span><br><span class="line"><span class="comment">// console.log(wrap.map(R.identity))</span></span><br><span class="line"></span><br><span class="line"><span class="keyword">const</span> <span class="title class_">Empty</span> = <span class="keyword">function</span> (<span class="params"></span>) &#123;&#125;</span><br><span class="line"><span class="title class_">Empty</span>.<span class="property">of</span> = <span class="function">() =&gt;</span> <span class="keyword">new</span> <span class="title class_">Empty</span>();</span><br><span class="line"><span class="title class_">Empty</span>.<span class="property"><span class="keyword">prototype</span></span>.<span class="property">fmap</span> = <span class="keyword">function</span> (<span class="params"></span>) &#123;</span><br><span class="line">    <span class="keyword">return</span> <span class="variable language_">this</span></span><br><span class="line">&#125;</span><br><span class="line"><span class="title class_">Empty</span>.<span class="property"><span class="keyword">prototype</span></span>.<span class="property">map</span> = <span class="keyword">function</span> (<span class="params"></span>) &#123;</span><br><span class="line">    <span class="keyword">return</span> <span class="variable language_">this</span></span><br><span class="line">&#125;</span><br><span class="line"><span class="keyword">const</span> empty = <span class="title class_">Empty</span>.<span class="title function_">of</span>()</span><br><span class="line"></span><br><span class="line"><span class="keyword">const</span> add = R.<span class="title function_">curry</span>(<span class="function">(<span class="params">a, b</span>) =&gt;</span> a + b);</span><br><span class="line"><span class="keyword">const</span> plus10 = <span class="title function_">add</span>(<span class="number">10</span>);</span><br><span class="line"><span class="keyword">const</span> <span class="title function_">isEven</span> = (<span class="params">num</span>) =&gt; <span class="title class_">Number</span>.<span class="built_in">isFinite</span>(num) &amp;&amp; num % <span class="number">2</span> === <span class="number">0</span>;</span><br><span class="line"><span class="keyword">const</span> <span class="title function_">half</span> = (<span class="params">num</span>) =&gt; <span class="title function_">isEven</span>(num) ? <span class="title class_">Wrap</span>.<span class="title function_">of</span>(num / <span class="number">2</span>) : empty;</span><br><span class="line"></span><br><span class="line"><span class="variable language_">console</span>.<span class="title function_">log</span>(<span class="title function_">half</span>(<span class="number">10</span>).<span class="title function_">fmap</span>(plus10).<span class="title function_">map</span>(R.<span class="property">identity</span>)) <span class="comment">//15</span></span><br><span class="line"><span class="variable language_">console</span>.<span class="title function_">log</span>(<span class="title function_">half</span>(<span class="number">9</span>).<span class="title function_">fmap</span>(plus10).<span class="title function_">map</span>(R.<span class="property">identity</span>)) <span class="comment">// Empty</span></span><br></pre></td></tr></table></figure>
-
-<p>Monad——为Monadic操作提供抽象接口。<br>Monadic类型——该接口的具体实现。</p>
-<p>Monadic类型类似于本章介绍的Wrapper对象。不过每个Monad都有不同的用途，可以定义不同的语义便于确定其行为（例如map或fmap）。使用这些类型可以进行链式或嵌套操作，但都应遵循下列接口定义。</p>
-<ul>
-<li>类型构造函数——创建Monadic类型（类似于Wrapper的构造函数）。</li>
-<li>unit函数——可将特定类型的值放入Monadic结构中（类似于wrap和前面看到的empty函数）。对于Monad的实现来说，该函数也被称为of函数。</li>
-<li>bind函数——可以链式操作（这就是Functor的fmap，也被称为flatmap）</li>
-<li>join函数——将两层Monadic结构合并成一层。这会对嵌套返回Monad的函数特别有用。</li>
-</ul>
-<figure class="highlight javascript"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">class</span> <span class="title class_">Wrapper</span> &#123;</span><br><span class="line">    <span class="comment">//类型构造器</span></span><br><span class="line">    <span class="title function_">constructor</span>(<span class="params">value</span>) &#123;</span><br><span class="line">        <span class="variable language_">this</span>.<span class="property">_value</span> = value;</span><br><span class="line">    &#125;</span><br><span class="line">    <span class="keyword">static</span> <span class="keyword">of</span> (a) &#123;</span><br><span class="line">        <span class="comment">//unit 函数</span></span><br><span class="line">        <span class="keyword">return</span> <span class="keyword">new</span> <span class="title class_">Wrapper</span>(a);</span><br><span class="line">    &#125;</span><br><span class="line">    <span class="title function_">map</span>(<span class="params">f</span>) &#123;</span><br><span class="line">        <span class="comment">//bind 函数（ Functor）</span></span><br><span class="line">        <span class="keyword">return</span> <span class="title class_">Wrapper</span>.<span class="title function_">of</span>(<span class="title function_">f</span>(<span class="variable language_">this</span>.<span class="property">value</span>));</span><br><span class="line">    &#125;</span><br><span class="line">    <span class="title function_">join</span>(<span class="params"></span>) &#123;</span><br><span class="line">        <span class="comment">//压平嵌套的Wrapper</span></span><br><span class="line">        <span class="keyword">if</span> (!(<span class="variable language_">this</span>.<span class="property">value</span> <span class="keyword">instanceof</span> <span class="title class_">Wrapper</span>)) &#123;</span><br><span class="line">            <span class="keyword">return</span> <span class="variable language_">this</span>;</span><br><span class="line">        &#125;</span><br><span class="line">        <span class="keyword">return</span> <span class="variable language_">this</span>.<span class="property">value</span>.<span class="title function_">join</span>();</span><br><span class="line">    &#125;</span><br><span class="line">    <span class="title function_">toString</span>(<span class="params"></span>) &#123;</span><br><span class="line">        <span class="comment">//返回一个当前结构的文本描述</span></span><br><span class="line">        <span class="keyword">return</span> <span class="string">`Wrapper (<span class="subst">$&#123;<span class="variable language_">this</span>.value&#125;</span>)`</span>;</span><br><span class="line">    &#125;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
-<p>join函数用于逐层扁平化嵌套结构，就像剥洋葱一样。这可以用来消除之前用functor时发现的问题</p>
-<figure class="highlight javascript"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment">// findObject :: DB -&gt; String -&gt; Wrapper</span></span><br><span class="line"><span class="keyword">const</span> findObject = R.<span class="title function_">curry</span>(<span class="keyword">function</span>(<span class="params">db, id</span>) &#123;</span><br><span class="line"><span class="keyword">return</span> <span class="title class_">Wrapper</span>.<span class="title function_">of</span>(<span class="title function_">find</span>(db, id));</span><br><span class="line">&#125;);</span><br><span class="line"><span class="comment">// getAddress :: Student -&gt; Wrapper</span></span><br><span class="line"><span class="keyword">const</span> getAddress = <span class="keyword">function</span>(<span class="params">student</span>) &#123;</span><br><span class="line"><span class="keyword">return</span> <span class="title class_">Wrapper</span>.<span class="title function_">of</span>(student.<span class="title function_">map</span>(R.<span class="title function_">prop</span>(<span class="string">&#x27;address&#x27;</span>)));</span><br><span class="line">&#125;</span><br><span class="line"><span class="keyword">const</span> studentAddress = R.<span class="title function_">compose</span>(getAddress, <span class="title function_">findObject</span>(<span class="title function_">DB</span>(<span class="string">&#x27;student&#x27;</span>)));</span><br><span class="line"><span class="title function_">studentAddress</span>(<span class="string">&#x27;444-44-4444&#x27;</span>).<span class="title function_">join</span>().<span class="title function_">get</span>(); <span class="comment">// Address</span></span><br></pre></td></tr></table></figure>
-
-<p>Monad通常有更多的操作，这里提及的最小接口只是其整个API的子集。一个Monad本身只是抽象，没有任何实际意义。只有实际的实现类型才有丰富的功能。幸运的是，大多数函数式编程的代码只用一些常用的类型就可以消除大量的样板代码，同时还能完成同样的工作。下面来看丰富的Monad实例：Maybe、Either和IO。</p>
-<h5 id="使用Maybe-Monad和Either-Monad来处理异常"><a href="#使用Maybe-Monad和Either-Monad来处理异常" class="headerlink" title="使用Maybe Monad和Either Monad来处理异常"></a>使用Maybe Monad和Either Monad来处理异常</h5><p>除了用来包装有效值，Monadic的结构也可用于建模null或undefined。函数式编程通常使用Maybe和Either来做下列事情。</p>
-<ul>
-<li>隔离不纯。</li>
-<li>合并判空逻辑。</li>
-<li>避免异常。</li>
-<li>支持函数组合。</li>
-<li>中心化逻辑，用于提供默认值。</li>
-</ul>
-<h6 id="用Maybe合并判空"><a href="#用Maybe合并判空" class="headerlink" title="用Maybe合并判空"></a>用Maybe合并判空</h6><p>Maybe Monad侧重于有效整合null -判断逻辑。Maybe是一个包含两个具体字类型的空类型（标记类型）。</p>
-<ul>
-<li>Just(value)——表示值的容器。</li>
-<li>Nothing()——表示要么没有值或者没有失败的附加信息。当然，还可以应用函数到Nothing上。</li>
-</ul>
-<figure class="highlight javascript"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br><span class="line">35</span><br><span class="line">36</span><br><span class="line">37</span><br><span class="line">38</span><br><span class="line">39</span><br><span class="line">40</span><br><span class="line">41</span><br><span class="line">42</span><br><span class="line">43</span><br><span class="line">44</span><br><span class="line">45</span><br><span class="line">46</span><br><span class="line">47</span><br><span class="line">48</span><br><span class="line">49</span><br><span class="line">50</span><br><span class="line">51</span><br><span class="line">52</span><br><span class="line">53</span><br><span class="line">54</span><br><span class="line">55</span><br><span class="line">56</span><br><span class="line">57</span><br><span class="line">58</span><br><span class="line">59</span><br><span class="line">60</span><br><span class="line">61</span><br><span class="line">62</span><br><span class="line">63</span><br><span class="line">64</span><br><span class="line">65</span><br><span class="line">66</span><br><span class="line">67</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">const</span> R = ramda;</span><br><span class="line"><span class="keyword">class</span> <span class="title class_">Maybe</span> &#123; <span class="comment">//容器类型（父类）</span></span><br><span class="line">    <span class="keyword">static</span> <span class="title function_">just</span>(<span class="params">a</span>) &#123;</span><br><span class="line">        <span class="keyword">return</span> <span class="keyword">new</span> <span class="title class_">Just</span>(a);</span><br><span class="line">    &#125;</span><br><span class="line">    <span class="keyword">static</span> <span class="title function_">nothing</span>(<span class="params"></span>) &#123;</span><br><span class="line">        <span class="keyword">return</span> <span class="keyword">new</span> <span class="title class_">Nothing</span>();</span><br><span class="line">    &#125;</span><br><span class="line">    <span class="keyword">static</span> <span class="title function_">fromNullable</span>(<span class="params">a</span>) &#123;</span><br><span class="line">        <span class="keyword">return</span> a != <span class="literal">null</span> ? <span class="title class_">Maybe</span>.<span class="title function_">just</span>(a) :</span><br><span class="line">            <span class="title class_">Maybe</span>.<span class="title function_">nothing</span>(); <span class="comment">//由一个可为空的类型创建 Maybe（即构造函数）。如果值为空，则 建一个 Nothing； 否则， 将值存储在 Just 子类型中来表示其存在性</span></span><br><span class="line">    &#125;</span><br><span class="line">    <span class="keyword">static</span> <span class="keyword">of</span> (a) &#123;</span><br><span class="line">        <span class="keyword">return</span> <span class="title class_">Maybe</span>.<span class="title function_">just</span>(a);</span><br><span class="line">    &#125;</span><br><span class="line">    <span class="keyword">get</span> <span class="title function_">isNothing</span>() &#123;</span><br><span class="line">        <span class="keyword">return</span> <span class="literal">false</span>;</span><br><span class="line">    &#125;</span><br><span class="line">    <span class="keyword">get</span> <span class="title function_">isJust</span>() &#123;</span><br><span class="line">        <span class="keyword">return</span> <span class="literal">false</span>;</span><br><span class="line">    &#125;</span><br><span class="line">&#125;</span><br><span class="line"><span class="keyword">class</span> <span class="title class_">Just</span> <span class="keyword">extends</span> <span class="title class_ inherited__">Maybe</span> &#123; <span class="comment">//Just 子类型用于处理存在的值</span></span><br><span class="line">    <span class="title function_">constructor</span>(<span class="params">value</span>) &#123;</span><br><span class="line">        <span class="variable language_">super</span>();</span><br><span class="line">        <span class="variable language_">this</span>.<span class="property">_value</span> = value;</span><br><span class="line">    &#125;</span><br><span class="line">    <span class="keyword">get</span> <span class="title function_">value</span>() &#123;</span><br><span class="line">        <span class="keyword">return</span> <span class="variable language_">this</span>.<span class="property">_value</span>;</span><br><span class="line">    &#125;</span><br><span class="line">    <span class="title function_">map</span>(<span class="params">f</span>) &#123;</span><br><span class="line">        <span class="keyword">return</span> <span class="title class_">Just</span>.<span class="title function_">of</span>(<span class="title function_">f</span>(<span class="variable language_">this</span>.<span class="property">value</span>)); <span class="comment">//将映射函数应用于 Just，变换其中的值，并存储回容器中</span></span><br><span class="line">    &#125;</span><br><span class="line">    <span class="title function_">getOrElse</span>(<span class="params"></span>) &#123;</span><br><span class="line">        <span class="keyword">return</span> <span class="variable language_">this</span>.<span class="property">value</span>; <span class="comment">//Monad 提供默认的一元操</span></span><br><span class="line">    &#125;</span><br><span class="line">    <span class="title function_">filter</span>(<span class="params">f</span>) &#123;</span><br><span class="line">        <span class="title class_">Maybe</span>.<span class="title function_">fromNullable</span>(<span class="title function_">f</span>(<span class="variable language_">this</span>.<span class="property">value</span>) ? <span class="variable language_">this</span>.<span class="property">value</span> : <span class="literal">null</span>);</span><br><span class="line">    &#125;</span><br><span class="line">    <span class="keyword">get</span> <span class="title function_">isJust</span>() &#123;</span><br><span class="line">        <span class="keyword">return</span> <span class="literal">true</span>;</span><br><span class="line">    &#125;</span><br><span class="line">    <span class="title function_">toString</span>(<span class="params"></span>) &#123; <span class="comment">//返回该结构的文本描述</span></span><br><span class="line">        <span class="keyword">return</span> <span class="string">`Maybe.Just(<span class="subst">$&#123;<span class="variable language_">this</span>.value&#125;</span>)`</span>;</span><br><span class="line">    &#125;</span><br><span class="line">&#125;</span><br><span class="line"><span class="keyword">class</span> <span class="title class_">Nothing</span> <span class="keyword">extends</span> <span class="title class_ inherited__">Maybe</span> &#123; <span class="comment">//Nothing子类型用于为无值的情况提供保护</span></span><br><span class="line">    <span class="title function_">map</span>(<span class="params">f</span>) &#123;</span><br><span class="line">        <span class="keyword">return</span> <span class="variable language_">this</span>;</span><br><span class="line">    &#125;</span><br><span class="line">    <span class="keyword">get</span> <span class="title function_">value</span>() &#123;</span><br><span class="line">        <span class="keyword">throw</span> <span class="keyword">new</span> <span class="title class_">TypeError</span>(</span><br><span class="line">            <span class="string">&#x27;Can&quot;t extract the valueof a Nothing.&#x27;</span>); <span class="comment">//任何试图从 Nothing 类型中取值的操作会引发表征错误使用 Monad的异常（后文会予以介绍）</span></span><br><span class="line">    &#125;</span><br><span class="line">    <span class="title function_">getOrElse</span>(<span class="params">other</span>) &#123;</span><br><span class="line">        <span class="keyword">return</span> other; <span class="comment">//忽略值，返回 other</span></span><br><span class="line">    &#125;</span><br><span class="line">    <span class="title function_">filter</span>(<span class="params"></span>) &#123;</span><br><span class="line">        <span class="keyword">return</span> <span class="variable language_">this</span>.<span class="property">value</span>; <span class="comment">//如果存在的值满足所给的断言，则返回包含值的 Just，否则，返回 Nothing</span></span><br><span class="line">    &#125;</span><br><span class="line">    <span class="keyword">get</span> <span class="title function_">isNothing</span>() &#123;</span><br><span class="line">        <span class="keyword">return</span> <span class="literal">true</span>;</span><br><span class="line">    &#125;</span><br><span class="line">    <span class="title function_">toString</span>(<span class="params"></span>) &#123;</span><br><span class="line">        <span class="keyword">return</span> <span class="string">&#x27;Maybe.Nothing&#x27;</span>; <span class="comment">//返回结构的文本描述</span></span><br><span class="line">    &#125;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
-
-<p>Maybe显式地抽象对“可空”值（null和undefined）的操作，可让开发者关注更重要的事情。如上述代码所示，Maybe是Just和Nothing的抽象，Just和Nothing各自包含自己的Monadic的实现。正如前面提到的，对于Monadic操作的实现最终取决于具体类型给予的语义。例如，map的行为具体取决于该类型是 Nothing 还是Just</p>
-<figure class="highlight javascript"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">const</span> <span class="title function_">find</span> = (<span class="params">db, id</span>) =&gt; (id ? &#123;</span><br><span class="line">    <span class="attr">name</span>: <span class="string">&#x27;小红&#x27;</span>,</span><br><span class="line">    <span class="attr">address</span>: <span class="string">&#x27;北京&#x27;</span></span><br><span class="line">&#125; : <span class="literal">undefined</span>)</span><br><span class="line"><span class="keyword">const</span> findStudent = R.<span class="title function_">curry</span>(<span class="function">(<span class="params">db, id</span>) =&gt;</span> <span class="title class_">Maybe</span>.<span class="title function_">fromNullable</span>(<span class="title function_">find</span>(db, id)))</span><br><span class="line"><span class="keyword">const</span> findStudentByDB = <span class="title function_">findStudent</span>(<span class="string">&#x27;DB&#x27;</span>);</span><br><span class="line"><span class="comment">// 如果有意义得值传入会生成just</span></span><br><span class="line"><span class="variable language_">console</span>.<span class="title function_">log</span>(<span class="title function_">findStudentByDB</span>(<span class="string">&#x27;id&#x27;</span>).<span class="title function_">map</span>(R.<span class="title function_">prop</span>(<span class="string">&#x27;address&#x27;</span>)).<span class="property">value</span>)</span><br><span class="line"></span><br><span class="line"><span class="comment">// 如果没有意义得值会生成nothing,如果使用value取值会报错</span></span><br><span class="line"><span class="variable language_">console</span>.<span class="title function_">log</span>(<span class="title function_">findStudentByDB</span>(<span class="literal">undefined</span>).<span class="title function_">map</span>(R.<span class="title function_">prop</span>(<span class="string">&#x27;address&#x27;</span>)).<span class="title function_">getOrElse</span>(<span class="number">123</span>))</span><br><span class="line"><span class="comment">//赋值时需要注意</span></span><br><span class="line"><span class="variable language_">document</span>.<span class="title function_">querySelector</span>(<span class="string">&#x27;#student-firstname&#x27;</span>).<span class="property">value</span> = username.<span class="title function_">getOrElse</span>(<span class="string">&#x27;Enter first name&#x27;</span>);</span><br></pre></td></tr></table></figure>
-
-<p><strong>提升函数</strong></p>
-<p>很明显，Maybe擅长于集中管理的无效数据的检查，但它没有（双关Nothing）提供关于什么地方出了错的信息。我们需要一个更积极的，可以知道失败原因的解决方案。解决这个问题，要最好的工具是Either monad。</p>
-<h6 id="使用Either"><a href="#使用Either" class="headerlink" title="使用Either"></a>使用Either</h6><p>Either跟Maybe略有不同。Either代表的是两个逻辑分离的值a和b，它们永远不会同时出现。这种类型包括以下两种情况。</p>
-<p>Left(a)——包含一个可能的错误消息或抛出的异常对象。<br>Right(b)——包含一个成功的值。</p>
-<p>Either通常操作右值，这意味着在容器上映射函数总是在Right(b)子类型上执行。它类似于Maybe的Just分支。</p>
-<p>Either的常见用法是为失败的结果提供更多的信息。在不可恢复的情况下，左侧可以包含一个合适的异常对象</p>
-<p>与MayBe 类似，合法值也是主右的</p>
-<h6 id="IO-Monad"><a href="#IO-Monad" class="headerlink" title="IO Monad"></a>IO Monad</h6> 
-      <!-- reward -->
-      
-    </div>
-    
-
-    <!-- copyright -->
-    
-    <footer class="article-footer">
-       
-  <ul class="article-tag-list" itemprop="keywords"><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/%E5%87%BD%E6%95%B0%E5%BC%8F%E7%BC%96%E7%A8%8B/" rel="tag">函数式编程</a></li></ul>
 
     </footer>
   </div>

@@ -89,7 +89,7 @@
         <span class="post-meta-item-icon">
             <i class="ri-quill-pen-line"></i>
             <span class="post-meta-item-text"> 字数统计:</span>
-            <span class="post-count">2.1k</span>
+            <span class="post-count">2.5k</span>
         </span>
     </span>
 
@@ -98,7 +98,7 @@
         <span class="post-meta-item-icon">
             <i class="ri-book-open-line"></i>
             <span class="post-meta-item-text"> 阅读时长≈</span>
-            <span class="post-count">7 分钟</span>
+            <span class="post-count">8 分钟</span>
         </span>
     </span>
 </div>
@@ -120,12 +120,12 @@
 <h4 id="任务类型"><a href="#任务类型" class="headerlink" title="任务类型"></a>任务类型</h4><p>任务类型包括， 输入事件（鼠标滚动、点击、移动）、微任务、文件读写、WebSocket、JavaScript 定时器等等。</p>
 <p>除此之外，消息队列中还包含了很多与页面相关的事件，如 JavaScript 执行、解析 DOM、样式计算、布局计算、CSS 动画等。</p>
 <p>以上这些事件都是在主线程中执行的，所以在编写 Web 应用时，你还需要衡量这些事件所占用的时长，并想办法解决单个任务占用主线程过久的问题。</p>
-<h4 id="高优先级任务"><a href="#高优先级任务" class="headerlink" title="高优先级任务"></a>高优先级任务</h4><p>一个典型的场景是监听DOM的改变做一些逻辑处理，如果不加入消息队列选择同步处理，在DOM频繁改变的时候，当前任务会被延长，导致后面的任务不能及时处理。</p>
+<h4 id="高优先级任务"><a href="#高优先级任务" class="headerlink" title="高优先级任务"></a>高优先级任务</h4><p>一个典型的场景是监听 DOM 的改变做一些逻辑处理，如果不加入消息队列选择同步处理，在 DOM 频繁改变的时候，当前任务会被延长，导致后面的任务不能及时处理。</p>
 <p>如果加入到消息队尾部，又可能影响效率，因为可能已经有很多任务在排队了。</p>
 <p>针对这种情况<strong>微任务</strong>就产生了，通常我们把消息队列中的任务称为宏任务，每个宏任务中都包含了一个微任务队列，在执行宏任务的过程中，如果 DOM 有变化，那么就会将该变化添加到微任务列表中，等宏任务中的主要功能都直接完成之后，这时候，渲染引擎并不着急去执行下一个宏任务，而是执行当前宏任务中的微任务，因为 DOM 变化的事件都保存在这些微任务队列中，这样也就解决了实时性问题。</p>
-<h4 id="单个任务执行时间过长"><a href="#单个任务执行时间过长" class="headerlink" title="单个任务执行时间过长"></a>单个任务执行时间过长</h4><h4 id="事件循环"><a href="#事件循环" class="headerlink" title="事件循环"></a>事件循环</h4><p>浏览器处理消息队列用到了事件循环系统，但这个事件循环与 nodejs 事件循环没有关系。</p>
+<h4 id="事件循环"><a href="#事件循环" class="headerlink" title="事件循环"></a>事件循环</h4><p>浏览器处理消息队列用到了事件循环系统，但这个事件循环与 nodejs 事件循环没有关系。</p>
 <ul>
-<li>V8: V8引擎自己实现了一个事件循环，但是 nodejs 和 浏览器都没有采用</li>
+<li>V8: V8 引擎自己实现了一个事件循环，但是 nodejs 和 浏览器都没有采用</li>
 <li>浏览器： 不同的厂商实现可能不同，chrome 浏览器使用 <a target="_blank" rel="noopener" href="https://libevent.org/">libevent</a> 实现事件循环。</li>
 <li>nodejs： 使用 <a target="_blank" rel="noopener" href="http://docs.libuv.org/en/v1.x/">libuv</a> 实现事件循环。</li>
 </ul>
@@ -133,7 +133,7 @@
 <p>所以浏览器还维护着一个延时任务列表，包括定时器和内部一些延时任务，创建一个定时器时，渲染进程会将该定时器的回调任务添加到延迟队列中。这个回调任务包括，定义的回调函数，发起时间，延时时间。</p>
 <p>在处理消息队列的时候，会调用出延时任务的方法 ProcessTimerTask 。这个方法的调用时机是当前事件循环中一个任务处理结束后开始执行。</p>
 <p>ProcessDelayTask 函数会根据发起时间和延迟时间计算出到期的任务，然后依次执行这些到期的任务。等到期的任务执行完成之后，再继续下一个循环过程。</p>
-<p><strong>在 Chrome 中，定时器被嵌套调用 5 次以上，系统会判断该函数方法被阻塞了，在5次调用之后，如果定时器的调用时间间隔小于 4 毫秒，那么浏览器会将每次调用的时间间隔设置为 4 毫秒。</strong></p>
+<p><strong>在 Chrome 中，定时器被嵌套调用 5 次以上，系统会判断该函数方法被阻塞了，在 5 次调用之后，如果定时器的调用时间间隔小于 4 毫秒，那么浏览器会将每次调用的时间间隔设置为 4 毫秒。</strong></p>
 <p><strong>未被激活的页面中定时器最小值大于 1000 毫秒，也就是说，如果标签不是当前的激活标签，那么定时器最小的时间间隔是 1000 毫秒，目的是为了优化后台页面的加载损耗以及降低耗电量。</strong></p>
 <p>Chrome、Safari、Firefox 都是以 32 个 bit 来存储延时值的，32bit <strong>最大只能存放的数字是 2147483647 毫秒</strong>，这就意味着，如果 setTimeout 设置的延迟值大于 2147483647 毫秒（大约 24.8 天）时就会溢出，那么相当于延时值被设置为 0 了，这导致定时器会被立即执行。</p>
 <h4 id="XMLHttpRequest-实现流程"><a href="#XMLHttpRequest-实现流程" class="headerlink" title="XMLHttpRequest 实现流程"></a>XMLHttpRequest 实现流程</h4><p>渲染进程会将请求发送给网络进程，然后网络进程负责资源的下载，等网络进程接收到数据之后，就会利用 IPC 来通知渲染进程；渲染进程接收到消息之后，会将 xhr 的回调函数封装成任务并添加到消息队列中，等主线程循环系统执行到该任务的时候，就会根据相关的状态来调用对应的回调函数。</p>
@@ -168,6 +168,22 @@
 <li>在一个宏任务中，分别创建一个用于回调的宏任务和微任务，无论什么情况下，微任务都早于宏任务执行。</li>
 </ul>
 <p>通过异步操作解决了同步操作的性能问题；通过微任务解决了实时性的问题。</p>
+<p><strong>W3C 最新解释</strong>:</p>
+<ul>
+<li><p>每一个任务都有一个任务类型，同一个类型的任务必须在一个队列，不同类型的任务可以分属于不同的队列，在一次事件循环中，浏览器可以根据实际情况从不同的队列中取出任务执行。</p>
+</li>
+<li><p>浏览器必须准备好一个微队列，微队列中的任务优先所有其他任务执行。</p>
+</li>
+</ul>
+<p>因此现在 chrome 中至少有 3 个队列：</p>
+<ul>
+<li>延时队列： 用于存放定时器到达后的回调任务，优先级中</li>
+<li>交互任务： 用于存放用户交互产生的任务，优先级高</li>
+<li>微队列： 用于存放最快需要执行的任务，优先级最高</li>
+</ul>
+<h4 id="Promise-then-返回-Promise-的行为"><a href="#Promise-then-返回-Promise-的行为" class="headerlink" title="Promise.then 返回 Promise 的行为"></a>Promise.then 返回 Promise 的行为</h4><p>当一个 promise.then 方法返回另一个 Promise 时，thenable 的状态会吸收返回的 promise 的状态，也就是说 thenable 的状态与返回的 promise 状态保持一致</p>
+<p>但是这种状态并不是立即吸收的，返回的 promise 会被使用 then 方法，包装成新的 promise 对象，并添加到微队列中</p>
+<figure class="highlight js"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br><span class="line">35</span><br><span class="line">36</span><br><span class="line">37</span><br></pre></td><td class="code"><pre><span class="line"><span class="title class_">Promise</span>.<span class="title function_">resolve</span>()</span><br><span class="line">  .<span class="title function_">then</span>(<span class="function">() =&gt;</span> &#123;</span><br><span class="line">    <span class="comment">//1 添加到微队列</span></span><br><span class="line">    <span class="variable language_">console</span>.<span class="title function_">log</span>(<span class="number">0</span>);</span><br><span class="line">    <span class="comment">//3 打印0</span></span><br><span class="line">    <span class="comment">//4 包装成 (Promise.resolve(4).then(res=&gt;res)).then(res=&gt;res)  =&gt; p4.then(res=&gt;res)添加到微队列</span></span><br><span class="line">    <span class="comment">//7 res=&gt;res 添加到微队列</span></span><br><span class="line">    <span class="keyword">return</span> <span class="title class_">Promise</span>.<span class="title function_">resolve</span>(<span class="number">4</span>).<span class="title function_">then</span>(<span class="function">(<span class="params">res</span>) =&gt;</span> res);</span><br><span class="line">    <span class="comment">//10 完成状态</span></span><br><span class="line">  &#125;)</span><br><span class="line">  .<span class="title function_">then</span>(<span class="function">(<span class="params">res</span>) =&gt;</span> &#123;</span><br><span class="line">    <span class="comment">//11 添加到微队列</span></span><br><span class="line">    <span class="variable language_">console</span>.<span class="title function_">log</span>(res);</span><br><span class="line">    <span class="comment">//14 打印4</span></span><br><span class="line">  &#125;);</span><br><span class="line"></span><br><span class="line"><span class="title class_">Promise</span>.<span class="title function_">resolve</span>()</span><br><span class="line">  .<span class="title function_">then</span>(<span class="function">() =&gt;</span> &#123;</span><br><span class="line">    <span class="comment">//2 添加到微队列</span></span><br><span class="line">    <span class="variable language_">console</span>.<span class="title function_">log</span>(<span class="number">1</span>);</span><br><span class="line">    <span class="comment">//5 打印1</span></span><br><span class="line">  &#125;)</span><br><span class="line">  .<span class="title function_">then</span>(<span class="function">() =&gt;</span> &#123;</span><br><span class="line">    <span class="comment">//6 添加到微队列</span></span><br><span class="line">    <span class="variable language_">console</span>.<span class="title function_">log</span>(<span class="number">2</span>);</span><br><span class="line">    <span class="comment">//8 打印2</span></span><br><span class="line">  &#125;)</span><br><span class="line">  .<span class="title function_">then</span>(<span class="function">() =&gt;</span> &#123;</span><br><span class="line">    <span class="comment">//9 添加到微队列</span></span><br><span class="line">    <span class="variable language_">console</span>.<span class="title function_">log</span>(<span class="number">3</span>);</span><br><span class="line">    <span class="comment">//12 打印3</span></span><br><span class="line">  &#125;)</span><br><span class="line">  .<span class="title function_">then</span>(<span class="function">() =&gt;</span> &#123;</span><br><span class="line">    <span class="comment">//13 添加到微队列</span></span><br><span class="line">    <span class="variable language_">console</span>.<span class="title function_">log</span>(<span class="number">5</span>);</span><br><span class="line">    <span class="comment">//15 打印3</span></span><br><span class="line">  &#125;);</span><br></pre></td></tr></table></figure>
  
       <!-- reward -->
       

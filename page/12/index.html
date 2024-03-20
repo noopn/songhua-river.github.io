@@ -112,6 +112,249 @@
     
     
     <article
+  id="post-react/Recoil状态管理库"
+  class="article article-type-post"
+  itemscope
+  itemprop="blogPost"
+  data-scroll-reveal
+>
+  <div class="article-inner">
+    
+    <header class="article-header">
+       
+<h2 itemprop="name">
+  <a class="article-title" href="/posts/e94b90efdf77/"
+    >Recoil状态管理库</a> 
+</h2>
+ 
+
+      
+    </header>
+     
+    <div class="article-meta">
+      <a href="/posts/e94b90efdf77/" class="article-date">
+  <time datetime="2021-07-28T02:01:29.000Z" itemprop="datePublished">2021-07-28</time>
+</a> 
+  <div class="article-category">
+    <a class="article-category-link" href="/categories/React/">React</a>
+  </div>
+   
+    </div>
+      
+    <div class="article-entry" itemprop="articleBody">
+       
+  <h4 id="Recoil-产生背景"><a href="#Recoil-产生背景" class="headerlink" title="Recoil 产生背景"></a>Recoil 产生背景</h4><p>前端的应用越来越复杂，诸如常见的 Web 监控面板，包含各类的性能数据、节点信息、分类聚合用来进行应用分析。可以想象得到面板中包含各类的交互行为，编辑、删除、添加、将一个数据源绑定多个面板等等。除此之外，还需要对数据持久化，这样就能把 url 分享给其他人，并要确保被分享的人看到的是一致的。</p>
+<p>因此开发过程中要尽量做到页面最小化更新达到高性能的目的，需要对数据流的操作更加精细。</p>
+<p>面对这样的挑战，一般会想到用一些状态管理的函数或者库，如 React 内置的 state 管理，或者 Redux。</p>
+<p>Recoil 想通过一个不一样的方式来解决这些问题，主要分为 3 个方面：</p>
+<p>Flexible shared state: 在 react tree 任意的地方都能灵活共享 state，并保持高性能<br>Derived data and queries: 高效可靠地根据变化的 state 进行计算<br>App-wide state observation: time travel debugging, 支持 undo, 日志持久化</p>
+<h4 id="Recoil-主要设计"><a href="#Recoil-主要设计" class="headerlink" title="Recoil 主要设计"></a>Recoil 主要设计</h4><p>有一个应用基于这样一个场景，将 List 中更新一个节点，然后对应 Canvas 中的节点也更新</p>
+<p><img src="/posts/e94b90efdf77/0001.jpg"></p>
+<h5 id="第-1-种方式"><a href="#第-1-种方式" class="headerlink" title="第 1 种方式"></a>第 1 种方式</h5><p>把 state 传到公共的父节点转发给 canvas 子节点，这样显然会全量 re-render</p>
+<h5 id="第-2-种方式"><a href="#第-2-种方式" class="headerlink" title="第 2 种方式"></a>第 2 种方式</h5><p>给父节点加 Provider 在子节点加 Consumer，不过每多加一个 item 就要多一层 Provider</p>
+<p><img src="/posts/e94b90efdf77/0002.jpg"></p>
+<h5 id="第-3-种方式"><a href="#第-3-种方式" class="headerlink" title="第 3 种方式"></a>第 3 种方式</h5><p>在 react tree 上创建另一个正交的 tree，把每片 item 的 state 抽出来。每个 component 都有对应单独的一片 state，当数据更新的时候对应的组件也会更新。Recoil 把 这每一片的数据称为 Atom，Atom 是可订阅可变的 state 单元。</p>
+<p><img src="/posts/e94b90efdf77/0003.jpg"></p>
+<p>配合 useRecoilState 可以使用这些 Atom，实践上对多个 item 的 Atom 可以用 memorize 进行优化，具体可以在官方文档查看</p>
+<h4 id="Derived-Data"><a href="#Derived-Data" class="headerlink" title="Derived Data"></a>Derived Data</h4><p>有这么一个场景需要根据多个 Item Box 计算 Bounding Box</p>
+<p><img src="/posts/e94b90efdf77/0004.jpg"></p>
+<p>如果你是 Vue 的爱好者，你可能想到了计算属性。Derived Data 确实有 computed props 的味道，具体思路是选取多个 Atom 进行计算，然后返回一个新的 state。因此在 Recoil 中设计了 select 这样的 API 来选取多个 Atom 进行计算。</p>
+<p><img src="/posts/e94b90efdf77/0005.jpg"></p>
+<p>select 的设计和 Proxy 挺像的，属性上有 get 进行读取，有 set 进行设置，函数内部又有 get， set 操作 state</p>
+<figure class="highlight javascript"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">import</span> &#123;atom, selector, useRecoilState&#125; <span class="keyword">from</span> <span class="string">&#x27;recoil&#x27;</span>;</span><br><span class="line"></span><br><span class="line"><span class="keyword">const</span> tempFahrenheit = <span class="title function_">atom</span>(&#123;</span><br><span class="line">  <span class="attr">key</span>: <span class="string">&#x27;tempFahrenheit&#x27;</span>,</span><br><span class="line">  <span class="attr">default</span>: <span class="number">32</span>,</span><br><span class="line">&#125;);</span><br><span class="line"></span><br><span class="line"><span class="keyword">const</span> tempCelcius = <span class="title function_">selector</span>(&#123;</span><br><span class="line">  <span class="attr">key</span>: <span class="string">&#x27;tempCelcius&#x27;</span>,</span><br><span class="line">  <span class="attr">get</span>: <span class="function">(<span class="params">&#123;get&#125;</span>) =&gt;</span> ((<span class="title function_">get</span>(tempFahrenheit) - <span class="number">32</span>) * <span class="number">5</span>) / <span class="number">9</span>,</span><br><span class="line">  <span class="attr">set</span>: <span class="function">(<span class="params">&#123;set&#125;, newValue</span>) =&gt;</span> <span class="title function_">set</span>(tempFahrenheit, (newValue * <span class="number">9</span>) / <span class="number">5</span> + <span class="number">32</span>),</span><br><span class="line">&#125;);</span><br><span class="line"></span><br></pre></td></tr></table></figure>
+
+<h4 id="App-wide-observation"><a href="#App-wide-observation" class="headerlink" title="App-wide observation"></a>App-wide observation</h4><p>这个场景下需要把 url 分享给其他人，别人打开相同的链接也能看到一样的页面。</p>
+<p>那么就需要 observe Atom 的变更，Recoil 使用 useTransactionObservation 进行订阅</p>
+<figure class="highlight javascript"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line"><span class="title function_">useTransactionObservation</span>((&#123;atomValues,modifiedAtoms,...&#125; =&gt; &#123;&#125;))</span><br></pre></td></tr></table></figure>
+
+<p>另一方面，打开链接的时候也需要对输入的数据进行校验</p>
+<figure class="highlight javascript"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">const</span> counter = <span class="title function_">atom</span>(&#123;</span><br><span class="line">  <span class="attr">key</span>: <span class="string">&#x27;myCounter&#x27;</span>,</span><br><span class="line">  <span class="attr">default</span>: <span class="number">0</span>,</span><br><span class="line">  <span class="attr">validator</span>: (untrustedInput),</span><br><span class="line">  <span class="attr">metadata</span>: ...</span><br><span class="line">&#125;)</span><br></pre></td></tr></table></figure> 
+      <!-- reward -->
+      
+    </div>
+    
+
+    <!-- copyright -->
+    
+    <footer class="article-footer">
+       
+  <ul class="article-tag-list" itemprop="keywords"><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/Recoil/" rel="tag">Recoil</a></li></ul>
+
+    </footer>
+  </div>
+
+   
+    
+</article>
+
+    
+    <article
+  id="post-other/Ubuntu20.04安装utorrent"
+  class="article article-type-post"
+  itemscope
+  itemprop="blogPost"
+  data-scroll-reveal
+>
+  <div class="article-inner">
+    
+    <header class="article-header">
+       
+<h2 itemprop="name">
+  <a class="article-title" href="/posts/83061c23c0c9/"
+    >Ubuntu20.04安装utorrent</a> 
+</h2>
+ 
+
+      
+    </header>
+     
+    <div class="article-meta">
+      <a href="/posts/83061c23c0c9/" class="article-date">
+  <time datetime="2021-07-20T11:45:36.000Z" itemprop="datePublished">2021-07-20</time>
+</a> 
+  <div class="article-category">
+    <a class="article-category-link" href="/categories/%E5%85%B6%E4%BB%96/">其他</a>
+  </div>
+   
+    </div>
+      
+    <div class="article-entry" itemprop="articleBody">
+       
+  <p><a target="_blank" rel="noopener" href="https://www.linuxbabe.com/ubuntu/install-utorrent-ubuntu-20-04">原文</a></p>
+<h4 id="安装"><a href="#安装" class="headerlink" title="安装"></a>安装</h4><p>虽然官网显示的<a target="_blank" rel="noopener" href="https://www.utorrent.com/downloads/linux">最后版本</a>是ubuntu13.04,但是仍然可以安装</p>
+<p><img src="/posts/83061c23c0c9/0001.png"></p>
+<p>也可以使用下面的命令下载</p>
+<p>64 bits</p>
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">wget http://download-hr.utorrent.com/track/beta/endpoint/utserver/os/linux-x64-ubuntu-13-04 -O utserver.tar.gz</span><br></pre></td></tr></table></figure>
+
+<p>32 bits</p>
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">wget http://download-hr.utorrent.com/track/beta/endpoint/utserver/os/linux-x64-ubuntu-13-04 -O utserver.tar.gz</span><br></pre></td></tr></table></figure>
+
+<p>下载完成后把文件解压到 <code>/opt</code>目录</p>
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">sudo tar xvf utserver.tar.gz -C /opt/</span><br></pre></td></tr></table></figure>
+
+<p>安装所需要的依赖</p>
+<p><a target="_blank" rel="noopener" href="http://archive.ubuntu.com/ubuntu/pool/main/o/openssl1.0/">文件列表</a></p>
+<figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br></pre></td><td class="code"><pre><span class="line">sudo apt install libssl-dev</span><br><span class="line"></span><br><span class="line">wget http://archive.ubuntu.com/ubuntu/pool/main/o/openssl1.0/libssl1.0.0_1.0.2n-1ubuntu5.6_amd64.deb</span><br><span class="line"></span><br><span class="line">sudo apt install ./libssl1.0.0_1.0.2n-1ubuntu5.3_amd64.deb</span><br></pre></td></tr></table></figure>
+
+<p>创建一个链接</p>
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">sudo ln -s /opt/utorrent-server-alpha-v3_3/utserver /usr/bin/utserver</span><br></pre></td></tr></table></figure>
+
+<p>通过一下命令可以启动 utorrent server,默认utorrent server监听在 <code>0.0.0.0:8080</code> 端口，如果被占用，请先停止占用的服务，utorrent server 同样会使用10000 和 6881 端口，添加 <code>-daemon</code> 参数后服务会在后台运行</p>
+<figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">utserver -settingspath /opt/utorrent-server-alpha-v3_3/ -daemon</span><br></pre></td></tr></table></figure>
+
+<p>现在可以通过图形界面来访问</p>
+<figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">localhost:8080/gui</span><br></pre></td></tr></table></figure>
+
+<p>请注意url中必须有gui,默认的用户名为<code>admin</code>,密码不用填写，登录之后可以在设置中修改，账户信息和端口</p>
+<p><img src="/posts/83061c23c0c9/0002.png"></p>
+<p>再改配置后需要通过一下命令重启服务</p>
+<figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><span class="line">sudo pkill utserver</span><br><span class="line"></span><br><span class="line">utserver -settingspath /opt/utorrent-server-alpha-v3_3/ &amp;</span><br></pre></td></tr></table></figure>
+
+<h4 id="配置自动启动服务"><a href="#配置自动启动服务" class="headerlink" title="配置自动启动服务"></a>配置自动启动服务</h4><p>使用下面的命令创建一个系统服务</p>
+<figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">sudo nano /etc/systemd/system/utserver.service</span><br></pre></td></tr></table></figure>
+
+<p>把下面的配置添加到文件中，因为我们使用的是系统服务，所以不需要加<code>-daemon</code></p>
+<figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br></pre></td><td class="code"><pre><span class="line">[Unit]</span><br><span class="line">Description=uTorrent Server</span><br><span class="line">After=network.target</span><br><span class="line"></span><br><span class="line">[Service]</span><br><span class="line">Type=simple</span><br><span class="line">User=utorrent</span><br><span class="line">Group=utorrent</span><br><span class="line">ExecStart=/usr/bin/utserver -settingspath /opt/utorrent-server-alpha-v3_3/</span><br><span class="line">ExecStop=/usr/bin/pkill utserver</span><br><span class="line">Restart=always</span><br><span class="line">SyslogIdentifier=uTorrent Server</span><br><span class="line"></span><br><span class="line">[Install]</span><br><span class="line">WantedBy=multi-user.target</span><br></pre></td></tr></table></figure>
+
+<p>按下 <code>Ctrl+O</code> ， 按下 <code>Enter</code>键保存文件，按 <code>Ctrl+X</code> 退出，然后重新加载</p>
+<figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">sudo systemctl daemon-reload</span><br></pre></td></tr></table></figure>
+
+<p>注意：以root权限运行 utorrent server是不被允许的，我们已经在server的文件中明确规定了utorrent server 必须以utorrent用户&#x2F;组来运行，所以用下面的命令来添加这个用户</p>
+<figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">sudo adduser --system --group utorrent</span><br></pre></td></tr></table></figure>
+
+<p>启动服务</p>
+<figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">sudo systemctl start utserver</span><br></pre></td></tr></table></figure>
+
+<p>添加开机启动项</p>
+<figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">sudo systemctl <span class="built_in">enable</span> utserver</span><br></pre></td></tr></table></figure>
+
+<p>检查服务</p>
+<figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">systemctl status utserver</span><br></pre></td></tr></table></figure> 
+      <!-- reward -->
+      
+    </div>
+    
+
+    <!-- copyright -->
+    
+    <footer class="article-footer">
+       
+  <ul class="article-tag-list" itemprop="keywords"><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/Ubuntu/" rel="tag">Ubuntu</a></li></ul>
+
+    </footer>
+  </div>
+
+   
+    
+</article>
+
+    
+    <article
+  id="post-algorithm/leetcode/(133)克隆图"
+  class="article article-type-post"
+  itemscope
+  itemprop="blogPost"
+  data-scroll-reveal
+>
+  <div class="article-inner">
+    
+    <header class="article-header">
+       
+<h2 itemprop="name">
+  <a class="article-title" href="/posts/91c819c2446f/"
+    >133. 克隆图</a> 
+</h2>
+ 
+
+      
+    </header>
+     
+    <div class="article-meta">
+      <a href="/posts/91c819c2446f/" class="article-date">
+  <time datetime="2021-07-02T13:33:23.000Z" itemprop="datePublished">2021-07-02</time>
+</a> 
+  <div class="article-category">
+    <a class="article-category-link" href="/categories/%E7%AE%97%E6%B3%95/">算法</a> / <a class="article-category-link" href="/categories/%E7%AE%97%E6%B3%95/LeetCode/">LeetCode</a> / <a class="article-category-link" href="/categories/%E7%AE%97%E6%B3%95/LeetCode/Medium/">Medium</a>
+  </div>
+   
+    </div>
+      
+    <div class="article-entry" itemprop="articleBody">
+       
+  <h5 id="LeetCode"><a href="#LeetCode" class="headerlink" title="LeetCode"></a><a target="_blank" rel="noopener" href="https://leetcode-cn.com/problems/clone-graph/">LeetCode</a></h5><p><strong>注意：</strong> 执行测试用例的时候，不会每次都在一个新的全局作用域中执行，需要注意变量的声明位置，防止污染代码执行</p>
+<h3 id="第一步-实现图的深度遍历-DFS"><a href="#第一步-实现图的深度遍历-DFS" class="headerlink" title="第一步 实现图的深度遍历 DFS"></a>第一步 实现图的深度遍历 DFS</h3><figure class="highlight javascript"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">const</span> <span class="title function_">cloneGraph</span> = (<span class="params">node</span>)=&gt;&#123;</span><br><span class="line">  <span class="keyword">if</span>(!node) <span class="keyword">return</span> node;</span><br><span class="line">  <span class="keyword">const</span> <span class="title function_">dfs</span> = (<span class="params">node</span>) =&gt; &#123;</span><br><span class="line">    <span class="variable language_">console</span>.<span class="title function_">log</span>(node.<span class="property">val</span>);</span><br><span class="line">    node.<span class="property">isVisit</span> = <span class="literal">true</span>;</span><br><span class="line">    node.<span class="property">neighbors</span>.<span class="title function_">forEach</span>(<span class="function"><span class="params">n</span> =&gt;</span> &#123;</span><br><span class="line">        <span class="keyword">if</span>(!n.<span class="property">isVisit</span>) <span class="title function_">dfs</span>(n);</span><br><span class="line">    &#125;);</span><br><span class="line">  &#125;</span><br><span class="line">  <span class="title function_">dfs</span>(node);</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+<h3 id="第二步-克隆节点并保存"><a href="#第二步-克隆节点并保存" class="headerlink" title="第二步 克隆节点并保存"></a>第二步 克隆节点并保存</h3><figure class="highlight javascript"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">const</span> <span class="title function_">cloneGraph</span> = (<span class="params">node</span>)=&gt;&#123;</span><br><span class="line">  <span class="keyword">if</span>(!node) <span class="keyword">return</span> node;</span><br><span class="line">  <span class="keyword">const</span> map = <span class="keyword">new</span> <span class="title class_">Map</span>();</span><br><span class="line">  <span class="keyword">const</span> <span class="title function_">dfs</span> = (<span class="params">node</span>) =&gt; &#123;</span><br><span class="line">    map.<span class="title function_">set</span>(node,<span class="keyword">new</span> <span class="title class_">Node</span>(node.<span class="property">val</span>))</span><br><span class="line">    node.<span class="property">neighbors</span>.<span class="title function_">forEach</span>(<span class="function"><span class="params">n</span> =&gt;</span> &#123;</span><br><span class="line">      <span class="keyword">if</span>(!map.<span class="title function_">get</span>(n)) <span class="title function_">dfs</span>(n);</span><br><span class="line">    &#125;);</span><br><span class="line">  &#125;</span><br><span class="line">  <span class="title function_">dfs</span>(node);</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+<h3 id="第三步-添加节点间关系"><a href="#第三步-添加节点间关系" class="headerlink" title="第三步 添加节点间关系"></a>第三步 添加节点间关系</h3><figure class="highlight javascript"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">const</span> <span class="title function_">cloneGraph</span> = (<span class="params">node</span>)=&gt;&#123;</span><br><span class="line">  <span class="keyword">if</span>(!node) <span class="keyword">return</span> node;</span><br><span class="line">  <span class="keyword">const</span> map = <span class="keyword">new</span> <span class="title class_">Map</span>();</span><br><span class="line">  <span class="keyword">const</span> <span class="title function_">dfs</span> = (<span class="params">node</span>) =&gt; &#123;</span><br><span class="line">    map.<span class="title function_">set</span>(node,<span class="keyword">new</span> <span class="title class_">Node</span>(node.<span class="property">val</span>))</span><br><span class="line">    node.<span class="property">neighbors</span>.<span class="title function_">forEach</span>(<span class="function"><span class="params">n</span> =&gt;</span> &#123;</span><br><span class="line">      <span class="keyword">if</span>(!map.<span class="title function_">get</span>(n)) <span class="title function_">dfs</span>(n);</span><br><span class="line">      map.<span class="title function_">get</span>(node).<span class="property">neighbors</span>.<span class="title function_">push</span>(map.<span class="title function_">get</span>(n));</span><br><span class="line">    &#125;);</span><br><span class="line">  &#125;</span><br><span class="line">  <span class="title function_">dfs</span>(node);</span><br><span class="line">  <span class="keyword">return</span> map.<span class="title function_">get</span>(node)</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+<h3 id="变形写法"><a href="#变形写法" class="headerlink" title="变形写法"></a>变形写法</h3><p>在传参的过程中添加更多的信息</p>
+<figure class="highlight javascript"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">var</span> cloneGraph = <span class="keyword">function</span> (<span class="params">node</span>) &#123;</span><br><span class="line">  <span class="keyword">const</span> map = <span class="keyword">new</span> <span class="title class_">Map</span>();</span><br><span class="line">  <span class="keyword">const</span> cloneNode = <span class="keyword">new</span> <span class="title class_">Node</span>(node.<span class="property">val</span>);</span><br><span class="line">  map.<span class="title function_">set</span>(node.<span class="property">val</span>, cloneNode)</span><br><span class="line">  <span class="keyword">const</span> <span class="title function_">dfs</span> = (<span class="params">cloneNode, node, neighbors</span>) =&gt; &#123;</span><br><span class="line">    <span class="keyword">for</span> (<span class="keyword">let</span> n <span class="keyword">of</span> node.<span class="property">neighbors</span>) &#123;</span><br><span class="line">      <span class="keyword">if</span> (map.<span class="title function_">has</span>(n.<span class="property">val</span>)) &#123;</span><br><span class="line">        neighbors.<span class="title function_">push</span>(map.<span class="title function_">get</span>(n.<span class="property">val</span>))</span><br><span class="line">      &#125; <span class="keyword">else</span> &#123;</span><br><span class="line">        <span class="keyword">const</span> cloneNode = <span class="keyword">new</span> <span class="title class_">Node</span>(n.<span class="property">val</span>)</span><br><span class="line">        neighbors.<span class="title function_">push</span>(cloneNode)</span><br><span class="line">        map.<span class="title function_">set</span>(n.<span class="property">val</span>, cloneNode)</span><br><span class="line">        <span class="title function_">dfs</span>(cloneNode, n, cloneNode.<span class="property">neighbors</span>)</span><br><span class="line">      &#125;</span><br><span class="line">    &#125;</span><br><span class="line">  &#125;</span><br><span class="line">  <span class="title function_">dfs</span>(cloneNode, node, cloneNode.<span class="property">neighbors</span>)</span><br><span class="line">  <span class="keyword">return</span> cloneNode;</span><br><span class="line">&#125;;</span><br></pre></td></tr></table></figure>
+
+<h3 id="广度优先遍历BFS"><a href="#广度优先遍历BFS" class="headerlink" title="广度优先遍历BFS"></a>广度优先遍历BFS</h3><figure class="highlight javascript"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">const</span> <span class="title function_">cloneGraph</span> = (<span class="params">node</span>) =&gt; &#123;</span><br><span class="line">  <span class="keyword">if</span> (!node) <span class="keyword">return</span> node;</span><br><span class="line">  <span class="keyword">const</span> map = <span class="keyword">new</span> <span class="title class_">Map</span>();</span><br><span class="line">  <span class="keyword">const</span> stack = [node];</span><br><span class="line">  <span class="keyword">let</span> clone = <span class="literal">null</span>;</span><br><span class="line">  <span class="keyword">while</span> (stack.<span class="property">length</span>) &#123;</span><br><span class="line">    <span class="keyword">const</span> last = stack.<span class="title function_">pop</span>();</span><br><span class="line">    <span class="keyword">if</span> (!map.<span class="title function_">get</span>(last)) &#123;</span><br><span class="line">      clone = <span class="keyword">new</span> <span class="title class_">Node</span>(last.<span class="property">val</span>);</span><br><span class="line">      map.<span class="title function_">set</span>(last, clone);</span><br><span class="line">    &#125; <span class="keyword">else</span> &#123;</span><br><span class="line">      clone = map.<span class="title function_">get</span>(last)</span><br><span class="line">    &#125;</span><br><span class="line">    last.<span class="property">neighbors</span>.<span class="title function_">forEach</span>(<span class="function"><span class="params">n</span> =&gt;</span> &#123;</span><br><span class="line">      <span class="keyword">if</span> (!map.<span class="title function_">get</span>(n)) &#123;</span><br><span class="line">        <span class="keyword">const</span> temp = <span class="keyword">new</span> <span class="title class_">Node</span>(n.<span class="property">val</span>);</span><br><span class="line">        clone.<span class="property">neighbors</span>.<span class="title function_">push</span>(temp);</span><br><span class="line">        map.<span class="title function_">set</span>(n, temp);</span><br><span class="line">        stack.<span class="title function_">unshift</span>(n);</span><br><span class="line">      &#125; <span class="keyword">else</span> &#123;</span><br><span class="line">        clone.<span class="property">neighbors</span>.<span class="title function_">push</span>(map.<span class="title function_">get</span>(n));</span><br><span class="line">      &#125;</span><br><span class="line">    &#125;)</span><br><span class="line">  &#125;</span><br><span class="line">  <span class="keyword">return</span> map.<span class="title function_">get</span>(node);</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+<h3 id="广度优先遍历优化"><a href="#广度优先遍历优化" class="headerlink" title="广度优先遍历优化"></a>广度优先遍历优化</h3><figure class="highlight javascript"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">const</span> <span class="title function_">cloneGraph</span> = (<span class="params">node</span>) =&gt; &#123;</span><br><span class="line">  <span class="keyword">if</span> (!node) <span class="keyword">return</span> node;</span><br><span class="line">  <span class="keyword">const</span> map = <span class="keyword">new</span> <span class="title class_">Map</span>();</span><br><span class="line">  <span class="keyword">const</span> stack = [node];</span><br><span class="line">  <span class="comment">// 默认克隆第一个节点</span></span><br><span class="line">  map.<span class="title function_">set</span>(node, <span class="keyword">new</span> <span class="title class_">Node</span>(node.<span class="property">val</span>));</span><br><span class="line">  </span><br><span class="line">  <span class="keyword">while</span> (stack.<span class="property">length</span>) &#123;</span><br><span class="line">    <span class="keyword">const</span> next = stack.<span class="title function_">pop</span>();</span><br><span class="line">    next.<span class="property">neighbors</span>.<span class="title function_">forEach</span>(<span class="function"><span class="params">n</span> =&gt;</span> &#123;</span><br><span class="line">      <span class="keyword">if</span> (!map.<span class="title function_">get</span>(n)) &#123;</span><br><span class="line">        map.<span class="title function_">set</span>(n, <span class="keyword">new</span> <span class="title class_">Node</span>(n.<span class="property">val</span>));</span><br><span class="line">        stack.<span class="title function_">unshift</span>(n);</span><br><span class="line">      &#125; </span><br><span class="line">      <span class="comment">//上一步已经在map中保存了节点，可以直接使用</span></span><br><span class="line">      map.<span class="title function_">get</span>(next).<span class="property">neighbors</span>.<span class="title function_">push</span>(map.<span class="title function_">get</span>(n));</span><br><span class="line">    &#125;)</span><br><span class="line">  &#125;</span><br><span class="line">  <span class="keyword">return</span> map.<span class="title function_">get</span>(node);</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure> 
+      <!-- reward -->
+      
+    </div>
+    
+
+    <!-- copyright -->
+    
+    <footer class="article-footer">
+       
+  <ul class="article-tag-list" itemprop="keywords"><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/LeetCode/" rel="tag">LeetCode</a></li><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/%E7%AE%97%E6%B3%95/" rel="tag">算法</a></li></ul>
+
+    </footer>
+  </div>
+
+   
+    
+</article>
+
+    
+    <article
   id="post-algorithm/leetcode/(65)有效数字"
   class="article article-type-post"
   itemscope
@@ -612,193 +855,6 @@
 
 <h4 id="转发到静态资源服务器"><a href="#转发到静态资源服务器" class="headerlink" title="转发到静态资源服务器"></a>转发到静态资源服务器</h4><p>转发时使用负载均衡配置</p>
 <figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br></pre></td><td class="code"><pre><span class="line">http &#123;</span><br><span class="line">    include       mime.types;</span><br><span class="line">    default_type  application/octet-stream;</span><br><span class="line">    upstream  stack_pools &#123;</span><br><span class="line">            server 172.25.254.134:80 weight=5;</span><br><span class="line">    &#125;</span><br><span class="line">    upstream  dynamic_pools &#123;</span><br><span class="line">            server 172.25.254.135:80 weight=5;</span><br><span class="line">    &#125;</span><br><span class="line">    server &#123;</span><br><span class="line">        listen       80;</span><br><span class="line">        server_name  xxx.xxx.xxx.xx;</span><br><span class="line">        location / &#123;</span><br><span class="line">            root   html;</span><br><span class="line">            index  index.html index.htm;</span><br><span class="line">            proxy_pass http://dynamic_pools;</span><br><span class="line">        &#125;</span><br><span class="line">        location /image/ &#123;</span><br><span class="line">            proxy_pass http://stack_pools;</span><br><span class="line">        &#125;</span><br><span class="line">        location /dynamic/ &#123;</span><br><span class="line">            roxy_pass http://dynamic_pools;</span><br><span class="line">        &#125;</span><br><span class="line">    &#125;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure> 
-      <!-- reward -->
-      
-    </div>
-    
-
-    <!-- copyright -->
-    
-    <footer class="article-footer">
-       
-  <ul class="article-tag-list" itemprop="keywords"><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/Nginx/" rel="tag">Nginx</a></li></ul>
-
-    </footer>
-  </div>
-
-   
-    
-</article>
-
-    
-    <article
-  id="post-nginx/负载均衡"
-  class="article article-type-post"
-  itemscope
-  itemprop="blogPost"
-  data-scroll-reveal
->
-  <div class="article-inner">
-    
-    <header class="article-header">
-       
-<h2 itemprop="name">
-  <a class="article-title" href="/posts/830ecdc6d0af/"
-    >负载均衡</a> 
-</h2>
- 
-
-      
-    </header>
-     
-    <div class="article-meta">
-      <a href="/posts/830ecdc6d0af/" class="article-date">
-  <time datetime="2021-06-15T10:35:22.000Z" itemprop="datePublished">2021-06-15</time>
-</a> 
-  <div class="article-category">
-    <a class="article-category-link" href="/categories/Nginx/">Nginx</a>
-  </div>
-   
-    </div>
-      
-    <div class="article-entry" itemprop="articleBody">
-       
-  <h4 id="配置"><a href="#配置" class="headerlink" title="配置"></a>配置</h4><figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br></pre></td><td class="code"><pre><span class="line">http &#123;</span><br><span class="line">  upstream myServer&#123;</span><br><span class="line">      ip_hash;</span><br><span class="line">      server localhost:1111 weight=10;</span><br><span class="line">      server localhost:2222;</span><br><span class="line">      fair;</span><br><span class="line">  &#125;</span><br><span class="line">  listen       port;</span><br><span class="line">  server_name  xxx.xxx.xxx.xx;</span><br><span class="line"></span><br><span class="line">  #charset koi8-r;</span><br><span class="line"></span><br><span class="line">  #access_log  logs/host.access.log  main;</span><br><span class="line"></span><br><span class="line">  location / &#123;</span><br><span class="line">      proxy_pass http://myServer; </span><br><span class="line">  &#125;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
-
-
-<h4 id="轮询策略"><a href="#轮询策略" class="headerlink" title="轮询策略"></a>轮询策略</h4><p>每个请求按时间的顺序逐一分配到不同德尔服务器中，如果服务器挂了，可以自动剔除。</p>
-<h4 id="权重策略"><a href="#权重策略" class="headerlink" title="权重策略"></a>权重策略</h4><p>权重越高，被分配的请求越多</p>
-<h4 id="ip-hash"><a href="#ip-hash" class="headerlink" title="ip hash"></a>ip hash</h4><p>每个请求按访问ip的hash结果分配，这样每个访客固定访问一个服务器后，可以解决session问题。</p>
-<h4 id="fair-第三方"><a href="#fair-第三方" class="headerlink" title="fair 第三方"></a>fair 第三方</h4><p>根据请求的响应时间来分配，响应时间短的先分配</p>
- 
-      <!-- reward -->
-      
-    </div>
-    
-
-    <!-- copyright -->
-    
-    <footer class="article-footer">
-       
-  <ul class="article-tag-list" itemprop="keywords"><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/Nginx/" rel="tag">Nginx</a></li></ul>
-
-    </footer>
-  </div>
-
-   
-    
-</article>
-
-    
-    <article
-  id="post-nginx/反向代理"
-  class="article article-type-post"
-  itemscope
-  itemprop="blogPost"
-  data-scroll-reveal
->
-  <div class="article-inner">
-    
-    <header class="article-header">
-       
-<h2 itemprop="name">
-  <a class="article-title" href="/posts/b3dc92f3441f/"
-    >反向代理</a> 
-</h2>
- 
-
-      
-    </header>
-     
-    <div class="article-meta">
-      <a href="/posts/b3dc92f3441f/" class="article-date">
-  <time datetime="2021-06-15T05:31:35.000Z" itemprop="datePublished">2021-06-15</time>
-</a> 
-  <div class="article-category">
-    <a class="article-category-link" href="/categories/Nginx/">Nginx</a>
-  </div>
-   
-    </div>
-      
-    <div class="article-entry" itemprop="articleBody">
-       
-  <h4 id="简单反向代理"><a href="#简单反向代理" class="headerlink" title="简单反向代理"></a>简单反向代理</h4><p>把本机80端口的请求转发到其他的服务器</p>
-<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br></pre></td><td class="code"><pre><span class="line">http &#123;</span><br><span class="line">    include       mime.types;</span><br><span class="line">    default_type  application/octet-stream;</span><br><span class="line"></span><br><span class="line">    server &#123;</span><br><span class="line">        listen       80;</span><br><span class="line">        server_name  xxx.xxx.xxx.xxx;</span><br><span class="line"></span><br><span class="line">        #charset koi8-r;</span><br><span class="line"></span><br><span class="line">        #access_log  logs/host.access.log  main;</span><br><span class="line"></span><br><span class="line">        location / &#123;</span><br><span class="line">            root   xxx.xxx.xxx.xxx:port;</span><br><span class="line">            index  index.html index.htm;</span><br><span class="line">        &#125;</span><br><span class="line"></span><br><span class="line">    &#125;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
-
-<h4 id="通过正则匹配路径转发"><a href="#通过正则匹配路径转发" class="headerlink" title="通过正则匹配路径转发"></a>通过正则匹配路径转发</h4><p>根据路径中不同字段转，把80端口的请求，转发到不同的服务器</p>
-<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br></pre></td><td class="code"><pre><span class="line">http &#123;</span><br><span class="line">    include       mime.types;</span><br><span class="line">    default_type  application/octet-stream;</span><br><span class="line"></span><br><span class="line">    server &#123;</span><br><span class="line">        listen       80;</span><br><span class="line">        server_name  xxx.xxx.xxx.xxx;</span><br><span class="line"></span><br><span class="line">        location ~ /api/ &#123; </span><br><span class="line">            proxy_pass   xxx.xxx.xxx.xxx:port;</span><br><span class="line">        &#125;</span><br><span class="line">        location ~ /server/ &#123;</span><br><span class="line">            proxy_pass   xxx.xxx.xxx.xxx:port;</span><br><span class="line">        &#125;</span><br><span class="line"></span><br><span class="line">    &#125;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure> 
-      <!-- reward -->
-      
-    </div>
-    
-
-    <!-- copyright -->
-    
-    <footer class="article-footer">
-       
-  <ul class="article-tag-list" itemprop="keywords"><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/Nginx/" rel="tag">Nginx</a></li></ul>
-
-    </footer>
-  </div>
-
-   
-    
-</article>
-
-    
-    <article
-  id="post-nginx/配置文件"
-  class="article article-type-post"
-  itemscope
-  itemprop="blogPost"
-  data-scroll-reveal
->
-  <div class="article-inner">
-    
-    <header class="article-header">
-       
-<h2 itemprop="name">
-  <a class="article-title" href="/posts/20d037d3afeb/"
-    >配置文件</a> 
-</h2>
- 
-
-      
-    </header>
-     
-    <div class="article-meta">
-      <a href="/posts/20d037d3afeb/" class="article-date">
-  <time datetime="2021-06-14T16:20:05.000Z" itemprop="datePublished">2021-06-15</time>
-</a> 
-  <div class="article-category">
-    <a class="article-category-link" href="/categories/Nginx/">Nginx</a>
-  </div>
-   
-    </div>
-      
-    <div class="article-entry" itemprop="articleBody">
-       
-  <h4 id="位置"><a href="#位置" class="headerlink" title="位置"></a>位置</h4><figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">/etc/nginx/nginx.conf</span><br></pre></td></tr></table></figure>
-
-<p>配置结构</p>
-<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br></pre></td><td class="code"><pre><span class="line">...              #全局块</span><br><span class="line"></span><br><span class="line">events &#123;         #events块</span><br><span class="line">   ...</span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line">http      #http块</span><br><span class="line">&#123;</span><br><span class="line">    ...   #http全局块</span><br><span class="line">    server        #server块</span><br><span class="line">    &#123; </span><br><span class="line">        ...       #server全局块</span><br><span class="line">        location [PATTERN]   #location块</span><br><span class="line">        &#123;</span><br><span class="line">            ...</span><br><span class="line">        &#125;</span><br><span class="line">        location [PATTERN] </span><br><span class="line">        &#123;</span><br><span class="line">            ...</span><br><span class="line">        &#125;</span><br><span class="line">    &#125;</span><br><span class="line">    server</span><br><span class="line">    &#123;</span><br><span class="line">      ...</span><br><span class="line">    &#125;</span><br><span class="line">    ...     #http全局块</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
-
-<h4 id="全局块"><a href="#全局块" class="headerlink" title="全局块"></a>全局块</h4><figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line"># 值越大，可支持的并发数量越多</span><br><span class="line">worker_processes 1 </span><br></pre></td></tr></table></figure>
-
-<h4 id="events块"><a href="#events块" class="headerlink" title="events块"></a>events块</h4><p>主要涉及Nginx服务器和用户的网络连接</p>
-<h4 id="http块"><a href="#http块" class="headerlink" title="http块"></a>http块</h4><p>最常用的配置，代理，缓存，日志定义等绝大多数功能和第三方模块的配置都在这里</p>
-<h5 id="http全局块"><a href="#http全局块" class="headerlink" title="http全局块"></a>http全局块</h5><p>http全局配置包括文件引入，MIME-TYPE定义，日志自定义，链接超时时间，单链接请求上限等</p>
-<h5 id="server块"><a href="#server块" class="headerlink" title="server块"></a>server块</h5><p>这块和虚拟主机有密切的关系，虚拟主机从用户的角度看，一台独立的硬件主机是完全一样的，该技术的产生是为了节约互联网服务器硬件成本</p>
-<p>每个http块又可以包括多个server块，每个server块就相当于一个虚拟主机</p>
-<p>每个server块也分为全局server块，以及可以同时包含多个location块</p>
-<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br></pre></td><td class="code"><pre><span class="line">server &#123;</span><br><span class="line"></span><br><span class="line">  # 监听80端口</span><br><span class="line">  listen 80; </span><br><span class="line"></span><br><span class="line">  # 主机名称</span><br><span class="line">  server_name localhost;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
-
-<h5 id="全局server块"><a href="#全局server块" class="headerlink" title="全局server块"></a>全局server块</h5><p>最常见的配置是本虚拟主机的监听配置和本虚拟主机的名称或IP配置。</p>
-<h5 id="location块"><a href="#location块" class="headerlink" title="location块"></a>location块</h5><p>主要作用是基于Nginx服务器接受到的请求字符串（例如，server_name&#x2F;uri-string）,对虚拟主机名称（也可以是ip别名）之外的字符串（例如 前面的uri-string）进行匹配，对待定的请求进行处理，地址定向，数据缓存和应答控制等功能，还有许多第三方模块的配置也在这里进行</p>
-<h4 id="详细配置"><a href="#详细配置" class="headerlink" title="详细配置"></a>详细配置</h4><figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br><span class="line">35</span><br><span class="line">36</span><br><span class="line">37</span><br><span class="line">38</span><br><span class="line">39</span><br></pre></td><td class="code"><pre><span class="line">########### 每个指令必须有分号结束。#################</span><br><span class="line">#user administrator administrators;  #配置用户或者组，默认为nobody nobody。</span><br><span class="line">#worker_processes 2;  #允许生成的进程数，默认为1</span><br><span class="line">#pid /nginx/pid/nginx.pid;   #指定nginx进程运行文件存放地址</span><br><span class="line">error_log log/error.log debug;  #制定日志路径，级别。这个设置可以放入全局块，http块，server块，级别以此为：debug|info|notice|warn|error|crit|alert|emerg</span><br><span class="line">events &#123;</span><br><span class="line">    accept_mutex on;   #设置网路连接序列化，防止惊群现象发生，默认为on</span><br><span class="line">    multi_accept on;  #设置一个进程是否同时接受多个网络连接，默认为off</span><br><span class="line">    #use epoll;      #事件驱动模型，select|poll|kqueue|epoll|resig|/dev/poll|eventport</span><br><span class="line">    worker_connections  1024;    #最大连接数，默认为512</span><br><span class="line">&#125;</span><br><span class="line">http &#123;</span><br><span class="line">    include       mime.types;   #文件扩展名与文件类型映射表</span><br><span class="line">    default_type  application/octet-stream; #默认文件类型，默认为text/plain</span><br><span class="line">    #access_log off; #取消服务日志    </span><br><span class="line">    log_format myFormat &#x27;$remote_addr–$remote_user [$time_local] $request $status $body_bytes_sent $http_referer $http_user_agent $http_x_forwarded_for&#x27;; #自定义格式</span><br><span class="line">    access_log log/access.log myFormat;  #combined为日志格式的默认值</span><br><span class="line">    sendfile on;   #允许sendfile方式传输文件，默认为off，可以在http块，server块，location块。</span><br><span class="line">    sendfile_max_chunk 100k;  #每个进程每次调用传输数量不能大于设定的值，默认为0，即不设上限。</span><br><span class="line">    keepalive_timeout 65;  #连接超时时间，默认为75s，可以在http，server，location块。</span><br><span class="line"></span><br><span class="line">    upstream mysvr &#123;   </span><br><span class="line">      server 127.0.0.1:7878;</span><br><span class="line">      server 192.168.10.121:3333 backup;  #热备</span><br><span class="line">    &#125;</span><br><span class="line">    error_page 404 https://www.baidu.com; #错误页</span><br><span class="line">    server &#123;</span><br><span class="line">        keepalive_requests 120; #单连接请求上限次数。</span><br><span class="line">        listen       4545;   #监听端口</span><br><span class="line">        server_name  127.0.0.1;   #监听地址       </span><br><span class="line">        location  ~*^.+$ &#123;       #请求的url过滤，正则匹配，~为区分大小写，~*为不区分大小写。</span><br><span class="line">           #root path;  #根目录</span><br><span class="line">           #index vv.txt;  #设置默认页</span><br><span class="line">           proxy_pass  http://mysvr;  #请求转向mysvr 定义的服务器列表</span><br><span class="line">           deny 127.0.0.1;  #拒绝的ip</span><br><span class="line">           allow 172.18.5.54; #允许的ip           </span><br><span class="line">        &#125; </span><br><span class="line">    &#125;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
-
-<h4 id="location匹配优先级"><a href="#location匹配优先级" class="headerlink" title="location匹配优先级"></a>location匹配优先级</h4><p>匹配优先级从上之下</p>
-<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br></pre></td><td class="code"><pre><span class="line">location = / &#123;</span><br><span class="line">#规则A</span><br><span class="line">&#125;</span><br><span class="line">location = /login &#123;</span><br><span class="line">#规则B</span><br><span class="line">&#125;</span><br><span class="line">location ^~ /static/ &#123;</span><br><span class="line">#规则C</span><br><span class="line">&#125;</span><br><span class="line">location ~ .(gif|jpg|png|js|css)$ &#123;</span><br><span class="line">#规则D</span><br><span class="line">&#125;</span><br><span class="line">location ~* .png$ &#123;</span><br><span class="line">#规则E</span><br><span class="line">&#125;</span><br><span class="line">location / &#123;</span><br><span class="line">#规则F</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure> 
       <!-- reward -->
       
     </div>
