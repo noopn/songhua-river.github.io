@@ -89,7 +89,7 @@
         <span class="post-meta-item-icon">
             <i class="ri-quill-pen-line"></i>
             <span class="post-meta-item-text"> 字数统计:</span>
-            <span class="post-count">250</span>
+            <span class="post-count">572</span>
         </span>
     </span>
 
@@ -98,7 +98,7 @@
         <span class="post-meta-item-icon">
             <i class="ri-book-open-line"></i>
             <span class="post-meta-item-text"> 阅读时长≈</span>
-            <span class="post-count">1 分钟</span>
+            <span class="post-count">2 分钟</span>
         </span>
     </span>
 </div>
@@ -115,6 +115,7 @@
        
   <h2 id="安装流程"><a href="#安装流程" class="headerlink" title="安装流程"></a>安装流程</h2><p>首先对物理磁盘分区，对于 UEFI 引导方式，需要划分 efi 分区 并把磁盘挂载到 &#x2F;boot&#x2F;efi 路径</p>
 <p><strong>注意</strong>： 所有的分区和格式化操作都需要在命令行中执行， manjaro 的 GUI 只用来挂载分区</p>
+<p>如果使用 window 环境下的虚拟机安装， 在 <strong>启用或关闭 windows 功能</strong> 配置中，关闭 windows 沙箱， Hyper-v 两个配置， 这功能可能导致虚拟死机。</p>
 <ul>
 <li>启动前将系统的引导方式修改为 UEFI,进入系统时选择专有驱动的选项启动方式</li>
 </ul>
@@ -137,6 +138,12 @@
 <li>将剩余的空间转为 LVM, 创建出 &#x2F;dev&#x2F;vgdisk&#x2F;lvhome 分区，并将 lvhome 分区格式化为 ext4</li>
 </ul>
 <p><img src="/posts/71298d9bd5e3/0007.png"></p>
+<p>分配成功后使用以下命令查看分区信息：</p>
+<figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br></pre></td><td class="code"><pre><span class="line">sudo pvs</span><br><span class="line">sudo vgs</span><br><span class="line">sudo lvs</span><br><span class="line"></span><br><span class="line"><span class="comment"># 查看详细信息</span></span><br><span class="line"></span><br><span class="line">sudo pvdisplay</span><br><span class="line">sudo vgdisplay</span><br><span class="line">sudo lvdisplay</span><br></pre></td></tr></table></figure>
+
+<p>删除分区</p>
+<figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><span class="line">sudo pvremove /dev/something</span><br><span class="line">sudo vgremove something</span><br><span class="line">sudo lvremove /dev/something</span><br></pre></td></tr></table></figure>
+
 <ul>
 <li>通过 GUI 界面将分区挂载到指定路径，<strong>挂载磁盘时一定不要重新格式化磁盘</strong></li>
 </ul>
@@ -149,6 +156,31 @@
 </ul>
 <p><img src="/posts/71298d9bd5e3/0012.png"></p>
 <figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment"># /etc/default/grub</span></span><br><span class="line">GRUB_SAVDEFAULT=<span class="literal">false</span></span><br><span class="line"></span><br><span class="line">update-grub</span><br></pre></td></tr></table></figure>
+
+
+<h2 id="手动挂载分区"><a href="#手动挂载分区" class="headerlink" title="手动挂载分区"></a>手动挂载分区</h2><p>系统安装成功后，可能需要挂载更多自定义分区, 首先创建一个 workspace lv分区</p>
+<p>查看分区信息</p>
+<figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br></pre></td><td class="code"><pre><span class="line">sudo blkid</span><br><span class="line"></span><br><span class="line"><span class="comment">#指定分区</span></span><br><span class="line">sudo blkid /dev/sda1</span><br></pre></td></tr></table></figure>
+
+<p>添加信息到 &#x2F;etc&#x2F;fstab, 实现自动挂载</p>
+<p><img src="/posts/71298d9bd5e3/0013.png"></p>
+<h2 id="扩容-lvm"><a href="#扩容-lvm" class="headerlink" title="扩容 lvm"></a>扩容 lvm</h2><ul>
+<li><p>扩容虚拟磁盘， vmware 磁盘设置中增加磁盘容量。</p>
+</li>
+<li><p>使用 gdisk 为剩余磁盘创建分区，创建成功后磁盘可能无法使用，使用以下命令刷新分区表</p>
+<figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">sudo partprobe</span><br></pre></td></tr></table></figure></li>
+<li><p>使用 pvcreate 将新的分区创建为新的pv</p>
+</li>
+<li><p>扩容 vg 将新的 pv 添加至 指定卷组</p>
+<figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><span class="line">vgextend vgdisk /dev/sda3</span><br><span class="line"></span><br><span class="line">vgs <span class="comment">#查看容量</span></span><br></pre></td></tr></table></figure>
+</li>
+<li><p>扩容 lv</p>
+<p>-l +  ：指定逻辑卷的LE个数，如 -l +200  一般一个为 4M<br>-L + ：表示增加多少空间，如 -L +15G ，单位有bBsSkKmMgGtTpPeE<br>-l +100%FREE    ：表示增加vg的全部可用空间</p>
+<figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">lvextend -L +15G /dev/vgname/lvname</span><br></pre></td></tr></table></figure>
+</li>
+<li><p>扩展文件系统</p>
+<figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">resize2fs /dev/something</span><br></pre></td></tr></table></figure></li>
+</ul>
  
       <!-- reward -->
       
@@ -185,7 +217,7 @@
    
   <nav class="article-nav">
     
-      <a href="/posts/009e2f9f8f04/" class="article-nav-link">
+      <a href="/posts/83a61cb886df/" class="article-nav-link">
         <strong class="article-nav-caption">上一篇</strong>
         <div class="article-nav-title">
           

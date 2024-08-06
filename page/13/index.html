@@ -112,6 +112,526 @@
     
     
     <article
+  id="post-algorithm/leetcode/(65)有效数字"
+  class="article article-type-post"
+  itemscope
+  itemprop="blogPost"
+  data-scroll-reveal
+>
+  <div class="article-inner">
+    
+    <header class="article-header">
+       
+<h2 itemprop="name">
+  <a class="article-title" href="/posts/6f15572531c1/"
+    >65.有效数字</a> 
+</h2>
+ 
+
+      
+    </header>
+     
+    <div class="article-meta">
+      <a href="/posts/6f15572531c1/" class="article-date">
+  <time datetime="2021-07-01T06:56:03.000Z" itemprop="datePublished">2021-07-01</time>
+</a> 
+  <div class="article-category">
+    <a class="article-category-link" href="/categories/%E7%AE%97%E6%B3%95/">算法</a> / <a class="article-category-link" href="/categories/%E7%AE%97%E6%B3%95/LeetCode/">LeetCode</a> / <a class="article-category-link" href="/categories/%E7%AE%97%E6%B3%95/LeetCode/Hard/">Hard</a>
+  </div>
+   
+    </div>
+      
+    <div class="article-entry" itemprop="articleBody">
+       
+  <h4 id="LeetCode"><a href="#LeetCode" class="headerlink" title="LeetCode"></a><a target="_blank" rel="noopener" href="https://leetcode-cn.com/problems/valid-number/">LeetCode</a></h4><h3 id="条件判断"><a href="#条件判断" class="headerlink" title="条件判断"></a>条件判断</h3><p>维护了三个状态</p>
+<ul>
+<li><p>有e|E的时候，<code>!hasE</code>用于判断这是第一次遇到e|E这个字符，因为e|E只能有一个，<code>hasNum</code>表示遇到e|E的时候前面必须有一个数字</p>
+<p>后面一句 <code>hasNum = false</code> 排除了 <code>+2e</code> 以e|E结尾的情况</p>
+</li>
+<li><p>有 <code>.</code> 的时候，<code>.</code>一定在e|E的前面，所以判断<code>!hasE</code>，<code>.</code>只可能有一个，所以<code>isFloat</code>为<code>false</code></p>
+</li>
+</ul>
+<figure class="highlight javascript"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">var</span> isNumber = <span class="keyword">function</span> (<span class="params">s</span>) &#123;</span><br><span class="line">  <span class="comment">// 是否存在e,</span></span><br><span class="line">  <span class="keyword">var</span> hasE = <span class="literal">false</span>;</span><br><span class="line">  <span class="keyword">var</span> hasNum = <span class="literal">false</span>;</span><br><span class="line">  <span class="keyword">var</span> isFloat = <span class="literal">false</span></span><br><span class="line">  <span class="keyword">for</span> (<span class="keyword">let</span> i = <span class="number">0</span>; i &lt; s.<span class="property">length</span>; i++) &#123;</span><br><span class="line">    <span class="keyword">var</span> c = s[i];</span><br><span class="line">    <span class="comment">// 符号只能在首位，或者E|e 的后一位</span></span><br><span class="line">    <span class="keyword">if</span> ((c == <span class="string">&#x27;+&#x27;</span> || c == <span class="string">&#x27;-&#x27;</span>) &amp;&amp; (i == <span class="number">0</span> || s[i - <span class="number">1</span>] === <span class="string">&#x27;e&#x27;</span> || s[i - <span class="number">1</span>] === <span class="string">&#x27;E&#x27;</span>)) &#123;</span><br><span class="line"></span><br><span class="line">      <span class="comment">//e只能有一个，e的前面必须是数字</span></span><br><span class="line">    &#125; <span class="keyword">else</span> <span class="keyword">if</span> ((c === <span class="string">&#x27;e&#x27;</span> || c === <span class="string">&#x27;E&#x27;</span>) &amp;&amp; !hasE &amp;&amp; hasNum) &#123;</span><br><span class="line">      hasE = <span class="literal">true</span>;</span><br><span class="line">      hasNum = <span class="literal">false</span>;</span><br><span class="line">    &#125; <span class="keyword">else</span> <span class="keyword">if</span> (c === <span class="string">&#x27;.&#x27;</span> &amp;&amp; !isFloat &amp;&amp; !hasE) &#123;</span><br><span class="line">      isFloat = <span class="literal">true</span>;</span><br><span class="line">    &#125; <span class="keyword">else</span> <span class="keyword">if</span> (<span class="regexp">/[0-9]/</span>.<span class="title function_">test</span>(c)) &#123;</span><br><span class="line">      hasNum = <span class="literal">true</span></span><br><span class="line">    &#125; <span class="keyword">else</span> &#123;</span><br><span class="line">      <span class="keyword">return</span> <span class="literal">false</span>;</span><br><span class="line">    &#125;</span><br><span class="line">  &#125;</span><br><span class="line">  <span class="keyword">return</span> hasNum</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+
+<h3 id="有限状态机"><a href="#有限状态机" class="headerlink" title="有限状态机"></a>有限状态机</h3><p><a href="/posts/fcceb50d/">确定有限状态自动机</a></p>
+<p>一个有效数字可以分为一下几个部分 ：</p>
+<ul>
+<li>符号位，即 + - 两种符号</li>
+<li>整数部分，即由若干字符 0-9 组成的字符串</li>
+<li>小数点</li>
+<li>小数部分，其构成与整数部分相同</li>
+<li>指数部分，其中包含开头的字符 e（大写小写均可）、可选的符号位，和整数部分</li>
+</ul>
+<p>每个部分都不是必需的，但也受一些额外规则的制约： </p>
+<ul>
+<li>如果符号位存在，其后面必须跟着数字或小数点。</li>
+<li>小数点的前后两侧，至少有一侧是数字。</li>
+</ul>
+<p>根据上面的分析可以把一个有效数字分为下面几个状态: </p>
+<ul>
+<li>符号位</li>
+<li>整数部分</li>
+<li>左侧有整数的小数点</li>
+<li>左侧无整数的小数点（根据前面的第二条额外规则，需要对左侧有无整数的两种小数点做区分）</li>
+<li>小数部分</li>
+<li>字符e</li>
+<li>指数部分的符号位</li>
+<li>指数部分的整数部分</li>
+</ul>
+<p><img src="/posts/6f15572531c1/0001.png"></p>
+<figure class="highlight javascript"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br><span class="line">35</span><br><span class="line">36</span><br><span class="line">37</span><br><span class="line">38</span><br><span class="line">39</span><br><span class="line">40</span><br><span class="line">41</span><br><span class="line">42</span><br><span class="line">43</span><br><span class="line">44</span><br><span class="line">45</span><br><span class="line">46</span><br><span class="line">47</span><br><span class="line">48</span><br><span class="line">49</span><br><span class="line">50</span><br><span class="line">51</span><br><span class="line">52</span><br><span class="line">53</span><br><span class="line">54</span><br><span class="line">55</span><br><span class="line">56</span><br><span class="line">57</span><br><span class="line">58</span><br><span class="line">59</span><br><span class="line">60</span><br><span class="line">61</span><br><span class="line">62</span><br><span class="line">63</span><br><span class="line">64</span><br><span class="line">65</span><br><span class="line">66</span><br><span class="line">67</span><br><span class="line">68</span><br><span class="line">69</span><br><span class="line">70</span><br><span class="line">71</span><br><span class="line">72</span><br><span class="line">73</span><br><span class="line">74</span><br><span class="line">75</span><br><span class="line">76</span><br><span class="line">77</span><br><span class="line">78</span><br><span class="line">79</span><br><span class="line">80</span><br><span class="line">81</span><br><span class="line">82</span><br><span class="line">83</span><br><span class="line">84</span><br><span class="line">85</span><br><span class="line">86</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">var</span> isNumber = <span class="keyword">function</span> (<span class="params">s</span>) &#123;</span><br><span class="line">  <span class="keyword">const</span> <span class="title class_">State</span> = &#123;</span><br><span class="line">    <span class="attr">STATE_INITIAL</span>: <span class="string">&quot;STATE_INITIAL&quot;</span>, <span class="comment">// 初始状态</span></span><br><span class="line">    <span class="attr">STATE_INT_SIGN</span>: <span class="string">&quot;STATE_INT_SIGN&quot;</span>, <span class="comment">// 符号位</span></span><br><span class="line">    <span class="attr">STATE_INTEGER</span>: <span class="string">&quot;STATE_INTEGER&quot;</span>, <span class="comment">//整数部分</span></span><br><span class="line">    <span class="attr">STATE_POINT</span>: <span class="string">&quot;STATE_POINT&quot;</span>,<span class="comment">// 左侧有整数的小数点</span></span><br><span class="line">    <span class="attr">STATE_POINT_WITHOUT_INT</span>: <span class="string">&quot;STATE_POINT_WITHOUT_INT&quot;</span>,<span class="comment">//左侧无整数的小数点</span></span><br><span class="line">    <span class="attr">STATE_FRACTION</span>: <span class="string">&quot;STATE_FRACTION&quot;</span>,<span class="comment">//小数部分</span></span><br><span class="line">    <span class="attr">STATE_EXP</span>: <span class="string">&quot;STATE_EXP&quot;</span>,<span class="comment">//字符e</span></span><br><span class="line">    <span class="attr">STATE_EXP_SIGN</span>: <span class="string">&quot;STATE_EXP_SIGN&quot;</span>,<span class="comment">//指数部分的符号位</span></span><br><span class="line">    <span class="attr">STATE_EXP_NUMBER</span>: <span class="string">&quot;STATE_EXP_NUMBER&quot;</span>,<span class="comment">//指数部分的整数部分</span></span><br><span class="line">    <span class="attr">STATE_END</span>: <span class="string">&quot;STATE_END&quot;</span><span class="comment">//结束状态</span></span><br><span class="line">  &#125;</span><br><span class="line"></span><br><span class="line">  <span class="keyword">const</span> <span class="title class_">CharType</span> = &#123;</span><br><span class="line">    <span class="attr">CHAR_NUMBER</span>: <span class="string">&quot;CHAR_NUMBER&quot;</span>,</span><br><span class="line">    <span class="attr">CHAR_EXP</span>: <span class="string">&quot;CHAR_EXP&quot;</span>,</span><br><span class="line">    <span class="attr">CHAR_POINT</span>: <span class="string">&quot;CHAR_POINT&quot;</span>,</span><br><span class="line">    <span class="attr">CHAR_SIGN</span>: <span class="string">&quot;CHAR_SIGN&quot;</span>,</span><br><span class="line">    <span class="attr">CHAR_ILLEGAL</span>: <span class="string">&quot;CHAR_ILLEGAL&quot;</span></span><br><span class="line">  &#125;</span><br><span class="line"></span><br><span class="line">  <span class="keyword">const</span> <span class="title function_">toCharType</span> = (<span class="params">ch</span>) =&gt; &#123;</span><br><span class="line">    <span class="keyword">if</span> (!<span class="built_in">isNaN</span>(ch)) &#123;</span><br><span class="line">      <span class="keyword">return</span> <span class="title class_">CharType</span>.<span class="property">CHAR_NUMBER</span>;</span><br><span class="line">    &#125; <span class="keyword">else</span> <span class="keyword">if</span> (ch.<span class="title function_">toLowerCase</span>() === <span class="string">&#x27;e&#x27;</span>) &#123;</span><br><span class="line">      <span class="keyword">return</span> <span class="title class_">CharType</span>.<span class="property">CHAR_EXP</span>;</span><br><span class="line">    &#125; <span class="keyword">else</span> <span class="keyword">if</span> (ch === <span class="string">&#x27;.&#x27;</span>) &#123;</span><br><span class="line">      <span class="keyword">return</span> <span class="title class_">CharType</span>.<span class="property">CHAR_POINT</span>;</span><br><span class="line">    &#125; <span class="keyword">else</span> <span class="keyword">if</span> (ch === <span class="string">&#x27;+&#x27;</span> || ch === <span class="string">&#x27;-&#x27;</span>) &#123;</span><br><span class="line">      <span class="keyword">return</span> <span class="title class_">CharType</span>.<span class="property">CHAR_SIGN</span>;</span><br><span class="line">    &#125; <span class="keyword">else</span> &#123;</span><br><span class="line">      <span class="keyword">return</span> <span class="title class_">CharType</span>.<span class="property">CHAR_ILLEGAL</span>;</span><br><span class="line">    &#125;</span><br><span class="line">  &#125;</span><br><span class="line"></span><br><span class="line">  <span class="keyword">const</span> transfer = <span class="keyword">new</span> <span class="title class_">Map</span>();</span><br><span class="line">  <span class="keyword">const</span> initialMap = <span class="keyword">new</span> <span class="title class_">Map</span>();</span><br><span class="line">  initialMap.<span class="title function_">set</span>(<span class="title class_">CharType</span>.<span class="property">CHAR_NUMBER</span>, <span class="title class_">State</span>.<span class="property">STATE_INTEGER</span>);</span><br><span class="line">  initialMap.<span class="title function_">set</span>(<span class="title class_">CharType</span>.<span class="property">CHAR_POINT</span>, <span class="title class_">State</span>.<span class="property">STATE_POINT_WITHOUT_INT</span>);</span><br><span class="line">  initialMap.<span class="title function_">set</span>(<span class="title class_">CharType</span>.<span class="property">CHAR_SIGN</span>, <span class="title class_">State</span>.<span class="property">STATE_INT_SIGN</span>);</span><br><span class="line">  transfer.<span class="title function_">set</span>(<span class="title class_">State</span>.<span class="property">STATE_INITIAL</span>, initialMap);</span><br><span class="line">  <span class="keyword">const</span> intSignMap = <span class="keyword">new</span> <span class="title class_">Map</span>();</span><br><span class="line">  intSignMap.<span class="title function_">set</span>(<span class="title class_">CharType</span>.<span class="property">CHAR_NUMBER</span>, <span class="title class_">State</span>.<span class="property">STATE_INTEGER</span>);</span><br><span class="line">  intSignMap.<span class="title function_">set</span>(<span class="title class_">CharType</span>.<span class="property">CHAR_POINT</span>, <span class="title class_">State</span>.<span class="property">STATE_POINT_WITHOUT_INT</span>);</span><br><span class="line">  transfer.<span class="title function_">set</span>(<span class="title class_">State</span>.<span class="property">STATE_INT_SIGN</span>, intSignMap);</span><br><span class="line">  <span class="keyword">const</span> integerMap = <span class="keyword">new</span> <span class="title class_">Map</span>();</span><br><span class="line">  integerMap.<span class="title function_">set</span>(<span class="title class_">CharType</span>.<span class="property">CHAR_NUMBER</span>, <span class="title class_">State</span>.<span class="property">STATE_INTEGER</span>);</span><br><span class="line">  integerMap.<span class="title function_">set</span>(<span class="title class_">CharType</span>.<span class="property">CHAR_EXP</span>, <span class="title class_">State</span>.<span class="property">STATE_EXP</span>);</span><br><span class="line">  integerMap.<span class="title function_">set</span>(<span class="title class_">CharType</span>.<span class="property">CHAR_POINT</span>, <span class="title class_">State</span>.<span class="property">STATE_POINT</span>);</span><br><span class="line">  transfer.<span class="title function_">set</span>(<span class="title class_">State</span>.<span class="property">STATE_INTEGER</span>, integerMap);</span><br><span class="line">  <span class="keyword">const</span> pointMap = <span class="keyword">new</span> <span class="title class_">Map</span>()</span><br><span class="line">  pointMap.<span class="title function_">set</span>(<span class="title class_">CharType</span>.<span class="property">CHAR_NUMBER</span>, <span class="title class_">State</span>.<span class="property">STATE_FRACTION</span>);</span><br><span class="line">  pointMap.<span class="title function_">set</span>(<span class="title class_">CharType</span>.<span class="property">CHAR_EXP</span>, <span class="title class_">State</span>.<span class="property">STATE_EXP</span>);</span><br><span class="line">  transfer.<span class="title function_">set</span>(<span class="title class_">State</span>.<span class="property">STATE_POINT</span>, pointMap);</span><br><span class="line">  <span class="keyword">const</span> pointWithoutIntMap = <span class="keyword">new</span> <span class="title class_">Map</span>();</span><br><span class="line">  pointWithoutIntMap.<span class="title function_">set</span>(<span class="title class_">CharType</span>.<span class="property">CHAR_NUMBER</span>, <span class="title class_">State</span>.<span class="property">STATE_FRACTION</span>);</span><br><span class="line">  transfer.<span class="title function_">set</span>(<span class="title class_">State</span>.<span class="property">STATE_POINT_WITHOUT_INT</span>, pointWithoutIntMap);</span><br><span class="line">  <span class="keyword">const</span> fractionMap = <span class="keyword">new</span> <span class="title class_">Map</span>();</span><br><span class="line">  fractionMap.<span class="title function_">set</span>(<span class="title class_">CharType</span>.<span class="property">CHAR_NUMBER</span>, <span class="title class_">State</span>.<span class="property">STATE_FRACTION</span>);</span><br><span class="line">  fractionMap.<span class="title function_">set</span>(<span class="title class_">CharType</span>.<span class="property">CHAR_EXP</span>, <span class="title class_">State</span>.<span class="property">STATE_EXP</span>);</span><br><span class="line">  transfer.<span class="title function_">set</span>(<span class="title class_">State</span>.<span class="property">STATE_FRACTION</span>, fractionMap);</span><br><span class="line">  <span class="keyword">const</span> expMap = <span class="keyword">new</span> <span class="title class_">Map</span>();</span><br><span class="line">  expMap.<span class="title function_">set</span>(<span class="title class_">CharType</span>.<span class="property">CHAR_NUMBER</span>, <span class="title class_">State</span>.<span class="property">STATE_EXP_NUMBER</span>);</span><br><span class="line">  expMap.<span class="title function_">set</span>(<span class="title class_">CharType</span>.<span class="property">CHAR_SIGN</span>, <span class="title class_">State</span>.<span class="property">STATE_EXP_SIGN</span>);</span><br><span class="line">  transfer.<span class="title function_">set</span>(<span class="title class_">State</span>.<span class="property">STATE_EXP</span>, expMap);</span><br><span class="line">  <span class="keyword">const</span> expSignMap = <span class="keyword">new</span> <span class="title class_">Map</span>();</span><br><span class="line">  expSignMap.<span class="title function_">set</span>(<span class="title class_">CharType</span>.<span class="property">CHAR_NUMBER</span>, <span class="title class_">State</span>.<span class="property">STATE_EXP_NUMBER</span>);</span><br><span class="line">  transfer.<span class="title function_">set</span>(<span class="title class_">State</span>.<span class="property">STATE_EXP_SIGN</span>, expSignMap);</span><br><span class="line">  <span class="keyword">const</span> expNumberMap = <span class="keyword">new</span> <span class="title class_">Map</span>();</span><br><span class="line">  expNumberMap.<span class="title function_">set</span>(<span class="title class_">CharType</span>.<span class="property">CHAR_NUMBER</span>, <span class="title class_">State</span>.<span class="property">STATE_EXP_NUMBER</span>);</span><br><span class="line">  transfer.<span class="title function_">set</span>(<span class="title class_">State</span>.<span class="property">STATE_EXP_NUMBER</span>, expNumberMap);</span><br><span class="line"></span><br><span class="line">  <span class="keyword">const</span> length = s.<span class="property">length</span>;</span><br><span class="line">  <span class="keyword">let</span> state = <span class="title class_">State</span>.<span class="property">STATE_INITIAL</span>;</span><br><span class="line"></span><br><span class="line">  <span class="keyword">for</span> (<span class="keyword">let</span> i = <span class="number">0</span>; i &lt; length; i++) &#123;</span><br><span class="line">    <span class="keyword">const</span> type = <span class="title function_">toCharType</span>(s[i]);</span><br><span class="line">    <span class="keyword">if</span> (!transfer.<span class="title function_">get</span>(state).<span class="title function_">has</span>(type)) &#123;</span><br><span class="line">      <span class="keyword">return</span> <span class="literal">false</span>;</span><br><span class="line">    &#125; <span class="keyword">else</span> &#123;</span><br><span class="line">      state = transfer.<span class="title function_">get</span>(state).<span class="title function_">get</span>(type);</span><br><span class="line">    &#125;</span><br><span class="line">  &#125;</span><br><span class="line">  <span class="keyword">return</span> state === <span class="title class_">State</span>.<span class="property">STATE_INTEGER</span> || state === <span class="title class_">State</span>.<span class="property">STATE_POINT</span> || state === <span class="title class_">State</span>.<span class="property">STATE_FRACTION</span> || state === <span class="title class_">State</span>.<span class="property">STATE_EXP_NUMBER</span> || state === <span class="title class_">State</span>.<span class="property">STATE_END</span>;</span><br><span class="line">&#125;;</span><br></pre></td></tr></table></figure>
+
+<h3 id="函数式有限状态机"><a href="#函数式有限状态机" class="headerlink" title="函数式有限状态机"></a>函数式有限状态机</h3><figure class="highlight javascript"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">const</span> <span class="title function_">start</span> = (<span class="params">c</span>)=&gt;&#123;</span><br><span class="line">  <span class="keyword">const</span> type = <span class="title function_">toCharType</span>(c);</span><br><span class="line">  <span class="keyword">if</span>(type === <span class="title class_">CharType</span>.<span class="property">CHAR_NUMBER</span>) <span class="keyword">return</span> integer;</span><br><span class="line">  <span class="keyword">if</span>(type === <span class="title class_">CharType</span>.<span class="property">CHAR_POINT</span>) <span class="keyword">return</span> pointWithoutInt;</span><br><span class="line">  <span class="keyword">if</span>(type===<span class="title class_">CharType</span>.<span class="property">CHAR_SIGN</span>) <span class="keyword">return</span> intSign;</span><br><span class="line">  <span class="keyword">return</span> end;</span><br><span class="line">&#125;</span><br><span class="line"><span class="keyword">const</span> <span class="title function_">integer</span> = (<span class="params">c</span>) =&gt;&#123;</span><br><span class="line"></span><br><span class="line">&#125;</span><br><span class="line"><span class="keyword">const</span> <span class="title function_">pointWithoutInt</span> = (<span class="params"></span>)=&gt;&#123;</span><br><span class="line"></span><br><span class="line">&#125;</span><br><span class="line"><span class="keyword">const</span> <span class="title function_">intSign</span> = (<span class="params"></span>) =&gt; &#123;</span><br><span class="line"></span><br><span class="line">&#125;</span><br><span class="line"><span class="keyword">const</span> <span class="title function_">end</span> = (<span class="params"></span>)=&gt; end;</span><br></pre></td></tr></table></figure> 
+      <!-- reward -->
+      
+    </div>
+    
+
+    <!-- copyright -->
+    
+    <footer class="article-footer">
+       
+  <ul class="article-tag-list" itemprop="keywords"><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/LeetCode/" rel="tag">LeetCode</a></li><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/%E7%AE%97%E6%B3%95/" rel="tag">算法</a></li></ul>
+
+    </footer>
+  </div>
+
+   
+    
+</article>
+
+    
+    <article
+  id="post-algorithm/learn/FSM有限状态机"
+  class="article article-type-post"
+  itemscope
+  itemprop="blogPost"
+  data-scroll-reveal
+>
+  <div class="article-inner">
+    
+    <header class="article-header">
+       
+<h2 itemprop="name">
+  <a class="article-title" href="/posts/70ac5eab3c93/"
+    >FSM 有限状态机</a> 
+</h2>
+ 
+
+      
+    </header>
+     
+    <div class="article-meta">
+      <a href="/posts/70ac5eab3c93/" class="article-date">
+  <time datetime="2021-07-01T01:11:40.000Z" itemprop="datePublished">2021-07-01</time>
+</a> 
+  <div class="article-category">
+    <a class="article-category-link" href="/categories/%E7%AE%97%E6%B3%95/">算法</a> / <a class="article-category-link" href="/categories/%E7%AE%97%E6%B3%95/%E5%B8%B8%E8%A7%81%E7%AE%97%E6%B3%95/">常见算法</a>
+  </div>
+   
+    </div>
+      
+    <div class="article-entry" itemprop="articleBody">
+       
+  <h4 id="有限状态机"><a href="#有限状态机" class="headerlink" title="有限状态机"></a>有限状态机</h4><p>有限状态机（英语：finite-state machine，缩写：FSM）又称有限状态自动机（英语：finite-state automation，缩写：FSA），简称状态机，是表示有限个状态以及在这些状态之间的转移和动作等行为的数学计算模型。</p>
+<h4 id="特点"><a href="#特点" class="headerlink" title="特点"></a>特点</h4><ul>
+<li><p>状态总数（state）是有限的。</p>
+</li>
+<li><p>任一时刻，只处在一种状态之中。</p>
+</li>
+<li><p>某种条件下，会从一种状态转变（transition）到另一种状态。</p>
+</li>
+<li><p>每个状态都是一个机器，所有机器接受的输入是一致的</p>
+</li>
+<li><p>状态机的本身是没有状态的，如果用函数来表示的话，应该是纯函数。</p>
+</li>
+<li><p>每一个状态机都知道自己的下一个状态</p>
+<p>每个机器都有确定的下一个状态 （Moore）</p>
+<p>每个机器根据输入决定下一个状态 （Mealy）</p>
+</li>
+</ul>
+<h4 id="案例"><a href="#案例" class="headerlink" title="案例"></a>案例</h4><p>网页上有一个菜单元素。鼠标悬停的时候，菜单显示；鼠标移开的时候，菜单隐藏。如果使用有限状态机描述，就是这个菜单只有两种状态（显示和隐藏），鼠标会引发状态转变。</p>
+<p>本案例中的状态机其实就是摩尔状态机，每个状态都有确定的下一个状态，而存在的问题就是状态和行为是耦合的。</p>
+<figure class="highlight javascript"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br></pre></td><td class="code"><pre><span class="line">&lt;body&gt;</span><br><span class="line"><span class="language-xml"><span class="tag">&lt;<span class="name">div</span> <span class="attr">id</span> = <span class="string">&#x27;box1&#x27;</span>&gt;</span>1<span class="tag">&lt;/<span class="name">div</span>&gt;</span></span></span><br><span class="line"><span class="language-xml"><span class="tag">&lt;<span class="name">div</span> <span class="attr">id</span> = <span class="string">&#x27;box2&#x27;</span> <span class="attr">style</span>=<span class="string">&quot;display:none&quot;</span>&gt;</span>2<span class="tag">&lt;/<span class="name">div</span>&gt;</span></span></span><br><span class="line"><span class="language-xml"><span class="tag">&lt;<span class="name">script</span>&gt;</span><span class="language-javascript"></span></span></span><br><span class="line"><span class="language-javascript"><span class="language-xml">  </span></span></span><br><span class="line"><span class="language-javascript"><span class="language-xml">  <span class="keyword">var</span> menu = &#123;</span></span></span><br><span class="line"><span class="language-javascript"><span class="language-xml">    <span class="comment">// 当前状态</span></span></span></span><br><span class="line"><span class="language-javascript"><span class="language-xml">    <span class="attr">currentState</span>: <span class="string">&#x27;hide&#x27;</span>,</span></span></span><br><span class="line"><span class="language-javascript"><span class="language-xml">    <span class="comment">// 绑定事件</span></span></span></span><br><span class="line"><span class="language-javascript"><span class="language-xml">    <span class="attr">initialize</span>: <span class="keyword">function</span> (<span class="params">dom</span>) &#123;</span></span></span><br><span class="line"><span class="language-javascript"><span class="language-xml">      dom.<span class="title function_">addEventListener</span>(<span class="string">&#x27;mouseover&#x27;</span>,<span class="variable language_">this</span>.<span class="property">transition</span>.<span class="title function_">bind</span>(<span class="variable language_">this</span>))</span></span></span><br><span class="line"><span class="language-javascript"><span class="language-xml">      dom.<span class="title function_">addEventListener</span>(<span class="string">&#x27;mouseout&#x27;</span>,<span class="variable language_">this</span>.<span class="property">transition</span>.<span class="title function_">bind</span>(<span class="variable language_">this</span>))</span></span></span><br><span class="line"><span class="language-javascript"><span class="language-xml">    &#125;,</span></span></span><br><span class="line"><span class="language-javascript"><span class="language-xml">    <span class="comment">// 状态转换</span></span></span></span><br><span class="line"><span class="language-javascript"><span class="language-xml">    <span class="attr">transition</span>: <span class="keyword">function</span> (<span class="params">event</span>) &#123;</span></span></span><br><span class="line"><span class="language-javascript"><span class="language-xml">      <span class="keyword">switch</span> (<span class="variable language_">this</span>.<span class="property">currentState</span>) &#123;</span></span></span><br><span class="line"><span class="language-javascript"><span class="language-xml">        <span class="keyword">case</span> <span class="string">&quot;hide&quot;</span>:</span></span></span><br><span class="line"><span class="language-javascript"><span class="language-xml">          <span class="variable language_">this</span>.<span class="property">currentState</span> = <span class="string">&#x27;show&#x27;</span>;</span></span></span><br><span class="line"><span class="language-javascript"><span class="language-xml">          <span class="variable language_">document</span>.<span class="title function_">getElementById</span>(<span class="string">&#x27;box2&#x27;</span>).<span class="property">style</span>.<span class="property">display</span> =<span class="string">&#x27;block&#x27;</span></span></span></span><br><span class="line"><span class="language-javascript"><span class="language-xml">          <span class="keyword">break</span>;</span></span></span><br><span class="line"><span class="language-javascript"><span class="language-xml">        <span class="keyword">case</span> <span class="string">&quot;show&quot;</span>:</span></span></span><br><span class="line"><span class="language-javascript"><span class="language-xml">          <span class="variable language_">this</span>.<span class="property">currentState</span> = <span class="string">&#x27;hide&#x27;</span>;</span></span></span><br><span class="line"><span class="language-javascript"><span class="language-xml">          <span class="variable language_">document</span>.<span class="title function_">getElementById</span>(<span class="string">&#x27;box2&#x27;</span>).<span class="property">style</span>.<span class="property">display</span> =<span class="string">&#x27;none&#x27;</span></span></span></span><br><span class="line"><span class="language-javascript"><span class="language-xml">          <span class="keyword">break</span>;</span></span></span><br><span class="line"><span class="language-javascript"><span class="language-xml">        <span class="attr">default</span>:</span></span></span><br><span class="line"><span class="language-javascript"><span class="language-xml">          <span class="variable language_">console</span>.<span class="title function_">log</span>(<span class="string">&#x27;Invalid State!&#x27;</span>);</span></span></span><br><span class="line"><span class="language-javascript"><span class="language-xml">          <span class="keyword">break</span>;</span></span></span><br><span class="line"><span class="language-javascript"><span class="language-xml">      &#125;</span></span></span><br><span class="line"><span class="language-javascript"><span class="language-xml">    &#125;</span></span></span><br><span class="line"><span class="language-javascript"><span class="language-xml">  &#125;;</span></span></span><br><span class="line"><span class="language-javascript"><span class="language-xml">  menu.<span class="title function_">initialize</span>(<span class="variable language_">document</span>.<span class="title function_">getElementById</span>(<span class="string">&#x27;box1&#x27;</span>));</span></span></span><br><span class="line"><span class="language-javascript"><span class="language-xml">  </span><span class="tag">&lt;/<span class="name">script</span>&gt;</span></span></span><br><span class="line">&lt;/body&gt;</span><br></pre></td></tr></table></figure>
+
+<h4 id="查找字符串"><a href="#查找字符串" class="headerlink" title="查找字符串"></a>查找字符串</h4><p>尝试在一个字符串中找到 <code>abcd</code></p>
+<p><strong>需要注意的是在每次状态迁移之后，一定要把上一个的状态置为false,因为状态转移之后与上一个状态再没有任何关系</strong></p>
+<figure class="highlight javascript"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">const</span> <span class="title function_">machine</span> = (<span class="params">str</span>) =&gt; &#123;</span><br><span class="line">  <span class="keyword">let</span> foundA = <span class="literal">false</span>;</span><br><span class="line">  <span class="keyword">let</span> foundB = <span class="literal">false</span>;</span><br><span class="line">  <span class="keyword">let</span> foundC = <span class="literal">false</span>;</span><br><span class="line">  <span class="keyword">for</span> (<span class="keyword">let</span> s <span class="keyword">of</span> str) &#123;</span><br><span class="line">    <span class="keyword">if</span> (s === <span class="string">&#x27;a&#x27;</span>) &#123;</span><br><span class="line">      foundA = <span class="literal">true</span>;</span><br><span class="line">    &#125; <span class="keyword">else</span> <span class="keyword">if</span> (s === <span class="string">&#x27;b&#x27;</span> &amp;&amp; foundA) &#123;</span><br><span class="line">      foundA = <span class="literal">false</span>;</span><br><span class="line">      foundB = <span class="literal">true</span>;</span><br><span class="line">    &#125; <span class="keyword">else</span> <span class="keyword">if</span> (s === <span class="string">&#x27;c&#x27;</span> &amp;&amp; foundB) &#123;</span><br><span class="line">      foundB = <span class="literal">false</span>;</span><br><span class="line">      foundC = <span class="literal">true</span>;</span><br><span class="line">    &#125; <span class="keyword">else</span> <span class="keyword">if</span> (s === <span class="string">&#x27;d&#x27;</span> &amp;&amp; foundC) &#123;</span><br><span class="line">      foundC = <span class="literal">false</span>;</span><br><span class="line">      <span class="keyword">return</span> <span class="literal">true</span>;</span><br><span class="line">    &#125; <span class="keyword">else</span> &#123;</span><br><span class="line">      foundA = <span class="literal">false</span>;</span><br><span class="line">      foundB = <span class="literal">false</span>;</span><br><span class="line">      foundC = <span class="literal">false</span>;</span><br><span class="line">    &#125;</span><br><span class="line">  &#125;</span><br><span class="line">  <span class="keyword">return</span> <span class="literal">false</span>;</span><br><span class="line">&#125;</span><br><span class="line"><span class="variable language_">console</span>.<span class="title function_">log</span>(<span class="title function_">machine</span>(<span class="string">&#x27;abbccd&#x27;</span>))</span><br></pre></td></tr></table></figure>
+
+<h4 id="查找字符串-函数式状态机"><a href="#查找字符串-函数式状态机" class="headerlink" title="查找字符串 函数式状态机"></a>查找字符串 函数式状态机</h4><p>显而易见的好处是，状态机本身没有状态，所以无需在维护状态</p>
+<p>需要注意的一点是，每一个函数返回的是<code>start(s)</code>,因为遇到<code>ababcd</code>这种情况时，第二个<code>a</code>可以当做字符串的开头，如果直接返回<code>start</code>会跳过这一步的判断</p>
+<figure class="highlight javascript"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">const</span> <span class="title function_">start</span> = (<span class="params">s</span>) =&gt; &#123;</span><br><span class="line">  <span class="keyword">if</span> (s === <span class="string">&#x27;a&#x27;</span>) <span class="keyword">return</span> foundB;</span><br><span class="line">  <span class="keyword">return</span> start;</span><br><span class="line">&#125;</span><br><span class="line"><span class="keyword">const</span> <span class="title function_">foundB</span> = (<span class="params">s</span>) =&gt; &#123;</span><br><span class="line">  <span class="keyword">if</span> (s === <span class="string">&#x27;b&#x27;</span>) <span class="keyword">return</span> foundC;</span><br><span class="line">  <span class="keyword">return</span> <span class="title function_">start</span>(s);</span><br><span class="line">&#125;</span><br><span class="line"><span class="keyword">const</span> <span class="title function_">foundC</span> = (<span class="params">s</span>) =&gt; &#123;</span><br><span class="line">  <span class="keyword">if</span> (s === <span class="string">&#x27;c&#x27;</span>) <span class="keyword">return</span> foundD;</span><br><span class="line">  <span class="keyword">return</span> <span class="title function_">start</span>(s);</span><br><span class="line">&#125;</span><br><span class="line"><span class="keyword">const</span> <span class="title function_">foundD</span> = (<span class="params">s</span>) =&gt; &#123;</span><br><span class="line">  <span class="keyword">if</span> (s === <span class="string">&#x27;d&#x27;</span>) <span class="keyword">return</span> end;</span><br><span class="line">  <span class="keyword">return</span> <span class="title function_">start</span>(s)</span><br><span class="line">&#125;</span><br><span class="line"><span class="keyword">const</span> <span class="title function_">end</span> = (<span class="params"></span>) =&gt; end;</span><br><span class="line"><span class="keyword">let</span> state = start;</span><br><span class="line"><span class="keyword">for</span> (<span class="keyword">let</span> s <span class="keyword">of</span> <span class="string">&#x27;ababcd&#x27;</span>) &#123;</span><br><span class="line">  state = <span class="title function_">state</span>(s);</span><br><span class="line">&#125;</span><br><span class="line"><span class="variable language_">console</span>.<span class="title function_">log</span>(state === end)</span><br></pre></td></tr></table></figure>
+
+
+<h4 id="有效数字问题"><a href="#有效数字问题" class="headerlink" title="有效数字问题"></a>有效数字问题</h4> 
+      <!-- reward -->
+      
+    </div>
+    
+
+    <!-- copyright -->
+    
+    <footer class="article-footer">
+       
+  <ul class="article-tag-list" itemprop="keywords"><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/%E6%9C%89%E9%99%90%E7%8A%B6%E6%80%81%E6%9C%BA/" rel="tag">有限状态机</a></li><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/%E7%AE%97%E6%B3%95/" rel="tag">算法</a></li></ul>
+
+    </footer>
+  </div>
+
+   
+    
+</article>
+
+    
+    <article
+  id="post-javascript/cookie-domin"
+  class="article article-type-post"
+  itemscope
+  itemprop="blogPost"
+  data-scroll-reveal
+>
+  <div class="article-inner">
+    
+    <header class="article-header">
+       
+<h2 itemprop="name">
+  <a class="article-title" href="/posts/44b7ce1ba097/"
+    >Cookie的domain属性</a> 
+</h2>
+ 
+
+      
+    </header>
+     
+    <div class="article-meta">
+      <a href="/posts/44b7ce1ba097/" class="article-date">
+  <time datetime="2021-06-28T06:29:24.000Z" itemprop="datePublished">2021-06-28</time>
+</a> 
+  <div class="article-category">
+    <a class="article-category-link" href="/categories/JavaScript/">JavaScript</a>
+  </div>
+   
+    </div>
+      
+    <div class="article-entry" itemprop="articleBody">
+       
+  <h4 id="一些概念"><a href="#一些概念" class="headerlink" title="一些概念"></a>一些概念</h4><ul>
+<li><p>domain表示的是cookie所在的域，默认为请求的地址，如网址为<a target="_blank" rel="noopener" href="http://www.test.com/test/test.aspx%EF%BC%8C%E9%82%A3%E4%B9%88domain%E9%BB%98%E8%AE%A4%E4%B8%BAwww.test.com%E3%80%82%E8%80%8C%E8%B7%A8%E5%9F%9F%E8%AE%BF%E9%97%AE%EF%BC%8C%E5%A6%82%E5%9F%9FA%E4%B8%BAt1.test.com%EF%BC%8C%E5%9F%9FB%E4%B8%BAt2.test.com%EF%BC%8C%E9%82%A3%E4%B9%88%E5%9C%A8%E5%9F%9FA%E7%94%9F%E4%BA%A7%E4%B8%80%E4%B8%AA%E4%BB%A4%E5%9F%9FA%E5%92%8C%E5%9F%9FB%E9%83%BD%E8%83%BD%E8%AE%BF%E9%97%AE%E7%9A%84cookie%E5%B0%B1%E8%A6%81%E5%B0%86%E8%AF%A5cookie%E7%9A%84domain%E8%AE%BE%E7%BD%AE%E4%B8%BA.test.com%EF%BC%9B%E5%A6%82%E6%9E%9C%E8%A6%81%E5%9C%A8%E5%9F%9FA%E7%94%9F%E4%BA%A7%E4%B8%80%E4%B8%AA%E4%BB%A4%E5%9F%9FA%E4%B8%8D%E8%83%BD%E8%AE%BF%E9%97%AE%E8%80%8C%E5%9F%9FB%E8%83%BD%E8%AE%BF%E9%97%AE%E7%9A%84cookie%E5%B0%B1%E8%A6%81%E5%B0%86%E8%AF%A5cookie%E7%9A%84domain%E8%AE%BE%E7%BD%AE%E4%B8%BAt2.test.com%E3%80%82">www.test.com/test/test.aspx，那么domain默认为www.test.com。而跨域访问，如域A为t1.test.com，域B为t2.test.com，那么在域A生产一个令域A和域B都能访问的cookie就要将该cookie的domain设置为.test.com；如果要在域A生产一个令域A不能访问而域B能访问的cookie就要将该cookie的domain设置为t2.test.com。</a></p>
+</li>
+<li><p>path表示cookie所在的目录，asp.net默认为&#x2F;，就是根目录。在同一个服务器上有目录如下：&#x2F;test&#x2F;,&#x2F;test&#x2F;cd&#x2F;,&#x2F;test&#x2F;dd&#x2F;，现设一个cookie1的path为&#x2F;test&#x2F;，cookie2的path为&#x2F;test&#x2F;cd&#x2F;，那么test下的所有页面都可以访问到cookie1，而&#x2F;test&#x2F;和&#x2F;test&#x2F;dd&#x2F;的子页面不能访问cookie2。这是因为cookie能让其path路径下的页面访问。</p>
+</li>
+<li><p>浏览器会将domain和path都相同的cookie保存在一个文件里，cookie间用*隔开。</p>
+</li>
+<li><p>含值键值对的cookie：含多个子键值对的cookie格式是name&#x3D;key1&#x3D;value1&amp;key2&#x3D;value2。可以理解为单键值对的值保存一个自定义的多键值字符串，其中的键值对分割符为&amp;，当然可以自定义一个分隔符，但用asp.net获取时是以&amp;为分割符。</p>
+</li>
+</ul>
+ 
+      <!-- reward -->
+      
+    </div>
+    
+
+    <!-- copyright -->
+    
+    <footer class="article-footer">
+       
+  <ul class="article-tag-list" itemprop="keywords"><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/JavaScript/" rel="tag">JavaScript</a></li></ul>
+
+    </footer>
+  </div>
+
+   
+    
+</article>
+
+    
+    <article
+  id="post-javascript/调试第三方模块"
+  class="article article-type-post"
+  itemscope
+  itemprop="blogPost"
+  data-scroll-reveal
+>
+  <div class="article-inner">
+    
+    <header class="article-header">
+       
+<h2 itemprop="name">
+  <a class="article-title" href="/posts/eb5495bfdf9d/"
+    >调试第三方模块</a> 
+</h2>
+ 
+
+      
+    </header>
+     
+    <div class="article-meta">
+      <a href="/posts/eb5495bfdf9d/" class="article-date">
+  <time datetime="2021-06-23T03:23:41.000Z" itemprop="datePublished">2021-06-23</time>
+</a> 
+  <div class="article-category">
+    <a class="article-category-link" href="/categories/JavaScript/">JavaScript</a>
+  </div>
+   
+    </div>
+      
+    <div class="article-entry" itemprop="articleBody">
+       
+  <h4 id="存在的问题"><a href="#存在的问题" class="headerlink" title="存在的问题"></a>存在的问题</h4><p>有时候需要在react项目中打断点调试，或者调试react源码</p>
+<p>如果直接在node_modules中的文件打断点，添加注释或修改，在某些vsCode的版本中会提示nobonud breakPoint,不能进入断点</p>
+<p>但最主要的问题，当项目重新初始化，所有的修改会被删除</p>
+<h4 id="安装插件"><a href="#安装插件" class="headerlink" title="安装插件"></a>安装插件</h4><p>在vsCode市场中安装 Debugger for Chrome 插件</p>
+<p><img src="/posts/eb5495bfdf9d/0001.png"></p>
+<h4 id="添加配置文件"><a href="#添加配置文件" class="headerlink" title="添加配置文件"></a>添加配置文件</h4><p><img src="/posts/eb5495bfdf9d/0002.png"></p>
+<p>选择Chrome</p>
+<p><img src="/posts/eb5495bfdf9d/0003.png"></p>
+<p>修改配置文件端口为项目端口</p>
+<figure class="highlight javascript"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br></pre></td><td class="code"><pre><span class="line">&#123;</span><br><span class="line">  <span class="comment">// Use IntelliSense to learn about possible attributes.</span></span><br><span class="line">  <span class="comment">// Hover to view descriptions of existing attributes.</span></span><br><span class="line">  <span class="comment">// For more information, visit: https://go.microsoft.com/fwlink/?linkid=830387</span></span><br><span class="line">  <span class="string">&quot;version&quot;</span>: <span class="string">&quot;0.2.0&quot;</span>,</span><br><span class="line">  <span class="string">&quot;configurations&quot;</span>: [</span><br><span class="line">    &#123;</span><br><span class="line">      <span class="string">&quot;type&quot;</span>: <span class="string">&quot;pwa-chrome&quot;</span>,</span><br><span class="line">      <span class="string">&quot;request&quot;</span>: <span class="string">&quot;launch&quot;</span>,</span><br><span class="line">      <span class="string">&quot;name&quot;</span>: <span class="string">&quot;Launch Chrome against localhost&quot;</span>,</span><br><span class="line">      <span class="string">&quot;url&quot;</span>: <span class="string">&quot;http://localhost:3000&quot;</span>, <span class="comment">//把端口修改为项目端口</span></span><br><span class="line">      <span class="string">&quot;webRoot&quot;</span>: <span class="string">&quot;$&#123;workspaceFolder&#125;&quot;</span></span><br><span class="line">    &#125;</span><br><span class="line">  ]</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+<h4 id="使用-yarn-link"><a href="#使用-yarn-link" class="headerlink" title="使用 yarn link"></a>使用 yarn link</h4><ul>
+<li><p>将需要调试的第三方包复制到本地，并在node_modules中删除</p>
+</li>
+<li><p>进入第三方包的文件夹根目录执行，<code>yarn link</code> 创建一个链接</p>
+</li>
+<li><p>进入项目文件夹根目录执行，<code>yarn link &quot;package name&quot;</code> 将依赖添加到node_modules中</p>
+</li>
+<li><p>这时查看依赖包的路径为本地第三方包的路径</p>
+</li>
+</ul>
+<p><img src="/posts/eb5495bfdf9d/0004.png"></p>
+<h4 id="使用-yarn-unlink"><a href="#使用-yarn-unlink" class="headerlink" title="使用 yarn unlink"></a>使用 yarn unlink</h4><ul>
+<li><p>进入项目文件夹根目录执行，<code>yarn unlink &quot;package name&quot;</code> 将依赖添从node_modules中删除</p>
+</li>
+<li><p>进入第三方包的文件夹根目录执行，<code>yarn unlink</code>, 不在链接到全局</p>
+</li>
+</ul>
+<h4 id="调试"><a href="#调试" class="headerlink" title="调试"></a>调试</h4><p>如果react项目打断点不能被捕获，可以尝试在入口index.js文件中添加一行 <code>debugger;</code></p>
+<p>这样在调试器中点击下一步，会跳到下一个断点</p>
+ 
+      <!-- reward -->
+      
+    </div>
+    
+
+    <!-- copyright -->
+    
+    <footer class="article-footer">
+       
+  <ul class="article-tag-list" itemprop="keywords"><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/JavaScript/" rel="tag">JavaScript</a></li><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/Node/" rel="tag">Node</a></li></ul>
+
+    </footer>
+  </div>
+
+   
+    
+</article>
+
+    
+    <article
+  id="post-nginx/原理"
+  class="article article-type-post"
+  itemscope
+  itemprop="blogPost"
+  data-scroll-reveal
+>
+  <div class="article-inner">
+    
+    <header class="article-header">
+       
+<h2 itemprop="name">
+  <a class="article-title" href="/posts/7b927bac4e00/"
+    >原理</a> 
+</h2>
+ 
+
+      
+    </header>
+     
+    <div class="article-meta">
+      <a href="/posts/7b927bac4e00/" class="article-date">
+  <time datetime="2021-06-16T07:45:31.000Z" itemprop="datePublished">2021-06-16</time>
+</a> 
+  <div class="article-category">
+    <a class="article-category-link" href="/categories/Nginx/">Nginx</a>
+  </div>
+   
+    </div>
+      
+    <div class="article-entry" itemprop="articleBody">
+       
+  <h4 id="Nginx进程模型"><a href="#Nginx进程模型" class="headerlink" title="Nginx进程模型"></a>Nginx进程模型</h4><p>Nginx默认采用多进程工作方式，Nginx启动后，会运行一个master进程和多个worker进程。其中master充当整个进程组与用户的交互接口，同时对进程进行监护，管理worker进程来实现重启服务、平滑升级、更换日志文件、配置文件实时生效等功能。worker用来处理基本的网络事件，worker之间是平等的，他们共同竞争来处理来自客户端的请求。</p>
+<p><img src="/posts/7b927bac4e00/0001.png"></p>
+<p>在创建master进程时，先建立需要监听的socket（listenfd），然后从master进程中fork()出多个worker进程，如此一来每个worker进程多可以监听用户请求的socket。一般来说，当一个连接进来后，所有在Worker都会收到通知，但是只有一个进程可以接受这个连接请求，其它的都失败，这是所谓的惊群现象。nginx提供了一个accept_mutex（互斥锁），有了这把锁之后，同一时刻，就只会有一个进程在accpet连接，这样就不会有惊群问题了。</p>
+<p>先打开accept_mutex选项，只有获得了accept_mutex的进程才会去添加accept事件。nginx使用一个叫ngx_accept_disabled的变量来控制是否去竞争accept_mutex锁。ngx_accept_disabled &#x3D; nginx单进程的所有连接总数 &#x2F; 8 -空闲连接数量，当ngx_accept_disabled大于0时，不会去尝试获取accept_mutex锁，ngx_accept_disable越大，于是让出的机会就越多，这样其它进程获取锁的机会也就越大。不去accept，每个worker进程的连接数就控制下来了，其它进程的连接池就会得到利用，这样，nginx就控制了多进程间连接的平衡。</p>
+<p>每个worker进程都有一个独立的连接池，连接池的大小是worker_connections。这里的连接池里面保存的其实不是真实的连接，它只是一个worker_connections大小的一个ngx_connection_t结构的数组。并且，nginx会通过一个链表free_connections来保存所有的空闲ngx_connection_t，每次获取一个连接时，就从空闲连接链表中获取一个，用完后，再放回空闲连接链表里面。一个nginx能建立的最大连接数，应该是worker_connections * worker_processes。当然，这里说的是最大连接数，对于HTTP请求本地资源来说，能够支持的最大并发数量是worker_connections * worker_processes，而如果是HTTP作为反向代理来说，最大并发数量应该是worker_connections * worker_processes&#x2F;2。因为作为反向代理服务器，每个并发会建立与客户端的连接和与后端服务的连接，会占用两个连接。</p>
+<h4 id="Nginx处理HTTP请求流程"><a href="#Nginx处理HTTP请求流程" class="headerlink" title="Nginx处理HTTP请求流程"></a>Nginx处理HTTP请求流程</h4><p>http请求是典型的请求-响应类型的的网络协议。http是文件协议，所以我们在分析请求行与请求头，以及输出响应行与响应头，往往是一行一行的进行处理。通常在一个连接建立好后，读取一行数据，分析出请求行中包含的method、uri、http_version信息。然后再一行一行处理请求头，并根据请求method与请求头的信息来决定是否有请求体以及请求体的长度，然后再去读取请求体。得到请求后，我们处理请求产生需要输出的数据，然后再生成响应行，响应头以及响应体。在将响应发送给客户端之后，一个完整的请求就处理完了。</p>
+<p><img src="/posts/7b927bac4e00/0002.png"></p>
+ 
+      <!-- reward -->
+      
+    </div>
+    
+
+    <!-- copyright -->
+    
+    <footer class="article-footer">
+       
+  <ul class="article-tag-list" itemprop="keywords"><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/Nginx/" rel="tag">Nginx</a></li></ul>
+
+    </footer>
+  </div>
+
+   
+    
+</article>
+
+    
+    <article
+  id="post-nginx/高可用"
+  class="article article-type-post"
+  itemscope
+  itemprop="blogPost"
+  data-scroll-reveal
+>
+  <div class="article-inner">
+    
+    <header class="article-header">
+       
+<h2 itemprop="name">
+  <a class="article-title" href="/posts/b4afbac0f6af/"
+    >高可用</a> 
+</h2>
+ 
+
+      
+    </header>
+     
+    <div class="article-meta">
+      <a href="/posts/b4afbac0f6af/" class="article-date">
+  <time datetime="2021-06-16T07:28:24.000Z" itemprop="datePublished">2021-06-16</time>
+</a> 
+  <div class="article-category">
+    <a class="article-category-link" href="/categories/Nginx/">Nginx</a>
+  </div>
+   
+    </div>
+      
+    <div class="article-entry" itemprop="articleBody">
+       
+  <h4 id="什么是高可用"><a href="#什么是高可用" class="headerlink" title="什么是高可用"></a>什么是高可用</h4><p>高可用HA（High Availability）是分布式系统架构设计中必须考虑的因素之一，它通常是指，通过设计减少系统不能提供服务的时间。如果一个系统能够一直提供服务，那么这个可用性则是百分之百，但是天有不测风云。所以我们只能尽可能的去减少服务的故障。</p>
+<h4 id="解决的问题"><a href="#解决的问题" class="headerlink" title="解决的问题"></a>解决的问题</h4><p>在生产环境上很多时候是以Nginx做反向代理对外提供服务，但是一天Nginx难免遇见故障，如：服务器宕机。当Nginx宕机那么所有对外提供的接口都将导致无法访问。</p>
+<p>虽然我们无法保证服务器百分之百可用，但是也得想办法避免这种悲剧，今天我们使用keepalived来实现Nginx的高可用。</p>
+<h4 id="双机热备方案"><a href="#双机热备方案" class="headerlink" title="双机热备方案"></a>双机热备方案</h4><p>这种方案是国内企业中最为普遍的一种高可用方案，双机热备其实就是指一台服务器在提供服务，另一台为某服务的备用状态，当一台服务器不可用另外一台就会顶替上去。</p>
+<h5 id="keepalived是什么？"><a href="#keepalived是什么？" class="headerlink" title="keepalived是什么？"></a>keepalived是什么？</h5><p>Keepalived软件起初是专为LVS负载均衡软件设计的，用来管理并监控LVS集群系统中各个服务节点的状态，后来又加入了可以实现高可用的VRRP (Virtual Router Redundancy Protocol ,虚拟路由器冗余协议）功能。因此，Keepalived除了能够管理LVS软件外，还可以作为其他服务（例如：Nginx、Haproxy、MySQL等）的高可用解决方案软件</p>
+<h5 id="故障转移机制"><a href="#故障转移机制" class="headerlink" title="故障转移机制"></a>故障转移机制</h5><p>Keepalived高可用服务之间的故障切换转移，是通过VRRP 来实现的。<br>在 Keepalived服务正常工作时，主 Master节点会不断地向备节点发送（多播的方式）心跳消息，用以告诉备Backup节点自己还活着，当主 Master节点发生故障时，就无法发送心跳消息，备节点也就因此无法继续检测到来自主 Master节点的心跳了，于是调用自身的接管程序，接管主Master节点的 IP资源及服务。而当主 Master节点恢复时，备Backup节点又会释放主节点故障时自身接管的IP资源及服务，恢复到原来的备用角色。</p>
+<h4 id="实现过程"><a href="#实现过程" class="headerlink" title="实现过程"></a>实现过程</h4><p>安装keepalived</p>
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">sudo apt install keepalived</span><br></pre></td></tr></table></figure>
+
+<p>修改主机（192.168.16.128）keepalived配置文件</p>
+<p>yum方式安装的会生产配置文件在&#x2F;etc&#x2F;keepalived下：</p>
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">vi keepalived.conf</span><br></pre></td></tr></table></figure>
+
+<p>keepalived.conf:</p>
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br></pre></td><td class="code"><pre><span class="line">#检测脚本</span><br><span class="line">vrrp_script chk_http_port &#123;</span><br><span class="line">    script &quot;/usr/local/src/check_nginx_pid.sh&quot; #心跳执行的脚本，检测nginx是否启动</span><br><span class="line">    interval 2                          #（检测脚本执行的间隔，单位是秒）</span><br><span class="line">    weight 2                            #权重</span><br><span class="line">&#125;</span><br><span class="line">#vrrp 实例定义部分</span><br><span class="line">vrrp_instance VI_1 &#123;</span><br><span class="line">    state MASTER            # 指定keepalived的角色，MASTER为主，BACKUP为备</span><br><span class="line">    interface ens33         # 当前进行vrrp通讯的网络接口卡(当前centos的网卡) 用ifconfig查看你具体的网卡</span><br><span class="line">    virtual_router_id 66    # 虚拟路由编号，主从要一直</span><br><span class="line">    priority 100            # 优先级，数值越大，获取处理请求的优先级越高</span><br><span class="line">    advert_int 1            # 检查间隔，默认为1s(vrrp组播周期秒数)</span><br><span class="line">    #授权访问</span><br><span class="line">    authentication &#123;</span><br><span class="line">        auth_type PASS #设置验证类型和密码，MASTER和BACKUP必须使用相同的密码才能正常通信</span><br><span class="line">        auth_pass 1111</span><br><span class="line">    &#125;</span><br><span class="line">    track_script &#123;</span><br><span class="line">        chk_http_port            #（调用检测脚本）</span><br><span class="line">    &#125;</span><br><span class="line">    virtual_ipaddress &#123;</span><br><span class="line">        192.168.16.130            # 定义虚拟ip(VIP)，可多设，每行一个</span><br><span class="line">    &#125;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+<p>virtual_ipaddress 里面可以配置vip,在线上通过vip来访问服务。</p>
+<p>interface需要根据服务器网卡进行设置通常查看方式ip addr</p>
+<p>authentication配置授权访问后备机也需要相同配置</p>
+<h4 id="修改备机keepalived配置文件"><a href="#修改备机keepalived配置文件" class="headerlink" title="修改备机keepalived配置文件"></a>修改备机keepalived配置文件</h4><figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br></pre></td><td class="code"><pre><span class="line">#检测脚本</span><br><span class="line">vrrp_script chk_http_port &#123;</span><br><span class="line">    script &quot;/usr/local/src/check_nginx_pid.sh&quot; #心跳执行的脚本，检测nginx是否启动</span><br><span class="line">    interval 2                          #（检测脚本执行的间隔）</span><br><span class="line">    weight 2                            #权重</span><br><span class="line">&#125;</span><br><span class="line">#vrrp 实例定义部分</span><br><span class="line">vrrp_instance VI_1 &#123;</span><br><span class="line">    state BACKUP                        # 指定keepalived的角色，MASTER为主，BACKUP为备</span><br><span class="line">    interface ens33                      # 当前进行vrrp通讯的网络接口卡(当前centos的网卡) 用ifconfig查看你具体的网卡</span><br><span class="line">    virtual_router_id 66                # 虚拟路由编号，主从要一直</span><br><span class="line">    priority 99                         # 优先级，数值越大，获取处理请求的优先级越高</span><br><span class="line">    advert_int 1                        # 检查间隔，默认为1s(vrrp组播周期秒数)</span><br><span class="line">    #授权访问</span><br><span class="line">    authentication &#123;</span><br><span class="line">        auth_type PASS #设置验证类型和密码，MASTER和BACKUP必须使用相同的密码才能正常通信</span><br><span class="line">        auth_pass 1111</span><br><span class="line">    &#125;</span><br><span class="line">    track_script &#123;</span><br><span class="line">        chk_http_port                   #（调用检测脚本）</span><br><span class="line">    &#125;</span><br><span class="line">    virtual_ipaddress &#123;</span><br><span class="line">        192.168.16.130                   # 定义虚拟ip(VIP)，可多设，每行一个</span><br><span class="line">    &#125;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+<p>检测脚本：</p>
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br></pre></td><td class="code"><pre><span class="line">#!/bin/bash</span><br><span class="line">#检测nginx是否启动了</span><br><span class="line">A=`ps -C nginx --no-header |wc -l`        </span><br><span class="line">if [ $A -eq 0 ];then    #如果nginx没有启动就启动nginx                        </span><br><span class="line">      systemctl start nginx                #重启nginx</span><br><span class="line">      if [ `ps -C nginx --no-header |wc -l` -eq 0 ];then    #nginx重启失败，则停掉keepalived服务，进行VIP转移</span><br><span class="line">              killall keepalived                    </span><br><span class="line">      fi</span><br><span class="line">fi</span><br></pre></td></tr></table></figure>
+
+<p>脚本授权:<code>chmod 775 check_nginx_pid.sh</code></p>
+<p>说明：脚本必须通过授权，不然没权限访问啊，在这里我们两条服务器执行、VIP(virtual_ipaddress:192.168.16.130),我们在生产环境是直接通过vip来访问服务。</p>
+<p>模拟nginx故障：</p>
+<p>修改两个服务器默认访问的Nginx的html页面作为区别。</p>
+<p>首先访问192.168.16.130,通过vip进行访问，页面显示192.168.16.128；说明当前是主服务器提供的服务。</p>
+<p>这个时候192.168.16.128主服务器执行命令：</p>
+<p><code>systemctl stop nginx; #停止nginx</code></p>
+<p>再次访问vip(192.168.16.130)发现这个时候页面显示的还是：192.168.16.128，这是脚本里面自动重启。</p>
+<p>现在直接将192.168.16.128服务器关闭，在此访问vip(192.168.16.130)现在发现页面显示192.168.16.129这个时候keepalived就自动故障转移了，一套企业级生产环境的高可用方案就搭建好了。</p>
+<p>keepalived中还有许多功能比如：邮箱提醒等</p>
+ 
+      <!-- reward -->
+      
+    </div>
+    
+
+    <!-- copyright -->
+    
+    <footer class="article-footer">
+       
+  <ul class="article-tag-list" itemprop="keywords"><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/Nginx/" rel="tag">Nginx</a></li></ul>
+
+    </footer>
+  </div>
+
+   
+    
+</article>
+
+    
+    <article
+  id="post-nginx/动静分离"
+  class="article article-type-post"
+  itemscope
+  itemprop="blogPost"
+  data-scroll-reveal
+>
+  <div class="article-inner">
+    
+    <header class="article-header">
+       
+<h2 itemprop="name">
+  <a class="article-title" href="/posts/a827136236e3/"
+    >动静分离</a> 
+</h2>
+ 
+
+      
+    </header>
+     
+    <div class="article-meta">
+      <a href="/posts/a827136236e3/" class="article-date">
+  <time datetime="2021-06-16T02:15:34.000Z" itemprop="datePublished">2021-06-16</time>
+</a> 
+  <div class="article-category">
+    <a class="article-category-link" href="/categories/Nginx/">Nginx</a>
+  </div>
+   
+    </div>
+      
+    <div class="article-entry" itemprop="articleBody">
+       
+  <h4 id="静态资源部署在nginx服务器"><a href="#静态资源部署在nginx服务器" class="headerlink" title="静态资源部署在nginx服务器"></a>静态资源部署在nginx服务器</h4><p>nginx来当做静态资源服务器</p>
+<p>来自80端口的请求会去nginx服务器根路径下的data文件夹查找</p>
+<p><code>http://xxx.xxx.xxx.xx/static/a/logo.png</code> 会请求根路径下 <code>/data/static/a/logo.png</code></p>
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br></pre></td><td class="code"><pre><span class="line">http &#123;</span><br><span class="line">    include       mime.types;</span><br><span class="line">    default_type  application/octet-stream;</span><br><span class="line"></span><br><span class="line"></span><br><span class="line">    server &#123;</span><br><span class="line">        listen       80;</span><br><span class="line">        server_name  xxx.xxx.xxx.xxx;</span><br><span class="line"></span><br><span class="line">        #charset koi8-r;</span><br><span class="line"></span><br><span class="line">        #access_log  logs/host.access.log  main;</span><br><span class="line"></span><br><span class="line">        location /static/ &#123;</span><br><span class="line">            root /data/;</span><br><span class="line">        &#125;</span><br><span class="line"></span><br><span class="line">    &#125;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+<h4 id="转发到静态资源服务器"><a href="#转发到静态资源服务器" class="headerlink" title="转发到静态资源服务器"></a>转发到静态资源服务器</h4><p>转发时使用负载均衡配置</p>
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br></pre></td><td class="code"><pre><span class="line">http &#123;</span><br><span class="line">    include       mime.types;</span><br><span class="line">    default_type  application/octet-stream;</span><br><span class="line">    upstream  stack_pools &#123;</span><br><span class="line">            server 172.25.254.134:80 weight=5;</span><br><span class="line">    &#125;</span><br><span class="line">    upstream  dynamic_pools &#123;</span><br><span class="line">            server 172.25.254.135:80 weight=5;</span><br><span class="line">    &#125;</span><br><span class="line">    server &#123;</span><br><span class="line">        listen       80;</span><br><span class="line">        server_name  xxx.xxx.xxx.xx;</span><br><span class="line">        location / &#123;</span><br><span class="line">            root   html;</span><br><span class="line">            index  index.html index.htm;</span><br><span class="line">            proxy_pass http://dynamic_pools;</span><br><span class="line">        &#125;</span><br><span class="line">        location /image/ &#123;</span><br><span class="line">            proxy_pass http://stack_pools;</span><br><span class="line">        &#125;</span><br><span class="line">        location /dynamic/ &#123;</span><br><span class="line">            roxy_pass http://dynamic_pools;</span><br><span class="line">        &#125;</span><br><span class="line">    &#125;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure> 
+      <!-- reward -->
+      
+    </div>
+    
+
+    <!-- copyright -->
+    
+    <footer class="article-footer">
+       
+  <ul class="article-tag-list" itemprop="keywords"><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/Nginx/" rel="tag">Nginx</a></li></ul>
+
+    </footer>
+  </div>
+
+   
+    
+</article>
+
+    
+    <article
   id="post-nginx/负载均衡"
   class="article article-type-post"
   itemscope
@@ -289,697 +809,6 @@
     <footer class="article-footer">
        
   <ul class="article-tag-list" itemprop="keywords"><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/Nginx/" rel="tag">Nginx</a></li></ul>
-
-    </footer>
-  </div>
-
-   
-    
-</article>
-
-    
-    <article
-  id="post-nginx/常用命令"
-  class="article article-type-post"
-  itemscope
-  itemprop="blogPost"
-  data-scroll-reveal
->
-  <div class="article-inner">
-    
-    <header class="article-header">
-       
-<h2 itemprop="name">
-  <a class="article-title" href="/posts/5e364d61a375/"
-    >常用命令</a> 
-</h2>
- 
-
-      
-    </header>
-     
-    <div class="article-meta">
-      <a href="/posts/5e364d61a375/" class="article-date">
-  <time datetime="2021-06-14T15:58:28.000Z" itemprop="datePublished">2021-06-14</time>
-</a> 
-  <div class="article-category">
-    <a class="article-category-link" href="/categories/Nginx/">Nginx</a>
-  </div>
-   
-    </div>
-      
-    <div class="article-entry" itemprop="articleBody">
-       
-  <p>使用nginx命令需要进入到nginx可执行文件目录 <code>/usr/sbin/</code></p>
-<p><a target="_blank" rel="noopener" href="http://nginx.org/en/docs/">nginx document</a></p>
-<h4 id="查看版本"><a href="#查看版本" class="headerlink" title="查看版本"></a>查看版本</h4><figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">nginx -v</span><br></pre></td></tr></table></figure>
-
-<h4 id="启动nginx"><a href="#启动nginx" class="headerlink" title="启动nginx"></a>启动nginx</h4><figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">./nginx</span><br></pre></td></tr></table></figure>
-
-<h4 id="快速关闭"><a href="#快速关闭" class="headerlink" title="快速关闭"></a>快速关闭</h4><figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">nginx -s stop</span><br></pre></td></tr></table></figure>
-
-<h4 id="安全关闭"><a href="#安全关闭" class="headerlink" title="安全关闭"></a>安全关闭</h4><figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">nginx -s quit</span><br></pre></td></tr></table></figure>
-
-<h4 id="重新加载配置文件"><a href="#重新加载配置文件" class="headerlink" title="重新加载配置文件"></a>重新加载配置文件</h4><figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">nginx -s reload</span><br></pre></td></tr></table></figure> 
-      <!-- reward -->
-      
-    </div>
-    
-
-    <!-- copyright -->
-    
-    <footer class="article-footer">
-       
-  <ul class="article-tag-list" itemprop="keywords"><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/Nginx/" rel="tag">Nginx</a></li></ul>
-
-    </footer>
-  </div>
-
-   
-    
-</article>
-
-    
-    <article
-  id="post-nginx/安装"
-  class="article article-type-post"
-  itemscope
-  itemprop="blogPost"
-  data-scroll-reveal
->
-  <div class="article-inner">
-    
-    <header class="article-header">
-       
-<h2 itemprop="name">
-  <a class="article-title" href="/posts/93833a74178a/"
-    >nginx安装</a> 
-</h2>
- 
-
-      
-    </header>
-     
-    <div class="article-meta">
-      <a href="/posts/93833a74178a/" class="article-date">
-  <time datetime="2021-06-14T15:32:14.000Z" itemprop="datePublished">2021-06-14</time>
-</a> 
-  <div class="article-category">
-    <a class="article-category-link" href="/categories/Nginx/">Nginx</a>
-  </div>
-   
-    </div>
-      
-    <div class="article-entry" itemprop="articleBody">
-       
-  <h4 id="命令安装"><a href="#命令安装" class="headerlink" title="命令安装"></a>命令安装</h4><p>ubuntu</p>
-<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line">sudo apt update</span><br><span class="line">sudo apt install nginx</span><br></pre></td></tr></table></figure>
-
-<p>安装成功后会默认启动在80端口，直接访问会显示nginx主页</p>
-<h4 id="查看可执行文件"><a href="#查看可执行文件" class="headerlink" title="查看可执行文件"></a>查看可执行文件</h4><figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">which nginx</span><br></pre></td></tr></table></figure>
-
-<h4 id="查看安装位置"><a href="#查看安装位置" class="headerlink" title="查看安装位置"></a>查看安装位置</h4><figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">whereis nginx</span><br></pre></td></tr></table></figure>
-
-<h4 id="修改防火墙规则"><a href="#修改防火墙规则" class="headerlink" title="修改防火墙规则"></a>修改防火墙规则</h4><p>UFW 全称为Uncomplicated Firewall，是Ubuntu 系统上默认的防火墙组件, 为了轻量化配置iptables 而开发的一款工具。</p>
-<p>启用防火墙</p>
-<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">sudo ufw enable</span><br></pre></td></tr></table></figure>
-
-<p>允许80端口访问</p>
-<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">sudo ufw allow 80</span><br></pre></td></tr></table></figure>
-
- 
-      <!-- reward -->
-      
-    </div>
-    
-
-    <!-- copyright -->
-    
-    <footer class="article-footer">
-       
-  <ul class="article-tag-list" itemprop="keywords"><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/Nginx/" rel="tag">Nginx</a></li></ul>
-
-    </footer>
-  </div>
-
-   
-    
-</article>
-
-    
-    <article
-  id="post-nginx/基本概念"
-  class="article article-type-post"
-  itemscope
-  itemprop="blogPost"
-  data-scroll-reveal
->
-  <div class="article-inner">
-    
-    <header class="article-header">
-       
-<h2 itemprop="name">
-  <a class="article-title" href="/posts/5f1ed9c82da0/"
-    >基本概念</a> 
-</h2>
- 
-
-      
-    </header>
-     
-    <div class="article-meta">
-      <a href="/posts/5f1ed9c82da0/" class="article-date">
-  <time datetime="2021-06-09T08:25:41.000Z" itemprop="datePublished">2021-06-09</time>
-</a> 
-  <div class="article-category">
-    <a class="article-category-link" href="/categories/Nginx/">Nginx</a>
-  </div>
-   
-    </div>
-      
-    <div class="article-entry" itemprop="articleBody">
-       
-  <h4 id="Nginx是什么"><a href="#Nginx是什么" class="headerlink" title="Nginx是什么"></a>Nginx是什么</h4><p>Nginx (engine x) 是一个高性能的HTTP和反向代理web服务器。最高支持50000的并发链接。</p>
-<h4 id="正向代理"><a href="#正向代理" class="headerlink" title="正向代理"></a>正向代理</h4><p><img src="/posts/5f1ed9c82da0/0001.png"></p>
-<p>正向代理的用途：</p>
-<p>（1）访问原来无法访问的资源，如google</p>
-<p>（2）可以做缓存，加速访问资源</p>
-<p>（3）对客户端访问授权，上网进行认证</p>
-<p>（4）代理可以记录用户访问记录（上网行为管理），对外隐藏用户信息</p>
-<h4 id="反向代理"><a href="#反向代理" class="headerlink" title="反向代理"></a>反向代理</h4><p>反向代理（Reverse Proxy）实际运行方式是指以代理服务器来接受internet上的连接请求，然后将请求转发给内部网络上的服务器，并将从服务器上得到的结果返回给internet上请求连接的客户端，此时代理服务器对外就表现为一个服务器</p>
-<p><img src="/posts/5f1ed9c82da0/0002.png"></p>
-<p>反向代理的作用：</p>
-<p>（1）保证内网的安全，阻止web攻击，大型网站，通常将反向代理作为公网访问地址，Web服务器是内网</p>
-<p>（2）负载均衡，通过反向代理服务器来优化网站的负载</p>
-<h4 id="负载均衡"><a href="#负载均衡" class="headerlink" title="负载均衡"></a>负载均衡</h4><p>增加服务器的数量，在大量请求的时候，把请求平均分发到不同的服务器</p>
-<h4 id="动静分离"><a href="#动静分离" class="headerlink" title="动静分离"></a>动静分离</h4><p>在请求资源的时候，区分静态资源（js,html.css）和动态资源(serverlet,jsp)，把不同资源的请求转发到不同的服务器</p>
- 
-      <!-- reward -->
-      
-    </div>
-    
-
-    <!-- copyright -->
-    
-    <footer class="article-footer">
-       
-  <ul class="article-tag-list" itemprop="keywords"><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/Nginx/" rel="tag">Nginx</a></li></ul>
-
-    </footer>
-  </div>
-
-   
-    
-</article>
-
-    
-    <article
-  id="post-react/基础/useEffect指南"
-  class="article article-type-post"
-  itemscope
-  itemprop="blogPost"
-  data-scroll-reveal
->
-  <div class="article-inner">
-    
-    <header class="article-header">
-       
-<h2 itemprop="name">
-  <a class="article-title" href="/posts/4af037980b34/"
-    >useEffect指南</a> 
-</h2>
- 
-
-      
-    </header>
-     
-    <div class="article-meta">
-      <a href="/posts/4af037980b34/" class="article-date">
-  <time datetime="2021-06-02T01:00:44.000Z" itemprop="datePublished">2021-06-02</time>
-</a> 
-  <div class="article-category">
-    <a class="article-category-link" href="/categories/React/">React</a> / <a class="article-category-link" href="/categories/React/%E5%9F%BA%E7%A1%80/">基础</a>
-  </div>
-   
-    </div>
-      
-    <div class="article-entry" itemprop="articleBody">
-       
-  <h4 id="每次渲染时，UseEffect都是一个新的自己"><a href="#每次渲染时，UseEffect都是一个新的自己" class="headerlink" title="每次渲染时，UseEffect都是一个新的自己"></a>每次渲染时，UseEffect都是一个新的自己</h4><p>每次重新渲染的时，useEffect都会重新执行，而且如果没有添加依赖项数组的时候，每个useEffect都是全新的</p>
-<p>而且useEffect内部用到的变量都是属于，当前此次执行时捕获到的变量，所以如下：</p>
-<figure class="highlight javascript"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">function</span> <span class="title function_">Counter</span>(<span class="params"></span>) &#123;</span><br><span class="line">  <span class="keyword">const</span> [count, setCount] = <span class="title function_">useState</span>(<span class="number">0</span>);</span><br><span class="line"></span><br><span class="line">  <span class="keyword">function</span> <span class="title function_">handleAlertClick</span>(<span class="params"></span>) &#123;</span><br><span class="line">    <span class="built_in">setTimeout</span>(<span class="function">() =&gt;</span> &#123;</span><br><span class="line">      <span class="title function_">alert</span>(<span class="string">&#x27;You clicked on: &#x27;</span> + count);</span><br><span class="line">    &#125;, <span class="number">3000</span>);</span><br><span class="line">  &#125;</span><br><span class="line"></span><br><span class="line">  <span class="keyword">return</span> (</span><br><span class="line">    <span class="language-xml"><span class="tag">&lt;<span class="name">div</span>&gt;</span></span></span><br><span class="line"><span class="language-xml">      <span class="tag">&lt;<span class="name">p</span>&gt;</span>You clicked &#123;count&#125; times<span class="tag">&lt;/<span class="name">p</span>&gt;</span></span></span><br><span class="line"><span class="language-xml">      <span class="tag">&lt;<span class="name">button</span> <span class="attr">onClick</span>=<span class="string">&#123;()</span> =&gt;</span> setCount(count + 1)&#125;&gt;</span></span><br><span class="line"><span class="language-xml">        Click me</span></span><br><span class="line"><span class="language-xml">      <span class="tag">&lt;/<span class="name">button</span>&gt;</span></span></span><br><span class="line"><span class="language-xml">      <span class="tag">&lt;<span class="name">button</span> <span class="attr">onClick</span>=<span class="string">&#123;handleAlertClick&#125;</span>&gt;</span></span></span><br><span class="line"><span class="language-xml">        Show alert</span></span><br><span class="line"><span class="language-xml">      <span class="tag">&lt;/<span class="name">button</span>&gt;</span></span></span><br><span class="line"><span class="language-xml">    <span class="tag">&lt;/<span class="name">div</span>&gt;</span></span></span><br><span class="line">  );</span><br><span class="line">&#125; </span><br></pre></td></tr></table></figure>
-
-<p>点击alert按钮之后快速点击click按钮，在定时器结束之后并不会弹出修改后的值，而是弹出在点击alert时useEffect捕获到的状态</p>
-<p>如果你想读取一个过去或是未来的值，你可以用一个Ref去保存，因此对数据的操作不是在react的默认行为中，这样虽然显得代码不够干净，但可以确认是需要这样做。</p>
-<h4 id="useEffect中的清理"><a href="#useEffect中的清理" class="headerlink" title="useEffect中的清理"></a>useEffect中的清理</h4><p>React只会在浏览器绘制后运行effects。这使得你的应用更流畅因为大多数effects并不会阻塞屏幕的更新。Effect的清除同样被延迟了。<strong>上一次的effect会在重新渲染后被清除</strong></p>
-<p>执行的过程应该是: <strong>渲染新UI -&gt; 清除旧的Effect -&gt; 执行新的Effect</strong></p>
-<p><strong>清除函数只能读取到在旧的Effect执行时捕获到的变量</strong></p>
-<h4 id="Effect依赖"><a href="#Effect依赖" class="headerlink" title="Effect依赖"></a>Effect依赖</h4><p>React它统一描述了初始渲染和之后的更新，React会根据我们当前的props和state同步到DOM，useEffect使你能够根据props和state同步React tree之外的东西，也包括常说的副作用。</p>
-<p>如果你试图写一个effect会根据是否第一次渲染而表现不一致，可能违背了React初衷</p>
-<p>但是如果诚实的告诉了Effect依赖，还可能存在问题:</p>
-<figure class="highlight javascript"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br></pre></td><td class="code"><pre><span class="line"><span class="title function_">useEffect</span>(<span class="function">() =&gt;</span> &#123;</span><br><span class="line">  <span class="keyword">const</span> id = <span class="built_in">setInterval</span>(<span class="function">() =&gt;</span> &#123;</span><br><span class="line">    <span class="title function_">setCount</span>(count + <span class="number">1</span>);</span><br><span class="line">  &#125;, <span class="number">1000</span>);</span><br><span class="line">  <span class="keyword">return</span> <span class="function">() =&gt;</span> <span class="built_in">clearInterval</span>(id);</span><br><span class="line">&#125;, [count]);</span><br></pre></td></tr></table></figure>
-
-<p>由于依赖项的改变定时器被清除</p>
-<p>有两种方法可以解决，使用setState回调函数，或者使用useReducer, <strong>如果useReducer还需要依赖其他的内部变量，可以吧useReducer放到函数组建内部定义</strong></p>
-<p>有的时候可能会觉得一个函数不会变换，所以没有加到依赖中，但事实上</p>
-<figure class="highlight javascript"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">function</span> <span class="title function_">SearchResults</span>(<span class="params"></span>) &#123;</span><br><span class="line">  <span class="keyword">const</span> [query, setQuery] = <span class="title function_">useState</span>(<span class="string">&#x27;react&#x27;</span>);</span><br><span class="line"></span><br><span class="line">  <span class="keyword">function</span> <span class="title function_">getFetchUrl</span>(<span class="params"></span>) &#123;</span><br><span class="line">    <span class="keyword">return</span> <span class="string">&#x27;https://hn.algolia.com/api/v1/search?query=&#x27;</span> + query;</span><br><span class="line">  &#125;</span><br><span class="line"></span><br><span class="line">  <span class="keyword">async</span> <span class="keyword">function</span> <span class="title function_">fetchData</span>(<span class="params"></span>) &#123;</span><br><span class="line">    <span class="keyword">const</span> result = <span class="keyword">await</span> <span class="title function_">axios</span>(<span class="title function_">getFetchUrl</span>());</span><br><span class="line">    <span class="title function_">setData</span>(result.<span class="property">data</span>);</span><br><span class="line">  &#125;</span><br><span class="line"></span><br><span class="line">  <span class="title function_">useEffect</span>(<span class="function">() =&gt;</span> &#123;</span><br><span class="line">    <span class="title function_">fetchData</span>();</span><br><span class="line">  &#125;, []);</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
-
-<p>函数依赖的参数可能在其他的方法中变化</p>
-<p>简单处理的话可以吧相关的函数都放到useEffect中，而依赖项只是简单的query</p>
-<p><strong>另外也可以吧getFetchUrl放到组件外部，把query当做参数传入，或者使用useCallback包裹getFetchUrl</strong></p>
-<h4 id="竞态问题"><a href="#竞态问题" class="headerlink" title="竞态问题"></a>竞态问题</h4><figure class="highlight javascript"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">class</span> <span class="title class_">Article</span> <span class="keyword">extends</span> <span class="title class_ inherited__">Component</span> &#123;</span><br><span class="line">  state = &#123;</span><br><span class="line">    <span class="attr">article</span>: <span class="literal">null</span></span><br><span class="line">  &#125;;</span><br><span class="line">  <span class="title function_">componentDidMount</span>(<span class="params"></span>) &#123;</span><br><span class="line">    <span class="variable language_">this</span>.<span class="title function_">fetchData</span>(<span class="variable language_">this</span>.<span class="property">props</span>.<span class="property">id</span>);</span><br><span class="line">  &#125;</span><br><span class="line">  <span class="title function_">componentDidUpdate</span>(<span class="params">prevProps</span>) &#123;</span><br><span class="line">    <span class="keyword">if</span> (prevProps.<span class="property">id</span> !== <span class="variable language_">this</span>.<span class="property">props</span>.<span class="property">id</span>) &#123;</span><br><span class="line">      <span class="variable language_">this</span>.<span class="title function_">fetchData</span>(<span class="variable language_">this</span>.<span class="property">props</span>.<span class="property">id</span>);</span><br><span class="line">    &#125;</span><br><span class="line">  &#125;</span><br><span class="line">  <span class="keyword">async</span> <span class="title function_">fetchData</span>(<span class="params">id</span>) &#123;</span><br><span class="line">    <span class="keyword">const</span> article = <span class="keyword">await</span> <span class="variable constant_">API</span>.<span class="title function_">fetchArticle</span>(id);</span><br><span class="line">    <span class="variable language_">this</span>.<span class="title function_">setState</span>(&#123; article &#125;);</span><br><span class="line">  &#125;</span><br><span class="line">  <span class="comment">// ...</span></span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
-
-<p>如果componentDidUpdate中的请求比componentDidMount中的请求慢，那么更新中的请求数据会被初始化的请求数据覆盖</p>
-<p>我们想做的是，可以打断旧的更新</p>
-<figure class="highlight javascript"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">function</span> <span class="title function_">Article</span>(<span class="params">&#123; id &#125;</span>) &#123;</span><br><span class="line">  <span class="keyword">const</span> [article, setArticle] = <span class="title function_">useState</span>(<span class="literal">null</span>);</span><br><span class="line"></span><br><span class="line">  <span class="title function_">useEffect</span>(<span class="function">() =&gt;</span> &#123;</span><br><span class="line">    <span class="keyword">let</span> didCancel = <span class="literal">false</span>;</span><br><span class="line"></span><br><span class="line">    <span class="keyword">async</span> <span class="keyword">function</span> <span class="title function_">fetchData</span>(<span class="params"></span>) &#123;</span><br><span class="line">      <span class="keyword">const</span> article = <span class="keyword">await</span> <span class="variable constant_">API</span>.<span class="title function_">fetchArticle</span>(id);</span><br><span class="line">      <span class="keyword">if</span> (!didCancel) &#123;</span><br><span class="line">        <span class="title function_">setArticle</span>(article);</span><br><span class="line">      &#125;</span><br><span class="line">    &#125;</span><br><span class="line">    <span class="title function_">fetchData</span>();</span><br><span class="line">    <span class="keyword">return</span> <span class="function">() =&gt;</span> &#123;</span><br><span class="line">      didCancel = <span class="literal">true</span>;</span><br><span class="line">    &#125;;</span><br><span class="line">  &#125;, [id]);</span><br><span class="line">&#125;</span><br><span class="line"></span><br></pre></td></tr></table></figure> 
-      <!-- reward -->
-      
-    </div>
-    
-
-    <!-- copyright -->
-    
-    <footer class="article-footer">
-       
-  <ul class="article-tag-list" itemprop="keywords"><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/React/" rel="tag">React</a></li></ul>
-
-    </footer>
-  </div>
-
-   
-    
-</article>
-
-    
-    <article
-  id="post-javascript/跨域CORS"
-  class="article article-type-post"
-  itemscope
-  itemprop="blogPost"
-  data-scroll-reveal
->
-  <div class="article-inner">
-    
-    <header class="article-header">
-       
-<h2 itemprop="name">
-  <a class="article-title" href="/posts/2db9089a78d8/"
-    >跨域CORS</a> 
-</h2>
- 
-
-      
-    </header>
-     
-    <div class="article-meta">
-      <a href="/posts/2db9089a78d8/" class="article-date">
-  <time datetime="2021-05-31T03:20:46.000Z" itemprop="datePublished">2021-05-31</time>
-</a> 
-  <div class="article-category">
-    <a class="article-category-link" href="/categories/JavaScript/">JavaScript</a>
-  </div>
-   
-    </div>
-      
-    <div class="article-entry" itemprop="articleBody">
-       
-  <h4 id="cors是什么"><a href="#cors是什么" class="headerlink" title="cors是什么"></a>cors是什么</h4><p>由于浏览器的同源策略，不允许访问非同源的资源，cors的目的就是解决这个问题，也就是常说的跨域访问。</p>
-<p>CORS需要浏览器和服务器同时支持。目前，所有浏览器都支持该功能，IE浏览器不能低于IE10。</p>
-<p>整个CORS通信过程，都是浏览器自动完成，不需要用户参与。对于开发者来说，CORS通信与同源的AJAX通信没有差别，代码完全一样。浏览器一旦发现AJAX请求跨源，就会自动添加一些附加的头信息，有时还会多出一次附加的请求，但用户不会有感觉。</p>
-<p>因此，实现CORS通信的关键是服务器。只要服务器实现了CORS接口，就可以跨源通信。</p>
-<h4 id="两种请求"><a href="#两种请求" class="headerlink" title="两种请求"></a>两种请求</h4><p>浏览器将CORS请求分成两类：简单请求（simple request）和非简单请求（not-so-simple request）。</p>
-<p>只要同时满足以下两大条件，就属于简单请求。</p>
-<blockquote>
-<p>1.请求方法是以下三种方法之一： HEAD GET POST<br>2.HTTP的头信息不超出以下几种字段： Accept | Accept-Language | Content-Language | Last-Event-ID<br>Content-Type：只限于三个值application&#x2F;x-www-form-urlencoded、multipart&#x2F;form-data、text&#x2F;plain</p>
-</blockquote>
-<figure class="highlight javascript"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br></pre></td><td class="code"><pre><span class="line"><span class="title function_">fetch</span>(<span class="string">&quot;http://xxx&quot;</span>,&#123;</span><br><span class="line">  <span class="attr">headers</span>:&#123;</span><br><span class="line">      <span class="string">&#x27;content-type&#x27;</span>:<span class="string">&#x27;application/json&#x27;</span></span><br><span class="line">  &#125;</span><br><span class="line">  <span class="attr">method</span>:<span class="string">&#x27;POST&#x27;</span>,</span><br><span class="line">  <span class="attr">body</span>: <span class="title class_">JSON</span>.<span class="title function_">stringify</span>(body)</span><br><span class="line">&#125;)</span><br></pre></td></tr></table></figure>
-
-
-<p>这是为了兼容表单（form），因为历史上表单一直可以发出跨域请求。AJAX 的跨域设计就是，只要表单可以发，AJAX 就可以直接发。</p>
-<p>凡是不同时满足上面两个条件，就属于非简单请求。</p>
-<h4 id="简单请求"><a href="#简单请求" class="headerlink" title="简单请求"></a>简单请求</h4><p>对于简单请求，浏览器直接发出CORS请求。具体来说，就是在头信息之中，增加一个Origin字段。</p>
-<blockquote>
-<p>Origin: http://xxx</p>
-</blockquote>
-<p>上面的头信息中，Origin字段用来说明，本次请求来自哪个源（协议 + 域名 + 端口）。服务器根据这个值，决定是否同意这次请求。</p>
-<p>如果Origin指定的源，不在许可范围内，服务器会返回一个正常的HTTP回应。浏览器发现，这个回应的头信息没有包含Access-Control-Allow-Origin字段（详见下文），就知道出错了，从而抛出一个错误，被XMLHttpRequest的onerror回调函数捕获。注意，这种错误无法通过状态码识别，因为HTTP回应的状态码有可能是200。</p>
-<p>如果Origin指定的域名在许可范围内，服务器返回的响应，会多出几个头信息字段。</p>
-<blockquote>
-<p>Access-Control-Allow-Origin: http://xxx<br>Access-Control-Allow-Credentials: true<br>Access-Control-Expose-Headers: FooBar<br>Content-Type: text&#x2F;html; charset&#x3D;utf-8</p>
-</blockquote>
-<p>上面的头信息之中，有三个与CORS请求相关的字段，都以Access-Control-开头。</p>
-<ul>
-<li>Access-Control-Allow-Origin</li>
-</ul>
-<p>该字段是必须的。它的值要么是请求时Origin字段的值，要么是一个*，表示接受任意域名的请求。</p>
-<ul>
-<li>Access-Control-Allow-Credentials</li>
-</ul>
-<p>该字段可选。它的值是一个布尔值，表示是否允许发送Cookie。默认情况下，Cookie不包括在CORS请求之中。设为true，即表示服务器明确许可，Cookie可以包含在请求中，一起发给服务器。这个值也只能设为true，如果服务器不要浏览器发送Cookie，删除该字段即可。</p>
-<ul>
-<li>Access-Control-Expose-Headers</li>
-</ul>
-<p>该字段可选。CORS请求时，XMLHttpRequest对象的getResponseHeader()方法只能拿到6个基本字段：Cache-Control、Content-Language、Content-Type、Expires、Last-Modified、Pragma。如果想拿到其他字段，就必须在Access-Control-Expose-Headers里面指定。上面的例子指定，getResponseHeader(‘FooBar’)可以返回FooBar字段的值。</p>
-<ul>
-<li>withCredentials 属性</li>
-</ul>
-<p>上面说到，CORS请求默认不发送Cookie和HTTP认证信息。如果要把Cookie发到服务器，一方面要服务器同意，指定Access-Control-Allow-Credentials字段。</p>
-<blockquote>
-<p>Access-Control-Allow-Credentials: true</p>
-</blockquote>
-<p>另一方面，开发者必须在AJAX请求中打开withCredentials属性。</p>
-<figure class="highlight javascript"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">var</span> xhr = <span class="keyword">new</span> <span class="title class_">XMLHttpRequest</span>();</span><br><span class="line">xhr.<span class="property">withCredentials</span> = <span class="literal">true</span>;</span><br></pre></td></tr></table></figure>
-
-<p>否则，即使服务器同意发送Cookie，浏览器也不会发送。或者，服务器要求设置Cookie，浏览器也不会处理。</p>
-<p>但是，如果省略withCredentials设置，有的浏览器还是会一起发送Cookie。这时，可以显式关闭withCredentials。</p>
-<figure class="highlight javascript"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">xhr.<span class="property">withCredentials</span> = <span class="literal">false</span>;</span><br></pre></td></tr></table></figure>
-
-<p><strong>需要注意的是，如果要发送Cookie，Access-Control-Allow-Origin就不能设为星号，必须指定明确的、与请求网页一致的域名。同时，Cookie依然遵循同源政策，只有用服务器域名设置的Cookie才会上传，其他域名的Cookie并不会上传，且（跨源）原网页代码中的document.cookie也无法读取服务器域名下的Cookie。</strong></p>
-<h4 id="非简单请求"><a href="#非简单请求" class="headerlink" title="非简单请求"></a>非简单请求</h4><p>非简单请求是那种对服务器有特殊要求的请求，比如请求方法是PUT或DELETE，或者Content-Type字段的类型是application&#x2F;json。</p>
-<p>非简单请求的CORS请求，会在正式通信之前，增加一次HTTP查询请求，称为”预检”请求（preflight）。</p>
-<p>浏览器先询问服务器，当前网页所在的域名是否在服务器的许可名单之中，以及可以使用哪些HTTP动词和头信息字段。只有得到肯定答复，浏览器才会发出正式的XMLHttpRequest请求，否则就报错。</p>
-<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br></pre></td><td class="code"><pre><span class="line">OPTIONS /cors HTTP/1.1</span><br><span class="line">Origin: xxx</span><br><span class="line">Access-Control-Request-Method: PUT</span><br><span class="line">Access-Control-Request-Headers: X-Custom-Header</span><br><span class="line">Host: api.alice.com</span><br><span class="line">Accept-Language: en-US</span><br><span class="line">Connection: keep-alive</span><br><span class="line">User-Agent: Mozilla/5.0...</span><br></pre></td></tr></table></figure>
-
-<p>“预检”请求用的请求方法是OPTIONS，表示这个请求是用来询问的。头信息里面，关键字段是Origin，表示请求来自哪个源。</p>
-<p>除了Origin字段，”预检”请求的头信息包括两个特殊字段。</p>
-<ul>
-<li>Access-Control-Request-Method</li>
-</ul>
-<p>该字段是必须的，用来列出浏览器的CORS请求会用到哪些HTTP方法，上例是PUT。</p>
-<ul>
-<li>Access-Control-Request-Headers</li>
-</ul>
-<p>该字段是一个逗号分隔的字符串，指定浏览器CORS请求会额外发送的头信息字段，上例是X-Custom-Header。</p>
-<h4 id="预检请求的回应"><a href="#预检请求的回应" class="headerlink" title="预检请求的回应"></a>预检请求的回应</h4><p>服务器收到”预检”请求以后，检查了Origin、Access-Control-Request-Method和Access-Control-Request-Headers字段以后，确认允许跨源请求，就可以做出回应。</p>
-<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br></pre></td><td class="code"><pre><span class="line">HTTP/1.1 200 OK</span><br><span class="line">Date: Mon, 01 Dec 2008 01:15:39 GMT</span><br><span class="line">Server: Apache/2.0.61 (Unix)</span><br><span class="line">Access-Control-Allow-Origin: http://xxx</span><br><span class="line">Access-Control-Allow-Methods: GET, POST, PUT</span><br><span class="line">Access-Control-Allow-Headers: X-Custom-Header</span><br><span class="line">Content-Type: text/html; charset=utf-8</span><br><span class="line">Content-Encoding: gzip</span><br><span class="line">Content-Length: 0</span><br><span class="line">Keep-Alive: timeout=2, max=100</span><br><span class="line">Connection: Keep-Alive</span><br><span class="line">Content-Type: text/plain</span><br></pre></td></tr></table></figure>
-
-<p>上面的HTTP回应中，关键的是Access-Control-Allow-Origin字段，表示http://xxx可以请求数据。该字段也可以设为星号，表示同意任意跨源请求。</p>
-<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">Access-Control-Allow-Origin: *</span><br></pre></td></tr></table></figure>
-
-<p>如果服务器否定了”预检”请求，会返回一个正常的HTTP回应，但是没有任何CORS相关的头信息字段。这时，浏览器就会认定，服务器不同意预检请求，因此触发一个错误，被XMLHttpRequest对象的onerror回调函数捕获。控制台会打印出如下的报错信息。</p>
-<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line">XMLHttpRequest cannot load http://xxx</span><br><span class="line">Origin http://xxx is not allowed by Access-Control-Allow-Origin.</span><br></pre></td></tr></table></figure>
-
-<p>服务器回应的其他CORS相关字段如下。</p>
-<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br></pre></td><td class="code"><pre><span class="line">Access-Control-Allow-Methods: GET, POST, PUT</span><br><span class="line">Access-Control-Allow-Headers: X-Custom-Header</span><br><span class="line">Access-Control-Allow-Credentials: true</span><br><span class="line">Access-Control-Max-Age: 1728000</span><br></pre></td></tr></table></figure>
-
-<ul>
-<li>Access-Control-Allow-Methods</li>
-</ul>
-<p>该字段必需，它的值是逗号分隔的一个字符串，表明服务器支持的所有跨域请求的方法。注意，返回的是所有支持的方法，而不单是浏览器请求的那个方法。这是为了避免多次”预检”请求。</p>
-<ul>
-<li>Access-Control-Allow-Headers</li>
-</ul>
-<p>如果浏览器请求包括Access-Control-Request-Headers字段，则Access-Control-Allow-Headers字段是必需的。它也是一个逗号分隔的字符串，表明服务器支持的所有头信息字段，不限于浏览器在”预检”中请求的字段。</p>
-<ul>
-<li>Access-Control-Allow-Credentials</li>
-</ul>
-<p>该字段与简单请求时的含义相同。</p>
-<ul>
-<li>Access-Control-Max-Age</li>
-</ul>
-<p>该字段可选，用来指定本次预检请求的有效期，单位为秒。上面结果中，有效期是20天（1728000秒），即允许缓存该条回应1728000秒（即20天），在此期间，不用发出另一条预检请求。</p>
-<h4 id="浏览器的正常请求和回应"><a href="#浏览器的正常请求和回应" class="headerlink" title="浏览器的正常请求和回应"></a>浏览器的正常请求和回应</h4><p>一旦服务器通过了”预检”请求，以后每次浏览器正常的CORS请求，就都跟简单请求一样，会有一个Origin头信息字段。服务器的回应，也都会有一个Access-Control-Allow-Origin头信息字段。</p>
-<p>下面是”预检”请求之后，浏览器的正常CORS请求。</p>
-<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br></pre></td><td class="code"><pre><span class="line">PUT /cors HTTP/1.1</span><br><span class="line">Origin: http://api.bob.com</span><br><span class="line">Host: api.alice.com</span><br><span class="line">X-Custom-Header: value</span><br><span class="line">Accept-Language: en-US</span><br><span class="line">Connection: keep-alive</span><br><span class="line">User-Agent: Mozilla/5.0...</span><br></pre></td></tr></table></figure>
-
-<p>上面头信息的Origin字段是浏览器自动添加的。</p>
-<p>下面是服务器正常的回应。</p>
-<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line">Access-Control-Allow-Origin: http://xxx</span><br><span class="line">Content-Type: text/html; charset=utf-8</span><br></pre></td></tr></table></figure>
-
-<p>上面头信息中，Access-Control-Allow-Origin字段是每次回应都必定包含的。</p>
-<h4 id="与JSONP的比较"><a href="#与JSONP的比较" class="headerlink" title="与JSONP的比较"></a>与JSONP的比较</h4><p>CORS与JSONP的使用目的相同，但是比JSONP更强大。</p>
-<p>JSONP只支持GET请求，CORS支持所有类型的HTTP请求。JSONP的优势在于支持老式浏览器，以及可以向不支持CORS的网站请求数据。</p>
-<h4 id="fetch跨域遇到的问题"><a href="#fetch跨域遇到的问题" class="headerlink" title="fetch跨域遇到的问题"></a>fetch跨域遇到的问题</h4><p>如果服务器不支持CORS，fetch提供了三种模式，其中no-cors可以继续访问服务器</p>
-<p>fetch的mode配置项有3个值，如下:</p>
-<ul>
-<li><p>same-origin：该模式是不允许跨域的，它需要遵守同源策略，否则浏览器会返回一个error告知不能跨域；其对应的response type为basic。</p>
-</li>
-<li><p>cors: 该模式支持跨域请求，顾名思义它是以CORS的形式跨域；当然该模式也可以同域请求不需要后端额外的CORS支持；其对应的response type为cors。</p>
-</li>
-<li><p>no-cors: 该模式用于跨域请求但是服务器不带CORS响应头，也就是服务端不支持CORS；这也是fetch的特殊跨域请求方式；其对应的response type为opaque。</p>
-</li>
-</ul>
-<p><strong>no-cors该模式允许浏览器发送本次跨域请求，但是不能访问响应返回的内容，这也是其response type为opaque透明的原因。</strong></p>
- 
-      <!-- reward -->
-      
-    </div>
-    
-
-    <!-- copyright -->
-    
-    <footer class="article-footer">
-       
-  <ul class="article-tag-list" itemprop="keywords"><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/%E8%B7%A8%E5%9F%9Fcors/" rel="tag">跨域cors</a></li></ul>
-
-    </footer>
-  </div>
-
-   
-    
-</article>
-
-    
-    <article
-  id="post-react/基础/ReactHooks没有魔法只是数组"
-  class="article article-type-post"
-  itemscope
-  itemprop="blogPost"
-  data-scroll-reveal
->
-  <div class="article-inner">
-    
-    <header class="article-header">
-       
-<h2 itemprop="name">
-  <a class="article-title" href="/posts/90febc06ed69/"
-    >ReactHooks没有魔法只是数组</a> 
-</h2>
- 
-
-      
-    </header>
-     
-    <div class="article-meta">
-      <a href="/posts/90febc06ed69/" class="article-date">
-  <time datetime="2021-05-22T08:17:17.000Z" itemprop="datePublished">2021-05-22</time>
-</a> 
-  <div class="article-category">
-    <a class="article-category-link" href="/categories/React/">React</a> / <a class="article-category-link" href="/categories/React/%E5%9F%BA%E7%A1%80/">基础</a>
-  </div>
-   
-    </div>
-      
-    <div class="article-entry" itemprop="articleBody">
-       
-  <h4 id="Hooks规则"><a href="#Hooks规则" class="headerlink" title="Hooks规则"></a>Hooks规则</h4><p>Hooks在使用的时候有两条铁律：</p>
-<ul>
-<li><p>不要在循环，条件语句，深层函数调用Hooks</p>
-</li>
-<li><p>只在React函数组件中调用Hooks</p>
-</li>
-</ul>
-<h4 id="useState实现"><a href="#useState实现" class="headerlink" title="useState实现"></a>useState实现</h4><p>下面代码只是一个demo，是为了让我们理解hooks大概是怎么运作的。这不是 React 中的真正内部实现。</p>
-<h5 id="state初始化"><a href="#state初始化" class="headerlink" title="state初始化"></a>state初始化</h5><p>创建两个空数组，分别用来存放 setters 和 state，将 指针 指到 0 的位置：</p>
-<p><img src="/posts/90febc06ed69/0001.jpg"></p>
-<h5 id="组件首次render"><a href="#组件首次render" class="headerlink" title="组件首次render"></a>组件首次render</h5><p>当首次render这个函数组件的时候。</p>
-<p>每一个 useState 调用，当 首次 执行的时候，在 setter 数组里加入一个 setter 函数(和对应的数组index关联)；然后，将 state 加入对应的 state 数组里：</p>
-<p><img src="/posts/90febc06ed69/0002.jpg"></p>
-<h5 id="组件后续-非首次-render"><a href="#组件后续-非首次-render" class="headerlink" title="组件后续(非首次)render"></a>组件后续(非首次)render</h5><p>后续组件的每次render，指针都会重置为 0 ，每调用一次 useState，都会返回指针对应的两个数组里的 state 和 setter，然后将指针位置 +1。</p>
-<p><img src="/posts/90febc06ed69/0003.jpg"></p>
-<h5 id="setter调用处理"><a href="#setter调用处理" class="headerlink" title="setter调用处理"></a>setter调用处理</h5><p>每一个 setter 函数，都关联了对应的指针位置。当调用某个 setter 函数式，就可以通过这个函数所关联的指针，找到对应的 state，修改state数组里对应位置的值：</p>
-<p><img src="/posts/90febc06ed69/0004.jpg"></p>
-<h4 id="为什么hooks的调用顺序不能变呢？"><a href="#为什么hooks的调用顺序不能变呢？" class="headerlink" title="为什么hooks的调用顺序不能变呢？"></a>为什么hooks的调用顺序不能变呢？</h4><p>useState 是在一个 条件分支里。看看这样引入的bug。</p>
-<figure class="highlight javascript"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">let</span> firstRender = <span class="literal">true</span>;</span><br><span class="line"></span><br><span class="line"><span class="keyword">function</span> <span class="title function_">RenderFunctionComponent</span>(<span class="params"></span>) &#123;</span><br><span class="line">  <span class="keyword">let</span> initName;</span><br><span class="line"></span><br><span class="line">  <span class="keyword">if</span>(firstRender)&#123;</span><br><span class="line">    [initName] = <span class="title function_">useState</span>(<span class="string">&quot;Rudi&quot;</span>);</span><br><span class="line">    firstRender = <span class="literal">false</span>;</span><br><span class="line">  &#125;</span><br><span class="line">  <span class="keyword">const</span> [firstName, setFirstName] = <span class="title function_">useState</span>(initName);</span><br><span class="line">  <span class="keyword">const</span> [lastName, setLastName] = <span class="title function_">useState</span>(<span class="string">&quot;Yardley&quot;</span>);</span><br><span class="line"></span><br><span class="line">  <span class="keyword">return</span> (</span><br><span class="line">    <span class="language-xml"><span class="tag">&lt;<span class="name">Button</span> <span class="attr">onClick</span>=<span class="string">&#123;()</span> =&gt;</span> setFirstName(&quot;Fred&quot;)&#125;&gt;Fred<span class="tag">&lt;/<span class="name">Button</span>&gt;</span></span></span><br><span class="line">  );</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
-
-<h5 id="第一次render"><a href="#第一次render" class="headerlink" title="第一次render"></a>第一次render</h5><p><img src="/posts/90febc06ed69/0005.jpg"></p>
-<p>第一个render之后，我们的两个state，firstName 和 lastName 都对应了正确的值。接下来看看组件第二次render的时候，会发生什么情况。</p>
-<h5 id="第二次render"><a href="#第二次render" class="headerlink" title="第二次render"></a>第二次render</h5><p><img src="/posts/90febc06ed69/0006.jpg"></p>
-<p>第二次render之后，我们的两个state， firstName和 lastName 都成了 Rudi。这显然是错误的，必须要避免这样使用hooks！但是这也给我们演示了，hooks的调用顺序，为什么不能改变。</p>
-<p>react团队明确强调了hooks的2个使用原则，如果不按照这些原则来使用hooks，将会导致我们数据的不一致性！</p>
-<p>将hooks的操作想象成数组的操作，你可能不太会违背这些原则</p>
-<p>OK，现在你应该清楚，为什么我们不能在条件块或者循环语句里调用hooks了。因为调用hooks的过程中，我们是在操作数组上的指针，如果你在多次render中，改变了hooks的调用顺序，将导致数组上的指针和组件里的 useState 不匹配，从而返回错误的 state 以及 setter 。</p>
- 
-      <!-- reward -->
-      
-    </div>
-    
-
-    <!-- copyright -->
-    
-    <footer class="article-footer">
-       
-  <ul class="article-tag-list" itemprop="keywords"><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/React/" rel="tag">React</a></li></ul>
-
-    </footer>
-  </div>
-
-   
-    
-</article>
-
-    
-    <article
-  id="post-other/supOS常见问题"
-  class="article article-type-post"
-  itemscope
-  itemprop="blogPost"
-  data-scroll-reveal
->
-  <div class="article-inner">
-    
-    <header class="article-header">
-       
-<h2 itemprop="name">
-  <a class="article-title" href="/posts/81d3915806a9/"
-    >supOS常见问题</a> 
-</h2>
- 
-
-      
-    </header>
-     
-    <div class="article-meta">
-      <a href="/posts/81d3915806a9/" class="article-date">
-  <time datetime="2021-05-19T11:30:09.000Z" itemprop="datePublished">2021-05-19</time>
-</a> 
-  <div class="article-category">
-    <a class="article-category-link" href="/categories/%E5%85%B6%E4%BB%96/">其他</a>
-  </div>
-   
-    </div>
-      
-    <div class="article-entry" itemprop="articleBody">
-       
-  <h3 id="官方文档"><a href="#官方文档" class="headerlink" title="官方文档"></a><a target="_blank" rel="noopener" href="https://devc.supos.com/document?groupId=doc_group_id_005&devcContentId=DOC_CONTENT_1625187847647&version=supos_version_002&id=534">官方文档</a></h3><h4 id="目录"><a href="#目录" class="headerlink" title="目录"></a>目录</h4><p>① <a href="#%E5%AF%BC%E5%85%A5App%E6%8F%90%E7%A4%BA%E9%87%8D%E5%A4%8D%E4%B8%8D%E8%83%BD%E5%AF%BC%E5%85%A5">导入 App 提示重复不能导入 (3.0.3)</a><br>② <a href="#%E5%A6%82%E4%BD%95%E4%BF%AE%E6%94%B9%E6%A0%87%E7%AD%BE%E9%A1%B5%E7%BB%84%E4%BB%B6%E7%9A%84%E6%A0%87%E7%AD%BE%E6%A0%B7%E5%BC%8F">如何修改标签页组件的标签样式</a><br>③ <a href="#%E5%A6%82%E4%BD%95%E8%AE%BE%E7%BD%AE%E9%A1%B5%E9%9D%A2%E7%9A%84%E8%83%8C%E6%99%AF%E4%B8%BA%E9%80%8F%E6%98%8E%E8%89%B2">如何设置页面的背景为透明色</a><br>④ <a href="#%E6%9C%8D%E5%8A%A1%E4%B8%AD%E8%B0%83%E7%94%A8openApi%E6%88%96%E7%AC%AC%E4%B8%89%E6%96%B9%E6%8E%A5%E5%8F%A3">服务中调用 openApi 或第三方接口</a><br>④ <a href="#%E8%84%9A%E6%9C%AC%E4%B8%AD%E5%A6%82%E4%BD%95%E8%B0%83%E7%94%A8%E5%B9%B3%E5%8F%B0%E5%86%85%E7%BD%AE%E6%9C%8D%E5%8A%A1">脚本中如何调用平台内置服务</a><br>⑤ <a href="#%E6%9C%8D%E5%8A%A1%E4%B8%AD%E5%A6%82%E4%BD%95%E8%B0%83%E7%94%A8%E5%B9%B3%E5%8F%B0%E5%86%85%E7%BD%AE%E6%9C%8D%E5%8A%A1">服务中如何调用平台内置服务</a><br>⑥ <a href="#%E8%A1%A8%E6%A0%BC%E4%B8%AD%E8%AE%BE%E7%BD%AE%E5%8D%95%E5%85%83%E6%A0%BC%E7%82%B9%E5%87%BB%E4%BA%8B%E4%BB%B6%E6%97%A0%E6%95%88">表格中设置单元格点击事件无效</a><br>⑦ <a href="#%E6%A0%87%E7%AD%BE%E6%8E%A7%E4%BB%B6%E8%AE%BE%E7%BD%AE%E5%AD%97%E4%BD%93">标签控件设置字体</a><br>⑧ <a href="#%E6%99%AE%E9%80%9A%E7%94%A8%E6%88%B7%E4%B8%8D%E8%83%BD%E6%9F%A5%E7%9C%8B%E8%BF%9E%E6%8E%A5%E6%A8%A1%E6%9D%BF%E5%B1%9E%E6%80%A7">普通用户不能查看连接模板属性</a></p>
-<h4 id="导入-App-提示重复-已存在不能导入"><a href="#导入-App-提示重复-已存在不能导入" class="headerlink" title="导入 App 提示重复/已存在不能导入"></a>导入 App 提示重复/已存在不能导入</h4><p>版本： <code>V-3.0.3</code></p>
-<p>① 查找 mariadb 所在的容器</p>
-<figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">kubectl get po|grep maria</span><br></pre></td></tr></table></figure>
-
-<p>② 进入容器</p>
-<p>mariadb 的容器为 <strong>lake-mariadb-default-**</strong></p>
-<figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">kubectl <span class="built_in">exec</span> -it lake-mariadb-default-698b957d96-dn2xq bash</span><br></pre></td></tr></table></figure>
-
-<p>③ 链接数据库</p>
-<p><a href="%E2%91%A0%E2%91%A1%E2%91%A2%E2%91%A3%E2%91%A4%E2%91%A5%E2%91%A6%E2%91%A7%E2%91%A8%E2%91%A9%E2%91%AA%E2%91%AB%E2%91%AC%E2%91%AD%E2%91%AE%E2%91%AF%E2%91%B0%E2%91%B1%E2%91%B2%E2%91%B3%E2%9D%B6%E2%9D%B7%E2%9D%B8%E2%9D%B9%E2%9D%BA%E2%9D%BB%E2%9D%BC%E2%9D%BD%E2%9D%BE%E2%9D%BF%E2%93%AB%E2%93%AC%E2%93%AD%E2%93%AE%E2%93%AF%E2%93%B0%E2%93%B1%E2%93%B2%E2%93%B3%E2%93%B4">^_^</a> mariadbSupos</p>
-<p>密码联系管理员获取</p>
-<figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">mysql -h localhost -u root -p</span><br></pre></td></tr></table></figure>
-
-<p>④ 执行 sql 删除脏数据</p>
-<figure class="highlight sql"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">DELETE</span> <span class="keyword">FROM</span> supos_system001.supngin_oodm_network_node</span><br><span class="line"><span class="keyword">WHERE</span> instance_name <span class="keyword">NOT</span> <span class="keyword">IN</span> (</span><br><span class="line">  <span class="keyword">SELECT</span> en_name</span><br><span class="line">  <span class="keyword">FROM</span> supos_dt.supngin_oodm_entity</span><br><span class="line">)</span><br></pre></td></tr></table></figure>
-
-<h4 id="如何修改标签页组件的标签样式"><a href="#如何修改标签页组件的标签样式" class="headerlink" title="如何修改标签页组件的标签样式"></a>如何修改标签页组件的标签样式</h4><p>① 在界面设计-&gt;表单库中找到标标签页组件，拖到画布中并配置数据</p>
-<p><img src="/posts/81d3915806a9/0001.png"></p>
-<p>② 交互事件中添加<strong>内容加载事件</strong></p>
-<p><img src="/posts/81d3915806a9/0002.png"></p>
-<p>③ 点击设置在脚本中添加如下代码并点击完成保存代码</p>
-<p><img src="/posts/81d3915806a9/0003.png"></p>
-<p>查看组件 ID 并复制，替换调下面代码中的组件 ID，<strong>注意：组件 Id 前面的#不能省略，和组件 ID 之间不能有空格</strong></p>
-<figure class="highlight javascript"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment">// 修改tab标签的字体颜色</span></span><br><span class="line"><span class="variable language_">document</span>.<span class="title function_">querySelector</span>(<span class="string">&quot;#组件Id .ant-tabs&quot;</span>).<span class="property">style</span>.<span class="property">color</span> = <span class="string">&quot;red&quot;</span>;</span><br><span class="line"></span><br><span class="line"><span class="comment">// 修改正在激活的标签的字体颜色</span></span><br><span class="line"><span class="variable language_">document</span>.<span class="title function_">querySelector</span>(</span><br><span class="line">  <span class="string">&quot;#组件Id .ant-tabs .ant-tabs-nav .ant-tabs-tab-active&quot;</span></span><br><span class="line">).<span class="property">style</span>.<span class="property">color</span> = <span class="string">&quot;blue&quot;</span>;</span><br><span class="line"></span><br><span class="line"><span class="comment">// 修改正在激活标签的背景颜色</span></span><br><span class="line"><span class="variable language_">document</span>.<span class="title function_">querySelector</span>(</span><br><span class="line">  <span class="string">&quot;#组件Id .ant-tabs .ant-tabs-nav .ant-tabs-tab-active&quot;</span></span><br><span class="line">).<span class="property">style</span>.<span class="property">background</span> = <span class="string">&quot;blue&quot;</span>;</span><br><span class="line"></span><br><span class="line"><span class="comment">// 修改标签栏（整行）的背景颜色</span></span><br><span class="line"><span class="variable language_">document</span>.<span class="title function_">querySelector</span>(<span class="string">&quot;#组件Id .ant-tabs-nav-wrap&quot;</span>).<span class="property">style</span>.<span class="property">background</span> = <span class="string">&quot;blue&quot;</span>;</span><br></pre></td></tr></table></figure>
-
-<h4 id="如何设置页面的背景为透明色"><a href="#如何设置页面的背景为透明色" class="headerlink" title="如何设置页面的背景为透明色"></a>如何设置页面的背景为透明色</h4><p>经常在其他页面引用当前设计好的页面会存在背景色不透明的情况，首先需要在三个地方设置透明度，如果不能解决尝试添加最后的脚本</p>
-<p>① 修改设计界面的透明度</p>
-<p><img src="/posts/81d3915806a9/0004.png"></p>
-<p>② 修改布局配置中的透明度</p>
-<p><img src="/posts/81d3915806a9/0006.png"></p>
-<p>③ 双击界面或点击右上角笔的图标进入设计器，点击一下空白的灰色画布位置，修改画布的透明度</p>
-<p><img src="/posts/81d3915806a9/0005.png"></p>
-<p>④ 如果上述设置后不能解决，尝试在需要透明的页面中设置脚本来解决</p>
-<p>打开需要让背景变透明的页面，添加以下脚本</p>
-<p><img src="/posts/81d3915806a9/0007.png"></p>
-<figure class="highlight javascript"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line"><span class="variable language_">document</span>.<span class="title function_">querySelector</span>(<span class="string">&quot;body .ant-layout&quot;</span>).<span class="property">style</span>.<span class="property">background</span> = <span class="string">&quot;transparent&quot;</span>;</span><br><span class="line"><span class="variable language_">document</span>.<span class="title function_">querySelector</span>(<span class="string">&quot;body&quot;</span>).<span class="property">style</span>.<span class="property">background</span> = <span class="string">&quot;transparent&quot;</span>;</span><br></pre></td></tr></table></figure>
-
-<h4 id="服务中调用-openApi-或第三方接口"><a href="#服务中调用-openApi-或第三方接口" class="headerlink" title="服务中调用 openApi 或第三方接口"></a>服务中调用 openApi 或第三方接口</h4><figure class="highlight javascript"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">var</span> httpClient = services.<span class="property">HttpClientService</span>;</span><br><span class="line"> </span><br><span class="line"><span class="comment">// get请求参数</span></span><br><span class="line">httpClient.<span class="title function_">getString</span>(<span class="title class_">String</span> url);</span><br><span class="line">httpClient.<span class="title function_">getString</span>(<span class="title class_">String</span> url, int timeout);</span><br><span class="line">httpClient.<span class="title function_">getString</span>(<span class="title class_">String</span> url, <span class="title class_">Map</span> header);</span><br><span class="line">httpClient.<span class="title function_">getString</span>(<span class="title class_">String</span> url, <span class="title class_">Map</span> header, int timeout);</span><br><span class="line"> </span><br><span class="line"><span class="comment">// post请求参数</span></span><br><span class="line">httpClient.<span class="title function_">post</span>(<span class="title class_">String</span> url, <span class="title class_">String</span> body);</span><br><span class="line">httpClient.<span class="title function_">post</span>(<span class="title class_">String</span> url, <span class="title class_">String</span> body, int timeout);</span><br><span class="line">httpClient.<span class="title function_">post</span>(<span class="title class_">String</span> url, <span class="title class_">String</span> body, <span class="title class_">Map</span> header);</span><br><span class="line">httpClient.<span class="title function_">post</span>(<span class="title class_">String</span> url, <span class="title class_">String</span> body, <span class="title class_">Map</span> header, int timeout);</span><br><span class="line"> </span><br><span class="line"><span class="comment">// put请求参数</span></span><br><span class="line">httpClient.<span class="title function_">put</span>(<span class="title class_">String</span> url, <span class="title class_">String</span> body);</span><br><span class="line">httpClient.<span class="title function_">put</span>(<span class="title class_">String</span> url, <span class="title class_">String</span> body, int timeout);</span><br><span class="line">httpClient.<span class="title function_">put</span>(<span class="title class_">String</span> url, <span class="title class_">String</span> body, <span class="title class_">Map</span> header);</span><br><span class="line">httpClient.<span class="title function_">put</span>(<span class="title class_">String</span> url, <span class="title class_">String</span> body, <span class="title class_">Map</span> header, int timeout);</span><br><span class="line"> </span><br><span class="line"><span class="comment">// delete请求参数</span></span><br><span class="line">httpClient.<span class="title function_">delete</span>(<span class="title class_">String</span> url);</span><br><span class="line">httpClient.<span class="title function_">delete</span>(<span class="title class_">String</span> url, int timeout);</span><br><span class="line">httpClient.<span class="title function_">delete</span>(<span class="title class_">String</span> url, <span class="title class_">Map</span> header);</span><br><span class="line">httpClient.<span class="title function_">delete</span>(<span class="title class_">String</span> url, <span class="title class_">Map</span> header, int timeout);</span><br></pre></td></tr></table></figure>
-
-<p><strong>get</strong></p>
-<figure class="highlight javascript"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">var</span> timeout = <span class="number">2000</span>;</span><br><span class="line"><span class="keyword">var</span> url =</span><br><span class="line">  <span class="string">&quot;https://developer.supos.com/services/resources/video/resources/newestList&quot;</span>;</span><br><span class="line"><span class="keyword">var</span> result = services.<span class="property">HttpClientService</span>.<span class="title function_">getString</span>(url, timeout);</span><br><span class="line">result;</span><br></pre></td></tr></table></figure>
-
-<p><strong>post</strong></p>
-<figure class="highlight javascript"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">var</span> timeout = <span class="number">2000</span>;</span><br><span class="line"><span class="keyword">var</span> url = <span class="string">&quot;/open-api/supos/oodm/v2/model-label-types&quot;</span>;</span><br><span class="line"><span class="keyword">var</span> body = &#123;</span><br><span class="line">  <span class="attr">appAccessMode</span>: <span class="string">&quot;PUBLIC&quot;</span>,</span><br><span class="line">  <span class="attr">appName</span>: <span class="string">&quot;system&quot;</span>,</span><br><span class="line">  <span class="attr">comment</span>: <span class="string">&quot;这是一个测试标签&quot;</span>,</span><br><span class="line">  <span class="attr">displayName</span>: <span class="string">&quot;设备&quot;</span>,</span><br><span class="line">  <span class="attr">enName</span>: <span class="string">&quot;device&quot;</span>,</span><br><span class="line">  <span class="attr">namespace</span>: <span class="string">&quot;system&quot;</span>,</span><br><span class="line">&#125;;</span><br><span class="line"><span class="keyword">var</span> result = services.<span class="property">HttpClientService</span>.<span class="title function_">post</span>(</span><br><span class="line">  url,</span><br><span class="line">  <span class="title class_">JSON</span>.<span class="title function_">stringify</span>(body),</span><br><span class="line">  timeout</span><br><span class="line">);</span><br><span class="line">result;</span><br></pre></td></tr></table></figure>
-
-<p><strong>其他示例</strong></p>
-<figure class="highlight javascript"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br><span class="line">35</span><br><span class="line">36</span><br><span class="line">37</span><br><span class="line">38</span><br><span class="line">39</span><br><span class="line">40</span><br><span class="line">41</span><br><span class="line">42</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment">// 创建属性</span></span><br><span class="line"><span class="comment">// /v2/template/&#123;templateNamespace&#125;/&#123;templateName&#125;/entity/&#123;instanceName&#125;/attribute</span></span><br><span class="line"><span class="keyword">var</span> param = &#123;</span><br><span class="line">  <span class="attr">comment</span>: <span class="string">&quot;这是一个测试属性&quot;</span>,</span><br><span class="line">  <span class="attr">dataType</span>: <span class="string">&quot;DOUBLE&quot;</span>,</span><br><span class="line">  <span class="attr">displayName</span>: <span class="string">&quot;p3&quot;</span>,</span><br><span class="line">  <span class="attr">enName</span>: <span class="string">&quot;p3&quot;</span>,</span><br><span class="line">  <span class="attr">readWriteMode</span>: <span class="string">&quot;READ_WRITE&quot;</span>,</span><br><span class="line">  <span class="attr">appAccessMode</span>: <span class="string">&quot;PUBLIC&quot;</span>,</span><br><span class="line">  <span class="attr">appName</span>: <span class="string">&quot;system&quot;</span>,</span><br><span class="line">  <span class="attr">appShowName</span>: <span class="string">&quot;system&quot;</span>,</span><br><span class="line">  <span class="attr">namespace</span>: <span class="string">&quot;system&quot;</span>,</span><br><span class="line">  <span class="attr">maxValue</span>: <span class="number">2342342342.232</span>,</span><br><span class="line">  <span class="attr">minValue</span>: -<span class="number">2342342342.232</span>,</span><br><span class="line">&#125;;</span><br><span class="line"><span class="keyword">var</span> url = <span class="string">&quot;/open-api/supos/oodm/v2/template/system/test/entity/o1/attribute&quot;</span>;</span><br><span class="line"><span class="keyword">var</span> result = services.<span class="property">HttpClientService</span>.<span class="title function_">post</span>(url, <span class="title class_">JSON</span>.<span class="title function_">stringify</span>(param));</span><br><span class="line">result;</span><br><span class="line"><span class="comment">// 修改属性</span></span><br><span class="line"><span class="comment">// 客户端为IE11浏览器时不支持ES6脚本</span></span><br><span class="line"><span class="comment">// /v2/template/&#123;templateNamespace&#125;/&#123;templateName&#125;/entity/&#123;instanceName&#125;/attribute/&#123;attributeNamespace&#125;/&#123;attributeName&#125;</span></span><br><span class="line"><span class="keyword">var</span> param = &#123;</span><br><span class="line">  <span class="attr">comment</span>: <span class="string">&quot;这是一个测试属性&quot;</span>,</span><br><span class="line">  <span class="attr">readWriteMode</span>: <span class="string">&quot;READ_WRITE&quot;</span>,</span><br><span class="line">  <span class="attr">appAccessMode</span>: <span class="string">&quot;PUBLIC&quot;</span>,</span><br><span class="line">  <span class="attr">appName</span>: <span class="string">&quot;system&quot;</span>,</span><br><span class="line">  <span class="attr">appShowName</span>: <span class="string">&quot;system&quot;</span>,</span><br><span class="line">  <span class="attr">namespace</span>: <span class="string">&quot;system&quot;</span>,</span><br><span class="line">  <span class="attr">maxValue</span>: <span class="number">234234342342.232</span>,</span><br><span class="line">  <span class="attr">minValue</span>: -<span class="number">234234342342.232</span>,</span><br><span class="line">&#125;;</span><br><span class="line"><span class="keyword">var</span> url =</span><br><span class="line">  <span class="string">&quot;/open-api/supos/oodm/v2/template/system/test/entity/o1/attribute/system/p3&quot;</span>;</span><br><span class="line"><span class="keyword">var</span> result = services.<span class="property">HttpClientService</span>.<span class="title function_">put</span>(url, <span class="title class_">JSON</span>.<span class="title function_">stringify</span>(param));</span><br><span class="line">result;</span><br><span class="line"><span class="comment">// 查询属性</span></span><br><span class="line"><span class="comment">// 客户端为IE11浏览器时不支持ES6脚本</span></span><br><span class="line"><span class="comment">// /v2/template/&#123;templateNamespace&#125;/&#123;templateName&#125;/instance/&#123;instanceName&#125;/attribute/self</span></span><br><span class="line"><span class="keyword">var</span> url =</span><br><span class="line">  <span class="string">&quot;/open-api/supos/oodm/v2/template/system/test/instance/o1/attribute/self?pageIndex=1&amp;pageSize=3&quot;</span>;</span><br><span class="line"><span class="keyword">var</span> result = services.<span class="property">HttpClientService</span>.<span class="title function_">getString</span>(url);</span><br><span class="line">result;</span><br></pre></td></tr></table></figure>
-
-<h4 id="脚本中如何调用平台内置服务"><a href="#脚本中如何调用平台内置服务" class="headerlink" title="脚本中如何调用平台内置服务"></a>脚本中如何调用平台内置服务</h4><p>2.7 版本使用方式</p>
-<figure class="highlight js"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br></pre></td><td class="code"><pre><span class="line">scriptUtil.<span class="title function_">excuteScriptService</span>(</span><br><span class="line">  &#123;</span><br><span class="line">    <span class="attr">objName</span>: <span class="string">&quot;对象实例别名&quot;</span>,</span><br><span class="line">    <span class="attr">serviceName</span>: <span class="string">&quot;服务别名&quot;</span>,</span><br><span class="line">    <span class="attr">params</span>: &#123;</span><br><span class="line">      <span class="comment">// &quot;参数的值,可能是字符串,也可能是对象,按照服务参数说明填写&quot;</span></span><br><span class="line">    &#125;,</span><br><span class="line">    <span class="attr">cb</span>: <span class="function">(<span class="params">res</span>) =&gt;</span> &#123;</span><br><span class="line">      <span class="comment">// 执行结束后的回调函数,和下面方法二选一,写法不同,效果一样</span></span><br><span class="line">    &#125;,</span><br><span class="line">  &#125;,</span><br><span class="line">  <span class="function">(<span class="params">res</span>) =&gt;</span> &#123;</span><br><span class="line">    <span class="comment">// 执行结束后的回调函数</span></span><br><span class="line">  &#125;</span><br><span class="line">);</span><br></pre></td></tr></table></figure>
-
-<p>3.0 及以上版本使用方式</p>
-<figure class="highlight js"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br></pre></td><td class="code"><pre><span class="line">scriptUtil.<span class="title function_">excuteScriptService</span>(</span><br><span class="line">  &#123;</span><br><span class="line">    <span class="attr">objName</span>: <span class="string">&quot;模板命名空间.模板别名&quot;</span>,</span><br><span class="line">    <span class="attr">serviceName</span>: <span class="string">&quot;服务命名空间.服务别名&quot;</span>,</span><br><span class="line">    <span class="attr">version</span>: <span class="string">&quot;V2&quot;</span>,</span><br><span class="line">    <span class="attr">params</span>: &#123;</span><br><span class="line">      <span class="comment">// &quot;参数的值,可能是字符串,也可能是对象,按照服务参数说明填写&quot;</span></span><br><span class="line">    &#125;,</span><br><span class="line">    <span class="attr">cb</span>: <span class="function">(<span class="params">res</span>) =&gt;</span> &#123;</span><br><span class="line">      <span class="comment">// 执行结束后的回调函数,和下面方法二选一,写法不同,效果一样</span></span><br><span class="line">    &#125;,</span><br><span class="line">  &#125;,</span><br><span class="line">  <span class="function">(<span class="params">res</span>) =&gt;</span> &#123;</span><br><span class="line">    <span class="comment">// 执行结束后的回调函数</span></span><br><span class="line">  &#125;</span><br><span class="line">);</span><br></pre></td></tr></table></figure>
-
-<p>查看服务参数</p>
-<p>点击对象模板 -&gt; 添加按钮,创建表单 -&gt; 点击进入详情</p>
-<p><img src="/posts/81d3915806a9/0008.png"></p>
-<p>点击服务 -&gt; <strong>其他服务就是平台内置服务</strong> -&gt; 点击操作中的查看</p>
-<p><img src="/posts/81d3915806a9/0009.png"></p>
-<p>在 信息输入 描述中查看参数格式, 别名就是参数的 <code>key</code> 描述就是值的格式</p>
-<p><img src="/posts/81d3915806a9/0010.png"></p>
-<ul>
-<li>案例 1: 添加表单数据的内置服务</li>
-</ul>
-<table>
-<thead>
-<tr>
-<th>别名</th>
-<th>类型</th>
-<th>描述</th>
-<th>必填</th>
-</tr>
-</thead>
-<tbody><tr>
-<td>params</td>
-<td>STRING</td>
-<td>参数格式：{“id”:”1”,”name”:”zhangsan”}</td>
-<td>是</td>
-</tr>
-</tbody></table>
-<p>2.7 写法</p>
-<figure class="highlight js"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br></pre></td><td class="code"><pre><span class="line">scriptUtil.<span class="title function_">excuteScriptService</span>(k&#123;</span><br><span class="line">  <span class="attr">objName</span>: <span class="string">&#x27;对象实例名称&#x27;</span>,</span><br><span class="line">  <span class="attr">serviceName</span>: <span class="string">&#x27;addDataTableEntry&#x27;</span>,</span><br><span class="line">  <span class="comment">// params 固定属性不要修改</span></span><br><span class="line">  <span class="attr">params</span>:&#123;</span><br><span class="line">    <span class="comment">// 属性描述中的参数,值需要传一个字符串所以需要转换</span></span><br><span class="line">    <span class="attr">params</span>: <span class="title class_">JSON</span>.<span class="title function_">stringify</span>(&#123;<span class="string">&quot;id&quot;</span>:<span class="string">&quot;1&quot;</span>,<span class="string">&quot;name&quot;</span>:<span class="string">&quot;zhangsan&quot;</span>&#125;)</span><br><span class="line">  &#125;,</span><br><span class="line">  <span class="attr">cb</span>:<span class="function">(<span class="params">res</span>)=&gt;</span>&#123;</span><br><span class="line">    <span class="keyword">if</span>(res.<span class="property">code</span>==<span class="number">200</span>)&#123;</span><br><span class="line">      <span class="comment">//</span></span><br><span class="line">    &#125;</span><br><span class="line">  &#125;</span><br><span class="line">&#125;)</span><br></pre></td></tr></table></figure>
-
-<p>3.0 写法</p>
-<figure class="highlight js"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br></pre></td><td class="code"><pre><span class="line">scriptUtil.<span class="title function_">excuteScriptService</span>(k&#123;</span><br><span class="line">  <span class="attr">objName</span>: <span class="string">&#x27;templateNamespace.templateName&#x27;</span>,</span><br><span class="line">  <span class="attr">serviceName</span>: <span class="string">&#x27;serviceNamespace.addDataTableEntry&#x27;</span>,</span><br><span class="line">  <span class="comment">// params 固定属性不要修改</span></span><br><span class="line">  <span class="attr">params</span>:&#123;</span><br><span class="line">    <span class="comment">// 属性描述中的参数,值需要传一个字符串所以需要转换</span></span><br><span class="line">    <span class="attr">params</span>: <span class="title class_">JSON</span>.<span class="title function_">stringify</span>(&#123;<span class="string">&quot;id&quot;</span>:<span class="string">&quot;1&quot;</span>,<span class="string">&quot;name&quot;</span>:<span class="string">&quot;zhangsan&quot;</span>&#125;)</span><br><span class="line">  &#125;,</span><br><span class="line">  <span class="attr">cb</span>:<span class="function">(<span class="params">res</span>)=&gt;</span>&#123;</span><br><span class="line">    <span class="keyword">if</span>(res.<span class="property">code</span>==<span class="number">200</span>)&#123;</span><br><span class="line">      <span class="comment">//</span></span><br><span class="line">    &#125;</span><br><span class="line">  &#125;</span><br><span class="line">&#125;)</span><br></pre></td></tr></table></figure>
-
-<h4 id="服务中如何调用平台内置服务"><a href="#服务中如何调用平台内置服务" class="headerlink" title="服务中如何调用平台内置服务"></a>服务中如何调用平台内置服务</h4><p>2.7 版本</p>
-<figure class="highlight js"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">var</span> inputs = &#123;</span><br><span class="line">  <span class="attr">params</span>: <span class="title class_">JSON</span>.<span class="title function_">stringify</span>(&#123; <span class="attr">id</span>: <span class="string">&quot;1&quot;</span>, <span class="attr">name</span>: <span class="string">&quot;zhangsan&quot;</span> &#125;),</span><br><span class="line">&#125;;</span><br><span class="line"><span class="title class_">ObjectPool</span>.<span class="title function_">get</span>(<span class="string">&quot;对象实例别名&quot;</span>).<span class="title function_">executeService</span>(</span><br><span class="line">  <span class="string">&quot;内置服务(addDataTableEntry)&quot;</span>,</span><br><span class="line">  inputs</span><br><span class="line">);</span><br></pre></td></tr></table></figure>
-
-<p>3.0 版本</p>
-<figure class="highlight js"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">var</span> inputs = &#123;</span><br><span class="line">  <span class="attr">params</span>: <span class="title class_">JSON</span>.<span class="title function_">stringify</span>(&#123; <span class="attr">id</span>: <span class="string">&quot;1&quot;</span>, <span class="attr">name</span>: <span class="string">&quot;zhangsan&quot;</span> &#125;),</span><br><span class="line">&#125;;</span><br><span class="line"><span class="keyword">var</span> instance = templates[<span class="string">&quot;对象模板命名空间.模板别名&quot;</span>].<span class="title function_">instances</span>(<span class="string">&quot;对象实例别名&quot;</span>);</span><br><span class="line"><span class="keyword">var</span> result = instance.<span class="title function_">executeService</span>(</span><br><span class="line">  <span class="string">&quot;服务命名空间.内置服务(addDataTableEntry)&quot;</span>,</span><br><span class="line">  inputs</span><br><span class="line">);</span><br></pre></td></tr></table></figure>
-
-<h4 id="服务中使用-sql-查询表单模板"><a href="#服务中使用-sql-查询表单模板" class="headerlink" title="服务中使用 sql 查询表单模板"></a>服务中使用 sql 查询表单模板</h4><p>语法与<a href='#服务中如何调用平台内置服务'>服务中如何调用平台内置服务</a>相同,只需要把 sql 当作服务参数传入即可</p>
-<p>下面是一个稍微复杂一点的例子, <code>timeLine</code> 和 <code>status</code> 是外部传入的两个参数</p>
-<p>可以直接对传入参数进行操作, 循环或是判断是否有值</p>
-<p><strong>表名</strong>: 模板命名空间<em>模板别名<br><strong>字段名称</strong>: 表别名(可选).模板命名空间</em>字段名称</p>
-<figure class="highlight js"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br><span class="line">35</span><br><span class="line">36</span><br><span class="line">37</span><br><span class="line">38</span><br><span class="line">39</span><br><span class="line">40</span><br><span class="line">41</span><br><span class="line">42</span><br><span class="line">43</span><br><span class="line">44</span><br><span class="line">45</span><br><span class="line">46</span><br><span class="line">47</span><br><span class="line">48</span><br><span class="line">49</span><br><span class="line">50</span><br><span class="line">51</span><br><span class="line">52</span><br><span class="line">53</span><br><span class="line">54</span><br><span class="line">55</span><br><span class="line">56</span><br><span class="line">57</span><br><span class="line">58</span><br><span class="line">59</span><br><span class="line">60</span><br><span class="line">61</span><br><span class="line">62</span><br><span class="line">63</span><br><span class="line">64</span><br><span class="line">65</span><br><span class="line">66</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">var</span> i = <span class="number">0</span>;</span><br><span class="line"><span class="comment">// 解析成一个数组用于循环</span></span><br><span class="line"><span class="keyword">var</span> timeLine = <span class="title class_">JSON</span>.<span class="title function_">parse</span>(timeLine);</span><br><span class="line"></span><br><span class="line"><span class="keyword">var</span> sql1 =</span><br><span class="line">  <span class="string">&quot;select p.admin_promanagesystem_companyname as ocompanyname,p.admin_promanagesystem_companyname as ocid, sum(p.admin_promanagesystem_money) as contractmoney &quot;</span>;</span><br><span class="line"></span><br><span class="line"><span class="keyword">for</span> (<span class="keyword">var</span> k <span class="keyword">in</span> timeLine) &#123;</span><br><span class="line">  <span class="keyword">var</span> month = timeLine[k];</span><br><span class="line">  sql1 +=</span><br><span class="line">    <span class="string">&quot; ,JSON_OBJECT(&#x27;count&#x27;, op&quot;</span> +</span><br><span class="line">    i +</span><br><span class="line">    <span class="string">&quot;.count, &#x27;overdue&#x27;, op&quot;</span> +</span><br><span class="line">    i +</span><br><span class="line">    <span class="string">&quot;.overdue,&#x27;money&#x27;,op&quot;</span> +</span><br><span class="line">    i +</span><br><span class="line">    <span class="string">&quot;.money,&#x27;engineeringnode&#x27;,op&quot;</span> +</span><br><span class="line">    i +</span><br><span class="line">    <span class="string">&quot;.engineeringnode ) as &#x27;&quot;</span> +</span><br><span class="line">    month +</span><br><span class="line">    <span class="string">&quot;&#x27; &quot;</span>;</span><br><span class="line">  i = i + <span class="number">1</span>;</span><br><span class="line">&#125;</span><br><span class="line">sql1 += <span class="string">&quot; from admin_promanagesystem_proContractNode as p &quot;</span>;</span><br><span class="line"><span class="keyword">var</span> i = <span class="number">0</span>;</span><br><span class="line"><span class="keyword">for</span> (<span class="keyword">var</span> k <span class="keyword">in</span> timeLine) &#123;</span><br><span class="line">  <span class="keyword">var</span> month = timeLine[k];</span><br><span class="line"></span><br><span class="line">  sql1 += <span class="string">&quot;left join ( &quot;</span>;</span><br><span class="line">  sql1 +=</span><br><span class="line">    <span class="string">&quot; select p.admin_promanagesystem_companyname as companyname, p.admin_promanagesystem_companyname as cid, &#x27;&quot;</span> +</span><br><span class="line">    month +</span><br><span class="line">    <span class="string">&quot;&#x27; as date &quot;</span>;</span><br><span class="line">  sql1 += <span class="string">&quot; from admin_promanagesystem_proContractNode as p &quot;</span>;</span><br><span class="line">  sql1 +=</span><br><span class="line">    <span class="string">&quot; where DATE_FORMAT(p.admin_promanagesystem_estimatedCompDate, &#x27;%Y-%m&#x27;) = &#x27;&quot;</span> +</span><br><span class="line">    month +</span><br><span class="line">    <span class="string">&quot;&#x27; &quot;</span>;</span><br><span class="line"></span><br><span class="line">  <span class="comment">// 判断这个外部参数是否为真,用于添加查询条件</span></span><br><span class="line">  <span class="keyword">if</span> (status) &#123;</span><br><span class="line">    sql1 += <span class="string">&quot; and p.admin_promanagesystem_engineerStatus = &#x27;&quot;</span> + status + <span class="string">&quot;&#x27; &quot;</span>;</span><br><span class="line">  &#125;</span><br><span class="line">  sql1 += <span class="string">&quot; group by p.admin_promanagesystem_companyname &quot;</span>;</span><br><span class="line">  sql1 +=</span><br><span class="line">    <span class="string">&quot; order by STR_TO_DATE(p.admin_promanagesystem_estimatedCompDate,&#x27;%Y-%m-%d&#x27;) desc &quot;</span>;</span><br><span class="line">  sql1 +=</span><br><span class="line">    <span class="string">&quot;) as op&quot;</span> +</span><br><span class="line">    i +</span><br><span class="line">    <span class="string">&quot; on 1 = 1 and p.admin_promanagesystem_companyname = op&quot;</span> +</span><br><span class="line">    i +</span><br><span class="line">    <span class="string">&quot;.companyname &quot;</span>;</span><br><span class="line">  i = i + <span class="number">1</span>;</span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line">sql1 += <span class="string">&quot;group by p.admin_promanagesystem_companyname &quot;</span>;</span><br><span class="line"></span><br><span class="line"><span class="keyword">var</span> inputs = &#123;</span><br><span class="line">  <span class="attr">input</span>: <span class="title class_">JSON</span>.<span class="title function_">stringify</span>(&#123; <span class="attr">sql</span>: sql1 &#125;),</span><br><span class="line">&#125;;</span><br><span class="line"><span class="keyword">var</span> template = templates[<span class="string">&quot;admin_promanagesystem.proManageSystem&quot;</span>];</span><br><span class="line"></span><br><span class="line"><span class="keyword">var</span> list = template[<span class="string">&quot;system.querySQLExec&quot;</span>](inputs).<span class="property">data</span>;</span><br><span class="line"></span><br><span class="line"><span class="keyword">var</span> list = template[<span class="string">&quot;system.querySQLExec&quot;</span>](inputs).<span class="property">data</span>.<span class="property">dataSource</span>;</span><br><span class="line">list;</span><br></pre></td></tr></table></figure>
-
-<h4 id="表格中设置单元格点击事件无效"><a href="#表格中设置单元格点击事件无效" class="headerlink" title="表格中设置单元格点击事件无效"></a>表格中设置单元格点击事件无效</h4><p>如果按照 <a target="_blank" rel="noopener" href="https://devc.supos.com/document?groupId=doc_group_id_005&devcContentId=DOC_CONTENT_1646703154679&version=supos_version_002&id=909#_234">官方文档</a> 配置单元格点击事件无效,需要把事件名称改为 <code>onClick</code></p>
-<figure class="highlight js"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">var</span> table = scriptUtil.<span class="title function_">getRegisterReactDom</span>(<span class="string">&quot;组件id&quot;</span>);</span><br><span class="line"><span class="keyword">var</span> cellConfig = &#123;</span><br><span class="line">  <span class="attr">name</span>: &#123;</span><br><span class="line">    <span class="attr">onClick</span>: <span class="keyword">function</span> (<span class="params">row, tableData</span>) &#123;</span><br><span class="line">      <span class="variable language_">console</span>.<span class="title function_">log</span>(<span class="string">&quot;单击该单元格&quot;</span>, row, tableData);</span><br><span class="line">    &#125;,</span><br><span class="line">  &#125;,</span><br><span class="line">&#125;;</span><br><span class="line"></span><br><span class="line">table.<span class="title function_">setCellConfig</span>(cellConfig);</span><br></pre></td></tr></table></figure>
-
-<h4 id="标签控件设置字体"><a href="#标签控件设置字体" class="headerlink" title="标签控件设置字体"></a>标签控件设置字体</h4><p>进入 <a target="_blank" rel="noopener" href="http://enginee-3.demo.devcloud.supos.net/">通用图元库</a> 下载字体</p>
-<p><img src="/posts/81d3915806a9/0011.png"></p>
-<p>解压出字体上传至需要使用字体的 App 中</p>
-<p><img src="/posts/81d3915806a9/0012.png"></p>
-<p>在组态页面拖出标签控件,在加载事件中添加如下脚本</p>
-<ul>
-<li>兼容 FontFace 的浏览器使用 FontFace 创建字体,如果不兼容需要使用 style 标签直接插入字体</li>
-<li>组件设置中 <strong>内容来源</strong> 选择静态, 不要设置默认文本,因为会造成文字闪烁</li>
-<li>字体加载完成后, 通过 scriptUtil 工具,动态添加文本</li>
-</ul>
-<figure class="highlight js"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br><span class="line">35</span><br><span class="line">36</span><br><span class="line">37</span><br><span class="line">38</span><br><span class="line">39</span><br><span class="line">40</span><br><span class="line">41</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">var</span> headers = <span class="keyword">new</span> <span class="title class_">Headers</span>(&#123;</span><br><span class="line">  <span class="string">&quot;Content-Type&quot;</span>: <span class="string">&quot;application/x-font-ttf&quot;</span>,</span><br><span class="line">&#125;);</span><br><span class="line"><span class="title function_">fetch</span>(</span><br><span class="line">  <span class="string">&quot;/resource/App_a12a1b5333b19ee933cc257f2bfcdc74/fonts/RuiZiZhenYanTiMianFeiShangYong-2.ttf&quot;</span>,</span><br><span class="line">  &#123; headers &#125;</span><br><span class="line">)</span><br><span class="line">  .<span class="title function_">then</span>(<span class="function">(<span class="params">res</span>) =&gt;</span> res.<span class="title function_">arrayBuffer</span>())</span><br><span class="line">  .<span class="title function_">then</span>(<span class="function">(<span class="params">buffer</span>) =&gt;</span> &#123;</span><br><span class="line">    <span class="keyword">if</span> (<span class="variable language_">window</span>.<span class="property">FontFace</span>) &#123;</span><br><span class="line">      <span class="keyword">var</span> font = <span class="keyword">new</span> <span class="title class_">FontFace</span>(<span class="string">&quot;suposfont&quot;</span>, buffer);</span><br><span class="line">      <span class="variable language_">document</span>.<span class="property">fonts</span>.<span class="title function_">add</span>(font);</span><br><span class="line">    &#125; <span class="keyword">else</span> &#123;</span><br><span class="line">      <span class="keyword">var</span> css = <span class="variable language_">document</span>.<span class="title function_">createElement</span>(<span class="string">&quot;style&quot;</span>);</span><br><span class="line">      css.<span class="property">innerHTML</span> = <span class="string">`</span></span><br><span class="line"><span class="string">            @font-face &#123;</span></span><br><span class="line"><span class="string">              font-family: &quot;supofont&quot;;</span></span><br><span class="line"><span class="string">              src: url(&#x27;/resource/App_a12a1b5333b19ee933cc257f2bfcdc74/fonts/RuiZiZhenYanTiMianFeiShangYong-2.ttf&#x27;) format(&#x27;truetype&#x27;);</span></span><br><span class="line"><span class="string">            &#125;`</span>;</span><br><span class="line">      <span class="variable language_">document</span>.<span class="title function_">getElementsByTagName</span>(<span class="string">&quot;head&quot;</span>)[<span class="number">0</span>].<span class="title function_">appendChild</span>(css);</span><br><span class="line">    &#125;</span><br><span class="line">  &#125;)</span><br><span class="line">  .<span class="title function_">then</span>(<span class="function">() =&gt;</span> &#123;</span><br><span class="line">    <span class="keyword">var</span> css = <span class="variable language_">document</span>.<span class="title function_">createElement</span>(<span class="string">&quot;style&quot;</span>);</span><br><span class="line">    css.<span class="property">innerHTML</span> = <span class="string">`</span></span><br><span class="line"><span class="string">        #htDiv-l384a3z30-179 .ant-spin-container div &#123;</span></span><br><span class="line"><span class="string">          font-family: &quot;suposfont&quot; !important;</span></span><br><span class="line"><span class="string">          font-size: 80px !important;</span></span><br><span class="line"><span class="string">          font-style: normal;</span></span><br><span class="line"><span class="string">          -webkit-font-smoothing: antialiased;</span></span><br><span class="line"><span class="string">          -moz-osx-font-smoothing: grayscale;</span></span><br><span class="line"><span class="string">          background: linear-gradient(45deg, red,yellow, green);</span></span><br><span class="line"><span class="string">          -webkit-background-clip: text;</span></span><br><span class="line"><span class="string">          color: transparent !important;</span></span><br><span class="line"><span class="string">    &#125;`</span>;</span><br><span class="line">    <span class="variable language_">document</span>.<span class="title function_">getElementsByTagName</span>(<span class="string">&quot;head&quot;</span>)[<span class="number">0</span>].<span class="title function_">appendChild</span>(css);</span><br><span class="line"></span><br><span class="line">    scriptUtil</span><br><span class="line">      .<span class="title function_">getRegisterReactDom</span>(<span class="string">&quot;htDiv-l384a3z30-179&quot;</span>)</span><br><span class="line">      .<span class="title function_">setLabelContent</span>(<span class="string">&quot;标题文字&quot;</span>);</span><br><span class="line">  &#125;);</span><br></pre></td></tr></table></figure>
-
-<p><img src="/posts/81d3915806a9/0013.png"></p>
-<h4 id="普通用户不能查看连接模板属性"><a href="#普通用户不能查看连接模板属性" class="headerlink" title="普通用户不能查看连接模板属性"></a>普通用户不能查看连接模板属性</h4><p>对象模型中的属性受数据权限控制，配置方式如下</p>
-<p><img src="/posts/81d3915806a9/0014.png"></p>
-<p><img src="/posts/81d3915806a9/0015.png"></p>
- 
-      <!-- reward -->
-      
-    </div>
-    
-
-    <!-- copyright -->
-    
-    <footer class="article-footer">
-       
-  <ul class="article-tag-list" itemprop="keywords"><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/supOS/" rel="tag">supOS</a></li></ul>
 
     </footer>
   </div>

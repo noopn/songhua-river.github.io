@@ -112,6 +112,339 @@
     
     
     <article
+  id="post-javascript/Ramda_Objec方法"
+  class="article article-type-post"
+  itemscope
+  itemprop="blogPost"
+  data-scroll-reveal
+>
+  <div class="article-inner">
+    
+    <header class="article-header">
+       
+<h2 itemprop="name">
+  <a class="article-title" href="/posts/f021f8110e5a/"
+    >Ramda Object方法源码分析</a> 
+</h2>
+ 
+
+      
+    </header>
+     
+    <div class="article-meta">
+      <a href="/posts/f021f8110e5a/" class="article-date">
+  <time datetime="2021-01-16T09:15:23.000Z" itemprop="datePublished">2021-01-16</time>
+</a> 
+  <div class="article-category">
+    <a class="article-category-link" href="/categories/JavaScript/">JavaScript</a>
+  </div>
+   
+    </div>
+      
+    <div class="article-entry" itemprop="articleBody">
+       
+  <h4 id="keys"><a href="#keys" class="headerlink" title="keys"></a>keys</h4><p>Safari 可能存在 argument.length 可枚举的bug</p>
+<figure class="highlight javascript"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">var</span> hasArgsEnumBug = (<span class="keyword">function</span>(<span class="params"></span>) &#123;</span><br><span class="line">  <span class="string">&#x27;use strict&#x27;</span>;</span><br><span class="line">  <span class="keyword">return</span> <span class="variable language_">arguments</span>.<span class="title function_">propertyIsEnumerable</span>(<span class="string">&#x27;length&#x27;</span>);</span><br><span class="line">&#125;());</span><br></pre></td></tr></table></figure>
+
+<p>IE9一下<code>toString</code>方法存在可以枚举的bug</p>
+<figure class="highlight javascript"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment">// cover IE &lt; 9 keys issues</span></span><br><span class="line"><span class="keyword">var</span> hasEnumBug = !(&#123;<span class="attr">toString</span>: <span class="literal">null</span>&#125;).<span class="title function_">propertyIsEnumerable</span>(<span class="string">&#x27;toString&#x27;</span>);</span><br><span class="line"><span class="keyword">var</span> nonEnumerableProps = [</span><br><span class="line">  <span class="string">&#x27;constructor&#x27;</span>, <span class="string">&#x27;valueOf&#x27;</span>, <span class="string">&#x27;isPrototypeOf&#x27;</span>, <span class="string">&#x27;toString&#x27;</span>,</span><br><span class="line">  <span class="string">&#x27;propertyIsEnumerable&#x27;</span>, <span class="string">&#x27;hasOwnProperty&#x27;</span>, <span class="string">&#x27;toLocaleString&#x27;</span></span><br><span class="line">];</span><br></pre></td></tr></table></figure>
+
+<figure class="highlight javascript"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment">// 如果有原生 Object.keys 实现且Safari不存在bug</span></span><br><span class="line"><span class="keyword">var</span> keys = <span class="keyword">typeof</span> <span class="title class_">Object</span>.<span class="property">keys</span> === <span class="string">&#x27;function&#x27;</span> &amp;&amp; !hasArgsEnumBug ?</span><br><span class="line">  <span class="title function_">_curry1</span>(<span class="keyword">function</span> <span class="title function_">keys</span>(<span class="params">obj</span>) &#123;</span><br><span class="line">    <span class="comment">// 参数错误处理</span></span><br><span class="line">    <span class="keyword">return</span> <span class="title class_">Object</span>(obj) !== obj ? [] : <span class="title class_">Object</span>.<span class="title function_">keys</span>(obj);</span><br><span class="line">  &#125;) :</span><br><span class="line">  <span class="title function_">_curry1</span>(<span class="keyword">function</span> <span class="title function_">keys</span>(<span class="params">obj</span>) &#123;</span><br><span class="line">    <span class="keyword">if</span> (<span class="title class_">Object</span>(obj) !== obj) &#123;</span><br><span class="line">      <span class="keyword">return</span> [];</span><br><span class="line">    &#125;</span><br><span class="line">    <span class="keyword">var</span> prop, nIdx;</span><br><span class="line">    <span class="keyword">var</span> ks = [];</span><br><span class="line">    <span class="comment">// 如果传入的对象时argument，而且有bug</span></span><br><span class="line">    <span class="keyword">var</span> checkArgsLength = hasArgsEnumBug &amp;&amp; <span class="title function_">_isArguments</span>(obj);</span><br><span class="line">    <span class="comment">// 循环对象每一项检查</span></span><br><span class="line">    <span class="keyword">for</span> (prop <span class="keyword">in</span> obj) &#123;</span><br><span class="line">      <span class="keyword">if</span> (<span class="title function_">_has</span>(prop, obj) &amp;&amp; (!checkArgsLength || prop !== <span class="string">&#x27;length&#x27;</span>)) &#123;</span><br><span class="line">        ks[ks.<span class="property">length</span>] = prop;</span><br><span class="line">      &#125;</span><br><span class="line">    &#125;</span><br><span class="line">    <span class="comment">// 如果有toString可枚举的bug</span></span><br><span class="line">    <span class="keyword">if</span> (hasEnumBug) &#123;</span><br><span class="line">      nIdx = nonEnumerableProps.<span class="property">length</span> - <span class="number">1</span>;</span><br><span class="line">      <span class="comment">// 排除不可枚举的属性</span></span><br><span class="line">      <span class="keyword">while</span> (nIdx &gt;= <span class="number">0</span>) &#123;</span><br><span class="line">        prop = nonEnumerableProps[nIdx];</span><br><span class="line">        <span class="keyword">if</span> (<span class="title function_">_has</span>(prop, obj) &amp;&amp; !<span class="title function_">contains</span>(ks, prop)) &#123;</span><br><span class="line">          ks[ks.<span class="property">length</span>] = prop;</span><br><span class="line">        &#125;</span><br><span class="line">        nIdx -= <span class="number">1</span>;</span><br><span class="line">      &#125;</span><br><span class="line">    &#125;</span><br><span class="line">    <span class="keyword">return</span> ks;</span><br><span class="line">  &#125;);</span><br></pre></td></tr></table></figure> 
+      <!-- reward -->
+      
+    </div>
+    
+
+    <!-- copyright -->
+    
+    <footer class="article-footer">
+       
+  <ul class="article-tag-list" itemprop="keywords"><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/Ramda/" rel="tag">Ramda</a></li><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/%E5%87%BD%E6%95%B0%E5%BC%8F%E7%BC%96%E7%A8%8B/" rel="tag">函数式编程</a></li></ul>
+
+    </footer>
+  </div>
+
+   
+    
+</article>
+
+    
+    <article
+  id="post-javascript/Ramda_私有方法"
+  class="article article-type-post"
+  itemscope
+  itemprop="blogPost"
+  data-scroll-reveal
+>
+  <div class="article-inner">
+    
+    <header class="article-header">
+       
+<h2 itemprop="name">
+  <a class="article-title" href="/posts/589c737a0260/"
+    >Ramda 私有方法源码分析</a> 
+</h2>
+ 
+
+      
+    </header>
+     
+    <div class="article-meta">
+      <a href="/posts/589c737a0260/" class="article-date">
+  <time datetime="2021-01-16T08:26:50.000Z" itemprop="datePublished">2021-01-16</time>
+</a> 
+  <div class="article-category">
+    <a class="article-category-link" href="/categories/JavaScript/">JavaScript</a>
+  </div>
+   
+    </div>
+      
+    <div class="article-entry" itemprop="articleBody">
+       
+  <h4 id="objectIs"><a href="#objectIs" class="headerlink" title="_objectIs"></a>_objectIs</h4><p><a target="_blank" rel="noopener" href="https://developer.mozilla.org/zh-cn/docs/web/javascript/reference/global_objects/object/is">Object.is</a> 用于判断两值是否项等</p>
+<figure class="highlight javascript"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">function</span> <span class="title function_">_objectIs</span>(<span class="params">a, b</span>) &#123;</span><br><span class="line">  <span class="comment">// MDN polyfill</span></span><br><span class="line">  <span class="keyword">if</span> (a === b) &#123;</span><br><span class="line">    <span class="comment">// Steps 6.b-6.e: +0 != -0</span></span><br><span class="line">    <span class="keyword">return</span> a !== <span class="number">0</span> || <span class="number">1</span> / a === <span class="number">1</span> / b;</span><br><span class="line">  &#125; <span class="keyword">else</span> &#123;</span><br><span class="line">    <span class="comment">// Step 6.a: NaN == NaN</span></span><br><span class="line">    <span class="keyword">return</span> a !== a &amp;&amp; b !== b;</span><br><span class="line">  &#125;</span><br><span class="line">&#125;</span><br><span class="line"><span class="keyword">export</span> <span class="keyword">default</span> <span class="keyword">typeof</span> <span class="title class_">Object</span>.<span class="property">is</span> === <span class="string">&#x27;function&#x27;</span> ? <span class="title class_">Object</span>.<span class="property">is</span> : _objectIs;</span><br><span class="line"></span><br></pre></td></tr></table></figure>
+
+<h4 id="arrayFromIterator"><a href="#arrayFromIterator" class="headerlink" title="_arrayFromIterator"></a>_arrayFromIterator</h4><figure class="highlight javascript"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">export</span> <span class="keyword">default</span> <span class="keyword">function</span> <span class="title function_">_arrayFromIterator</span>(<span class="params">iter</span>) &#123;</span><br><span class="line">  <span class="keyword">var</span> list = [];</span><br><span class="line">  <span class="keyword">var</span> next;</span><br><span class="line">  <span class="keyword">while</span> (!(next = iter.<span class="title function_">next</span>()).<span class="property">done</span>) &#123;</span><br><span class="line">    list.<span class="title function_">push</span>(next.<span class="property">value</span>);</span><br><span class="line">  &#125;</span><br><span class="line">  <span class="keyword">return</span> list;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+<h4 id="functionName"><a href="#functionName" class="headerlink" title="_functionName"></a>_functionName</h4><p><a target="_blank" rel="noopener" href="https://developer.mozilla.org/zh-cn/docs/web/javascript/reference/global_objects/function/name">function.name</a> 可能被压缩工具修改，不能依赖函数名来判断函数</p>
+<p>作者通过正则方式判断</p>
+<figure class="highlight javascript"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">export</span> <span class="keyword">default</span> <span class="keyword">function</span> <span class="title function_">_functionName</span>(<span class="params">f</span>) &#123;</span><br><span class="line">  <span class="comment">// String(x =&gt; x) evaluates to &quot;x =&gt; x&quot;, so the pattern may not match.</span></span><br><span class="line">  <span class="keyword">var</span> match = <span class="title class_">String</span>(f).<span class="title function_">match</span>(<span class="regexp">/^function (\w*)/</span>);</span><br><span class="line">  <span class="keyword">return</span> match == <span class="literal">null</span> ? <span class="string">&#x27;&#x27;</span> : match[<span class="number">1</span>];</span><br><span class="line">&#125;</span><br><span class="line"></span><br></pre></td></tr></table></figure>
+
+<h4 id="has"><a href="#has" class="headerlink" title="_has"></a>_has</h4><p>判断属性在对象的实例上，而不是在原型上</p>
+<figure class="highlight javascript"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">export</span> <span class="keyword">default</span> <span class="keyword">function</span> <span class="title function_">_has</span>(<span class="params">prop, obj</span>) &#123;</span><br><span class="line">  <span class="keyword">return</span> <span class="title class_">Object</span>.<span class="property"><span class="keyword">prototype</span></span>.<span class="property">hasOwnProperty</span>.<span class="title function_">call</span>(obj, prop);</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+<p>等价于</p>
+<figure class="highlight javascript"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line"><span class="title class_">Reflect</span>.<span class="title function_">has</span>(obj, prop)</span><br></pre></td></tr></table></figure>
+
+
+<h4 id="isArguments"><a href="#isArguments" class="headerlink" title="_isArguments"></a>_isArguments</h4><p>实现了 <code>callee</code> 方法数组也可以当作是形式参数</p>
+<figure class="highlight javascript"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">var</span> toString = <span class="title class_">Object</span>.<span class="property"><span class="keyword">prototype</span></span>.<span class="property">toString</span>;</span><br><span class="line"><span class="keyword">var</span> _isArguments = (<span class="keyword">function</span>(<span class="params"></span>) &#123;</span><br><span class="line">  <span class="keyword">return</span> toString.<span class="title function_">call</span>(<span class="variable language_">arguments</span>) === <span class="string">&#x27;[object Arguments]&#x27;</span> ?</span><br><span class="line">    <span class="keyword">function</span> <span class="title function_">_isArguments</span>(<span class="params">x</span>) &#123; <span class="keyword">return</span> toString.<span class="title function_">call</span>(x) === <span class="string">&#x27;[object Arguments]&#x27;</span>; &#125; :</span><br><span class="line">    <span class="keyword">function</span> <span class="title function_">_isArguments</span>(<span class="params">x</span>) &#123; <span class="keyword">return</span> <span class="title function_">_has</span>(<span class="string">&#x27;callee&#x27;</span>, x); &#125;;</span><br><span class="line">&#125;());</span><br></pre></td></tr></table></figure>
+
+<h4 id="concat"><a href="#concat" class="headerlink" title="_concat"></a>_concat</h4><p>通过双循环，涵盖了array-like类型，</p>
+<figure class="highlight javascript"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment">/**</span></span><br><span class="line"><span class="comment"> * Private `concat` function to merge two array-like objects.</span></span><br><span class="line"><span class="comment"> *</span></span><br><span class="line"><span class="comment"> * <span class="doctag">@private</span></span></span><br><span class="line"><span class="comment"> * <span class="doctag">@param</span> &#123;<span class="type">Array|Arguments</span>&#125; [set1=[]] An array-like object.</span></span><br><span class="line"><span class="comment"> * <span class="doctag">@param</span> &#123;<span class="type">Array|Arguments</span>&#125; [set2=[]] An array-like object.</span></span><br><span class="line"><span class="comment"> * <span class="doctag">@return</span> &#123;<span class="type">Array</span>&#125; A new, merged array.</span></span><br><span class="line"><span class="comment"> * <span class="doctag">@example</span></span></span><br><span class="line"><span class="comment"> *</span></span><br><span class="line"><span class="comment"> *      _concat([4, 5, 6], [1, 2, 3]); //=&gt; [4, 5, 6, 1, 2, 3]</span></span><br><span class="line"><span class="comment"> */</span></span><br><span class="line"><span class="keyword">export</span> <span class="keyword">default</span> <span class="keyword">function</span> <span class="title function_">_concat</span>(<span class="params">set1, set2</span>) &#123;</span><br><span class="line">  set1 = set1 || [];</span><br><span class="line">  set2 = set2 || [];</span><br><span class="line">  <span class="keyword">var</span> idx;</span><br><span class="line">  <span class="keyword">var</span> len1 = set1.<span class="property">length</span>;</span><br><span class="line">  <span class="keyword">var</span> len2 = set2.<span class="property">length</span>;</span><br><span class="line">  <span class="keyword">var</span> result = [];</span><br><span class="line"></span><br><span class="line">  idx = <span class="number">0</span>;</span><br><span class="line">  <span class="keyword">while</span> (idx &lt; len1) &#123;</span><br><span class="line">    result[result.<span class="property">length</span>] = set1[idx];</span><br><span class="line">    idx += <span class="number">1</span>;</span><br><span class="line">  &#125;</span><br><span class="line">  idx = <span class="number">0</span>;</span><br><span class="line">  <span class="keyword">while</span> (idx &lt; len2) &#123;</span><br><span class="line">    result[result.<span class="property">length</span>] = set2[idx];</span><br><span class="line">    idx += <span class="number">1</span>;</span><br><span class="line">  &#125;</span><br><span class="line">  <span class="keyword">return</span> result;</span><br><span class="line">&#125;</span><br><span class="line"></span><br></pre></td></tr></table></figure>
+
+
+<h4 id="dispatchable"><a href="#dispatchable" class="headerlink" title="_dispatchable"></a>_dispatchable</h4><p>dispatchable翻译为调度单元，这个方法用在了类似 <a href="/posts/6ac7a6cf/#all"><code>R.all</code></a> 遍历每一项的方法上</p>
+<p>如果如参是一个数组会按照常规循环方式处理，如果不是数组但是对象携带了传入的方法s数组(<code>[all]</code>)其中的一个，将会调用对象携带的方法</p>
+<figure class="highlight javascript"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">export</span> <span class="keyword">default</span> <span class="keyword">function</span> <span class="title function_">_dispatchable</span>(<span class="params">methodNames, transducerCreator, fn</span>) &#123;</span><br><span class="line">  <span class="keyword">return</span> <span class="keyword">function</span>(<span class="params"></span>) &#123;</span><br><span class="line">    <span class="keyword">if</span> (<span class="variable language_">arguments</span>.<span class="property">length</span> === <span class="number">0</span>) &#123;</span><br><span class="line">      <span class="keyword">return</span> <span class="title function_">fn</span>();</span><br><span class="line">    &#125;</span><br><span class="line">    <span class="keyword">var</span> obj = <span class="variable language_">arguments</span>[<span class="variable language_">arguments</span>.<span class="property">length</span> - <span class="number">1</span>];</span><br><span class="line">    <span class="keyword">if</span> (!<span class="title function_">_isArray</span>(obj)) &#123;</span><br><span class="line">      <span class="keyword">var</span> idx = <span class="number">0</span>;</span><br><span class="line">      <span class="keyword">while</span> (idx &lt; methodNames.<span class="property">length</span>) &#123;</span><br><span class="line">        <span class="keyword">if</span> (<span class="keyword">typeof</span> obj[methodNames[idx]] === <span class="string">&#x27;function&#x27;</span>) &#123;</span><br><span class="line">          <span class="keyword">return</span> obj[methodNames[idx]].<span class="title function_">apply</span>(obj, <span class="title class_">Array</span>.<span class="property"><span class="keyword">prototype</span></span>.<span class="property">slice</span>.<span class="title function_">call</span>(<span class="variable language_">arguments</span>, <span class="number">0</span>, -<span class="number">1</span>));</span><br><span class="line">        &#125;</span><br><span class="line">        idx += <span class="number">1</span>;</span><br><span class="line">      &#125;</span><br><span class="line">      <span class="keyword">if</span> (<span class="title function_">_isTransformer</span>(obj)) &#123;</span><br><span class="line">        <span class="keyword">var</span> transducer = transducerCreator.<span class="title function_">apply</span>(<span class="literal">null</span>, <span class="title class_">Array</span>.<span class="property"><span class="keyword">prototype</span></span>.<span class="property">slice</span>.<span class="title function_">call</span>(<span class="variable language_">arguments</span>, <span class="number">0</span>, -<span class="number">1</span>));</span><br><span class="line">        <span class="keyword">return</span> <span class="title function_">transducer</span>(obj);</span><br><span class="line">      &#125;</span><br><span class="line">    &#125;</span><br><span class="line">    <span class="keyword">return</span> fn.<span class="title function_">apply</span>(<span class="variable language_">this</span>, <span class="variable language_">arguments</span>);</span><br><span class="line">  &#125;;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+<h4 id="arrayFromIterator-1"><a href="#arrayFromIterator-1" class="headerlink" title="_arrayFromIterator"></a>_arrayFromIterator</h4><figure class="highlight javascript"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">export</span> <span class="keyword">default</span> <span class="keyword">function</span> <span class="title function_">_arrayFromIterator</span>(<span class="params">iter</span>) &#123;</span><br><span class="line">  <span class="keyword">var</span> list = [];</span><br><span class="line">  <span class="keyword">var</span> next;</span><br><span class="line">  <span class="keyword">while</span> (!(next = iter.<span class="title function_">next</span>()).<span class="property">done</span>) &#123;</span><br><span class="line">    list.<span class="title function_">push</span>(next.<span class="property">value</span>);</span><br><span class="line">  &#125;</span><br><span class="line">  <span class="keyword">return</span> list;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+<h4 id="equals"><a href="#equals" class="headerlink" title="_equals"></a>_equals</h4><p>用在了涉及到比较的方法上,例如 <code>R.equals</code></p>
+<p><a href="/posts/2b6baf0c/#_objectIs">_objectIs</a></p>
+<p><a href="/posts/54a7cf63/#type">type</a></p>
+<p><a href="/posts/54a7cf63/#_arrayFromIterator">_arrayFromIterator</a></p>
+<figure class="highlight javascript"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br><span class="line">35</span><br><span class="line">36</span><br><span class="line">37</span><br><span class="line">38</span><br><span class="line">39</span><br><span class="line">40</span><br><span class="line">41</span><br><span class="line">42</span><br><span class="line">43</span><br><span class="line">44</span><br><span class="line">45</span><br><span class="line">46</span><br><span class="line">47</span><br><span class="line">48</span><br><span class="line">49</span><br><span class="line">50</span><br><span class="line">51</span><br><span class="line">52</span><br><span class="line">53</span><br><span class="line">54</span><br><span class="line">55</span><br><span class="line">56</span><br><span class="line">57</span><br><span class="line">58</span><br><span class="line">59</span><br><span class="line">60</span><br><span class="line">61</span><br><span class="line">62</span><br><span class="line">63</span><br><span class="line">64</span><br><span class="line">65</span><br><span class="line">66</span><br><span class="line">67</span><br><span class="line">68</span><br><span class="line">69</span><br><span class="line">70</span><br><span class="line">71</span><br><span class="line">72</span><br><span class="line">73</span><br><span class="line">74</span><br><span class="line">75</span><br><span class="line">76</span><br><span class="line">77</span><br><span class="line">78</span><br><span class="line">79</span><br><span class="line">80</span><br><span class="line">81</span><br><span class="line">82</span><br><span class="line">83</span><br><span class="line">84</span><br><span class="line">85</span><br><span class="line">86</span><br><span class="line">87</span><br><span class="line">88</span><br><span class="line">89</span><br><span class="line">90</span><br><span class="line">91</span><br><span class="line">92</span><br><span class="line">93</span><br><span class="line">94</span><br><span class="line">95</span><br><span class="line">96</span><br><span class="line">97</span><br><span class="line">98</span><br><span class="line">99</span><br><span class="line">100</span><br><span class="line">101</span><br><span class="line">102</span><br><span class="line">103</span><br><span class="line">104</span><br><span class="line">105</span><br><span class="line">106</span><br><span class="line">107</span><br><span class="line">108</span><br><span class="line">109</span><br><span class="line">110</span><br><span class="line">111</span><br><span class="line">112</span><br><span class="line">113</span><br><span class="line">114</span><br><span class="line">115</span><br><span class="line">116</span><br><span class="line">117</span><br><span class="line">118</span><br><span class="line">119</span><br><span class="line">120</span><br><span class="line">121</span><br><span class="line">122</span><br><span class="line">123</span><br><span class="line">124</span><br><span class="line">125</span><br><span class="line">126</span><br><span class="line">127</span><br><span class="line">128</span><br><span class="line">129</span><br><span class="line">130</span><br><span class="line">131</span><br><span class="line">132</span><br><span class="line">133</span><br><span class="line">134</span><br><span class="line">135</span><br><span class="line">136</span><br><span class="line">137</span><br><span class="line">138</span><br><span class="line">139</span><br><span class="line">140</span><br><span class="line">141</span><br><span class="line">142</span><br><span class="line">143</span><br><span class="line">144</span><br><span class="line">145</span><br><span class="line">146</span><br><span class="line">147</span><br><span class="line">148</span><br><span class="line">149</span><br><span class="line">150</span><br></pre></td><td class="code"><pre><span class="line"></span><br><span class="line"><span class="comment">// 处理map set 集合</span></span><br><span class="line"></span><br><span class="line"><span class="keyword">function</span> <span class="title function_">_uniqContentEquals</span>(<span class="params">aIterator, bIterator, stackA, stackB</span>) &#123;</span><br><span class="line">  <span class="keyword">var</span> a = <span class="title function_">_arrayFromIterator</span>(aIterator);</span><br><span class="line">  <span class="keyword">var</span> b = <span class="title function_">_arrayFromIterator</span>(bIterator);</span><br><span class="line"></span><br><span class="line">  <span class="keyword">function</span> <span class="title function_">eq</span>(<span class="params">_a, _b</span>) &#123;</span><br><span class="line">    <span class="keyword">return</span> <span class="title function_">_equals</span>(_a, _b, stackA.<span class="title function_">slice</span>(), stackB.<span class="title function_">slice</span>());</span><br><span class="line">  &#125;</span><br><span class="line"></span><br><span class="line">  <span class="comment">// if *a* array contains any element that is not included in *b*</span></span><br><span class="line">  <span class="keyword">return</span> !<span class="title function_">_includesWith</span>(<span class="keyword">function</span>(<span class="params">b, aItem</span>) &#123;</span><br><span class="line">    <span class="keyword">return</span> !<span class="title function_">_includesWith</span>(eq, aItem, b);</span><br><span class="line">  &#125;, b, a);</span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line"><span class="keyword">export</span> <span class="keyword">default</span> <span class="keyword">function</span> <span class="title function_">_equals</span>(<span class="params">a, b, stackA, stackB</span>) &#123;</span><br><span class="line">  <span class="comment">// 引用相同，基本类型的值相同</span></span><br><span class="line">  <span class="keyword">if</span> (<span class="title function_">_objectIs</span>(a, b)) &#123;</span><br><span class="line">    <span class="keyword">return</span> <span class="literal">true</span>;</span><br><span class="line">  &#125;</span><br><span class="line"></span><br><span class="line">  <span class="comment">// 类型不同</span></span><br><span class="line">  <span class="keyword">var</span> typeA = <span class="title function_">type</span>(a);</span><br><span class="line"></span><br><span class="line">  <span class="keyword">if</span> (typeA !== <span class="title function_">type</span>(b)) &#123;</span><br><span class="line">    <span class="keyword">return</span> <span class="literal">false</span>;</span><br><span class="line">  &#125;</span><br><span class="line"></span><br><span class="line">  <span class="comment">// 引用不同的情况</span></span><br><span class="line">  <span class="comment">//  ??????</span></span><br><span class="line">  <span class="keyword">if</span> (<span class="keyword">typeof</span> a[<span class="string">&#x27;fantasy-land/equals&#x27;</span>] === <span class="string">&#x27;function&#x27;</span> || <span class="keyword">typeof</span> b[<span class="string">&#x27;fantasy-land/equals&#x27;</span>] === <span class="string">&#x27;function&#x27;</span>) &#123;</span><br><span class="line">    <span class="keyword">return</span> <span class="keyword">typeof</span> a[<span class="string">&#x27;fantasy-land/equals&#x27;</span>] === <span class="string">&#x27;function&#x27;</span> &amp;&amp; a[<span class="string">&#x27;fantasy-land/equals&#x27;</span>](b) &amp;&amp;</span><br><span class="line">      <span class="keyword">typeof</span> b[<span class="string">&#x27;fantasy-land/equals&#x27;</span>] === <span class="string">&#x27;function&#x27;</span> &amp;&amp; b[<span class="string">&#x27;fantasy-land/equals&#x27;</span>](a);</span><br><span class="line">  &#125;</span><br><span class="line"></span><br><span class="line">  <span class="comment">// 如果自身实现了equals方法</span></span><br><span class="line">  <span class="keyword">if</span> (<span class="keyword">typeof</span> a.<span class="property">equals</span> === <span class="string">&#x27;function&#x27;</span> || <span class="keyword">typeof</span> b.<span class="property">equals</span> === <span class="string">&#x27;function&#x27;</span>) &#123;</span><br><span class="line">    <span class="keyword">return</span> <span class="keyword">typeof</span> a.<span class="property">equals</span> === <span class="string">&#x27;function&#x27;</span> &amp;&amp; a.<span class="title function_">equals</span>(b) &amp;&amp;</span><br><span class="line">      <span class="keyword">typeof</span> b.<span class="property">equals</span> === <span class="string">&#x27;function&#x27;</span> &amp;&amp; b.<span class="title function_">equals</span>(a);</span><br><span class="line">  &#125;</span><br><span class="line"></span><br><span class="line">  <span class="comment">// 其他引用类型</span></span><br><span class="line">  <span class="keyword">switch</span> (typeA) &#123;</span><br><span class="line">    <span class="keyword">case</span> <span class="string">&#x27;Arguments&#x27;</span>:</span><br><span class="line">    <span class="keyword">case</span> <span class="string">&#x27;Array&#x27;</span>:</span><br><span class="line">    <span class="keyword">case</span> <span class="string">&#x27;Object&#x27;</span>:</span><br><span class="line">      <span class="comment">// 引用类型如果为Promise实例，看作是项等的</span></span><br><span class="line">      <span class="keyword">if</span> (<span class="keyword">typeof</span> a.<span class="property">constructor</span> === <span class="string">&#x27;function&#x27;</span> &amp;&amp;</span><br><span class="line">        <span class="title function_">_functionName</span>(a.<span class="property">constructor</span>) === <span class="string">&#x27;Promise&#x27;</span>) &#123;</span><br><span class="line">        <span class="keyword">return</span> a === b;</span><br><span class="line">      &#125;</span><br><span class="line">      <span class="keyword">break</span>;</span><br><span class="line">    <span class="comment">// 基本类型的装箱对象</span></span><br><span class="line">    <span class="keyword">case</span> <span class="string">&#x27;Boolean&#x27;</span>:</span><br><span class="line">    <span class="keyword">case</span> <span class="string">&#x27;Number&#x27;</span>:</span><br><span class="line">    <span class="keyword">case</span> <span class="string">&#x27;String&#x27;</span>:</span><br><span class="line">      <span class="keyword">if</span> (!(<span class="keyword">typeof</span> a === <span class="keyword">typeof</span> b &amp;&amp; <span class="title function_">_objectIs</span>(a.<span class="title function_">valueOf</span>(), b.<span class="title function_">valueOf</span>()))) &#123;</span><br><span class="line">        <span class="keyword">return</span> <span class="literal">false</span>;</span><br><span class="line">      &#125;</span><br><span class="line">      <span class="keyword">break</span>;</span><br><span class="line">    <span class="keyword">case</span> <span class="string">&#x27;Date&#x27;</span>:</span><br><span class="line">    <span class="comment">// 时间类型转为事件戳</span></span><br><span class="line">      <span class="keyword">if</span> (!<span class="title function_">_objectIs</span>(a.<span class="title function_">valueOf</span>(), b.<span class="title function_">valueOf</span>())) &#123;</span><br><span class="line">        <span class="keyword">return</span> <span class="literal">false</span>;</span><br><span class="line">      &#125;</span><br><span class="line">      <span class="keyword">break</span>;</span><br><span class="line">    <span class="keyword">case</span> <span class="string">&#x27;Error&#x27;</span>:</span><br><span class="line">      <span class="keyword">return</span> a.<span class="property">name</span> === b.<span class="property">name</span> &amp;&amp; a.<span class="property">message</span> === b.<span class="property">message</span>;</span><br><span class="line">    <span class="keyword">case</span> <span class="string">&#x27;RegExp&#x27;</span>:</span><br><span class="line">    <span class="comment">// 正则类型的所有实例方法的实现相同</span></span><br><span class="line">      <span class="keyword">if</span> (!(a.<span class="property">source</span> === b.<span class="property">source</span> &amp;&amp;</span><br><span class="line">          a.<span class="property">global</span> === b.<span class="property">global</span> &amp;&amp;</span><br><span class="line">          a.<span class="property">ignoreCase</span> === b.<span class="property">ignoreCase</span> &amp;&amp;</span><br><span class="line">          a.<span class="property">multiline</span> === b.<span class="property">multiline</span> &amp;&amp;</span><br><span class="line">          a.<span class="property">sticky</span> === b.<span class="property">sticky</span> &amp;&amp;</span><br><span class="line">          a.<span class="property">unicode</span> === b.<span class="property">unicode</span>)) &#123;</span><br><span class="line">        <span class="keyword">return</span> <span class="literal">false</span>;</span><br><span class="line">      &#125;</span><br><span class="line">      <span class="keyword">break</span>;</span><br><span class="line">  &#125;</span><br><span class="line">  <span class="comment">// 处理map set集合</span></span><br><span class="line">  <span class="keyword">var</span> idx = stackA.<span class="property">length</span> - <span class="number">1</span>;</span><br><span class="line">  <span class="keyword">while</span> (idx &gt;= <span class="number">0</span>) &#123;</span><br><span class="line">    <span class="keyword">if</span> (stackA[idx] === a) &#123;</span><br><span class="line">      <span class="keyword">return</span> stackB[idx] === b;</span><br><span class="line">    &#125;</span><br><span class="line">    idx -= <span class="number">1</span>;</span><br><span class="line">  &#125;</span><br><span class="line"></span><br><span class="line">  <span class="keyword">switch</span> (typeA) &#123;</span><br><span class="line">    <span class="keyword">case</span> <span class="string">&#x27;Map&#x27;</span>:</span><br><span class="line">      <span class="keyword">if</span> (a.<span class="property">size</span> !== b.<span class="property">size</span>) &#123;</span><br><span class="line">        <span class="keyword">return</span> <span class="literal">false</span>;</span><br><span class="line">      &#125;</span><br><span class="line"></span><br><span class="line">      <span class="keyword">return</span> <span class="title function_">_uniqContentEquals</span>(a.<span class="title function_">entries</span>(), b.<span class="title function_">entries</span>(), stackA.<span class="title function_">concat</span>([a]), stackB.<span class="title function_">concat</span>([b]));</span><br><span class="line">    <span class="keyword">case</span> <span class="string">&#x27;Set&#x27;</span>:</span><br><span class="line">      <span class="keyword">if</span> (a.<span class="property">size</span> !== b.<span class="property">size</span>) &#123;</span><br><span class="line">        <span class="keyword">return</span> <span class="literal">false</span>;</span><br><span class="line">      &#125;</span><br><span class="line"></span><br><span class="line">      <span class="keyword">return</span> <span class="title function_">_uniqContentEquals</span>(a.<span class="title function_">values</span>(), b.<span class="title function_">values</span>(), stackA.<span class="title function_">concat</span>([a]), stackB.<span class="title function_">concat</span>([b]));</span><br><span class="line">    <span class="keyword">case</span> <span class="string">&#x27;Arguments&#x27;</span>:</span><br><span class="line">    <span class="keyword">case</span> <span class="string">&#x27;Array&#x27;</span>:</span><br><span class="line">    <span class="keyword">case</span> <span class="string">&#x27;Object&#x27;</span>:</span><br><span class="line">    <span class="keyword">case</span> <span class="string">&#x27;Boolean&#x27;</span>:</span><br><span class="line">    <span class="keyword">case</span> <span class="string">&#x27;Number&#x27;</span>:</span><br><span class="line">    <span class="keyword">case</span> <span class="string">&#x27;String&#x27;</span>:</span><br><span class="line">    <span class="keyword">case</span> <span class="string">&#x27;Date&#x27;</span>:</span><br><span class="line">    <span class="keyword">case</span> <span class="string">&#x27;Error&#x27;</span>:</span><br><span class="line">    <span class="keyword">case</span> <span class="string">&#x27;RegExp&#x27;</span>:</span><br><span class="line">    <span class="keyword">case</span> <span class="string">&#x27;Int8Array&#x27;</span>:</span><br><span class="line">    <span class="keyword">case</span> <span class="string">&#x27;Uint8Array&#x27;</span>:</span><br><span class="line">    <span class="keyword">case</span> <span class="string">&#x27;Uint8ClampedArray&#x27;</span>:</span><br><span class="line">    <span class="keyword">case</span> <span class="string">&#x27;Int16Array&#x27;</span>:</span><br><span class="line">    <span class="keyword">case</span> <span class="string">&#x27;Uint16Array&#x27;</span>:</span><br><span class="line">    <span class="keyword">case</span> <span class="string">&#x27;Int32Array&#x27;</span>:</span><br><span class="line">    <span class="keyword">case</span> <span class="string">&#x27;Uint32Array&#x27;</span>:</span><br><span class="line">    <span class="keyword">case</span> <span class="string">&#x27;Float32Array&#x27;</span>:</span><br><span class="line">    <span class="keyword">case</span> <span class="string">&#x27;Float64Array&#x27;</span>:</span><br><span class="line">    <span class="keyword">case</span> <span class="string">&#x27;ArrayBuffer&#x27;</span>:</span><br><span class="line">      <span class="keyword">break</span>;</span><br><span class="line">    <span class="attr">default</span>:</span><br><span class="line">      <span class="comment">// Values of other types are only equal if identical.</span></span><br><span class="line">      <span class="comment">// 其他类型只有引用相同才算项等</span></span><br><span class="line">      <span class="keyword">return</span> <span class="literal">false</span>;</span><br><span class="line">  &#125;</span><br><span class="line"></span><br><span class="line">  <span class="comment">// 处理数组或对象的每一个值是否项等</span></span><br><span class="line">  <span class="keyword">var</span> keysA = <span class="title function_">keys</span>(a);</span><br><span class="line">  <span class="keyword">if</span> (keysA.<span class="property">length</span> !== <span class="title function_">keys</span>(b).<span class="property">length</span>) &#123;</span><br><span class="line">    <span class="keyword">return</span> <span class="literal">false</span>;</span><br><span class="line">  &#125;</span><br><span class="line"></span><br><span class="line">  <span class="keyword">var</span> extendedStackA = stackA.<span class="title function_">concat</span>([a]);</span><br><span class="line">  <span class="keyword">var</span> extendedStackB = stackB.<span class="title function_">concat</span>([b]);</span><br><span class="line"></span><br><span class="line">  idx = keysA.<span class="property">length</span> - <span class="number">1</span>;</span><br><span class="line">  <span class="keyword">while</span> (idx &gt;= <span class="number">0</span>) &#123;</span><br><span class="line">    <span class="keyword">var</span> key = keysA[idx];</span><br><span class="line">    <span class="keyword">if</span> (!(<span class="title function_">_has</span>(key, b) &amp;&amp; <span class="title function_">_equals</span>(b[key], a[key], extendedStackA, extendedStackB))) &#123;</span><br><span class="line">      <span class="keyword">return</span> <span class="literal">false</span>;</span><br><span class="line">    &#125;</span><br><span class="line">    idx -= <span class="number">1</span>;</span><br><span class="line">  &#125;</span><br><span class="line">  <span class="keyword">return</span> <span class="literal">true</span>;</span><br><span class="line">&#125;</span><br><span class="line"></span><br></pre></td></tr></table></figure> 
+      <!-- reward -->
+      
+    </div>
+    
+
+    <!-- copyright -->
+    
+    <footer class="article-footer">
+       
+  <ul class="article-tag-list" itemprop="keywords"><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/Ramda/" rel="tag">Ramda</a></li><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/%E5%87%BD%E6%95%B0%E5%BC%8F%E7%BC%96%E7%A8%8B/" rel="tag">函数式编程</a></li></ul>
+
+    </footer>
+  </div>
+
+   
+    
+</article>
+
+    
+    <article
+  id="post-javascript/Ramda_Relation方法"
+  class="article article-type-post"
+  itemscope
+  itemprop="blogPost"
+  data-scroll-reveal
+>
+  <div class="article-inner">
+    
+    <header class="article-header">
+       
+<h2 itemprop="name">
+  <a class="article-title" href="/posts/4b3e617e083b/"
+    >Ramda Relation 方法源码分析</a> 
+</h2>
+ 
+
+      
+    </header>
+     
+    <div class="article-meta">
+      <a href="/posts/4b3e617e083b/" class="article-date">
+  <time datetime="2021-01-16T08:14:44.000Z" itemprop="datePublished">2021-01-16</time>
+</a> 
+  <div class="article-category">
+    <a class="article-category-link" href="/categories/JavaScript/">JavaScript</a>
+  </div>
+   
+    </div>
+      
+    <div class="article-entry" itemprop="articleBody">
+       
+   
+      <!-- reward -->
+      
+    </div>
+    
+
+    <!-- copyright -->
+    
+    <footer class="article-footer">
+       
+  <ul class="article-tag-list" itemprop="keywords"><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/Ramda/" rel="tag">Ramda</a></li><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/%E5%87%BD%E6%95%B0%E5%BC%8F%E7%BC%96%E7%A8%8B/" rel="tag">函数式编程</a></li></ul>
+
+    </footer>
+  </div>
+
+   
+    
+</article>
+
+    
+    <article
+  id="post-javascript/Ramda_Math方法"
+  class="article article-type-post"
+  itemscope
+  itemprop="blogPost"
+  data-scroll-reveal
+>
+  <div class="article-inner">
+    
+    <header class="article-header">
+       
+<h2 itemprop="name">
+  <a class="article-title" href="/posts/fe66a7d19245/"
+    >Ramda Math 方法源码分析</a> 
+</h2>
+ 
+
+      
+    </header>
+     
+    <div class="article-meta">
+      <a href="/posts/fe66a7d19245/" class="article-date">
+  <time datetime="2021-01-16T07:45:51.000Z" itemprop="datePublished">2021-01-16</time>
+</a> 
+  <div class="article-category">
+    <a class="article-category-link" href="/categories/JavaScript/">JavaScript</a>
+  </div>
+   
+    </div>
+      
+    <div class="article-entry" itemprop="articleBody">
+       
+   
+      <!-- reward -->
+      
+    </div>
+    
+
+    <!-- copyright -->
+    
+    <footer class="article-footer">
+       
+  <ul class="article-tag-list" itemprop="keywords"><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/Ramda/" rel="tag">Ramda</a></li><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/%E5%87%BD%E6%95%B0%E5%BC%8F%E7%BC%96%E7%A8%8B/" rel="tag">函数式编程</a></li></ul>
+
+    </footer>
+  </div>
+
+   
+    
+</article>
+
+    
+    <article
+  id="post-javascript/Ramda中的柯理化"
+  class="article article-type-post"
+  itemscope
+  itemprop="blogPost"
+  data-scroll-reveal
+>
+  <div class="article-inner">
+    
+    <header class="article-header">
+       
+<h2 itemprop="name">
+  <a class="article-title" href="/posts/6d8100d82f85/"
+    >Ramda中的柯理化</a> 
+</h2>
+ 
+
+      
+    </header>
+     
+    <div class="article-meta">
+      <a href="/posts/6d8100d82f85/" class="article-date">
+  <time datetime="2021-01-15T13:54:03.000Z" itemprop="datePublished">2021-01-15</time>
+</a> 
+  <div class="article-category">
+    <a class="article-category-link" href="/categories/JavaScript/">JavaScript</a>
+  </div>
+   
+    </div>
+      
+    <div class="article-entry" itemprop="articleBody">
+       
+  <h4 id="curry1"><a href="#curry1" class="headerlink" title="_curry1"></a>_curry1</h4><p>内置接口，保证了参数的个数，无需判断</p>
+<figure class="highlight javascript"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment">/**</span></span><br><span class="line"><span class="comment"> * Optimized internal one-arity curry function.</span></span><br><span class="line"><span class="comment"> *</span></span><br><span class="line"><span class="comment"> * <span class="doctag">@private</span></span></span><br><span class="line"><span class="comment"> * <span class="doctag">@category</span> <span class="variable">Function</span></span></span><br><span class="line"><span class="comment"> * <span class="doctag">@param</span> &#123;<span class="type">Function</span>&#125; fn The function to curry.</span></span><br><span class="line"><span class="comment"> * <span class="doctag">@return</span> &#123;<span class="type">Function</span>&#125; The curried function.</span></span><br><span class="line"><span class="comment"> */</span></span><br><span class="line"></span><br><span class="line"><span class="keyword">export</span> <span class="keyword">default</span> <span class="keyword">function</span> <span class="title function_">_curry1</span>(<span class="params">fn</span>) &#123;</span><br><span class="line">  <span class="keyword">return</span> <span class="keyword">function</span> <span class="title function_">f1</span>(<span class="params">a</span>) &#123;</span><br><span class="line">    <span class="keyword">if</span> (<span class="variable language_">arguments</span>.<span class="property">length</span> === <span class="number">0</span> || <span class="title function_">_isPlaceholder</span>(a)) &#123;</span><br><span class="line">      <span class="keyword">return</span> f1;</span><br><span class="line">    &#125; <span class="keyword">else</span> &#123;</span><br><span class="line">      <span class="keyword">return</span> fn.<span class="title function_">apply</span>(<span class="variable language_">this</span>, <span class="variable language_">arguments</span>);</span><br><span class="line">    &#125;</span><br><span class="line">  &#125;;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+
+<h4 id="curry2"><a href="#curry2" class="headerlink" title="_curry2"></a>_curry2</h4><p>如果以值的真假为纬度分支会比较复杂，而且不能正确参数的位置</p>
+<figure class="highlight javascript"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">const</span> _curry2 = <span class="keyword">function</span> (<span class="params">fn</span>) &#123;</span><br><span class="line">  <span class="keyword">return</span> <span class="keyword">function</span> <span class="title function_">f2</span>(<span class="params">a, b</span>) &#123;</span><br><span class="line">    <span class="keyword">return</span> a !== <span class="literal">undefined</span> &amp;&amp; b !== <span class="literal">undefined</span></span><br><span class="line">      ? <span class="title function_">_isPlaceholder</span>(a) &amp;&amp; <span class="title function_">_isPlaceholder</span>(b)</span><br><span class="line">        ? f2</span><br><span class="line">        : <span class="title function_">isPlaceholder</span>(a)</span><br><span class="line">          ? <span class="title function_">_curry1</span>(<span class="keyword">function</span> (<span class="params">_a</span>) &#123; <span class="keyword">return</span> <span class="title function_">fn</span>(_a, b) &#125;)</span><br><span class="line">          : <span class="title function_">_isPlaceholder</span>(b)</span><br><span class="line">            ? <span class="title function_">_curry1</span>(<span class="keyword">function</span> (<span class="params">_b</span>) &#123; <span class="keyword">return</span> <span class="title function_">fn</span>(a, _b) &#125;)</span><br><span class="line">            : fn.<span class="title function_">apply</span>(<span class="variable language_">this</span>, <span class="variable language_">arguments</span>)</span><br><span class="line">      : a !== <span class="literal">undefined</span></span><br><span class="line">        ? <span class="title function_">_curry1</span>(<span class="keyword">function</span> (<span class="params">_b</span>) &#123; <span class="keyword">return</span> <span class="title function_">fn</span>(a, _b) &#125;)</span><br><span class="line">        : f2</span><br><span class="line">  &#125;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+<p>作者以参数的个数为纬度考虑</p>
+<figure class="highlight javascript"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment">/**</span></span><br><span class="line"><span class="comment"> * Optimized internal two-arity curry function.</span></span><br><span class="line"><span class="comment"> *</span></span><br><span class="line"><span class="comment"> * <span class="doctag">@private</span></span></span><br><span class="line"><span class="comment"> * <span class="doctag">@category</span> <span class="variable">Function</span></span></span><br><span class="line"><span class="comment"> * <span class="doctag">@param</span> &#123;<span class="type">Function</span>&#125; fn The function to curry.</span></span><br><span class="line"><span class="comment"> * <span class="doctag">@return</span> &#123;<span class="type">Function</span>&#125; The curried function.</span></span><br><span class="line"><span class="comment"> */</span></span><br><span class="line"><span class="keyword">export</span> <span class="keyword">default</span> <span class="keyword">function</span> <span class="title function_">_curry2</span>(<span class="params">fn</span>) &#123;</span><br><span class="line">  <span class="keyword">return</span> <span class="keyword">function</span> <span class="title function_">f2</span>(<span class="params">a, b</span>) &#123;</span><br><span class="line">    <span class="keyword">switch</span> (<span class="variable language_">arguments</span>.<span class="property">length</span>) &#123;</span><br><span class="line">      <span class="keyword">case</span> <span class="number">0</span>:</span><br><span class="line">        <span class="keyword">return</span> f2;</span><br><span class="line">      <span class="keyword">case</span> <span class="number">1</span>:</span><br><span class="line">        <span class="comment">// 如果a传入的是undefined也是一个参数</span></span><br><span class="line">        <span class="keyword">return</span> <span class="title function_">_isPlaceholder</span>(a)</span><br><span class="line">          ? f2</span><br><span class="line">          : <span class="title function_">_curry1</span>(<span class="keyword">function</span>(<span class="params">_b</span>) &#123; <span class="keyword">return</span> <span class="title function_">fn</span>(a, _b); &#125;);</span><br><span class="line">      <span class="attr">default</span>:</span><br><span class="line">        <span class="keyword">return</span> <span class="title function_">_isPlaceholder</span>(a) &amp;&amp; <span class="title function_">_isPlaceholder</span>(b)</span><br><span class="line">          ? f2</span><br><span class="line">          : <span class="title function_">_isPlaceholder</span>(a)</span><br><span class="line">            ? <span class="title function_">_curry1</span>(<span class="keyword">function</span>(<span class="params">_a</span>) &#123; <span class="keyword">return</span> <span class="title function_">fn</span>(_a, b); &#125;)</span><br><span class="line">            : <span class="title function_">_isPlaceholder</span>(b)</span><br><span class="line">              ? <span class="title function_">_curry1</span>(<span class="keyword">function</span>(<span class="params">_b</span>) &#123; <span class="keyword">return</span> <span class="title function_">fn</span>(a, _b); &#125;)</span><br><span class="line">              : <span class="title function_">fn</span>(a, b);</span><br><span class="line">    &#125;</span><br><span class="line">  &#125;;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+
+<h4 id="curry3"><a href="#curry3" class="headerlink" title="_curry3"></a>_curry3</h4><p>同理增加分支判断</p>
+<figure class="highlight javascript"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br><span class="line">35</span><br><span class="line">36</span><br><span class="line">37</span><br><span class="line">38</span><br><span class="line">39</span><br><span class="line">40</span><br><span class="line">41</span><br><span class="line">42</span><br><span class="line">43</span><br><span class="line">44</span><br><span class="line">45</span><br><span class="line">46</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment">/**</span></span><br><span class="line"><span class="comment"> * Optimized internal three-arity curry function.</span></span><br><span class="line"><span class="comment"> *</span></span><br><span class="line"><span class="comment"> * <span class="doctag">@private</span></span></span><br><span class="line"><span class="comment"> * <span class="doctag">@category</span> <span class="variable">Function</span></span></span><br><span class="line"><span class="comment"> * <span class="doctag">@param</span> &#123;<span class="type">Function</span>&#125; fn The function to curry.</span></span><br><span class="line"><span class="comment"> * <span class="doctag">@return</span> &#123;<span class="type">Function</span>&#125; The curried function.</span></span><br><span class="line"><span class="comment"> */</span></span><br><span class="line"><span class="keyword">export</span> <span class="keyword">default</span> <span class="keyword">function</span> <span class="title function_">_curry3</span>(<span class="params">fn</span>) &#123;</span><br><span class="line">  <span class="keyword">return</span> <span class="keyword">function</span> <span class="title function_">f3</span>(<span class="params">a, b, c</span>) &#123;</span><br><span class="line">    <span class="keyword">switch</span> (<span class="variable language_">arguments</span>.<span class="property">length</span>) &#123;</span><br><span class="line">      <span class="keyword">case</span> <span class="number">0</span>:</span><br><span class="line">        <span class="keyword">return</span> f3;</span><br><span class="line">      <span class="keyword">case</span> <span class="number">1</span>:</span><br><span class="line">        <span class="keyword">return</span> <span class="title function_">_isPlaceholder</span>(a)</span><br><span class="line">          ? f3</span><br><span class="line">          : <span class="title function_">_curry2</span>(<span class="keyword">function</span>(<span class="params">_b, _c</span>) &#123; <span class="keyword">return</span> <span class="title function_">fn</span>(a, _b, _c); &#125;);</span><br><span class="line">      <span class="keyword">case</span> <span class="number">2</span>:</span><br><span class="line">        <span class="keyword">return</span> <span class="title function_">_isPlaceholder</span>(a) &amp;&amp; <span class="title function_">_isPlaceholder</span>(b)</span><br><span class="line">          ? f3</span><br><span class="line">          : <span class="title function_">_isPlaceholder</span>(a)</span><br><span class="line">            ? <span class="title function_">_curry2</span>(<span class="keyword">function</span>(<span class="params">_a, _c</span>) &#123; <span class="keyword">return</span> <span class="title function_">fn</span>(_a, b, _c); &#125;)</span><br><span class="line">            : <span class="title function_">_isPlaceholder</span>(b)</span><br><span class="line">              ? <span class="title function_">_curry2</span>(<span class="keyword">function</span>(<span class="params">_b, _c</span>) &#123; <span class="keyword">return</span> <span class="title function_">fn</span>(a, _b, _c); &#125;)</span><br><span class="line">              : <span class="title function_">_curry1</span>(<span class="keyword">function</span>(<span class="params">_c</span>) &#123; <span class="keyword">return</span> <span class="title function_">fn</span>(a, b, _c); &#125;);</span><br><span class="line">      <span class="attr">default</span>:</span><br><span class="line">        <span class="keyword">return</span> <span class="title function_">_isPlaceholder</span>(a) &amp;&amp; <span class="title function_">_isPlaceholder</span>(b) &amp;&amp; <span class="title function_">_isPlaceholder</span>(c)</span><br><span class="line">          ? f3</span><br><span class="line">          <span class="comment">// 其中两个是占位符的情况</span></span><br><span class="line">          : <span class="title function_">_isPlaceholder</span>(a) &amp;&amp; <span class="title function_">_isPlaceholder</span>(b)</span><br><span class="line">            ? <span class="title function_">_curry2</span>(<span class="keyword">function</span>(<span class="params">_a, _b</span>) &#123; <span class="keyword">return</span> <span class="title function_">fn</span>(_a, _b, c); &#125;)</span><br><span class="line">            : <span class="title function_">_isPlaceholder</span>(a) &amp;&amp; <span class="title function_">_isPlaceholder</span>(c)</span><br><span class="line">              ? <span class="title function_">_curry2</span>(<span class="keyword">function</span>(<span class="params">_a, _c</span>) &#123; <span class="keyword">return</span> <span class="title function_">fn</span>(_a, b, _c); &#125;)</span><br><span class="line">              : <span class="title function_">_isPlaceholder</span>(b) &amp;&amp; <span class="title function_">_isPlaceholder</span>(c)</span><br><span class="line">                ? <span class="title function_">_curry2</span>(<span class="keyword">function</span>(<span class="params">_b, _c</span>) &#123; <span class="keyword">return</span> <span class="title function_">fn</span>(a, _b, _c); &#125;)</span><br><span class="line">                <span class="comment">// 其中一个是占位符的情况</span></span><br><span class="line">                : <span class="title function_">_isPlaceholder</span>(a)</span><br><span class="line">                  ? <span class="title function_">_curry1</span>(<span class="keyword">function</span>(<span class="params">_a</span>) &#123; <span class="keyword">return</span> <span class="title function_">fn</span>(_a, b, c); &#125;)</span><br><span class="line">                  : <span class="title function_">_isPlaceholder</span>(b)</span><br><span class="line">                    ? <span class="title function_">_curry1</span>(<span class="keyword">function</span>(<span class="params">_b</span>) &#123; <span class="keyword">return</span> <span class="title function_">fn</span>(a, _b, c); &#125;)</span><br><span class="line">                    : <span class="title function_">_isPlaceholder</span>(c)</span><br><span class="line">                      ? <span class="title function_">_curry1</span>(<span class="keyword">function</span>(<span class="params">_c</span>) &#123; <span class="keyword">return</span> <span class="title function_">fn</span>(a, b, _c); &#125;)</span><br><span class="line">                      : <span class="title function_">fn</span>(a, b, c);</span><br><span class="line">    &#125;</span><br><span class="line">  &#125;;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+<h4 id="curry"><a href="#curry" class="headerlink" title="curry"></a>curry</h4><p>共有方法curry的实现， 对共有方法curryN的封装，在不确定参数个数时候通过 <code>fn.length</code> 获取参数长度</p>
+<figure class="highlight javascript"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">var</span> curry = <span class="title function_">_curry1</span>(<span class="keyword">function</span> <span class="title function_">curry</span>(<span class="params">fn</span>) &#123;</span><br><span class="line">  <span class="keyword">return</span> <span class="title function_">curryN</span>(fn.<span class="property">length</span>, fn);</span><br><span class="line">&#125;);</span><br></pre></td></tr></table></figure>
+
+<h4 id="curryN"><a href="#curryN" class="headerlink" title="curryN"></a>curryN</h4><p>需要指定参数的个数， 抽象出参数个数的判断，最多个数为10个，防止参数过多造成栈溢出</p>
+<p>_arity 对参数个数的处理</p>
+<figure class="highlight javascript"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">export</span> <span class="keyword">default</span> <span class="keyword">function</span> <span class="title function_">_arity</span>(<span class="params">n, fn</span>) &#123;</span><br><span class="line">  <span class="comment">/* eslint-disable no-unused-vars */</span></span><br><span class="line">  <span class="keyword">switch</span> (n) &#123;</span><br><span class="line">    <span class="keyword">case</span> <span class="number">0</span>: <span class="keyword">return</span> <span class="keyword">function</span>(<span class="params"></span>) &#123; <span class="keyword">return</span> fn.<span class="title function_">apply</span>(<span class="variable language_">this</span>, <span class="variable language_">arguments</span>); &#125;;</span><br><span class="line">    <span class="keyword">case</span> <span class="number">1</span>: <span class="keyword">return</span> <span class="keyword">function</span>(<span class="params">a0</span>) &#123; <span class="keyword">return</span> fn.<span class="title function_">apply</span>(<span class="variable language_">this</span>, <span class="variable language_">arguments</span>); &#125;;</span><br><span class="line">    <span class="keyword">case</span> <span class="number">2</span>: <span class="keyword">return</span> <span class="keyword">function</span>(<span class="params">a0, a1</span>) &#123; <span class="keyword">return</span> fn.<span class="title function_">apply</span>(<span class="variable language_">this</span>, <span class="variable language_">arguments</span>); &#125;;</span><br><span class="line">    <span class="comment">// ...</span></span><br><span class="line">    <span class="keyword">case</span> <span class="number">10</span>: <span class="keyword">return</span> <span class="keyword">function</span>(<span class="params">a0, a1, a2, a3, a4, a5, a6, a7, a8, a9</span>) &#123; <span class="keyword">return</span> fn.<span class="title function_">apply</span>(<span class="variable language_">this</span>, <span class="variable language_">arguments</span>); &#125;;</span><br><span class="line">    <span class="attr">default</span>: <span class="keyword">throw</span> <span class="keyword">new</span> <span class="title class_">Error</span>(<span class="string">&#x27;First argument to _arity must be a non-negative integer no greater than ten&#x27;</span>);</span><br><span class="line">  &#125;</span><br><span class="line">&#125;</span><br><span class="line"></span><br></pre></td></tr></table></figure>
+
+<figure class="highlight javascript"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">var</span> curryN = <span class="title function_">_curry2</span>(<span class="keyword">function</span> <span class="title function_">curryN</span>(<span class="params">length, fn</span>) &#123;</span><br><span class="line">  <span class="keyword">if</span> (length === <span class="number">1</span>) &#123;</span><br><span class="line">    <span class="keyword">return</span> <span class="title function_">_curry1</span>(fn);</span><br><span class="line">  &#125;</span><br><span class="line">  <span class="keyword">return</span> <span class="title function_">_arity</span>(length, <span class="title function_">_curryN</span>(length, [], fn));</span><br><span class="line">&#125;);</span><br></pre></td></tr></table></figure>
+
+<p>在参数较少时使用其他的内置方法  </p>
+<figure class="highlight javascript"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">function</span> <span class="title function_">curryN</span>(<span class="params">length, fn</span>) &#123;</span><br><span class="line">  <span class="keyword">return</span> <span class="title function_">_curry2</span>(<span class="keyword">function</span> (<span class="params">length, fn</span>) &#123;</span><br><span class="line">    <span class="keyword">return</span> length === <span class="number">1</span></span><br><span class="line">      ? <span class="title function_">_curry1</span>(fn)</span><br><span class="line">      : length === <span class="number">2</span></span><br><span class="line">        ? <span class="title function_">_curry2</span>(fn)</span><br><span class="line">        : length === <span class="number">3</span></span><br><span class="line">          ? <span class="title function_">_curry3</span>(fn)</span><br><span class="line">          : <span class="title function_">_arity</span>(length, <span class="title function_">_curryN</span>(length, [], fn))</span><br><span class="line">  &#125;)</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+
+<h4 id="curryN-核心方法"><a href="#curryN-核心方法" class="headerlink" title="_curryN 核心方法"></a>_curryN 核心方法</h4><p>下面是一段糟糕的代码</p>
+<p>receive保持了源数组的引用，不符合函数式编成数据不可变的思想</p>
+<p>每次添加新参数，都要查询可添加的位置</p>
+<figure class="highlight javascript"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br><span class="line">35</span><br><span class="line">36</span><br><span class="line">37</span><br><span class="line">38</span><br><span class="line">39</span><br><span class="line">40</span><br><span class="line">41</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment">// 1. 真实参数个数和length项等 则执行函数</span></span><br><span class="line"><span class="comment">// 2. 实时记录占位符的位置， 新参数优先放到占位符</span></span><br><span class="line"><span class="keyword">function</span> <span class="title function_">_curryN</span>(<span class="params">length, receive, fn</span>) &#123;</span><br><span class="line">  <span class="keyword">return</span> <span class="keyword">function</span> <span class="title function_">fN</span>(<span class="params"></span>) &#123;</span><br><span class="line">    <span class="keyword">var</span> index = <span class="number">0</span>;</span><br><span class="line">    <span class="keyword">var</span> zw = <span class="number">0</span>;</span><br><span class="line">    <span class="keyword">function</span> <span class="title function_">findzw</span>(<span class="params">zw, receive</span>) &#123;</span><br><span class="line">      <span class="keyword">while</span> (zw &lt; receive.<span class="property">length</span>) &#123;</span><br><span class="line">        <span class="keyword">if</span> (<span class="title function_">_isPlaceholder</span>(receive[zw])) &#123;</span><br><span class="line">          <span class="comment">//指向占位符的前一位， 方便后面处理</span></span><br><span class="line">          <span class="keyword">return</span> zw - <span class="number">1</span></span><br><span class="line">        &#125;</span><br><span class="line">        zw++</span><br><span class="line">      &#125;</span><br><span class="line">      <span class="keyword">return</span> zw - <span class="number">1</span></span><br><span class="line">    &#125;</span><br><span class="line">    <span class="comment">// 找到占位符的位置</span></span><br><span class="line">    zw = <span class="title function_">findzw</span>(zw, receive);</span><br><span class="line">    <span class="keyword">while</span> (index &lt; <span class="variable language_">arguments</span>.<span class="property">length</span>) &#123;</span><br><span class="line">      receive[zw + <span class="number">1</span>] = <span class="variable language_">arguments</span>[index];</span><br><span class="line">      <span class="comment">//更新之后重新查找占位符, 条过当前的占位符</span></span><br><span class="line">      zw = <span class="title function_">findzw</span>(zw + <span class="number">1</span>, receive);</span><br><span class="line">      index++;</span><br><span class="line">    &#125;</span><br><span class="line">    <span class="comment">// 没有占位符 则位置+1为参数长度</span></span><br><span class="line">    <span class="keyword">if</span> (zw + <span class="number">1</span> === length) &#123;</span><br><span class="line">      <span class="keyword">return</span> fn.<span class="title function_">apply</span>(<span class="variable language_">this</span>, receive)</span><br><span class="line">    &#125; <span class="keyword">else</span> &#123;</span><br><span class="line">      <span class="comment">// 计算剩余参数</span></span><br><span class="line">      <span class="keyword">var</span> j = <span class="number">0</span>;</span><br><span class="line">      <span class="keyword">var</span> len = <span class="number">0</span></span><br><span class="line">      <span class="keyword">while</span> (j &lt; receive.<span class="property">length</span>) &#123;</span><br><span class="line">        <span class="keyword">if</span> (!<span class="title function_">_isPlaceholder</span>(receive[index])) &#123;</span><br><span class="line">          len++;</span><br><span class="line">        &#125;</span><br><span class="line">        j++</span><br><span class="line">      &#125;</span><br><span class="line">      <span class="keyword">return</span> <span class="title function_">_arity</span>(length - len, <span class="title function_">_curryN</span>(length, receive, fn))</span><br><span class="line">    &#125;</span><br><span class="line">  &#125;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+<p>源码的实现</p>
+<figure class="highlight javascript"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br><span class="line">35</span><br><span class="line">36</span><br><span class="line">37</span><br><span class="line">38</span><br><span class="line">39</span><br><span class="line">40</span><br><span class="line">41</span><br><span class="line">42</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">function</span> <span class="title function_">_curryN</span>(<span class="params">length, receive, fn</span>) &#123;</span><br><span class="line">  <span class="keyword">return</span> <span class="keyword">function</span> (<span class="params"></span>) &#123;</span><br><span class="line">    <span class="comment">// 复制已接受参数的数组</span></span><br><span class="line">    <span class="keyword">var</span> combined = [];</span><br><span class="line">    <span class="comment">// 遍历入参的索引</span></span><br><span class="line">    <span class="keyword">var</span> argsIdx = <span class="number">0</span>;</span><br><span class="line">    <span class="comment">// 剩余参数</span></span><br><span class="line">    <span class="keyword">var</span> left = length;</span><br><span class="line">    <span class="comment">// 遍历已接受参数索引</span></span><br><span class="line">    <span class="keyword">var</span> combinedIdx = <span class="number">0</span>;</span><br><span class="line"></span><br><span class="line">    <span class="comment">// 如果参数没有复制完成，或新如参没有添加完成则继续执行</span></span><br><span class="line">    <span class="keyword">while</span> (combinedIdx &lt; received.<span class="property">length</span> || argsIdx &lt; <span class="variable language_">arguments</span>.<span class="property">length</span>) &#123;</span><br><span class="line">      <span class="keyword">var</span> result;</span><br><span class="line">      <span class="comment">// 通过条件语句处理了占位符的问题</span></span><br><span class="line">      <span class="comment">// 如果老参数没有复制完成，且复制的值不是占位符，或者入参已经都处理了，直接取出当前的老参数，用于复制到新的数组中</span></span><br><span class="line">      <span class="comment">// 通过双指针解决占位符的问题</span></span><br><span class="line">      <span class="keyword">if</span> (combinedIdx &lt; received.<span class="property">length</span> &amp;&amp;</span><br><span class="line">        (!<span class="title function_">_isPlaceholder</span>(received[combinedIdx]) ||</span><br><span class="line">          argsIdx &gt;= <span class="variable language_">arguments</span>.<span class="property">length</span>)) &#123;</span><br><span class="line">        result = received[combinedIdx];</span><br><span class="line">      &#125; <span class="keyword">else</span> &#123;</span><br><span class="line">        <span class="comment">// 如果老参数都复制完，或者时占位符，或者还有新参数没有复制</span></span><br><span class="line">        <span class="comment">// 取一个新参数加到数组中</span></span><br><span class="line">        result = <span class="variable language_">arguments</span>[argsIdx];</span><br><span class="line">        argsIdx += <span class="number">1</span>;</span><br><span class="line">      &#125;</span><br><span class="line">      <span class="comment">// 添加到新数组中</span></span><br><span class="line">      combined[combinedIdx] = result;</span><br><span class="line">      <span class="comment">// 如果不是占位符剩余参数 -1</span></span><br><span class="line">      <span class="keyword">if</span> (!<span class="title function_">_isPlaceholder</span>(result)) &#123;</span><br><span class="line">        left -= <span class="number">1</span>;</span><br><span class="line">      &#125;</span><br><span class="line">      combinedIdx += <span class="number">1</span>;</span><br><span class="line">    &#125;</span><br><span class="line">    <span class="comment">// 如果没有剩余参数直接执行</span></span><br><span class="line">    <span class="keyword">return</span> left &lt;= <span class="number">0</span></span><br><span class="line">      ? fn.<span class="title function_">apply</span>(<span class="variable language_">this</span>, combined)</span><br><span class="line">      <span class="comment">// 否则通过_arity固定新函数的参数个数</span></span><br><span class="line">      : <span class="title function_">_arity</span>(left, <span class="title function_">_curryN</span>(length, combined, fn));</span><br><span class="line">  &#125;;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+ 
+      <!-- reward -->
+      
+    </div>
+    
+
+    <!-- copyright -->
+    
+    <footer class="article-footer">
+       
+  <ul class="article-tag-list" itemprop="keywords"><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/Ramda/" rel="tag">Ramda</a></li><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/%E5%87%BD%E6%95%B0%E5%BC%8F%E7%BC%96%E7%A8%8B/" rel="tag">函数式编程</a></li></ul>
+
+    </footer>
+  </div>
+
+   
+    
+</article>
+
+    
+    <article
   id="post-ts/基本类型"
   class="article article-type-post"
   itemscope
@@ -377,6 +710,71 @@
 
     
     <article
+  id="post-ts/typescript关键用法"
+  class="article article-type-post"
+  itemscope
+  itemprop="blogPost"
+  data-scroll-reveal
+>
+  <div class="article-inner">
+    
+    <header class="article-header">
+       
+<h2 itemprop="name">
+  <a class="article-title" href="/posts/effde55d7845/"
+    >Typescript 关键用法</a> 
+</h2>
+ 
+
+      
+    </header>
+     
+    <div class="article-meta">
+      <a href="/posts/effde55d7845/" class="article-date">
+  <time datetime="2021-01-14T15:26:07.000Z" itemprop="datePublished">2021-01-14</time>
+</a> 
+  <div class="article-category">
+    <a class="article-category-link" href="/categories/TypeScript/">TypeScript</a>
+  </div>
+   
+    </div>
+      
+    <div class="article-entry" itemprop="articleBody">
+       
+  <h4 id="逆变-协变"><a href="#逆变-协变" class="headerlink" title="逆变 协变"></a>逆变 协变</h4><ul>
+<li><p>协变通常表示同向，例如 A 是 B 的子类型，那么 Container<A> 也是 Container<B> 的子类型，类型会随着内部类型的变化而同向变化。</p>
+</li>
+<li><p>逆变通常表示逆向，例如 A 是 B 的子类型，那么 Container<B> 是 Container<A> 的子类型，类型会随着内部类型的变化而逆向变化。</p>
+</li>
+<li><p>换一种简单说法就是要永远保证类型的安全</p>
+</li>
+</ul>
+<figure class="highlight ts"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">class</span> <span class="title class_">Animal</span> &#123;&#125;</span><br><span class="line"></span><br><span class="line"><span class="keyword">class</span> <span class="title class_">Cat</span> <span class="keyword">extends</span> <span class="title class_ inherited__">Animal</span> &#123;</span><br><span class="line">  <span class="title class_">Cat</span>() &#123;&#125;</span><br><span class="line">&#125;</span><br><span class="line"><span class="keyword">class</span> <span class="title class_">Dog</span> <span class="keyword">extends</span> <span class="title class_ inherited__">Animal</span> &#123;</span><br><span class="line">  <span class="title class_">Dog</span>() &#123;&#125;</span><br><span class="line">&#125;</span><br><span class="line"><span class="keyword">class</span> <span class="title class_">SmallDog</span> <span class="keyword">extends</span> <span class="title class_ inherited__">Dog</span> &#123;</span><br><span class="line">  <span class="keyword">public</span> name = <span class="number">1</span>;</span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line"><span class="comment">// 错误  参数类型不安全，定义的类型应该是参数类型的夫类型，参数可以多出不使用，但是不能少</span></span><br><span class="line"><span class="keyword">const</span> <span class="attr">fn</span>: <span class="function">(<span class="params">v: Dog</span>) =&gt;</span> <span class="title class_">Dog</span> = <span class="function">(<span class="params">v: SmallDog</span>) =&gt;</span> <span class="keyword">new</span> <span class="title class_">SmallDog</span>();</span><br><span class="line"><span class="comment">// 错误</span></span><br><span class="line"><span class="keyword">const</span> <span class="attr">fn1</span>: <span class="function">(<span class="params">v: Dog</span>) =&gt;</span> <span class="title class_">Dog</span> = <span class="function">(<span class="params">v: SmallDog</span>) =&gt;</span> <span class="keyword">new</span> <span class="title class_">Animal</span>();</span><br><span class="line"><span class="keyword">const</span> <span class="attr">fn2</span>: <span class="function">(<span class="params">v: Dog</span>) =&gt;</span> <span class="title class_">Dog</span> = <span class="function">(<span class="params">v: Animal</span>) =&gt;</span> <span class="keyword">new</span> <span class="title class_">SmallDog</span>();</span><br><span class="line"><span class="comment">// 错误  返回值类型不安全，定义的类型应该是返回值类型的子类型，返回值可以返回当前有的类型，但是不能多返回</span></span><br><span class="line"><span class="keyword">const</span> <span class="attr">fn3</span>: <span class="function">(<span class="params">v: Dog</span>) =&gt;</span> <span class="title class_">Dog</span> = <span class="function">(<span class="params">v: Animal</span>) =&gt;</span> <span class="keyword">new</span> <span class="title class_">Animal</span>();</span><br></pre></td></tr></table></figure>
+
+<figure class="highlight ts"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">type</span> <span class="variable constant_">T1</span> = &#123; <span class="attr">name</span>: <span class="built_in">string</span> &#125;;</span><br><span class="line"><span class="keyword">type</span> <span class="variable constant_">T2</span> = &#123; <span class="attr">age</span>: <span class="built_in">number</span> &#125;;</span><br><span class="line"></span><br><span class="line"><span class="comment">// 参数协变，因此返回的是交叉类型</span></span><br><span class="line"><span class="keyword">type</span> <span class="title class_">UnionToIntersection</span>&lt;T&gt; = T <span class="keyword">extends</span> &#123;</span><br><span class="line">  <span class="attr">a</span>: <span class="function">(<span class="params">x: infer U</span>) =&gt;</span> <span class="built_in">void</span>;</span><br><span class="line">  <span class="attr">b</span>: <span class="function">(<span class="params">x: infer U</span>) =&gt;</span> <span class="built_in">void</span>;</span><br><span class="line">&#125;</span><br><span class="line">  ? U</span><br><span class="line">  : <span class="built_in">never</span>;</span><br><span class="line"><span class="keyword">type</span> <span class="variable constant_">T3</span> = <span class="title class_">UnionToIntersection</span>&lt;&#123; <span class="attr">a</span>: <span class="function">(<span class="params">x: T1</span>) =&gt;</span> <span class="built_in">void</span>; <span class="attr">b</span>: <span class="function">(<span class="params">x: T2</span>) =&gt;</span> <span class="built_in">void</span> &#125;&gt;; <span class="comment">// T1 &amp; T2</span></span><br></pre></td></tr></table></figure>
+
+<figure class="highlight ts"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">type</span> <span class="variable constant_">T1</span> = &#123; <span class="attr">name</span>: <span class="built_in">string</span> &#125;;</span><br><span class="line"><span class="keyword">type</span> <span class="variable constant_">T2</span> = &#123; <span class="attr">age</span>: <span class="built_in">number</span> &#125;;</span><br><span class="line"></span><br><span class="line"><span class="comment">// 返回值逆变 因此返回的是联合类型</span></span><br><span class="line"><span class="keyword">type</span> <span class="title class_">UnionToIntersection</span>&lt;T&gt; = T <span class="keyword">extends</span> &#123;</span><br><span class="line">  <span class="attr">a</span>: <span class="function">(<span class="params">x: T1</span>) =&gt;</span> infer U;</span><br><span class="line">  <span class="attr">b</span>: <span class="function">(<span class="params">x: T2</span>) =&gt;</span> infer U;</span><br><span class="line">&#125;</span><br><span class="line">  ? U</span><br><span class="line">  : <span class="built_in">never</span>;</span><br><span class="line"><span class="keyword">type</span> <span class="variable constant_">T3</span> = <span class="title class_">UnionToIntersection</span>&lt;&#123; <span class="attr">a</span>: <span class="function">(<span class="params">x: T1</span>) =&gt;</span> <span class="built_in">string</span>; <span class="attr">b</span>: <span class="function">(<span class="params">x: T2</span>) =&gt;</span> <span class="built_in">void</span> &#125;&gt;; <span class="comment">// string|void</span></span><br></pre></td></tr></table></figure>
+ 
+      <!-- reward -->
+      
+    </div>
+    
+
+    <!-- copyright -->
+    
+    <footer class="article-footer">
+       
+  <ul class="article-tag-list" itemprop="keywords"><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/TypeScript/" rel="tag">TypeScript</a></li></ul>
+
+    </footer>
+  </div>
+
+   
+    
+</article>
+
+    
+    <article
   id="post-javascript/co模块"
   class="article article-type-post"
   itemscope
@@ -516,481 +914,6 @@
     <footer class="article-footer">
        
   <ul class="article-tag-list" itemprop="keywords"><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/Nginx/" rel="tag">Nginx</a></li></ul>
-
-    </footer>
-  </div>
-
-   
-    
-</article>
-
-    
-    <article
-  id="post-node/线上部署"
-  class="article article-type-post"
-  itemscope
-  itemprop="blogPost"
-  data-scroll-reveal
->
-  <div class="article-inner">
-    
-    <header class="article-header">
-       
-<h2 itemprop="name">
-  <a class="article-title" href="/posts/e43600175db8/"
-    >线上部署</a> 
-</h2>
- 
-
-      
-    </header>
-     
-    <div class="article-meta">
-      <a href="/posts/e43600175db8/" class="article-date">
-  <time datetime="2021-01-12T15:44:35.000Z" itemprop="datePublished">2021-01-12</time>
-</a> 
-  <div class="article-category">
-    <a class="article-category-link" href="/categories/Node/">Node</a>
-  </div>
-   
-    </div>
-      
-    <div class="article-entry" itemprop="articleBody">
-       
-  <h4 id="安装ndoe"><a href="#安装ndoe" class="headerlink" title="安装ndoe"></a>安装ndoe</h4><p><a target="_blank" rel="noopener" href="https://github.com/nodesource/distributions">NodeSource</a>是一家致力于提供企业级Node支持的公司。它维护一个包含多个Node.js版本的APT存储库。</p>
-<figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment"># As root</span></span><br><span class="line">curl -sL https://rpm.nodesource.com/setup_14.x | bash -</span><br><span class="line"></span><br><span class="line"><span class="comment"># No root privileges </span></span><br><span class="line">curl -sL https://rpm.nodesource.com/setup_14.x | sudo bash -</span><br></pre></td></tr></table></figure>
-
-<h4 id="打包文件含有的配置项"><a href="#打包文件含有的配置项" class="headerlink" title="打包文件含有的配置项"></a>打包文件含有的配置项</h4><ul>
-<li><p>package.json</p>
-</li>
-<li><p>nginx-conf <a href="/posts/a477be03">nginx</a> 配置项</p>
-</li>
-<li><p>process.yaml pm2配置文件</p>
-</li>
-</ul>
-<figure class="highlight yaml"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br></pre></td><td class="code"><pre><span class="line"><span class="attr">apps:</span></span><br><span class="line">  <span class="bullet">-</span> <span class="attr">script   :</span> <span class="string">./app.js</span></span><br><span class="line">    <span class="attr">name     :</span> <span class="string">&#x27;app&#x27;</span></span><br><span class="line">    <span class="attr">instances:</span> <span class="number">4</span></span><br><span class="line">    <span class="string">watch</span>	   <span class="string">:</span> <span class="literal">true</span></span><br><span class="line">    <span class="attr">exec_mode:</span> <span class="string">cluster</span></span><br></pre></td></tr></table></figure>
-
-<h4 id="把打包文件上传至服务器"><a href="#把打包文件上传至服务器" class="headerlink" title="把打包文件上传至服务器"></a>把打包文件上传至服务器</h4><p>通过<a href="/posts/b2a05287/#scp">scp命令</a>把打包文件上传至服务器</p>
-<h4 id="启动程序"><a href="#启动程序" class="headerlink" title="启动程序"></a>启动程序</h4><ul>
-<li><p>通过<a href="posts/7375f30c/#%E6%89%93%E5%8C%85">tar解压命令</a> 把项目文件解压到<code>root</code>目录</p>
-</li>
-<li><p>通过  <code>npm install --production</code> 初始化项目</p>
-</li>
-<li><p><code>npm start</code> 启动项目</p>
-</li>
-</ul>
-<p>现在可以通过 服务器地址 + 项项目目配置的端口号 访问项目</p>
-<h4 id="配置Nginx"><a href="#配置Nginx" class="headerlink" title="配置Nginx"></a><a href="/posts/a477be03">配置Nginx</a></h4> 
-      <!-- reward -->
-      
-    </div>
-    
-
-    <!-- copyright -->
-    
-    <footer class="article-footer">
-       
-  <ul class="article-tag-list" itemprop="keywords"><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/Node/" rel="tag">Node</a></li></ul>
-
-    </footer>
-  </div>
-
-   
-    
-</article>
-
-    
-    <article
-  id="post-javascript/koa"
-  class="article article-type-post"
-  itemscope
-  itemprop="blogPost"
-  data-scroll-reveal
->
-  <div class="article-inner">
-    
-    <header class="article-header">
-       
-<h2 itemprop="name">
-  <a class="article-title" href="/posts/7855919be700/"
-    >Koa Router</a> 
-</h2>
- 
-
-      
-    </header>
-     
-    <div class="article-meta">
-      <a href="/posts/7855919be700/" class="article-date">
-  <time datetime="2021-01-12T14:47:14.000Z" itemprop="datePublished">2021-01-12</time>
-</a> 
-  <div class="article-category">
-    <a class="article-category-link" href="/categories/JavaScript/">JavaScript</a>
-  </div>
-   
-    </div>
-      
-    <div class="article-entry" itemprop="articleBody">
-       
-  <h4 id="中间件"><a href="#中间件" class="headerlink" title="中间件"></a>中间件</h4><p>中间件容器 负责不同组件和不同服务之间的交互，需要一个中间件负责统一的对服务使用</p>
-<p>一个简单的中间件</p>
-<figure class="highlight javascript"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">const</span> koa = <span class="built_in">require</span>(<span class="string">&#x27;koa&#x27;</span>);</span><br><span class="line"></span><br><span class="line"><span class="keyword">const</span> app = <span class="keyword">new</span> <span class="title function_">koa</span>();</span><br><span class="line"></span><br><span class="line"><span class="keyword">const</span> <span class="title function_">m1</span> = <span class="keyword">async</span> (<span class="params">ctx, next</span>) =&gt; &#123;</span><br><span class="line">  <span class="variable language_">console</span>.<span class="title function_">log</span>(<span class="number">1</span>);</span><br><span class="line">  <span class="keyword">await</span> <span class="title function_">next</span>();</span><br><span class="line">  <span class="variable language_">console</span>.<span class="title function_">log</span>(<span class="number">2</span>);</span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line"><span class="keyword">const</span> <span class="title function_">m2</span> = <span class="keyword">async</span> (<span class="params">ctx, next</span>) =&gt; &#123;</span><br><span class="line">  <span class="variable language_">console</span>.<span class="title function_">log</span>(<span class="number">3</span>);</span><br><span class="line">  <span class="keyword">await</span> <span class="title function_">next</span>();</span><br><span class="line">  <span class="variable language_">console</span>.<span class="title function_">log</span>(<span class="number">4</span>);</span><br><span class="line">&#125;</span><br><span class="line"><span class="keyword">const</span> <span class="title function_">m3</span> = <span class="keyword">async</span> (<span class="params">ctx, next</span>) =&gt; &#123;</span><br><span class="line">  <span class="variable language_">console</span>.<span class="title function_">log</span>(<span class="number">5</span>);</span><br><span class="line">  <span class="keyword">await</span> <span class="title function_">next</span>();</span><br><span class="line">  <span class="variable language_">console</span>.<span class="title function_">log</span>(<span class="number">6</span>);</span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line">app</span><br><span class="line">  .<span class="title function_">use</span>(m1)</span><br><span class="line">  .<span class="title function_">use</span>(m2)</span><br><span class="line">  .<span class="title function_">use</span>(m3)</span><br><span class="line"></span><br><span class="line">app.<span class="title function_">listen</span>(<span class="number">3000</span>)</span><br></pre></td></tr></table></figure>
-
-<p>最终返回的结果为 1 3 5 2 4 6</p>
-<p>也就是洋葱模型，由<code>koa-compose</code>模块来实现</p>
-<p>实现洋葱模型的几个关键：</p>
-<ul>
-<li>统一的上下文 ctx</li>
-<li>操作先进后出 通过<code>next</code>控制</li>
-<li>有提前结束的机制</li>
-</ul>
-<p><strong>中间件类型</strong></p>
-<ul>
-<li>应用级中间件 vue全局导航守卫</li>
-<li>路由级中间件 独享路由守卫</li>
-<li>错误处理中间件  </li>
-<li>第三方中间件</li>
-</ul>
-<figure class="highlight javascript"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">const</span> koa = <span class="built_in">require</span>(<span class="string">&#x27;koa&#x27;</span>);</span><br><span class="line"><span class="keyword">const</span> <span class="title class_">Router</span> = <span class="built_in">require</span>(<span class="string">&#x27;koa-router&#x27;</span>)</span><br><span class="line"></span><br><span class="line"><span class="keyword">const</span> app = <span class="keyword">new</span> <span class="title function_">koa</span>();</span><br><span class="line"><span class="keyword">const</span> router = <span class="keyword">new</span> <span class="title class_">Router</span>();</span><br><span class="line"></span><br><span class="line"><span class="keyword">const</span> <span class="title function_">m1</span> = <span class="keyword">async</span> (<span class="params">ctx, next</span>) =&gt; &#123;</span><br><span class="line">  <span class="comment">// 应用级中间件最先被访问</span></span><br><span class="line">  <span class="variable language_">console</span>.<span class="title function_">log</span>(<span class="string">&#x27;应用级中间件&#x27;</span>);</span><br><span class="line">  <span class="comment">//通过next进入路由级中间件</span></span><br><span class="line">  <span class="keyword">await</span> <span class="title function_">next</span>();</span><br><span class="line">  <span class="keyword">if</span> (ctx.<span class="property">status</span> == <span class="number">404</span>) &#123;</span><br><span class="line">    ctx.<span class="property">body</span> = <span class="string">&#x27;404&#x27;</span></span><br><span class="line">  &#125;</span><br><span class="line">&#125;</span><br><span class="line"><span class="comment">// 路由级中间件会按照顺序访问</span></span><br><span class="line">router.<span class="title function_">get</span>(<span class="string">&#x27;/&#x27;</span>, <span class="keyword">async</span> (ctx, next) =&gt; &#123;</span><br><span class="line">  <span class="variable language_">console</span>.<span class="title function_">log</span>(<span class="string">&#x27;路由级中间件1&#x27;</span>);</span><br><span class="line">  <span class="keyword">await</span> <span class="title function_">next</span>()</span><br><span class="line">&#125;)</span><br><span class="line"></span><br><span class="line">router.<span class="title function_">get</span>(<span class="string">&#x27;/&#x27;</span>, <span class="keyword">async</span> (ctx, next) =&gt; &#123;</span><br><span class="line">  <span class="variable language_">console</span>.<span class="title function_">log</span>(<span class="string">&#x27;路由级中间件2&#x27;</span>);</span><br><span class="line">  ctx.<span class="property">body</span> = <span class="string">&#x27;路由&#x27;</span></span><br><span class="line">&#125;)</span><br><span class="line"></span><br><span class="line">app.<span class="title function_">use</span>(router.<span class="title function_">routes</span>());</span><br><span class="line"></span><br><span class="line">app</span><br><span class="line">  .<span class="title function_">use</span>(m1)</span><br><span class="line"></span><br><span class="line">app.<span class="title function_">listen</span>(<span class="number">3000</span>)</span><br></pre></td></tr></table></figure>
-
-<h4 id="koa-和-express-比较"><a href="#koa-和-express-比较" class="headerlink" title="koa 和 express 比较"></a>koa 和 express 比较</h4><p>express 通过connect添加中间件 封装了路由，视图, 异步处理使用callback (深层次的错误不能捕获)</p>
-<p>koa 依赖于co模块，不包含任何中间件， 处理了回调 (使用了async await) 和错误处理(使用了try catch),</p>
-<h4 id="处理get-post-请求参数"><a href="#处理get-post-请求参数" class="headerlink" title="处理get post 请求参数"></a>处理get post 请求参数</h4><p><a target="_blank" rel="noopener" href="https://github.com/dlau/koa-body#readme">koa-body</a></p>
-<h4 id="静态资源中间件"><a href="#静态资源中间件" class="headerlink" title="静态资源中间件"></a>静态资源中间件</h4><p><a target="_blank" rel="noopener" href="https://github.com/koajs/static#readme">koa-static</a></p>
- 
-      <!-- reward -->
-      
-    </div>
-    
-
-    <!-- copyright -->
-    
-    <footer class="article-footer">
-       
-  <ul class="article-tag-list" itemprop="keywords"><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/JavaScript/" rel="tag">JavaScript</a></li><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/Koa/" rel="tag">Koa</a></li></ul>
-
-    </footer>
-  </div>
-
-   
-    
-</article>
-
-    
-    <article
-  id="post-node/文件系统"
-  class="article article-type-post"
-  itemscope
-  itemprop="blogPost"
-  data-scroll-reveal
->
-  <div class="article-inner">
-    
-    <header class="article-header">
-       
-<h2 itemprop="name">
-  <a class="article-title" href="/posts/e49010c17846/"
-    >文件系统</a> 
-</h2>
- 
-
-      
-    </header>
-     
-    <div class="article-meta">
-      <a href="/posts/e49010c17846/" class="article-date">
-  <time datetime="2021-01-09T11:13:33.000Z" itemprop="datePublished">2021-01-09</time>
-</a> 
-  <div class="article-category">
-    <a class="article-category-link" href="/categories/Node/">Node</a>
-  </div>
-   
-    </div>
-      
-    <div class="article-entry" itemprop="articleBody">
-       
-  <h4 id="基本概念"><a href="#基本概念" class="headerlink" title="基本概念"></a>基本概念</h4><p>文件描述符 </p>
-<p>在 POSIX （可移植操作系统）系统上，对于每个进程，内核都维护着一张当前打开着的文件和资源的表格。 每个打开的文件都分配了一个称为文件描述符的简单的数字标识符。 在系统层，所有文件系统操作都使用这些文件描述符来标识和跟踪每个特定的文件。 Windows 系统使用了一个虽然不同但概念上类似的机制来跟踪资源。 为了简化用户的工作，Node.js 抽象出操作系统之间的特定差异，并为所有打开的文件分配一个数字型的文件描述符。</p>
-<p>fs.open() 方法用于分配新的文件描述符。 一旦被分配，则文件描述符可用于从文件读取数据、向文件写入数据、或请求关于文件的信息。</p>
-<p>大多数操作系统限制在任何给定时间内可能打开的文件描述符的数量，<strong>因此当操作完成时关闭描述符至关重要。 如果不这样做将导致内存泄漏，最终导致应用程序崩溃。</strong></p>
-<p>r+ 打开文件用于读写。<br>w+ 打开文件用于读写，将流定位到文件的开头。如果文件不存在则创建文件。<br>a 打开文件用于写入，将流定位到文件的末尾。如果文件不存在则创建文件。<br>a+ 打开文件用于读写，将流定位到文件的末尾。如果文件不存在则创建文件。</p>
-<h4 id="基本操作"><a href="#基本操作" class="headerlink" title="基本操作"></a>基本操作</h4> 
-      <!-- reward -->
-      
-    </div>
-    
-
-    <!-- copyright -->
-    
-    <footer class="article-footer">
-       
-  <ul class="article-tag-list" itemprop="keywords"><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/Node/" rel="tag">Node</a></li></ul>
-
-    </footer>
-  </div>
-
-   
-    
-</article>
-
-    
-    <article
-  id="post-node/stream模块"
-  class="article article-type-post"
-  itemscope
-  itemprop="blogPost"
-  data-scroll-reveal
->
-  <div class="article-inner">
-    
-    <header class="article-header">
-       
-<h2 itemprop="name">
-  <a class="article-title" href="/posts/7eb4a6c0f798/"
-    >stream模块</a> 
-</h2>
- 
-
-      
-    </header>
-     
-    <div class="article-meta">
-      <a href="/posts/7eb4a6c0f798/" class="article-date">
-  <time datetime="2021-01-07T10:53:23.000Z" itemprop="datePublished">2021-01-07</time>
-</a> 
-  <div class="article-category">
-    <a class="article-category-link" href="/categories/Node/">Node</a>
-  </div>
-   
-    </div>
-      
-    <div class="article-entry" itemprop="articleBody">
-       
-  <h4 id="相关概念"><a href="#相关概念" class="headerlink" title="相关概念"></a>相关概念</h4><p>流有起点和终点，逐端读取文件,大文件</p>
-<p>为什么要使用？</p>
-<p>可以逐渐读取，内存效率</p>
-<p>把大的文件拆分成一块一块，时间效率</p>
-<p>一个简单的读写留的例子：</p>
-<figure class="highlight javascript"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment">//文件模块</span></span><br><span class="line"><span class="keyword">const</span> fs = <span class="built_in">require</span>(<span class="string">&#x27;fs&#x27;</span>);</span><br><span class="line"><span class="comment">//创建读取数据流 </span></span><br><span class="line"><span class="keyword">const</span> rs = fs.<span class="title function_">createReadStream</span>(<span class="string">&#x27;./yarn.lock&#x27;</span>)</span><br><span class="line"><span class="comment">//创建写入数据流 </span></span><br><span class="line"><span class="keyword">const</span> ws = fs.<span class="title function_">createWriteStream</span>(<span class="string">&#x27;./yarn.copy.lock&#x27;</span>)</span><br><span class="line"></span><br><span class="line">rs.<span class="title function_">on</span>(<span class="string">&#x27;data&#x27;</span>, <span class="function"><span class="params">chunk</span> =&gt;</span> &#123;</span><br><span class="line">  ws.<span class="title function_">write</span>(chunk)</span><br><span class="line">&#125;)</span><br><span class="line"></span><br><span class="line">rs.<span class="title function_">on</span>(<span class="string">&#x27;end&#x27;</span>, <span class="function">() =&gt;</span> &#123;</span><br><span class="line">  ws.<span class="title function_">end</span>()</span><br><span class="line">&#125;)</span><br></pre></td></tr></table></figure>
-
-<p>使用这种方法不能保证读写一直，所以需要使用pipe</p>
-<p>注意只有可读流才有pipe方法</p>
-<figure class="highlight javascript"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment">//文件模块</span></span><br><span class="line"><span class="keyword">const</span> fs = <span class="built_in">require</span>(<span class="string">&#x27;fs&#x27;</span>);</span><br><span class="line"><span class="comment">//创建读取数据流 </span></span><br><span class="line"><span class="keyword">const</span> rs = fs.<span class="title function_">createReadStream</span>(<span class="string">&#x27;./yarn.lock&#x27;</span>)</span><br><span class="line"><span class="comment">//创建写入数据流 </span></span><br><span class="line"><span class="keyword">const</span> ws = fs.<span class="title function_">createWriteStream</span>(<span class="string">&#x27;./yarn.copy.lock&#x27;</span>)</span><br><span class="line">rs.<span class="title function_">pipe</span>(ws)</span><br></pre></td></tr></table></figure>
-
-<h4 id="流的类型"><a href="#流的类型" class="headerlink" title="流的类型"></a>流的类型</h4><ul>
-<li>可读流</li>
-</ul>
-<figure class="highlight javascript"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">const</span> rs = fs.<span class="title function_">createReadStream</span>(<span class="string">&#x27;./yarn.lock&#x27;</span>, &#123;</span><br><span class="line">  <span class="comment">//设置编码方式</span></span><br><span class="line">  <span class="attr">encoding</span>: <span class="string">&#x27;utf8&#x27;</span>,</span><br><span class="line">  <span class="comment">//设置缓冲区大小,六个字节</span></span><br><span class="line">  <span class="attr">highWaterMark</span>: <span class="number">6</span></span><br><span class="line">&#125;)</span><br><span class="line"></span><br><span class="line">rs.<span class="title function_">on</span>(<span class="string">&#x27;data&#x27;</span>, <span class="function">(<span class="params">chunk</span>) =&gt;</span> &#123;</span><br><span class="line">  <span class="variable language_">console</span>.<span class="title function_">log</span>(chunk)</span><br><span class="line">&#125;)</span><br></pre></td></tr></table></figure>
-
-<p>两种调用方式，自动调用(flowing)还是手动调用(pause)</p>
-<p>使用<code>stream.on(&quot;data&quot;,()=&gt;&#123;&#125;)</code> 为自动模式，读取的时候会不断触发 <code>data</code> 方法,resume pipe 都是自动模式</p>
-<figure class="highlight javascript"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br></pre></td><td class="code"><pre><span class="line">rs.<span class="title function_">on</span>(<span class="string">&#x27;readable&#x27;</span>, <span class="function">(<span class="params">chunk</span>) =&gt;</span> &#123;</span><br><span class="line">  <span class="variable language_">console</span>.<span class="title function_">log</span>(chunk)</span><br><span class="line">&#125;)</span><br><span class="line"><span class="comment">//手动读取数据</span></span><br><span class="line">rs.<span class="title function_">read</span>()</span><br></pre></td></tr></table></figure>
-
-<ul>
-<li>可写流</li>
-</ul>
-<figure class="highlight javascript"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">const</span> fs = <span class="built_in">require</span>(<span class="string">&#x27;fs&#x27;</span>);</span><br><span class="line"><span class="keyword">const</span> ws = fs.<span class="title function_">createWriteStream</span>(<span class="string">&#x27;a.txt&#x27;</span>)</span><br><span class="line">ws.<span class="title function_">write</span>(<span class="string">&#x27;xxx&#x27;</span>);</span><br><span class="line"></span><br><span class="line">ws.<span class="title function_">on</span>(<span class="string">&#x27;finish&#x27;</span>, <span class="function">() =&gt;</span> &#123;</span><br><span class="line">  ws.<span class="title function_">end</span>()</span><br><span class="line">&#125;)</span><br></pre></td></tr></table></figure>
-
-<ul>
-<li><p>Duplex: 双工流  net.socket</p>
-</li>
-<li><p>transform: 转换流 文件压缩</p>
-</li>
-</ul>
-<figure class="highlight javascript"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment">//文件模块</span></span><br><span class="line"><span class="keyword">const</span> stream = <span class="built_in">require</span>(<span class="string">&#x27;stream&#x27;</span>);</span><br><span class="line"><span class="keyword">const</span> transform = stream.<span class="title class_">Transform</span>(&#123;</span><br><span class="line">  <span class="comment">//自定义转换方法</span></span><br><span class="line">  <span class="title function_">transform</span>(<span class="params">chunk, encoding, cb</span>) &#123;</span><br><span class="line">    <span class="comment">//大小写转换，放到缓冲区</span></span><br><span class="line">    <span class="variable language_">this</span>.<span class="title function_">push</span>(chunk.<span class="title function_">toString</span>().<span class="title function_">toLowerCase</span>())</span><br><span class="line">  &#125;</span><br><span class="line">&#125;)</span><br><span class="line">transform.<span class="title function_">write</span>(<span class="string">&#x27;D&#x27;</span>);</span><br><span class="line"><span class="variable language_">console</span>.<span class="title function_">log</span>(transform.<span class="title function_">read</span>().<span class="title function_">toString</span>());</span><br></pre></td></tr></table></figure>
-
-<p>stream对象都是EventEmitter的实例，所以可以发布事件</p>
-<ul>
-<li>流的链式操作</li>
-</ul>
-<figure class="highlight javascript"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">const</span> fs = <span class="built_in">require</span>(<span class="string">&#x27;fs&#x27;</span>);</span><br><span class="line"><span class="keyword">const</span> zlib = <span class="built_in">require</span>(<span class="string">&#x27;zlib&#x27;</span>);</span><br><span class="line"></span><br><span class="line">fs.<span class="title function_">createReadStream</span>(<span class="string">&#x27;a.txt&#x27;</span>)</span><br><span class="line">  .<span class="title function_">pipe</span>(zlib.<span class="property">createGunzip</span>)</span><br><span class="line">  .<span class="title function_">pipe</span>(fs.<span class="title function_">createWriteStream</span>(<span class="string">&#x27;a.zip&#x27;</span>))</span><br></pre></td></tr></table></figure>
-
-<ul>
-<li>使用readline逐行读取</li>
-</ul>
-<figure class="highlight javascript"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">const</span> fs = <span class="built_in">require</span>(<span class="string">&#x27;fs&#x27;</span>);</span><br><span class="line"><span class="keyword">const</span> readline = <span class="built_in">require</span>(<span class="string">&#x27;readline&#x27;</span>)</span><br><span class="line"><span class="keyword">const</span> path = <span class="built_in">require</span>(<span class="string">&#x27;path&#x27;</span>);</span><br><span class="line"><span class="keyword">const</span> filePath = path.<span class="title function_">resolve</span>(__dirname,<span class="string">&#x27;./yarn.lock&#x27;</span>);</span><br><span class="line"><span class="keyword">const</span> rs = fs.<span class="title function_">createReadStream</span>(filePath);</span><br><span class="line"><span class="keyword">const</span> rl = readline.<span class="title function_">createInterface</span>(&#123;</span><br><span class="line">  <span class="attr">input</span>:rs</span><br><span class="line">&#125;)</span><br><span class="line">rl.<span class="title function_">on</span>(<span class="string">&#x27;line&#x27;</span>,<span class="function">(<span class="params">l</span>)=&gt;</span>&#123;</span><br><span class="line">  <span class="variable language_">console</span>.<span class="title function_">log</span>(l)</span><br><span class="line">&#125;)</span><br></pre></td></tr></table></figure>
-
- 
-      <!-- reward -->
-      
-    </div>
-    
-
-    <!-- copyright -->
-    
-    <footer class="article-footer">
-       
-  <ul class="article-tag-list" itemprop="keywords"><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/Node/" rel="tag">Node</a></li></ul>
-
-    </footer>
-  </div>
-
-   
-    
-</article>
-
-    
-    <article
-  id="post-node/事件驱动"
-  class="article article-type-post"
-  itemscope
-  itemprop="blogPost"
-  data-scroll-reveal
->
-  <div class="article-inner">
-    
-    <header class="article-header">
-       
-<h2 itemprop="name">
-  <a class="article-title" href="/posts/566d263d0b47/"
-    >事件驱动</a> 
-</h2>
- 
-
-      
-    </header>
-     
-    <div class="article-meta">
-      <a href="/posts/566d263d0b47/" class="article-date">
-  <time datetime="2021-01-06T12:25:34.000Z" itemprop="datePublished">2021-01-06</time>
-</a> 
-  <div class="article-category">
-    <a class="article-category-link" href="/categories/Node/">Node</a>
-  </div>
-   
-    </div>
-      
-    <div class="article-entry" itemprop="articleBody">
-       
-  <h4 id="event简单使用"><a href="#event简单使用" class="headerlink" title="event简单使用"></a>event简单使用</h4><p>引入event模块，并创建事件对象</p>
-<figure class="highlight javascript"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">var</span> events = <span class="built_in">require</span>(<span class="string">&#x27;events&#x27;</span>);</span><br><span class="line"><span class="keyword">var</span> eventEmitter = <span class="keyword">new</span> events.<span class="title function_">eventEmitter</span>();</span><br></pre></td></tr></table></figure>
-
-<p>绑定事件处理函数</p>
-<figure class="highlight javascript"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">var</span> connctHandler = <span class="keyword">function</span> <span class="title function_">connected</span>(<span class="params"></span>)&#123;</span><br><span class="line">  <span class="variable language_">console</span>.<span class="title function_">log</span>(<span class="string">&#x27;connected&#x27;</span>)</span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line">eventEmitter.<span class="title function_">on</span>(<span class="string">&#x27;connection&#x27;</span>,connctHandler)</span><br></pre></td></tr></table></figure>
-
-<p>触发事件</p>
-<figure class="highlight javascript"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">eventEmitter.<span class="title function_">emit</span>(<span class="string">&#x27;connection&#x27;</span>)</span><br></pre></td></tr></table></figure>
-
-<h4 id="EventEmitter-与-发布-x2F-订阅模式的关系"><a href="#EventEmitter-与-发布-x2F-订阅模式的关系" class="headerlink" title="EventEmitter 与 发布&#x2F;订阅模式的关系"></a>EventEmitter 与 发布&#x2F;订阅模式的关系</h4><p>Node.js 中的 EventEmitter 模块就是用了发布&#x2F;订阅这种设计模式，发布&#x2F;订阅 模式在主体与观察者之间引入消息调度中心，主体和观察者之间完全透明，所  有的消息传递过程都通过消息调度中心完成，也就是说具体的业务逻辑代码将会是在消息调度中心内完成。</p>
-<ul>
-<li>once 方法的实现</li>
-</ul>
-<figure class="highlight javascript"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br></pre></td><td class="code"><pre><span class="line"><span class="title class_">EventEmitter</span>.<span class="property"><span class="keyword">prototype</span></span>.<span class="property">once</span> = <span class="keyword">function</span> (<span class="params">type, listener</span>) &#123;</span><br><span class="line">    <span class="keyword">let</span> _this = <span class="variable language_">this</span>;</span><br><span class="line"></span><br><span class="line">    <span class="comment">//中间函数，在调用完之后立即删除订阅</span></span><br><span class="line">    <span class="keyword">function</span> <span class="title function_">only</span>(<span class="params"></span>) &#123;</span><br><span class="line">        <span class="title function_">listener</span>();</span><br><span class="line">        _this.<span class="title function_">removeListener</span>(type, only);</span><br><span class="line">    &#125;</span><br><span class="line">    <span class="comment">//origin保存原回调的引用，用于remove时的判断</span></span><br><span class="line">    only.<span class="property">origin</span> = listener;</span><br><span class="line">    <span class="variable language_">this</span>.<span class="title function_">on</span>(type, only);</span><br><span class="line">&#125;;</span><br></pre></td></tr></table></figure>
-
-<ul>
-<li>事件循环中的事件是什么情况下产生的？什么情况下触发的？</li>
-</ul>
-<p>Node.js 中所有所有异步 I&#x2F;O 操作在完成时都会发送一个事件到事件队列</p>
-<p>Node.js 中许多对象都会分发事件： 一个net.Server 对象会在每次有新连接时触发一个事件，fs.readStream对象会在文件被打开的时候触发一个事件，所有这些产生事件的对象都是events.EventEmitter的实例</p>
-<p>！<a href="0001.png"></a></p>
-<p>关于事件你看图中第三部分，事件循环那里。Node.js 所有的异步 I&#x2F;O 操作(net.Server， fs.readStream 等)在完成后都会添加一个事件到事件循环的事件队列中。</p>
-<p>事件的触发，我们只需要关注图中第三部分，事件循环会在事件队列中取出事件处理。fs.open产生事件的对象都是 events.EventEmitter 的实例，继承了EventEmitter，从事件循环取出事件的时候，触发这个事件和回调函数。</p>
-<ul>
-<li>事件类型为error的问题</li>
-</ul>
-<p>当 error 被触发时，EventEmitter 规定如果没有响 应的监听器，Node.js 会把它当作异常，退出程序并输出错误信息。</p>
-<p>我们一般要为会触发 error 事件的对象设置监听器，避免遇到错误后整个程序崩溃。</p>
-<ul>
-<li><p>可以通过process.on(‘warning’)来获得更具体的信息（emitter、event、eventCount）</p>
-</li>
-<li><p>打印warn详细内容</p>
-</li>
-</ul>
-<figure class="highlight javascript"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><span class="line">process.<span class="title function_">on</span>(<span class="string">&#x27;warning&#x27;</span>, <span class="function">(<span class="params">e</span>) =&gt;</span> &#123;</span><br><span class="line">  <span class="variable language_">console</span>.<span class="title function_">log</span>(e);</span><br><span class="line">&#125;)</span><br></pre></td></tr></table></figure>
-
-<h4 id="EventEmitter的应用场景"><a href="#EventEmitter的应用场景" class="headerlink" title="EventEmitter的应用场景"></a>EventEmitter的应用场景</h4><p>不能try&#x2F;catch的错误异常抛出可以使用它</p>
-<p>好多常用模块继承自EventEmitter 比如fs模块 net模块</p>
-<h4 id="发布-x2F-订阅模式与观察者模式"><a href="#发布-x2F-订阅模式与观察者模式" class="headerlink" title="发布&#x2F;订阅模式与观察者模式"></a>发布&#x2F;订阅模式与观察者模式</h4><p><img src="/posts/566d263d0b47/0002.png"></p>
- 
-      <!-- reward -->
-      
-    </div>
-    
-
-    <!-- copyright -->
-    
-    <footer class="article-footer">
-       
-  <ul class="article-tag-list" itemprop="keywords"><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/Node/" rel="tag">Node</a></li></ul>
-
-    </footer>
-  </div>
-
-   
-    
-</article>
-
-    
-    <article
-  id="post-node/node环境和npm"
-  class="article article-type-post"
-  itemscope
-  itemprop="blogPost"
-  data-scroll-reveal
->
-  <div class="article-inner">
-    
-    <header class="article-header">
-       
-<h2 itemprop="name">
-  <a class="article-title" href="/posts/f499a66d3b61/"
-    >node和npm</a> 
-</h2>
- 
-
-      
-    </header>
-     
-    <div class="article-meta">
-      <a href="/posts/f499a66d3b61/" class="article-date">
-  <time datetime="2021-01-06T12:05:53.000Z" itemprop="datePublished">2021-01-06</time>
-</a> 
-  <div class="article-category">
-    <a class="article-category-link" href="/categories/Node/">Node</a>
-  </div>
-   
-    </div>
-      
-    <div class="article-entry" itemprop="articleBody">
-       
-  <h4 id="REPL-交互式显示"><a href="#REPL-交互式显示" class="headerlink" title="REPL 交互式显示"></a>REPL 交互式显示</h4><p>在命令行工具中输入node,进入交互式环境</p>
-<ul>
-<li>linux ctrl+d 退出</li>
-<li>tab 键补全</li>
-<li>.help 查看帮助</li>
-</ul>
-<h4 id="npm"><a href="#npm" class="headerlink" title="npm"></a>npm</h4><p>升级npm <code>npm install -g npm</code></p>
-<p>查询可安装的包 <code>npm serch xxx</code> </p>
-<h4 id="node模块化"><a href="#node模块化" class="headerlink" title="node模块化"></a>node模块化</h4><p>文件和模块是一一对应的，一个node文件就是一个模块</p>
-<p>这个文件可能是JavaScript代码，JSON或者编译过的c&#x2F;c++ 扩展</p>
-<p>Node.js 中存在4类模块（原生模块和3种文件模块）</p>
-<p><strong>builtin module</strong>: Node中以c++形式提供的模块，如tcp_wrap、contextify等</p>
-<p><strong>constants module</strong>: Node中定义常量的模块，用来导出如signal, openssl库、文件访问权限等常量的定义。如文件访问权限中的O_RDONLY，O_CREAT、signal中的SIGHUP，SIGINT等。</p>
-<p><strong>native module</strong>: Node中以JavaScript形式提供的模块，如http,https,fs等。有些native module需要借助于builtin module实现背后的功能。如对于native模块buffer ,还是需要借助builtin node_buffer.cc中提供的功能来实现大容量内存申请和管理，目的是能够脱离V8内存大小使用限制。</p>
-<p><strong>3rd-party module</strong>: 以上模块可以统称Node内建模块，除此之外为第三方模块，典型的如express模块。</p>
-<ul>
-<li>module.exports和exports的区别</li>
-</ul>
-<figure class="highlight javascript"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br></pre></td><td class="code"><pre><span class="line"></span><br><span class="line"><span class="keyword">var</span> circle = <span class="built_in">require</span>(<span class="string">&#x27;./circle.js&#x27;</span>);  </span><br><span class="line"><span class="variable language_">console</span>.<span class="title function_">log</span>( <span class="string">&#x27;The area of a circle of radius 4 is &#x27;</span> + circle.<span class="title function_">area</span>(<span class="number">4</span>)); </span><br><span class="line"></span><br><span class="line"><span class="keyword">var</span> <span class="variable constant_">PI</span> = <span class="title class_">Math</span>.<span class="property">PI</span>;  </span><br><span class="line"><span class="built_in">exports</span>.<span class="property">area</span> = <span class="keyword">function</span> (<span class="params">r</span>) &#123;  </span><br><span class="line">  <span class="keyword">return</span> <span class="variable constant_">PI</span> * r * r;  </span><br><span class="line">&#125;;  </span><br></pre></td></tr></table></figure>
-
-<p>如果你的模块属于“模块实例（module instances）”，就像官方文档中给出的示例那样，那么exports足以满足要求。</p>
-<p>但是事实上，require()返回的是module.exports，exports只是module.exports的一个引用，exports的作用只在module.exports没有指定的时候，收集属性并附加到module.exports。</p>
-<figure class="highlight javascript"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br></pre></td><td class="code"><pre><span class="line"><span class="variable language_">module</span>.<span class="property">exports</span> = <span class="string">&#x27;孙悟空&#x27;</span>;  </span><br><span class="line"><span class="built_in">exports</span>.<span class="property">name</span> = <span class="keyword">function</span>(<span class="params"></span>) &#123;  </span><br><span class="line">    <span class="variable language_">console</span>.<span class="title function_">log</span>(<span class="string">&#x27;我是白骨精&#x27;</span>);  </span><br><span class="line">&#125;;</span><br></pre></td></tr></table></figure>
-
-<p>这个模块会完全忽略exports.name，因为module.exports被指定了另一个对象。你的模块不一定是模块实例（module instances），你的模块可以是任意的，你设置成module.exports的Javascript对象。如果你不显示的指定module.exports，那么返回的将是exports和exports附加的值。</p>
-<p>也可以这样认为，一个模块刚开始的时候，module.exports和exports是一样的，exports只是module.exports的一个别名，两者都是{}。</p>
-<p>当你给module.exports指定一个对象的时候，两者就不再一样的，而模块导出的一定是module.exports。</p>
- 
-      <!-- reward -->
-      
-    </div>
-    
-
-    <!-- copyright -->
-    
-    <footer class="article-footer">
-       
-  <ul class="article-tag-list" itemprop="keywords"><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/Node/" rel="tag">Node</a></li></ul>
 
     </footer>
   </div>

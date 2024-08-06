@@ -112,6 +112,538 @@
     
     
     <article
+  id="post-javascript/(4)模块化且可重用的代码"
+  class="article article-type-post"
+  itemscope
+  itemprop="blogPost"
+  data-scroll-reveal
+>
+  <div class="article-inner">
+    
+    <header class="article-header">
+       
+<h2 itemprop="name">
+  <a class="article-title" href="/posts/90b882fa913b/"
+    >4.模块化且可重用的代码</a> 
+</h2>
+ 
+
+      
+    </header>
+     
+    <div class="article-meta">
+      <a href="/posts/90b882fa913b/" class="article-date">
+  <time datetime="2020-11-03T00:56:22.000Z" itemprop="datePublished">2020-11-03</time>
+</a> 
+  <div class="article-category">
+    <a class="article-category-link" href="/categories/JavaScript/">JavaScript</a>
+  </div>
+   
+    </div>
+      
+    <div class="article-entry" itemprop="articleBody">
+       
+  <p>函数链与函数管道的比较<br>Ramda.js 函数库<br>柯里化、部分应用（partial application）和函数绑定<br>通过函数式组合构建模块化程序<br>利用函数组合子增强程序的控制流</p>
+<p>先将问题分解成较小的部分，再重建这些部分以形成整体的解决方案。</p>
+<h4 id="方法链与函数管道的比较"><a href="#方法链与函数管道的比较" class="headerlink" title="方法链与函数管道的比较"></a>方法链与函数管道的比较</h4><p>Haskell中定义函数的符号。该符号先给出了函数的名称，随后用一个操作符来设置函数的输入和输出类型</p>
+<p><img src="/posts/90b882fa913b/0001.jpg"></p>
+<h4 id="方法链接（紧耦合，有限的表现力）"><a href="#方法链接（紧耦合，有限的表现力）" class="headerlink" title="方法链接（紧耦合，有限的表现力）"></a>方法链接（紧耦合，有限的表现力）</h4><p>它与方法所属的对象紧紧地耦合在一起，限制链中可以使用的方法数量，也就限制了代码的表现力。这样就只能够使用由Lodash提供的操作，而无法轻松地将不同函数库的（或自定义的）函数连接在一起。</p>
+<figure class="highlight javascript"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br></pre></td><td class="code"><pre><span class="line">_.<span class="title function_">chain</span>(names)</span><br><span class="line">.<span class="title function_">filter</span>(isValid) <span class="comment">//每一个“点”后只能调用 Lodash 提供的方法</span></span><br><span class="line">.<span class="title function_">map</span>(<span class="function"><span class="params">s</span> =&gt;</span> s.<span class="title function_">replace</span>(<span class="regexp">/_/</span>, <span class="string">&#x27; &#x27;</span>))</span><br><span class="line">.<span class="title function_">uniq</span>()</span><br><span class="line">.<span class="title function_">map</span>(_.<span class="property">startCase</span>)</span><br><span class="line">.<span class="title function_">sort</span>()</span><br><span class="line">.<span class="title function_">value</span>();</span><br></pre></td></tr></table></figure>
+
+<p><img src="/posts/90b882fa913b/0002.jpg"></p>
+<p><strong>函数的管道化（松耦合，灵活）</strong></p>
+<p><img src="/posts/90b882fa913b/0003.jpg"></p>
+<p>方法链接通过对象的方法紧密连接；而管道以函数作为组件，将函数的输入和输出松散地连接在一起。但是，为了实现管道，被连接的函数必须在元数（arity）和类型上相互兼容。</p>
+<p>函数式编程将管道视为构建程序的唯一方法.</p>
+<p>对于不同的任务，问题的定义与解决方案间总是存在很大的差异。因此，特定的计算必须在特定的阶段进行。这些阶段由不同的函数表征，而所选函数的输入和输出需要满足以下两个兼容条件。</p>
+<p><strong>类型&#x3D;&gt;函数的返回类型必须与接收函数的参数类型相匹配。</strong></p>
+<p><strong>元数&#x3D;&gt;接收函数必须声明至少一个参数才能处理上一个函数的返回值。</strong></p>
+<p><strong>元组</strong></p>
+<p>对传入的参数进行参数类型，和个数的校验，可以用TS替代</p>
+<ul>
+<li>不可变的——一旦创建，就无法改变一个元组的内部内容。</li>
+<li>避免创建临时类型——元组可以将可能毫不相关的数据相关联。而定义和实例化一些仅用于数据分组的新类型使得模型复杂并令人费解。</li>
+<li>避免创建异构数组——包含不同类型元素的数组使用起来颇为困难，因为会导致代码中充满大量的防御性类型检查。传统上，数组意在存储相同类型的对象。</li>
+</ul>
+<h4 id="柯里化"><a href="#柯里化" class="headerlink" title="柯里化"></a>柯里化</h4><p>要求所有参数都被明确地定义，因此当使用部分参数调用时，它会返回一个新的函数，在真正运行之前等待外部提供其余的参数。</p>
+<p>R._curry1</p>
+<figure class="highlight javascript"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">function</span> <span class="title function_">curry1</span>(<span class="params">fn</span>) &#123;</span><br><span class="line">    <span class="keyword">return</span> <span class="keyword">function</span> <span class="title function_">f1</span>(<span class="params">a</span>) &#123;</span><br><span class="line">        <span class="comment">// 判断a是否为占位符</span></span><br><span class="line">        <span class="keyword">if</span> (<span class="variable language_">arguments</span>.<span class="property">length</span> === <span class="number">0</span> || <span class="title function_">_isPlaceholder</span>(a)) &#123;</span><br><span class="line">            <span class="keyword">return</span> f1</span><br><span class="line">        &#125; <span class="keyword">else</span> &#123;</span><br><span class="line">            <span class="comment">// 多余的参数也可以传入</span></span><br><span class="line">            <span class="keyword">return</span> fn.<span class="title function_">apply</span>(<span class="variable language_">this</span>, <span class="variable language_">arguments</span>);</span><br><span class="line">        &#125;</span><br><span class="line">    &#125;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+<h4 id="部分应用和函数绑定"><a href="#部分应用和函数绑定" class="headerlink" title="部分应用和函数绑定"></a>部分应用和函数绑定</h4><ul>
+<li><p>柯里化在每次分步调用时都会生成嵌套的一元函数。在底层，函数的最终结果是由这些一元函数的逐步组合产生的。同时，curry的变体允许同时传递一部分参数。因此，可以完全控制函数求值的时间与方式。</p>
+</li>
+<li><p>部分应用将函数的参数与一些预设值绑定（赋值），从而产生一个拥有更少参数的新函数。该函数的闭包中包含了这些已赋值的参数，在之后的调用中被完全求值。</p>
+</li>
+</ul>
+<h4 id="延迟函数绑定"><a href="#延迟函数绑定" class="headerlink" title="延迟函数绑定"></a>延迟函数绑定</h4><p>当期望目标函数使用某个所属对象来执行时，使用函数绑定来设置上下文对象就变得尤为重要。例如，浏览器中的setTimeout和setInterval等函数，如果不将this的引用设为全局上下文，即window对象，是不能正常工作的。传递undefined在运行时正确设置它们的上下文。</p>
+<figure class="highlight javascript"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">const</span> <span class="title class_">Scheduler</span> = (<span class="keyword">function</span> (<span class="params"></span>) &#123;</span><br><span class="line">  <span class="keyword">const</span> delayedFn = _.<span class="title function_">bind</span>(<span class="built_in">setTimeout</span>, <span class="literal">undefined</span>, _, _);</span><br><span class="line">  <span class="keyword">return</span> &#123;</span><br><span class="line">    <span class="attr">delay5</span>: _.<span class="title function_">partial</span>(delayedFn, _, <span class="number">5000</span>),</span><br><span class="line">    <span class="attr">delay10</span>: _.<span class="title function_">partial</span>(delayedFn, _, <span class="number">10000</span>),</span><br><span class="line">    <span class="attr">delay</span>: _.<span class="title function_">partial</span>(delayedFn, _, _)</span><br><span class="line">    &#125;;</span><br><span class="line">  &#125;)();</span><br><span class="line"><span class="title class_">Scheduler</span>.<span class="title function_">delay5</span>(<span class="keyword">function</span> (<span class="params"></span>) &#123;</span><br><span class="line">  <span class="title function_">consoleLog</span>(<span class="string">&#x27;Executing After 5 seconds!&#x27;</span>)</span><br><span class="line">&#125;);</span><br></pre></td></tr></table></figure>
+
+<h4 id="函数组合"><a href="#函数组合" class="headerlink" title="函数组合"></a>函数组合</h4><figure class="highlight javascript"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line"><span class="title class_">Function</span>.<span class="property"><span class="keyword">prototype</span></span>.<span class="property">compose</span> = R.<span class="property">compose</span>;</span><br><span class="line"><span class="keyword">const</span> cleanInput = checkLengthSsn.<span class="title function_">compose</span>(normalize).<span class="title function_">compose</span>(trim);</span><br></pre></td></tr></table></figure>
+
+<p><strong>对副作用的处理是，拆分副作用的函数，并且固定副作用函数的参数</strong></p>
+<h4 id="point-free编程"><a href="#point-free编程" class="headerlink" title="point-free编程"></a>point-free编程</h4><p>使用compose（或者pipe）就意味着永远不必再声明参数了（称为函数的points），这无疑会使代码更加声明式、更加简洁，或更加point-free。</p>
+<figure class="highlight javascript"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">R.<span class="title function_">compose</span>(first, getName, reverse, sortByGrade, combine);</span><br></pre></td></tr></table></figure>
+
+<p>point-free编程使JavaScript的函数式代码更接近于Haskell和UNIX的理念。它可以用来提高抽象度，促使开发者关注高级组件的组合，而不是低级的函数求值的细节。柯里化在这里也起着很重要的作用，因为它能够灵活地部分定义一个只差最后一个参数的内联函数。这种编码风格也被称为Tacit编程。</p>
+<p><strong>在将组合改为这种编码风格时，要记住，过度的使用会使得程序晦涩且令人费解。</strong></p>
+<h4 id="组合子"><a href="#组合子" class="headerlink" title="组合子"></a>组合子</h4><p>组合器是一些可以组合其他函数（或其他组合子），并作为控制逻辑运行的高阶函数。组合子通常不声明任何变量，也不包含任何业务逻辑，它们旨在管理函数式程序的流程。除了compose和pipe，还有无数的组合子，一些最常见的组合子如下。</p>
+<ul>
+<li>identity（I-combinator）</li>
+</ul>
+<p>为以函数为参数的更高阶函数提供数据，如之前清单4.12中的point-free代码。<br>在单元测试的函数组合器控制流中作为简单的函数结果来进行断言。例如，可以使用identity函数来编写compose的单元测试。<br>函数式地从封装类型中提取数据</p>
+<figure class="highlight javascript"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment">//identity :: (a) -&gt; a</span></span><br></pre></td></tr></table></figure>
+
+<ul>
+<li>tap（K-组合子）</li>
+</ul>
+<p>该函数接收一个输入对象a和一个对a执行指定操作的函数。它使用提供的对象调用给定的函数，然后再返回该对象</p>
+<figure class="highlight javascript"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">function</span> <span class="title function_">tap</span>(<span class="params">fn, x</span>) &#123;</span><br><span class="line">  <span class="title function_">fn</span>(x);</span><br><span class="line">  <span class="keyword">return</span> x;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+<ul>
+<li>alt （OR-组合子） alternation</li>
+</ul>
+<p>alt组合子能够在提供函数响应的默认行为时执行简单的条件逻辑。该组合器以两个函数为参数，如<br>果第一个函数返回值已定义（即，不是false、null或undefined)</p>
+<p>用于处理if else 逻辑</p>
+<figure class="highlight javascript"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">const</span> alt = <span class="keyword">function</span> (<span class="params">func1, func2</span>) &#123;</span><br><span class="line">  <span class="keyword">return</span> <span class="keyword">function</span> (<span class="params">val</span>) &#123;</span><br><span class="line">    <span class="keyword">return</span> <span class="title function_">func1</span>(val) || <span class="title function_">func2</span>(val);</span><br><span class="line">&#125;</span><br><span class="line">&#125;;</span><br></pre></td></tr></table></figure>
+
+<ul>
+<li>seq（S-组合子） sequence</li>
+</ul>
+<p>seq组合子用于遍历函数序列。它以两个或更多的函数作为参数并返回一个新的函数，<strong>会用相同的值顺序调用所有这些函数</strong></p>
+<p>seq组合子不会返回任何值，只会一个一个地执行一系列操作。如果要将其嵌入函数组合之间，可以使用R.tap将它与其余部分进行桥接。</p>
+<figure class="highlight javascript"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">const</span> seq = <span class="keyword">function</span>(<span class="params"><span class="comment">/*funcs*/</span></span>) &#123;</span><br><span class="line">  <span class="keyword">const</span> funcs = <span class="title class_">Array</span>.<span class="property"><span class="keyword">prototype</span></span>.<span class="property">slice</span>.<span class="title function_">call</span>(<span class="variable language_">arguments</span>);</span><br><span class="line">    <span class="keyword">return</span> <span class="keyword">function</span> (<span class="params">val</span>) &#123;</span><br><span class="line">      funcs.<span class="title function_">forEach</span>(<span class="keyword">function</span> (<span class="params">fn</span>) &#123;</span><br><span class="line">      <span class="title function_">fn</span>(val);</span><br><span class="line">    &#125;);</span><br><span class="line">  &#125;;</span><br><span class="line">&#125;;</span><br></pre></td></tr></table></figure>
+
+<ul>
+<li>fork（join）组合子</li>
+</ul>
+<p><img src="/posts/90b882fa913b/0004.jpg"></p>
+<figure class="highlight javascript"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">const</span> fork = <span class="keyword">function</span>(<span class="params">join, func1, func2</span>)&#123;</span><br><span class="line">  <span class="keyword">return</span> <span class="keyword">function</span>(<span class="params">val</span>) &#123;</span><br><span class="line">    <span class="keyword">return</span> <span class="title function_">join</span>(<span class="title function_">func1</span>(val), <span class="title function_">func2</span>(val));</span><br><span class="line">  &#125;;</span><br><span class="line">&#125;;</span><br></pre></td></tr></table></figure>
+
+<figure class="highlight javascript"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">const</span> eqMedianAverage = <span class="title function_">fork</span>(R.<span class="property">equals</span>, R.<span class="property">median</span>, R.<span class="property">mean</span>);</span><br><span class="line"><span class="title function_">eqMedianAverage</span>([<span class="number">80</span>, <span class="number">90</span>, <span class="number">100</span>])); <span class="comment">//-&gt; True</span></span><br><span class="line"><span class="title function_">eqMedianAverage</span>([<span class="number">81</span>, <span class="number">90</span>, <span class="number">100</span>])); <span class="comment">//-&gt; False</span></span><br></pre></td></tr></table></figure>
+
+<h4 id="总结"><a href="#总结" class="headerlink" title="总结"></a>总结</h4><ul>
+<li>用于连接可重用的、模块化的、组件化程序的函数链与管道。</li>
+<li>Ramda.js是一个功能强大的函数库，适用于函数的柯里化与组合。</li>
+<li>可以通过部分求值和柯里化来减少函数元数，利用对参数子集的部分求值将函数转化为一元函数。</li>
+<li>可以将任务分解为多个简单的函数，再通过组合来获得整个解决方案。</li>
+<li>以point-free的风格编写，并用函数组合子来组织的程序控制流，可解决现实问题。</li>
+</ul>
+ 
+      <!-- reward -->
+      
+    </div>
+    
+
+    <!-- copyright -->
+    
+    <footer class="article-footer">
+       
+  <ul class="article-tag-list" itemprop="keywords"><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/%E5%87%BD%E6%95%B0%E5%BC%8F%E7%BC%96%E7%A8%8B/" rel="tag">函数式编程</a></li></ul>
+
+    </footer>
+  </div>
+
+   
+    
+</article>
+
+    
+    <article
+  id="post-javascript/generator_async"
+  class="article article-type-post"
+  itemscope
+  itemprop="blogPost"
+  data-scroll-reveal
+>
+  <div class="article-inner">
+    
+    <header class="article-header">
+       
+<h2 itemprop="name">
+  <a class="article-title" href="/posts/18bcaf615ff5/"
+    >Generator 异步</a> 
+</h2>
+ 
+
+      
+    </header>
+     
+    <div class="article-meta">
+      <a href="/posts/18bcaf615ff5/" class="article-date">
+  <time datetime="2020-11-02T01:13:11.000Z" itemprop="datePublished">2020-11-02</time>
+</a> 
+  <div class="article-category">
+    <a class="article-category-link" href="/categories/JavaScript/">JavaScript</a> / <a class="article-category-link" href="/categories/JavaScript/%E5%9F%BA%E7%A1%80/">基础</a>
+  </div>
+   
+    </div>
+      
+    <div class="article-entry" itemprop="articleBody">
+       
+  <p>es6 之前实现异步的方法</p>
+<ul>
+<li>回调函数</li>
+<li>事件监听</li>
+<li>发布&#x2F;订阅</li>
+<li>Promise 对象</li>
+</ul>
+<h4 id="异步"><a href="#异步" class="headerlink" title="异步"></a>异步</h4><p>所谓”异步”，简单说就是一个任务不是连续完成的，可以理解成该任务被人为分成两段，先执行第一段，然后转而执行其他任务，等做好了准备，再回过头执行第二段。</p>
+<p>Promise 的最大问题是代码冗余，原来的任务被 Promise 包装了一下，不管什么操作，一眼看去都是一堆then，原来的语义变得很不清楚。</p>
+<h4 id="错误处理"><a href="#错误处理" class="headerlink" title="错误处理"></a>错误处理</h4><p>Generator 函数内部还可以部署错误处理代码，捕获函数体外抛出的错误。</p>
+<p>使用指针对象的throw方法抛出的错误，可以被函数体内的try…catch代码块捕获。这意味着，出错的代码与处理错误的代码，实现了时间和空间上的分离</p>
+<figure class="highlight javascript"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">function</span>* <span class="title function_">gen</span>(<span class="params">x</span>)&#123;</span><br><span class="line">  <span class="keyword">try</span> &#123;</span><br><span class="line">    <span class="keyword">var</span> y = <span class="keyword">yield</span> x + <span class="number">2</span>;</span><br><span class="line">  &#125; <span class="keyword">catch</span> (e)&#123;</span><br><span class="line">    <span class="variable language_">console</span>.<span class="title function_">log</span>(e);</span><br><span class="line">  &#125;</span><br><span class="line">  <span class="keyword">return</span> y;</span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line"><span class="keyword">var</span> g = <span class="title function_">gen</span>(<span class="number">1</span>);</span><br><span class="line">g.<span class="title function_">next</span>();</span><br><span class="line">g.<span class="keyword">throw</span>(<span class="string">&#x27;出错了&#x27;</span>);</span><br><span class="line"><span class="comment">// 出错了</span></span><br></pre></td></tr></table></figure>
+
+<h4 id="异步任务的封装"><a href="#异步任务的封装" class="headerlink" title="异步任务的封装"></a>异步任务的封装</h4><p>虽然 Generator 函数将异步操作表示得很简洁，但是流程管理却不方便（即何时执行第一阶段、何时执行第二阶段）。</p>
+<figure class="highlight javascript"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">var</span> fetch = <span class="built_in">require</span>(<span class="string">&#x27;node-fetch&#x27;</span>);</span><br><span class="line"></span><br><span class="line"><span class="keyword">function</span>* <span class="title function_">gen</span>(<span class="params"></span>)&#123;</span><br><span class="line">  <span class="keyword">var</span> url = <span class="string">&#x27;https://api.github.com/users/github&#x27;</span>;</span><br><span class="line">  <span class="keyword">var</span> result = <span class="keyword">yield</span> <span class="title function_">fetch</span>(url);</span><br><span class="line">  <span class="variable language_">console</span>.<span class="title function_">log</span>(result.<span class="property">bio</span>);</span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line"><span class="keyword">var</span> g = <span class="title function_">gen</span>();</span><br><span class="line"><span class="keyword">var</span> result = g.<span class="title function_">next</span>();</span><br><span class="line"></span><br><span class="line">result.<span class="property">value</span>.<span class="title function_">then</span>(<span class="keyword">function</span>(<span class="params">data</span>)&#123;</span><br><span class="line">  <span class="keyword">return</span> data.<span class="title function_">json</span>();</span><br><span class="line">&#125;).<span class="title function_">then</span>(<span class="keyword">function</span>(<span class="params">data</span>)&#123;</span><br><span class="line">  g.<span class="title function_">next</span>(data);</span><br><span class="line">&#125;);</span><br></pre></td></tr></table></figure>
+
+<h4 id="Thunk-函数的含义"><a href="#Thunk-函数的含义" class="headerlink" title="Thunk 函数的含义"></a>Thunk 函数的含义</h4><p>编译器的“传名调用”实现，往往是将参数放到一个临时函数之中，再将这个临时函数传入函数体。这个临时函数就叫做 Thunk 函数。</p>
+<h4 id="JavaScript-语言的-Thunk-函数"><a href="#JavaScript-语言的-Thunk-函数" class="headerlink" title="JavaScript 语言的 Thunk 函数"></a>JavaScript 语言的 Thunk 函数</h4><p>“传值调用”（call by value），即在进入函数体之前，就计算x + 5的值（等于 6），再将这个值传入函数f。C 语言就采用这种策略。</p>
+<p>“传名调用”（call by name），即直接将表达式x + 5传入函数体，只在用到它的时候求值。Haskell 语言采用这种策略。</p>
+<figure class="highlight javascript"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment">// Thunk版本的readFile（单参数版本）</span></span><br><span class="line"><span class="keyword">var</span> <span class="title class_">Thunk</span> = <span class="keyword">function</span> (<span class="params">fileName</span>) &#123;</span><br><span class="line">  <span class="keyword">return</span> <span class="keyword">function</span> (<span class="params">callback</span>) &#123;</span><br><span class="line">    <span class="keyword">return</span> fs.<span class="title function_">readFile</span>(fileName, callback);</span><br><span class="line">  &#125;;</span><br><span class="line">&#125;;</span><br><span class="line"></span><br><span class="line"><span class="keyword">var</span> readFileThunk = <span class="title class_">Thunk</span>(fileName);</span><br><span class="line"><span class="title function_">readFileThunk</span>(callback);</span><br></pre></td></tr></table></figure>
+
+
+<h4 id="Thunkify"><a href="#Thunkify" class="headerlink" title="Thunkify"></a>Thunkify</h4><p>增加了重复执行的判断</p>
+<figure class="highlight javascript"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">function</span> <span class="title function_">thunkify</span>(<span class="params">fn</span>) &#123;</span><br><span class="line">  <span class="keyword">return</span> <span class="keyword">function</span>(<span class="params"></span>) &#123;</span><br><span class="line">    <span class="keyword">var</span> args = <span class="keyword">new</span> <span class="title class_">Array</span>(<span class="variable language_">arguments</span>.<span class="property">length</span>);</span><br><span class="line">    <span class="keyword">var</span> ctx = <span class="variable language_">this</span>;</span><br><span class="line"></span><br><span class="line">    <span class="keyword">for</span> (<span class="keyword">var</span> i = <span class="number">0</span>; i &lt; args.<span class="property">length</span>; ++i) &#123;</span><br><span class="line">      args[i] = <span class="variable language_">arguments</span>[i];</span><br><span class="line">    &#125;</span><br><span class="line"></span><br><span class="line">    <span class="keyword">return</span> <span class="keyword">function</span> (<span class="params">done</span>) &#123;</span><br><span class="line">      <span class="keyword">var</span> called;</span><br><span class="line"></span><br><span class="line">      args.<span class="title function_">push</span>(<span class="keyword">function</span> (<span class="params"></span>) &#123;</span><br><span class="line">        <span class="keyword">if</span> (called) <span class="keyword">return</span>;</span><br><span class="line">        called = <span class="literal">true</span>;</span><br><span class="line">        done.<span class="title function_">apply</span>(<span class="literal">null</span>, <span class="variable language_">arguments</span>);</span><br><span class="line">      &#125;);</span><br><span class="line"></span><br><span class="line">      <span class="keyword">try</span> &#123;</span><br><span class="line">        fn.<span class="title function_">apply</span>(ctx, args);</span><br><span class="line">      &#125; <span class="keyword">catch</span> (err) &#123;</span><br><span class="line">        <span class="title function_">done</span>(err);</span><br><span class="line">      &#125;</span><br><span class="line">    &#125;</span><br><span class="line">  &#125;</span><br><span class="line">&#125;;</span><br></pre></td></tr></table></figure>
+
+<h4 id="基于Thunk自动流程管理"><a href="#基于Thunk自动流程管理" class="headerlink" title="基于Thunk自动流程管理"></a>基于Thunk自动流程管理</h4><ul>
+<li>实现自动执行，一定会自动调用<code>Generator</code>函数执行后的<code>next()</code>方法</li>
+</ul>
+<p>通过<code>while</code>的判断是否需要执行下一步</p>
+<figure class="highlight javascript"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">function</span> <span class="title function_">run</span>(<span class="params">fn</span>) &#123;</span><br><span class="line">    <span class="keyword">const</span> g = <span class="title function_">fn</span>();</span><br><span class="line">    <span class="keyword">let</span> res = g.<span class="title function_">next</span>();</span><br><span class="line">    <span class="keyword">while</span> (res.<span class="property">value</span>) &#123;</span><br><span class="line">        res = g.<span class="title function_">next</span>();</span><br><span class="line">    &#125;</span><br><span class="line">&#125;;</span><br><span class="line"></span><br><span class="line"><span class="keyword">function</span>* <span class="title function_">g</span>(<span class="params"></span>) &#123;</span><br><span class="line">    <span class="keyword">yield</span> <span class="number">1</span>;</span><br><span class="line">    <span class="keyword">yield</span> <span class="number">2</span>;</span><br><span class="line">    <span class="keyword">return</span> <span class="number">3</span></span><br><span class="line">&#125;</span><br><span class="line"><span class="title function_">run</span>(g);</span><br></pre></td></tr></table></figure>
+
+<p>结合函数式编程的思想，这里不应该通过循环实现，应该递归调用，考虑创建一个子函数 <code>next</code>用于递归调用</p>
+<figure class="highlight javascript"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">function</span> <span class="title function_">run</span>(<span class="params">fn</span>) &#123;</span><br><span class="line">    <span class="keyword">const</span> g = <span class="title function_">fn</span>();</span><br><span class="line">    <span class="keyword">function</span> <span class="title function_">next</span>(<span class="params"></span>) &#123;</span><br><span class="line">        <span class="keyword">const</span> res = g.<span class="title function_">next</span>();</span><br><span class="line">        <span class="keyword">if</span> (!res.<span class="property">done</span>) <span class="title function_">next</span>()</span><br><span class="line">    &#125;</span><br><span class="line">    <span class="title function_">next</span>()</span><br><span class="line">&#125;;</span><br><span class="line"></span><br><span class="line"><span class="keyword">function</span>* <span class="title function_">g</span>(<span class="params"></span>) &#123;</span><br><span class="line">    <span class="keyword">yield</span> <span class="number">1</span>;</span><br><span class="line">    <span class="keyword">yield</span> <span class="number">2</span>;</span><br><span class="line">    <span class="keyword">return</span> <span class="number">3</span></span><br><span class="line">&#125;</span><br><span class="line"><span class="title function_">run</span>(g);</span><br></pre></td></tr></table></figure>
+
+<p>有返回值的情况</p>
+<figure class="highlight javascript"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">function</span> <span class="title function_">run</span>(<span class="params">fn</span>) &#123;</span><br><span class="line">    <span class="keyword">const</span> g = <span class="title function_">fn</span>();</span><br><span class="line"></span><br><span class="line">    <span class="keyword">function</span> <span class="title function_">next</span>(<span class="params">val</span>) &#123;</span><br><span class="line">        <span class="keyword">const</span> res = g.<span class="title function_">next</span>(val);</span><br><span class="line">        <span class="keyword">if</span> (!res.<span class="property">done</span>) <span class="title function_">next</span>(res.<span class="property">value</span>)</span><br><span class="line">    &#125;</span><br><span class="line">    <span class="title function_">next</span>()</span><br><span class="line">&#125;;</span><br><span class="line"></span><br><span class="line"><span class="keyword">function</span>* <span class="title function_">g</span>(<span class="params"></span>) &#123;</span><br><span class="line">    <span class="keyword">const</span> a = <span class="keyword">yield</span> <span class="number">2</span>;</span><br><span class="line">    <span class="keyword">const</span> b = <span class="keyword">yield</span> a * <span class="number">2</span>;</span><br><span class="line">    <span class="keyword">const</span> c = <span class="keyword">yield</span> b * <span class="number">2</span>;</span><br><span class="line">    <span class="keyword">return</span> c * <span class="number">2</span></span><br><span class="line">&#125;</span><br><span class="line"><span class="title function_">run</span>(g);</span><br></pre></td></tr></table></figure>
+
+<p>内部的next函数就是 Thunk 的回调函数。next函数先将指针移到 Generator 函数的下一步（gen.next方法），然后判断 Generator 函数是否结束（result.done属性），如果没结束，就将next函数再传入 Thunk 函数（result.value属性），否则就直接退出。</p>
+<figure class="highlight javascript"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">const</span> fs = <span class="built_in">require</span>(<span class="string">&#x27;fs&#x27;</span>);</span><br><span class="line"><span class="keyword">const</span> <span class="title class_">Thunk</span> = <span class="keyword">function</span> (<span class="params">fn</span>) &#123;</span><br><span class="line">  <span class="keyword">return</span> <span class="keyword">function</span> (<span class="params">...args</span>) &#123;</span><br><span class="line">    <span class="keyword">return</span> <span class="keyword">function</span> (<span class="params">callback</span>) &#123;</span><br><span class="line">      <span class="keyword">return</span> fn.<span class="title function_">call</span>(<span class="variable language_">this</span>, ...args, callback);</span><br><span class="line">    &#125;</span><br><span class="line">  &#125;;</span><br><span class="line">&#125;;</span><br><span class="line"></span><br><span class="line"><span class="keyword">const</span> readFileThunk1 = <span class="title class_">Thunk</span>(fs.<span class="property">readFile</span>)(<span class="string">&#x27;./1.txt&#x27;</span>);</span><br><span class="line"><span class="keyword">const</span> readFileThunk2 = <span class="title class_">Thunk</span>(fs.<span class="property">readFile</span>)(<span class="string">&#x27;./2.txt&#x27;</span>);</span><br><span class="line"><span class="keyword">const</span> readFileThunk3 = <span class="title class_">Thunk</span>(fs.<span class="property">readFile</span>)(<span class="string">&#x27;./3.txt&#x27;</span>);</span><br><span class="line"></span><br><span class="line"><span class="keyword">function</span> <span class="title function_">run</span>(<span class="params">fn</span>) &#123;</span><br><span class="line">  <span class="keyword">const</span> g = <span class="title function_">fn</span>();</span><br><span class="line"></span><br><span class="line">  <span class="keyword">function</span> <span class="title function_">next</span>(<span class="params">err, data</span>) &#123;</span><br><span class="line">    <span class="keyword">if</span> (err) <span class="keyword">throw</span> <span class="keyword">new</span> <span class="title class_">Error</span>();</span><br><span class="line">    <span class="keyword">const</span> res = g.<span class="title function_">next</span>(data)</span><br><span class="line">    <span class="keyword">if</span> (!res.<span class="property">done</span>) res.<span class="title function_">value</span>(next)</span><br><span class="line">  &#125;</span><br><span class="line">  <span class="title function_">next</span>()</span><br><span class="line">&#125;;</span><br><span class="line"></span><br><span class="line"><span class="keyword">function</span>* <span class="title function_">g</span>(<span class="params"></span>) &#123;</span><br><span class="line">  <span class="keyword">const</span> a = <span class="keyword">yield</span> readFileThunk1;</span><br><span class="line">  <span class="keyword">const</span> b = <span class="keyword">yield</span> readFileThunk2;</span><br><span class="line">  <span class="keyword">const</span> c = <span class="keyword">yield</span> readFileThunk3;</span><br><span class="line">&#125;</span><br><span class="line"><span class="variable language_">console</span>.<span class="title function_">log</span>(<span class="title function_">run</span>(g));</span><br></pre></td></tr></table></figure>
+
+<h4 id="基于Promise的自动执行器"><a href="#基于Promise的自动执行器" class="headerlink" title="基于Promise的自动执行器"></a>基于Promise的自动执行器</h4><figure class="highlight javascript"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">const</span> fs = <span class="built_in">require</span>(<span class="string">&#x27;fs&#x27;</span>);</span><br><span class="line"></span><br><span class="line"><span class="keyword">const</span> readFile = <span class="keyword">function</span> (<span class="params">path</span>) &#123;</span><br><span class="line">  <span class="keyword">return</span> <span class="keyword">new</span> <span class="title class_">Promise</span>(<span class="function">(<span class="params">resolve, reject</span>) =&gt;</span> &#123;</span><br><span class="line">    fs.<span class="title function_">readFile</span>(path, <span class="keyword">function</span> (<span class="params">err, data</span>) &#123;</span><br><span class="line">      <span class="keyword">if</span> (err) <span class="keyword">return</span> <span class="title function_">reject</span>(err);</span><br><span class="line">      <span class="title function_">resolve</span>(data);</span><br><span class="line">    &#125;)</span><br><span class="line">  &#125;)</span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line"></span><br><span class="line"><span class="keyword">function</span> <span class="title function_">run</span>(<span class="params">fn</span>) &#123;</span><br><span class="line">  <span class="keyword">const</span> g = <span class="title function_">fn</span>();</span><br><span class="line"></span><br><span class="line">  <span class="keyword">function</span> <span class="title function_">next</span>(<span class="params">data</span>) &#123;</span><br><span class="line">    <span class="keyword">const</span> res = g.<span class="title function_">next</span>(data);</span><br><span class="line">    <span class="keyword">if</span> (!res.<span class="property">done</span>) res.<span class="property">value</span>.<span class="title function_">then</span>(<span class="function"><span class="params">data</span> =&gt;</span> <span class="title function_">next</span>(data));</span><br><span class="line">    <span class="keyword">return</span> res.<span class="property">value</span>;</span><br><span class="line">  &#125;</span><br><span class="line">  <span class="title function_">next</span>()</span><br><span class="line">&#125;;</span><br><span class="line"></span><br><span class="line"><span class="keyword">function</span>* <span class="title function_">g</span>(<span class="params"></span>) &#123;</span><br><span class="line">  <span class="keyword">const</span> a = <span class="keyword">yield</span> <span class="title function_">readFile</span>(<span class="string">&#x27;./1.txt&#x27;</span>);</span><br><span class="line">  <span class="keyword">const</span> b = <span class="keyword">yield</span> <span class="title function_">readFile</span>(<span class="string">&#x27;./2.txt&#x27;</span>);</span><br><span class="line">  <span class="keyword">const</span> c = <span class="keyword">yield</span> <span class="title function_">readFile</span>(<span class="string">&#x27;./3.txt&#x27;</span>);</span><br><span class="line">  <span class="keyword">return</span> <span class="string">&#x27;end&#x27;</span></span><br><span class="line">&#125;</span><br><span class="line"><span class="title function_">run</span>(g)</span><br></pre></td></tr></table></figure>
+
+<h4 id="co的实现"><a href="#co的实现" class="headerlink" title="co的实现"></a>co的实现</h4><figure class="highlight javascript"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br><span class="line">35</span><br><span class="line">36</span><br><span class="line">37</span><br><span class="line">38</span><br><span class="line">39</span><br><span class="line">40</span><br><span class="line">41</span><br><span class="line">42</span><br><span class="line">43</span><br><span class="line">44</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">function</span> <span class="title function_">co</span>(<span class="params">gen</span>) &#123;</span><br><span class="line">    <span class="keyword">var</span> ctx = <span class="variable language_">this</span>;</span><br><span class="line">    <span class="keyword">var</span> args = slice.<span class="title function_">call</span>(<span class="variable language_">arguments</span>, <span class="number">1</span>);</span><br><span class="line">    <span class="comment">// 统一返回Promise对象</span></span><br><span class="line">    <span class="keyword">return</span> <span class="keyword">new</span> <span class="title class_">Promise</span>(<span class="keyword">function</span> (<span class="params">resolve, reject</span>) &#123;</span><br><span class="line">        <span class="comment">//co 先检查参数gen是否为 Generator 函数。如果是，就执行该函数，得到一个内部指针对象；如果不是就返回，并将 Promise 对象的状态改为resolved。</span></span><br><span class="line">        <span class="keyword">if</span> (<span class="keyword">typeof</span> gen === <span class="string">&#x27;function&#x27;</span>) gen = gen.<span class="title function_">apply</span>(ctx, args);</span><br><span class="line">        <span class="keyword">if</span> (!gen || <span class="keyword">typeof</span> gen.<span class="property">next</span> !== <span class="string">&#x27;function&#x27;</span>) <span class="keyword">return</span> <span class="title function_">resolve</span>(gen);</span><br><span class="line">        <span class="title function_">onFulfilled</span>();</span><br><span class="line">        <span class="comment">//co 将 Generator 函数的内部指针对象的next方法，包装成onFulfilled函数。这主要是为了能够捕捉抛出的错误。</span></span><br><span class="line">        <span class="keyword">function</span> <span class="title function_">onFulfilled</span>(<span class="params">res</span>) &#123;</span><br><span class="line">            <span class="keyword">var</span> ret;</span><br><span class="line">            <span class="keyword">try</span> &#123;</span><br><span class="line">                ret = gen.<span class="title function_">next</span>(res);</span><br><span class="line">            &#125; <span class="keyword">catch</span> (e) &#123;</span><br><span class="line">                <span class="keyword">return</span> <span class="title function_">reject</span>(e);</span><br><span class="line">            &#125;</span><br><span class="line">            <span class="title function_">next</span>(ret);</span><br><span class="line">            <span class="keyword">return</span> <span class="literal">null</span>;</span><br><span class="line">        &#125;</span><br><span class="line"></span><br><span class="line">        <span class="keyword">function</span> <span class="title function_">onRejected</span>(<span class="params">err</span>) &#123;</span><br><span class="line">            <span class="keyword">var</span> ret;</span><br><span class="line">            <span class="keyword">try</span> &#123;</span><br><span class="line">                ret = gen.<span class="keyword">throw</span>(err);</span><br><span class="line">            &#125; <span class="keyword">catch</span> (e) &#123;</span><br><span class="line">                <span class="keyword">return</span> <span class="title function_">reject</span>(e);</span><br><span class="line">            &#125;</span><br><span class="line">            <span class="title function_">next</span>(ret);</span><br><span class="line">        &#125;</span><br><span class="line"></span><br><span class="line">        <span class="keyword">function</span> <span class="title function_">next</span>(<span class="params">ret</span>) &#123;</span><br><span class="line">            <span class="keyword">if</span> (ret.<span class="property">done</span>) <span class="keyword">return</span> <span class="title function_">resolve</span>(ret.<span class="property">value</span>);</span><br><span class="line">            <span class="comment">//确保每一步的返回值，是 Promise 对象。</span></span><br><span class="line">            <span class="keyword">var</span> value = toPromise.<span class="title function_">call</span>(ctx, ret.<span class="property">value</span>);</span><br><span class="line">            <span class="comment">//使用then方法，为返回值加上回调函数，然后通过onFulfilled函数再次调用next函数。</span></span><br><span class="line">            <span class="keyword">if</span> (value &amp;&amp; <span class="title function_">isPromise</span>(value)) <span class="keyword">return</span> value.<span class="title function_">then</span>(onFulfilled, onRejected);</span><br><span class="line">            <span class="comment">//在参数不符合要求的情况下（参数非 Thunk 函数和 Promise 对象），将 Promise 对象的状态改为rejected，从而终止执行。</span></span><br><span class="line">            <span class="keyword">return</span> <span class="title function_">onRejected</span>(<span class="keyword">new</span> <span class="title class_">TypeError</span>(</span><br><span class="line">                <span class="string">&#x27;You may only yield a function, promise, generator, array, or object, &#x27;</span> +</span><br><span class="line">                <span class="string">&#x27;but the following object was passed: &quot;&#x27;</span> + <span class="title class_">String</span>(ret.<span class="property">value</span>) + <span class="string">&#x27;&quot;&#x27;</span>));</span><br><span class="line">        &#125;</span><br><span class="line">    &#125;);</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure> 
+      <!-- reward -->
+      
+    </div>
+    
+
+    <!-- copyright -->
+    
+    <footer class="article-footer">
+       
+  <ul class="article-tag-list" itemprop="keywords"><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/ES6%E5%9F%BA%E7%A1%80/" rel="tag">ES6基础</a></li><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/JavaScript/" rel="tag">JavaScript</a></li></ul>
+
+    </footer>
+  </div>
+
+   
+    
+</article>
+
+    
+    <article
+  id="post-algorithm/leetcode/(O53)que-shi-de-shu-zi-lcof"
+  class="article article-type-post"
+  itemscope
+  itemprop="blogPost"
+  data-scroll-reveal
+>
+  <div class="article-inner">
+    
+    <header class="article-header">
+       
+<h2 itemprop="name">
+  <a class="article-title" href="/posts/c0dab2eedc6f/"
+    >O53.0～n-1中缺失的数字</a> 
+</h2>
+ 
+
+      
+    </header>
+     
+    <div class="article-meta">
+      <a href="/posts/c0dab2eedc6f/" class="article-date">
+  <time datetime="2020-11-01T11:38:05.000Z" itemprop="datePublished">2020-11-01</time>
+</a> 
+  <div class="article-category">
+    <a class="article-category-link" href="/categories/%E7%AE%97%E6%B3%95/">算法</a> / <a class="article-category-link" href="/categories/%E7%AE%97%E6%B3%95/LeetCode/">LeetCode</a> / <a class="article-category-link" href="/categories/%E7%AE%97%E6%B3%95/LeetCode/Easy/">Easy</a>
+  </div>
+   
+    </div>
+      
+    <div class="article-entry" itemprop="articleBody">
+       
+  <p><strong><a target="_blank" rel="noopener" href="https://leetcode-cn.com/problems/que-shi-de-shu-zi-lcof/">LeetCode</a></strong></p>
+<blockquote>
+<p><strong>注意</strong></p>
+</blockquote>
+<ul>
+<li>清楚题目的意思，有一个数字不在数组中，是返回这个数字的本身，而不是索引。<code>[0]</code>长度为1，取值范围是<code>[0,1]</code>其中1不在数组中，所以返回1</li>
+</ul>
+<h4 id="暴力解法"><a href="#暴力解法" class="headerlink" title="暴力解法"></a>暴力解法</h4><figure class="highlight javascript"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">var</span> missingNumber = <span class="keyword">function</span>(<span class="params">nums</span>) &#123;</span><br><span class="line">    <span class="keyword">var</span> i=<span class="number">0</span>;</span><br><span class="line">    <span class="keyword">var</span> len = nums.<span class="property">length</span>;</span><br><span class="line">    <span class="keyword">for</span>(<span class="keyword">var</span> i=<span class="number">0</span>;i&lt;len;i++)&#123;</span><br><span class="line">        <span class="keyword">if</span>(nums[i]!==i)&#123;</span><br><span class="line">            <span class="keyword">return</span> i;</span><br><span class="line">        &#125;</span><br><span class="line">    &#125;</span><br><span class="line">    <span class="keyword">return</span> i;</span><br><span class="line">&#125;;</span><br></pre></td></tr></table></figure>
+
+<p><strong>复杂度分析</strong></p>
+<ul>
+<li><p>时间复杂度：<mjx-container class="MathJax" jax="SVG"><svg style="vertical-align: -0.566ex;" xmlns="http://www.w3.org/2000/svg" width="4.844ex" height="2.262ex" role="img" focusable="false" viewBox="0 -750 2141 1000" xmlns:xlink="http://www.w3.org/1999/xlink"><defs><path id="MJX-27-TEX-I-1D442" d="M740 435Q740 320 676 213T511 42T304 -22Q207 -22 138 35T51 201Q50 209 50 244Q50 346 98 438T227 601Q351 704 476 704Q514 704 524 703Q621 689 680 617T740 435ZM637 476Q637 565 591 615T476 665Q396 665 322 605Q242 542 200 428T157 216Q157 126 200 73T314 19Q404 19 485 98T608 313Q637 408 637 476Z"></path><path id="MJX-27-TEX-N-28" d="M94 250Q94 319 104 381T127 488T164 576T202 643T244 695T277 729T302 750H315H319Q333 750 333 741Q333 738 316 720T275 667T226 581T184 443T167 250T184 58T225 -81T274 -167T316 -220T333 -241Q333 -250 318 -250H315H302L274 -226Q180 -141 137 -14T94 250Z"></path><path id="MJX-27-TEX-I-1D45B" d="M21 287Q22 293 24 303T36 341T56 388T89 425T135 442Q171 442 195 424T225 390T231 369Q231 367 232 367L243 378Q304 442 382 442Q436 442 469 415T503 336T465 179T427 52Q427 26 444 26Q450 26 453 27Q482 32 505 65T540 145Q542 153 560 153Q580 153 580 145Q580 144 576 130Q568 101 554 73T508 17T439 -10Q392 -10 371 17T350 73Q350 92 386 193T423 345Q423 404 379 404H374Q288 404 229 303L222 291L189 157Q156 26 151 16Q138 -11 108 -11Q95 -11 87 -5T76 7T74 17Q74 30 112 180T152 343Q153 348 153 366Q153 405 129 405Q91 405 66 305Q60 285 60 284Q58 278 41 278H27Q21 284 21 287Z"></path><path id="MJX-27-TEX-N-29" d="M60 749L64 750Q69 750 74 750H86L114 726Q208 641 251 514T294 250Q294 182 284 119T261 12T224 -76T186 -143T145 -194T113 -227T90 -246Q87 -249 86 -250H74Q66 -250 63 -250T58 -247T55 -238Q56 -237 66 -225Q221 -64 221 250T66 725Q56 737 55 738Q55 746 60 749Z"></path></defs><g stroke="currentColor" fill="currentColor" stroke-width="0" transform="scale(1,-1)"><g data-mml-node="math"><g data-mml-node="mi"><use data-c="1D442" xlink:href="#MJX-27-TEX-I-1D442"></use></g><g data-mml-node="mo" transform="translate(763,0)"><use data-c="28" xlink:href="#MJX-27-TEX-N-28"></use></g><g data-mml-node="mi" transform="translate(1152,0)"><use data-c="1D45B" xlink:href="#MJX-27-TEX-I-1D45B"></use></g><g data-mml-node="mo" transform="translate(1752,0)"><use data-c="29" xlink:href="#MJX-27-TEX-N-29"></use></g></g></g></svg></mjx-container></p>
+</li>
+<li><p>空间复杂度：<mjx-container class="MathJax" jax="SVG"><svg style="vertical-align: -0.566ex;" xmlns="http://www.w3.org/2000/svg" width="4.618ex" height="2.262ex" role="img" focusable="false" viewBox="0 -750 2041 1000" xmlns:xlink="http://www.w3.org/1999/xlink"><defs><path id="MJX-26-TEX-I-1D442" d="M740 435Q740 320 676 213T511 42T304 -22Q207 -22 138 35T51 201Q50 209 50 244Q50 346 98 438T227 601Q351 704 476 704Q514 704 524 703Q621 689 680 617T740 435ZM637 476Q637 565 591 615T476 665Q396 665 322 605Q242 542 200 428T157 216Q157 126 200 73T314 19Q404 19 485 98T608 313Q637 408 637 476Z"></path><path id="MJX-26-TEX-N-28" d="M94 250Q94 319 104 381T127 488T164 576T202 643T244 695T277 729T302 750H315H319Q333 750 333 741Q333 738 316 720T275 667T226 581T184 443T167 250T184 58T225 -81T274 -167T316 -220T333 -241Q333 -250 318 -250H315H302L274 -226Q180 -141 137 -14T94 250Z"></path><path id="MJX-26-TEX-N-31" d="M213 578L200 573Q186 568 160 563T102 556H83V602H102Q149 604 189 617T245 641T273 663Q275 666 285 666Q294 666 302 660V361L303 61Q310 54 315 52T339 48T401 46H427V0H416Q395 3 257 3Q121 3 100 0H88V46H114Q136 46 152 46T177 47T193 50T201 52T207 57T213 61V578Z"></path><path id="MJX-26-TEX-N-29" d="M60 749L64 750Q69 750 74 750H86L114 726Q208 641 251 514T294 250Q294 182 284 119T261 12T224 -76T186 -143T145 -194T113 -227T90 -246Q87 -249 86 -250H74Q66 -250 63 -250T58 -247T55 -238Q56 -237 66 -225Q221 -64 221 250T66 725Q56 737 55 738Q55 746 60 749Z"></path></defs><g stroke="currentColor" fill="currentColor" stroke-width="0" transform="scale(1,-1)"><g data-mml-node="math"><g data-mml-node="mi"><use data-c="1D442" xlink:href="#MJX-26-TEX-I-1D442"></use></g><g data-mml-node="mo" transform="translate(763,0)"><use data-c="28" xlink:href="#MJX-26-TEX-N-28"></use></g><g data-mml-node="mn" transform="translate(1152,0)"><use data-c="31" xlink:href="#MJX-26-TEX-N-31"></use></g><g data-mml-node="mo" transform="translate(1652,0)"><use data-c="29" xlink:href="#MJX-26-TEX-N-29"></use></g></g></g></svg></mjx-container></p>
+</li>
+</ul>
+<h4 id="二分法"><a href="#二分法" class="headerlink" title="二分法"></a>二分法</h4><figure class="highlight javascript"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">var</span> missingNumber = <span class="keyword">function</span> (<span class="params">nums</span>) &#123;</span><br><span class="line">    <span class="keyword">var</span> left = <span class="number">0</span>;</span><br><span class="line">    <span class="keyword">var</span> right = nums.<span class="property">length</span>-<span class="number">1</span>;</span><br><span class="line">    <span class="keyword">var</span> middle = <span class="title class_">Math</span>.<span class="title function_">floor</span>((left + right) / <span class="number">2</span>)</span><br><span class="line">    <span class="keyword">while</span> (left &lt;= right) &#123;</span><br><span class="line">        <span class="keyword">if</span> (nums[middle] === middle) &#123;</span><br><span class="line">            left = middle + <span class="number">1</span>;</span><br><span class="line">        &#125; <span class="keyword">else</span> &#123;</span><br><span class="line">            right = middle-<span class="number">1</span>;</span><br><span class="line">        &#125;</span><br><span class="line">        middle = <span class="title class_">Math</span>.<span class="title function_">floor</span>((left + right) / <span class="number">2</span>)</span><br><span class="line">    &#125;</span><br><span class="line">    <span class="keyword">return</span> left</span><br><span class="line">&#125;;</span><br></pre></td></tr></table></figure>
+<p><strong>复杂度分析</strong></p>
+<ul>
+<li><p>时间复杂度：<mjx-container class="MathJax" jax="SVG"><svg style="vertical-align: -0.566ex;" xmlns="http://www.w3.org/2000/svg" width="7.695ex" height="2.262ex" role="img" focusable="false" viewBox="0 -750 3401 1000" xmlns:xlink="http://www.w3.org/1999/xlink"><defs><path id="MJX-22-TEX-I-1D442" d="M740 435Q740 320 676 213T511 42T304 -22Q207 -22 138 35T51 201Q50 209 50 244Q50 346 98 438T227 601Q351 704 476 704Q514 704 524 703Q621 689 680 617T740 435ZM637 476Q637 565 591 615T476 665Q396 665 322 605Q242 542 200 428T157 216Q157 126 200 73T314 19Q404 19 485 98T608 313Q637 408 637 476Z"></path><path id="MJX-22-TEX-N-28" d="M94 250Q94 319 104 381T127 488T164 576T202 643T244 695T277 729T302 750H315H319Q333 750 333 741Q333 738 316 720T275 667T226 581T184 443T167 250T184 58T225 -81T274 -167T316 -220T333 -241Q333 -250 318 -250H315H302L274 -226Q180 -141 137 -14T94 250Z"></path><path id="MJX-22-TEX-I-1D459" d="M117 59Q117 26 142 26Q179 26 205 131Q211 151 215 152Q217 153 225 153H229Q238 153 241 153T246 151T248 144Q247 138 245 128T234 90T214 43T183 6T137 -11Q101 -11 70 11T38 85Q38 97 39 102L104 360Q167 615 167 623Q167 626 166 628T162 632T157 634T149 635T141 636T132 637T122 637Q112 637 109 637T101 638T95 641T94 647Q94 649 96 661Q101 680 107 682T179 688Q194 689 213 690T243 693T254 694Q266 694 266 686Q266 675 193 386T118 83Q118 81 118 75T117 65V59Z"></path><path id="MJX-22-TEX-I-1D45C" d="M201 -11Q126 -11 80 38T34 156Q34 221 64 279T146 380Q222 441 301 441Q333 441 341 440Q354 437 367 433T402 417T438 387T464 338T476 268Q476 161 390 75T201 -11ZM121 120Q121 70 147 48T206 26Q250 26 289 58T351 142Q360 163 374 216T388 308Q388 352 370 375Q346 405 306 405Q243 405 195 347Q158 303 140 230T121 120Z"></path><path id="MJX-22-TEX-I-1D454" d="M311 43Q296 30 267 15T206 0Q143 0 105 45T66 160Q66 265 143 353T314 442Q361 442 401 394L404 398Q406 401 409 404T418 412T431 419T447 422Q461 422 470 413T480 394Q480 379 423 152T363 -80Q345 -134 286 -169T151 -205Q10 -205 10 -137Q10 -111 28 -91T74 -71Q89 -71 102 -80T116 -111Q116 -121 114 -130T107 -144T99 -154T92 -162L90 -164H91Q101 -167 151 -167Q189 -167 211 -155Q234 -144 254 -122T282 -75Q288 -56 298 -13Q311 35 311 43ZM384 328L380 339Q377 350 375 354T369 368T359 382T346 393T328 402T306 405Q262 405 221 352Q191 313 171 233T151 117Q151 38 213 38Q269 38 323 108L331 118L384 328Z"></path><path id="MJX-22-TEX-I-1D45B" d="M21 287Q22 293 24 303T36 341T56 388T89 425T135 442Q171 442 195 424T225 390T231 369Q231 367 232 367L243 378Q304 442 382 442Q436 442 469 415T503 336T465 179T427 52Q427 26 444 26Q450 26 453 27Q482 32 505 65T540 145Q542 153 560 153Q580 153 580 145Q580 144 576 130Q568 101 554 73T508 17T439 -10Q392 -10 371 17T350 73Q350 92 386 193T423 345Q423 404 379 404H374Q288 404 229 303L222 291L189 157Q156 26 151 16Q138 -11 108 -11Q95 -11 87 -5T76 7T74 17Q74 30 112 180T152 343Q153 348 153 366Q153 405 129 405Q91 405 66 305Q60 285 60 284Q58 278 41 278H27Q21 284 21 287Z"></path><path id="MJX-22-TEX-N-29" d="M60 749L64 750Q69 750 74 750H86L114 726Q208 641 251 514T294 250Q294 182 284 119T261 12T224 -76T186 -143T145 -194T113 -227T90 -246Q87 -249 86 -250H74Q66 -250 63 -250T58 -247T55 -238Q56 -237 66 -225Q221 -64 221 250T66 725Q56 737 55 738Q55 746 60 749Z"></path></defs><g stroke="currentColor" fill="currentColor" stroke-width="0" transform="scale(1,-1)"><g data-mml-node="math"><g data-mml-node="mi"><use data-c="1D442" xlink:href="#MJX-22-TEX-I-1D442"></use></g><g data-mml-node="mo" transform="translate(763,0)"><use data-c="28" xlink:href="#MJX-22-TEX-N-28"></use></g><g data-mml-node="mi" transform="translate(1152,0)"><use data-c="1D459" xlink:href="#MJX-22-TEX-I-1D459"></use></g><g data-mml-node="mi" transform="translate(1450,0)"><use data-c="1D45C" xlink:href="#MJX-22-TEX-I-1D45C"></use></g><g data-mml-node="mi" transform="translate(1935,0)"><use data-c="1D454" xlink:href="#MJX-22-TEX-I-1D454"></use></g><g data-mml-node="mi" transform="translate(2412,0)"><use data-c="1D45B" xlink:href="#MJX-22-TEX-I-1D45B"></use></g><g data-mml-node="mo" transform="translate(3012,0)"><use data-c="29" xlink:href="#MJX-22-TEX-N-29"></use></g></g></g></svg></mjx-container></p>
+</li>
+<li><p>空间复杂度：<mjx-container class="MathJax" jax="SVG"><svg style="vertical-align: -0.566ex;" xmlns="http://www.w3.org/2000/svg" width="4.618ex" height="2.262ex" role="img" focusable="false" viewBox="0 -750 2041 1000" xmlns:xlink="http://www.w3.org/1999/xlink"><defs><path id="MJX-19-TEX-I-1D442" d="M740 435Q740 320 676 213T511 42T304 -22Q207 -22 138 35T51 201Q50 209 50 244Q50 346 98 438T227 601Q351 704 476 704Q514 704 524 703Q621 689 680 617T740 435ZM637 476Q637 565 591 615T476 665Q396 665 322 605Q242 542 200 428T157 216Q157 126 200 73T314 19Q404 19 485 98T608 313Q637 408 637 476Z"></path><path id="MJX-19-TEX-N-28" d="M94 250Q94 319 104 381T127 488T164 576T202 643T244 695T277 729T302 750H315H319Q333 750 333 741Q333 738 316 720T275 667T226 581T184 443T167 250T184 58T225 -81T274 -167T316 -220T333 -241Q333 -250 318 -250H315H302L274 -226Q180 -141 137 -14T94 250Z"></path><path id="MJX-19-TEX-N-31" d="M213 578L200 573Q186 568 160 563T102 556H83V602H102Q149 604 189 617T245 641T273 663Q275 666 285 666Q294 666 302 660V361L303 61Q310 54 315 52T339 48T401 46H427V0H416Q395 3 257 3Q121 3 100 0H88V46H114Q136 46 152 46T177 47T193 50T201 52T207 57T213 61V578Z"></path><path id="MJX-19-TEX-N-29" d="M60 749L64 750Q69 750 74 750H86L114 726Q208 641 251 514T294 250Q294 182 284 119T261 12T224 -76T186 -143T145 -194T113 -227T90 -246Q87 -249 86 -250H74Q66 -250 63 -250T58 -247T55 -238Q56 -237 66 -225Q221 -64 221 250T66 725Q56 737 55 738Q55 746 60 749Z"></path></defs><g stroke="currentColor" fill="currentColor" stroke-width="0" transform="scale(1,-1)"><g data-mml-node="math"><g data-mml-node="mi"><use data-c="1D442" xlink:href="#MJX-19-TEX-I-1D442"></use></g><g data-mml-node="mo" transform="translate(763,0)"><use data-c="28" xlink:href="#MJX-19-TEX-N-28"></use></g><g data-mml-node="mn" transform="translate(1152,0)"><use data-c="31" xlink:href="#MJX-19-TEX-N-31"></use></g><g data-mml-node="mo" transform="translate(1652,0)"><use data-c="29" xlink:href="#MJX-19-TEX-N-29"></use></g></g></g></svg></mjx-container></p>
+</li>
+</ul>
+ 
+      <!-- reward -->
+      
+    </div>
+    
+
+    <!-- copyright -->
+    
+    <footer class="article-footer">
+       
+  <ul class="article-tag-list" itemprop="keywords"><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/LeetCode/" rel="tag">LeetCode</a></li><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/%E7%AE%97%E6%B3%95/" rel="tag">算法</a></li></ul>
+
+    </footer>
+  </div>
+
+   
+    
+</article>
+
+    
+    <article
+  id="post-javascript/(3)轻数据结构,重操作"
+  class="article article-type-post"
+  itemscope
+  itemprop="blogPost"
+  data-scroll-reveal
+>
+  <div class="article-inner">
+    
+    <header class="article-header">
+       
+<h2 itemprop="name">
+  <a class="article-title" href="/posts/8fa41b2ec73f/"
+    >3.轻数据结构,重操作</a> 
+</h2>
+ 
+
+      
+    </header>
+     
+    <div class="article-meta">
+      <a href="/posts/8fa41b2ec73f/" class="article-date">
+  <time datetime="2020-11-01T10:19:31.000Z" itemprop="datePublished">2020-11-01</time>
+</a> 
+  <div class="article-category">
+    <a class="article-category-link" href="/categories/JavaScript/">JavaScript</a>
+  </div>
+   
+    </div>
+      
+    <div class="article-entry" itemprop="articleBody">
+       
+  <p>理解程序的控制流<br>更易理解的代码与数据<br>命令抽象函数map、reduce 以及filter<br>Lodash.js 及函数链<br>递归的思考</p>
+<h4 id="理解程序的控制流"><a href="#理解程序的控制流" class="headerlink" title="理解程序的控制流"></a>理解程序的控制流</h4><p>程序为实现业务目标所要行进的路径被称为控制流。命令式程序需要通过暴露所有的必要步骤才能极其详细地描述其控制流。</p>
+<h4 id="链接方法"><a href="#链接方法" class="headerlink" title="链接方法"></a>链接方法</h4><figure class="highlight javascript"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br></pre></td><td class="code"><pre><span class="line"><span class="string">&#x27;Functional Programming&#x27;</span>.<span class="title function_">substring</span>(<span class="number">0</span>, <span class="number">10</span>).<span class="title function_">toLowerCase</span>() + <span class="string">&#x27; is fun&#x27;</span>;</span><br><span class="line"></span><br><span class="line"><span class="comment">//函数式</span></span><br><span class="line"><span class="title function_">concat</span>(<span class="title function_">toLowerCase</span>(<span class="title function_">substring</span>(<span class="string">&#x27;Functional Programming&#x27;</span>, <span class="number">1</span>, <span class="number">10</span>))),<span class="string">&#x27; is fun&#x27;</span>);</span><br></pre></td></tr></table></figure>
+
+<h4 id="函数链"><a href="#函数链" class="headerlink" title="函数链"></a>函数链</h4><ul>
+<li>lambda表达式</li>
+</ul>
+<p>lambda表达式适用于函数式的函数定义，因为它总是需要返回一个值。</p>
+<ul>
+<li>R.map()</li>
+</ul>
+<figure class="highlight javascript"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">export</span> <span class="keyword">default</span> <span class="keyword">function</span> <span class="title function_">_map</span>(<span class="params">fn, functor</span>) &#123;</span><br><span class="line">  <span class="keyword">var</span> idx = <span class="number">0</span>;</span><br><span class="line">  <span class="keyword">var</span> len = functor.<span class="property">length</span>;</span><br><span class="line">  <span class="keyword">var</span> result = <span class="title class_">Array</span>(len);</span><br><span class="line">  <span class="keyword">while</span> (idx &lt; len) &#123;</span><br><span class="line">    result[idx] = <span class="title function_">fn</span>(functor[idx]);</span><br><span class="line">    idx += <span class="number">1</span>;</span><br><span class="line">  &#125;</span><br><span class="line">  <span class="keyword">return</span> result;</span><br><span class="line">&#125;</span><br><span class="line"></span><br></pre></td></tr></table></figure>
+
+ 
+      <!-- reward -->
+      
+    </div>
+    
+
+    <!-- copyright -->
+    
+    <footer class="article-footer">
+       
+  <ul class="article-tag-list" itemprop="keywords"><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/%E5%87%BD%E6%95%B0%E5%BC%8F%E7%BC%96%E7%A8%8B/" rel="tag">函数式编程</a></li></ul>
+
+    </footer>
+  </div>
+
+   
+    
+</article>
+
+    
+    <article
+  id="post-javascript/generator"
+  class="article article-type-post"
+  itemscope
+  itemprop="blogPost"
+  data-scroll-reveal
+>
+  <div class="article-inner">
+    
+    <header class="article-header">
+       
+<h2 itemprop="name">
+  <a class="article-title" href="/posts/82e2e8174a56/"
+    >Generator</a> 
+</h2>
+ 
+
+      
+    </header>
+     
+    <div class="article-meta">
+      <a href="/posts/82e2e8174a56/" class="article-date">
+  <time datetime="2020-11-01T08:44:40.000Z" itemprop="datePublished">2020-11-01</time>
+</a> 
+  <div class="article-category">
+    <a class="article-category-link" href="/categories/JavaScript/">JavaScript</a> / <a class="article-category-link" href="/categories/JavaScript/%E5%9F%BA%E7%A1%80/">基础</a>
+  </div>
+   
+    </div>
+      
+    <div class="article-entry" itemprop="articleBody">
+       
+  <h4 id="概念"><a href="#概念" class="headerlink" title="概念"></a>概念</h4><p>Generator 函数是 ES6 提供的一种异步编程解决方案</p>
+<p>Generator 函数有多种理解角度。语法上，首先可以把它理解成，Generator 函数是一个状态机，封装了多个内部状态。</p>
+<p>执行 Generator 函数会返回一个遍历器对象，也就是说，Generator 函数除了状态机，还是一个遍历器对象生成函数。返回的遍历器对象，可以依次遍历 Generator 函数内部的每一个状态。</p>
+<p>调用 Generator 函数后，该函数并不执行，返回的也不是函数运行结果，而是一个指向内部状态的指针对象，也就是上一章介绍的遍历器对象（Iterator Object）。</p>
+<h4 id="yeild"><a href="#yeild" class="headerlink" title="yeild"></a>yeild</h4><p>yield表达式与return语句既有相似之处，也有区别。相似之处在于，都能返回紧跟在语句后面的那个表达式的值。区别在于每次遇到yield，函数暂停执行，下一次再从该位置继续向后执行，而return语句不具备位置记忆的功能。</p>
+<p>yield表达式如果用在另一个表达式之中，必须放在圆括号里面。</p>
+<figure class="highlight javascript"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">function</span>* <span class="title function_">demo</span>(<span class="params"></span>) &#123;</span><br><span class="line">  <span class="variable language_">console</span>.<span class="title function_">log</span>(<span class="string">&#x27;Hello&#x27;</span> + <span class="keyword">yield</span>); <span class="comment">// SyntaxError</span></span><br><span class="line">  <span class="variable language_">console</span>.<span class="title function_">log</span>(<span class="string">&#x27;Hello&#x27;</span> + <span class="keyword">yield</span> <span class="number">123</span>); <span class="comment">// SyntaxError</span></span><br><span class="line"></span><br><span class="line">  <span class="variable language_">console</span>.<span class="title function_">log</span>(<span class="string">&#x27;Hello&#x27;</span> + (<span class="keyword">yield</span>)); <span class="comment">// OK</span></span><br><span class="line">  <span class="variable language_">console</span>.<span class="title function_">log</span>(<span class="string">&#x27;Hello&#x27;</span> + (<span class="keyword">yield</span> <span class="number">123</span>)); <span class="comment">// OK</span></span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+<p>yield表达式用作函数参数或放在赋值表达式的右边，可以不加括号。</p>
+<figure class="highlight javascript"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">function</span>* <span class="title function_">demo</span>(<span class="params"></span>) &#123;</span><br><span class="line">  <span class="title function_">foo</span>(<span class="keyword">yield</span> <span class="string">&#x27;a&#x27;</span>, <span class="keyword">yield</span> <span class="string">&#x27;b&#x27;</span>); <span class="comment">// OK</span></span><br><span class="line">  <span class="keyword">let</span> input = <span class="keyword">yield</span>; <span class="comment">// OK</span></span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+<h4 id="与-Iterator-接口的关系"><a href="#与-Iterator-接口的关系" class="headerlink" title="与 Iterator 接口的关系"></a>与 Iterator 接口的关系</h4><p>任意一个对象的Symbol.iterator方法，等于该对象的遍历器生成函数，调用该函数会返回该对象的一个遍历器对象。由于 Generator 函数就是遍历器生成函数，因此可以把 Generator 赋值给对象的Symbol.iterator属性，从而使得该对象具有 Iterator 接口。</p>
+<figure class="highlight javascript"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">function</span>* <span class="title function_">gen</span>(<span class="params"></span>)&#123;</span><br><span class="line">  <span class="comment">// some code</span></span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line"><span class="keyword">var</span> g = <span class="title function_">gen</span>();</span><br><span class="line"></span><br><span class="line">g[<span class="title class_">Symbol</span>.<span class="property">iterator</span>]() === g</span><br><span class="line"><span class="comment">// true</span></span><br></pre></td></tr></table></figure>
+
+<h4 id="next-方法的参数"><a href="#next-方法的参数" class="headerlink" title="next 方法的参数"></a>next 方法的参数</h4><p>yield表达式本身没有返回值，或者说总是返回undefined。next方法可以带一个参数，该参数就会被当作上一个yield表达式的返回值。</p>
+<p><strong>这个功能有很重要的语法意义。Generator 函数从暂停状态到恢复运行，它的上下文状态（context）是不变的。通过next方法的参数，就有办法在 Generator 函数开始运行之后，继续向函数体内部注入值。也就是说，可以在 Generator 函数运行的不同阶段，从外部向内部注入不同的值，从而调整函数行为。</strong></p>
+<h4 id="for…of-循环"><a href="#for…of-循环" class="headerlink" title="for…of 循环"></a>for…of 循环</h4><p><code>for...of</code>循环可以自动遍历 <code>Generator</code> 函数运行时生成的<code>Iterator</code>对象，且此时不再需要调用<code>next</code>方法。</p>
+<p>一旦<code>next</code>方法的返回对象的<code>done</code>属性为<code>true</code>，<code>for...of</code>循环就会中止,<code>return</code>语句返回的不包括在<code>for...of</code>循环之中。</p>
+<h4 id="Generator-prototype-throw"><a href="#Generator-prototype-throw" class="headerlink" title="Generator.prototype.throw()"></a>Generator.prototype.throw()</h4><h4 id="Generator-prototype-return"><a href="#Generator-prototype-return" class="headerlink" title="Generator.prototype.return()"></a>Generator.prototype.return()</h4><h4 id="共同点"><a href="#共同点" class="headerlink" title="共同点"></a>共同点</h4><p><code>next()</code>、<code>throw()</code>、<code>return()</code>这三个方法本质上是同一件事，可以放在一起理解。它们的作用都是让 <code>Generator</code> 函数恢复执行，并且使用不同的语句替换<code>yield</code>表达式。</p>
+<h4 id="yield"><a href="#yield" class="headerlink" title="yield*"></a>yield*</h4><p>如果在 Generator 函数内部，调用另一个 Generator 函数。需要在前者的函数体内部，自己手动完成遍历。</p>
+<p>ES6 提供了yield*表达式，作为解决办法，用来在一个 Generator 函数里面执行另一个 Generator 函数。</p>
+<h4 id="this"><a href="#this" class="headerlink" title="this"></a>this</h4><p>Generator 函数总是返回一个遍历器，ES6 规定这个遍历器是 Generator 函数的实例，也继承了 Generator 函数的prototype对象上的方法。</p>
+<p>Generator 函数也不能跟new命令一起用，会报错。</p>
+<p>首先，生成一个空对象，使用call方法绑定 Generator 函数内部的this。这样，构造函数调用以后，这个空对象就是 Generator 函数的实例对象了。</p>
+<figure class="highlight javascript"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">function</span>* <span class="title function_">gen</span>(<span class="params"></span>) &#123;</span><br><span class="line">  <span class="variable language_">this</span>.<span class="property">a</span> = <span class="number">1</span>;</span><br><span class="line">  <span class="keyword">yield</span> <span class="variable language_">this</span>.<span class="property">b</span> = <span class="number">2</span>;</span><br><span class="line">  <span class="keyword">yield</span> <span class="variable language_">this</span>.<span class="property">c</span> = <span class="number">3</span>;</span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line"><span class="keyword">function</span> <span class="title function_">F</span>(<span class="params"></span>) &#123;</span><br><span class="line">  <span class="keyword">return</span> gen.<span class="title function_">call</span>(gen.<span class="property"><span class="keyword">prototype</span></span>);</span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line"><span class="keyword">var</span> f = <span class="keyword">new</span> <span class="title function_">F</span>();</span><br><span class="line"></span><br><span class="line">f.<span class="title function_">next</span>();  <span class="comment">// Object &#123;value: 2, done: false&#125;</span></span><br><span class="line">f.<span class="title function_">next</span>();  <span class="comment">// Object &#123;value: 3, done: false&#125;</span></span><br><span class="line">f.<span class="title function_">next</span>();  <span class="comment">// Object &#123;value: undefined, done: true&#125;</span></span><br><span class="line"></span><br><span class="line">f.<span class="property">a</span> <span class="comment">// 1</span></span><br><span class="line">f.<span class="property">b</span> <span class="comment">// 2</span></span><br><span class="line">f.<span class="property">c</span> <span class="comment">// 3</span></span><br></pre></td></tr></table></figure>
+
+<h4 id="Generator-与状态机"><a href="#Generator-与状态机" class="headerlink" title="Generator 与状态机"></a>Generator 与状态机</h4><p>Generator 之所以可以不用外部变量保存状态，是因为它本身就包含了一个状态信息，即目前是否处于暂停态。</p>
+<figure class="highlight javascript"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">var</span> clock = <span class="keyword">function</span>* () &#123;</span><br><span class="line">  <span class="keyword">while</span> (<span class="literal">true</span>) &#123;</span><br><span class="line">    <span class="variable language_">console</span>.<span class="title function_">log</span>(<span class="string">&#x27;Tick!&#x27;</span>);</span><br><span class="line">    <span class="keyword">yield</span>;</span><br><span class="line">    <span class="variable language_">console</span>.<span class="title function_">log</span>(<span class="string">&#x27;Tock!&#x27;</span>);</span><br><span class="line">    <span class="keyword">yield</span>;</span><br><span class="line">  &#125;</span><br><span class="line">&#125;;</span><br></pre></td></tr></table></figure>
+
+<h4 id="应用"><a href="#应用" class="headerlink" title="应用"></a>应用</h4><ul>
+<li>异步操作的同步化表达</li>
+</ul>
+<figure class="highlight javascript"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">function</span>* <span class="title function_">main</span>(<span class="params"></span>) &#123;</span><br><span class="line">  <span class="keyword">var</span> result = <span class="keyword">yield</span> <span class="title function_">request</span>(<span class="string">&quot;http://some.url&quot;</span>);</span><br><span class="line">  <span class="keyword">var</span> resp = <span class="title class_">JSON</span>.<span class="title function_">parse</span>(result);</span><br><span class="line">    <span class="variable language_">console</span>.<span class="title function_">log</span>(resp.<span class="property">value</span>);</span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line"><span class="keyword">function</span> <span class="title function_">request</span>(<span class="params">url</span>) &#123;</span><br><span class="line">  <span class="title function_">makeAjaxCall</span>(url, <span class="keyword">function</span>(<span class="params">response</span>)&#123;</span><br><span class="line">    it.<span class="title function_">next</span>(response);</span><br><span class="line">  &#125;);</span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line"><span class="keyword">var</span> it = <span class="title function_">main</span>();</span><br><span class="line">it.<span class="title function_">next</span>();</span><br></pre></td></tr></table></figure>
+
+<ul>
+<li><p>控制流管理</p>
+</li>
+<li><p>部署 Iterator 接口</p>
+</li>
+<li><p>作为数据结构</p>
+</li>
+</ul>
+ 
+      <!-- reward -->
+      
+    </div>
+    
+
+    <!-- copyright -->
+    
+    <footer class="article-footer">
+       
+  <ul class="article-tag-list" itemprop="keywords"><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/ES6%E5%9F%BA%E7%A1%80/" rel="tag">ES6基础</a></li><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/JavaScript/" rel="tag">JavaScript</a></li></ul>
+
+    </footer>
+  </div>
+
+   
+    
+</article>
+
+    
+    <article
+  id="post-javascript/(2)高阶Javascript"
+  class="article article-type-post"
+  itemscope
+  itemprop="blogPost"
+  data-scroll-reveal
+>
+  <div class="article-inner">
+    
+    <header class="article-header">
+       
+<h2 itemprop="name">
+  <a class="article-title" href="/posts/0c62b4573380/"
+    >2.进阶</a> 
+</h2>
+ 
+
+      
+    </header>
+     
+    <div class="article-meta">
+      <a href="/posts/0c62b4573380/" class="article-date">
+  <time datetime="2020-10-30T04:34:24.000Z" itemprop="datePublished">2020-10-30</time>
+</a> 
+  <div class="article-category">
+    <a class="article-category-link" href="/categories/JavaScript/">JavaScript</a>
+  </div>
+   
+    </div>
+      
+    <div class="article-entry" itemprop="articleBody">
+       
+  <p>为什么说JavaScript是适合函数式的编程语言<br>JavaScript语言的多范型开发<br>不可变性和变化的对策<br>理解高阶函数和一等函数<br>闭包和作用域的概念探讨<br>闭包的实际使用</p>
+<h4 id="函数式与面向对象"><a href="#函数式与面向对象" class="headerlink" title="函数式与面向对象"></a>函数式与面向对象</h4><p>面向对象的关键是创建继承层次结构（如继承Person的Student对象）并将方法与数据紧密的绑定在一起。函数式编程则更倾向于通过广义的多态函数交叉应用于不同的数据类型，同时避免使用this</p>
+<h4 id="属性保护"><a href="#属性保护" class="headerlink" title="属性保护"></a>属性保护</h4><p><img src="/posts/0c62b4573380/0001.jpg"></p>
+<p>试用递归来冻结数属性</p>
+<figure class="highlight javascript"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">var</span> <span class="title function_">isObject</span> = (<span class="params">val</span>) =&gt; val &amp;&amp; <span class="keyword">typeof</span> val === <span class="string">&#x27;object&#x27;</span>;</span><br><span class="line"><span class="keyword">function</span> <span class="title function_">deepFreeze</span>(<span class="params">obj</span>) &#123;</span><br><span class="line">  <span class="keyword">if</span>(<span class="title function_">isObject</span>(obj) <span class="comment">//遍历所有属性并递归调用Object.freeze()（使用第3章介绍的map）</span></span><br><span class="line">    &amp;&amp; !<span class="title class_">Object</span>.<span class="title function_">isFrozen</span>(obj)) &#123; <span class="comment">//跳过已经冻结过的对象，冻结没有被冻结过的对象</span></span><br><span class="line">    <span class="title class_">Object</span>.<span class="title function_">keys</span>(obj). <span class="comment">//跳过所有的函数，即使从技术上说，函数也可以被修改，但是我们更希望注意在数据的属性上</span></span><br><span class="line">  <span class="title function_">forEach</span>(<span class="function"><span class="params">name</span> =&gt;</span> <span class="title function_">deepFreeze</span>(obj[name])); <span class="comment">//递归地自调用（第3章会介绍递归）</span></span><br><span class="line">    <span class="title class_">Object</span>.<span class="title function_">freeze</span>(obj); <span class="comment">//冻结根对象</span></span><br><span class="line">  &#125;</span><br><span class="line"><span class="keyword">return</span> obj;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+<p><strong>R.lensProp</strong> 保证对象属性的不可变性</p>
+<h4 id="函数"><a href="#函数" class="headerlink" title="函数"></a>函数</h4><p>需要区分表达式（如返回一个值的函数）和语句（如不返回值的函数）。命令式编程和过程式程序大多是由一系列有序的语句组成的，而函数式编程完全依赖于表达式，因此无值函数在该范式下并没有意义。</p>
+<ul>
+<li><p>一等函数</p>
+</li>
+<li><p>高阶函数</p>
+</li>
+</ul>
+<h4 id="闭包作用域"><a href="#闭包作用域" class="headerlink" title="闭包作用域"></a>闭包作用域</h4> 
+      <!-- reward -->
+      
+    </div>
+    
+
+    <!-- copyright -->
+    
+    <footer class="article-footer">
+       
+  <ul class="article-tag-list" itemprop="keywords"><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/%E5%87%BD%E6%95%B0%E5%BC%8F%E7%BC%96%E7%A8%8B/" rel="tag">函数式编程</a></li></ul>
+
+    </footer>
+  </div>
+
+   
+    
+</article>
+
+    
+    <article
   id="post-javascript/iterator"
   class="article article-type-post"
   itemscope
@@ -519,788 +1051,6 @@
     <footer class="article-footer">
        
   <ul class="article-tag-list" itemprop="keywords"><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/Linux/" rel="tag">Linux</a></li></ul>
-
-    </footer>
-  </div>
-
-   
-    
-</article>
-
-    
-    <article
-  id="post-linux/basic/other"
-  class="article article-type-post"
-  itemscope
-  itemprop="blogPost"
-  data-scroll-reveal
->
-  <div class="article-inner">
-    
-    <header class="article-header">
-       
-<h2 itemprop="name">
-  <a class="article-title" href="/posts/aeef9fcd7976/"
-    >其他命令</a> 
-</h2>
- 
-
-      
-    </header>
-     
-    <div class="article-meta">
-      <a href="/posts/aeef9fcd7976/" class="article-date">
-  <time datetime="2020-10-26T13:07:30.000Z" itemprop="datePublished">2020-10-26</time>
-</a> 
-  <div class="article-category">
-    <a class="article-category-link" href="/categories/Linux/">Linux</a> / <a class="article-category-link" href="/categories/Linux/%E5%9F%BA%E7%A1%80%E5%91%BD%E4%BB%A4/">基础命令</a>
-  </div>
-   
-    </div>
-      
-    <div class="article-entry" itemprop="articleBody">
-       
-  <h4 id="查找文件"><a href="#查找文件" class="headerlink" title="查找文件"></a>查找文件</h4><p>find 命令功能非常强大,通常用来在 特定的目录下 搜索 符合条件的文件</p>
-<table>
-<thead>
-<tr>
-<th>序号</th>
-<th>命令</th>
-<th>作用</th>
-</tr>
-</thead>
-<tbody><tr>
-<td>01</td>
-<td>find [ 路径 ] -name “*.py”</td>
-<td>查找指定路径下扩展名是 .py 的文件,包括子目录</td>
-</tr>
-</tbody></table>
-<p>如果省略路径,表示在当前文件夹下查找</p>
-<p>之前学习的通配符,在使用 find 命令时同时可用</p>
-<h4 id="软链接"><a href="#软链接" class="headerlink" title="软链接"></a>软链接</h4><table>
-<thead>
-<tr>
-<th>序号</th>
-<th>命令</th>
-<th>作用</th>
-</tr>
-</thead>
-<tbody><tr>
-<td>01</td>
-<td>ln -s 被链接的源文件 链接文件(名称)</td>
-<td>建立文件的软链接,用通俗的方式讲类似于 Windows 下的快捷方式</td>
-</tr>
-</tbody></table>
-<p>注意:</p>
-<ol>
-<li>没有 -s 选项建立的是一个 硬链接文件</li>
-<li>两个文件占用相同大小的硬盘空间,工作中几乎不会建立文件的硬链接</li>
-<li>源文件要使用绝对路径 ,不能使用相对路径,这样可以方便移动链接文件后,仍然能够正常使用</li>
-</ol>
-<p><img src="/posts/aeef9fcd7976/0001.png"></p>
-<h4 id="打包-x2F-解压"><a href="#打包-x2F-解压" class="headerlink" title="打包&#x2F;解压"></a>打包&#x2F;解压</h4><p>tar 是 Linux 中最常用的 备份 工具,此命令可以 把一系列文件 打包到 一个大文件中 ,也可以把一个 打包的大文件恢复成一系列文件</p>
-<table>
-<thead>
-<tr>
-<th>选项</th>
-<th>含义</th>
-</tr>
-</thead>
-<tbody><tr>
-<td>c</td>
-<td>生成档案文件,创建打包文件</td>
-</tr>
-<tr>
-<td>x</td>
-<td>解开档案文件</td>
-</tr>
-<tr>
-<td>v</td>
-<td>列出归档解档的详细过程,显示进度</td>
-</tr>
-<tr>
-<td>f</td>
-<td>指定档案文件名称, f 后面一定是 .tar 文件,所以必须放选项最后</td>
-</tr>
-</tbody></table>
-<blockquote>
-<p>注意:f 选项必须放在最后,其他选项顺序可以随意</p>
-</blockquote>
-<p>打包</p>
-<figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">tar -cvf 打包名称.tar 被打包的文件/路径 ...</span><br></pre></td></tr></table></figure>
-
-<p>解包</p>
-<figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">tar -xvf 打包文件.tar</span><br></pre></td></tr></table></figure>
-
-<p>解包到指定路径</p>
-<figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">tar -xvf [文件名].tar -C  /path</span><br></pre></td></tr></table></figure>
-
-<h4 id="压缩"><a href="#压缩" class="headerlink" title="压缩"></a>压缩</h4><ul>
-<li><p>tar 与 gzip 命令结合可以使用实现文件 打包和压缩</p>
-</li>
-<li><p>tar 只负责打包文件,但不压缩</p>
-</li>
-<li><p>用 gzip 压缩 tar 打包后的文件,其扩展名一般用 xxx.tar.gz</p>
-</li>
-</ul>
-<blockquote>
-<p>在 Linux 中,最常见的压缩文件格式就是 xxx.tar.gz</p>
-</blockquote>
-<ul>
-<li>在 tar 命令中有一个选项 -z 可以调用 gzip ,从而可以方便的实现压缩和解压缩的功能</li>
-</ul>
-<p>压缩文件</p>
-<figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">tar -zcvf 打包文件.tar.gz 被压缩的文件/路径 ...</span><br></pre></td></tr></table></figure>
-
-<p>解压文件</p>
-<figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">tar -zxvf 打包文件.tar.gz</span><br></pre></td></tr></table></figure>
-
-<p>解压缩到指定路径</p>
-<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">tar -zxvf 打包文件.tar.gz -C 目标路径 </span><br></pre></td></tr></table></figure>
-
-<table>
-<thead>
-<tr>
-<th>选项</th>
-<th>含义</th>
-</tr>
-</thead>
-<tbody><tr>
-<td>-C</td>
-<td>解压缩到指定目录,注意:要解压缩的目录必须存在</td>
-</tr>
-</tbody></table>
-<p>bzip2(two)</p>
-<ul>
-<li><p>tar 与 bzip2 命令结合可以使用实现文件 打包和压缩 (用法和 gzip 一样)</p>
-</li>
-<li><p>tar 只负责打包文件,但不压缩,</p>
-</li>
-<li><p>用 bzip2 压缩 tar 打包后的文件,其扩展名一般用 xxx.tar.bz2</p>
-</li>
-<li><p>在 tar 命令中有一个选项 -j 可以调用 bzip2 ,从而可以方便的实现压缩和解压缩的功能</p>
-</li>
-</ul>
-<p>压缩</p>
-<figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">tar -jcvf 打包文件.tar.bz2 被压缩的文件/路径 ...</span><br></pre></td></tr></table></figure>
-
-<p>解压</p>
-<figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">tar -jxvf 打包文件.tar.bz2</span><br></pre></td></tr></table></figure>
-
-<h4 id="软件安装"><a href="#软件安装" class="headerlink" title="软件安装"></a>软件安装</h4><ul>
-<li><p>apt 是 Advanced Packaging Tool ,是 Linux 下的一款安装包管理工具</p>
-</li>
-<li><p>可以在终端中方便的 安装 &#x2F;卸载 &#x2F; 更新软件包</p>
-</li>
-</ul>
-<p>安装软件</p>
-<figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">sudo apt install 软件包</span><br></pre></td></tr></table></figure>
-
-<p>卸载软件</p>
-<figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">sudo apt remove 软件名</span><br></pre></td></tr></table></figure>
-
-<p>升级软件</p>
-<figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">sudo apt upgrade</span><br></pre></td></tr></table></figure>
-
-<p>如果希望在 ubuntu 中安装软件,更加快速 ,可以通过设置镜像源 ,选择一个访问网速更快的服务器,来提供软件下载&#x2F;安装服务<br>提示:更换服务器之后,需要一个相对比较长时间的更新过程,需要耐心等待。更新完成后,再安装软件都会从新设置的服务器下载软件了</p>
-<p><img src="/posts/aeef9fcd7976/0002.png"></p>
-<p>下载</p>
-<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">wget 下载地址</span><br></pre></td></tr></table></figure> 
-      <!-- reward -->
-      
-    </div>
-    
-
-    <!-- copyright -->
-    
-    <footer class="article-footer">
-       
-  <ul class="article-tag-list" itemprop="keywords"><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/Linux/" rel="tag">Linux</a></li></ul>
-
-    </footer>
-  </div>
-
-   
-    
-</article>
-
-    
-    <article
-  id="post-javascript/reflect"
-  class="article article-type-post"
-  itemscope
-  itemprop="blogPost"
-  data-scroll-reveal
->
-  <div class="article-inner">
-    
-    <header class="article-header">
-       
-<h2 itemprop="name">
-  <a class="article-title" href="/posts/9b0ba8e2db08/"
-    >Reflect</a> 
-</h2>
- 
-
-      
-    </header>
-     
-    <div class="article-meta">
-      <a href="/posts/9b0ba8e2db08/" class="article-date">
-  <time datetime="2020-10-23T13:58:38.000Z" itemprop="datePublished">2020-10-23</time>
-</a> 
-  <div class="article-category">
-    <a class="article-category-link" href="/categories/JavaScript/">JavaScript</a> / <a class="article-category-link" href="/categories/JavaScript/%E5%9F%BA%E7%A1%80/">基础</a>
-  </div>
-   
-    </div>
-      
-    <div class="article-entry" itemprop="articleBody">
-       
-  <h4 id="概念"><a href="#概念" class="headerlink" title="概念"></a>概念</h4><p>将<code>Object</code>对象的一些明显属于语言内部的方法（比如<code>Object.defineProperty</code>），放到<code>Reflect</code>对象上。现阶段，某些方法同时在<code>Object</code>和<code>Reflect</code>对象上部署，未来的新方法将只部署在<code>Reflect</code>对象上。也就是说，从<code>Reflect</code>对象上可以拿到语言内部的方法。</p>
-<p>修改某些<code>Object</code>方法的返回结果，让其变得更合理。比如，<code>Object.defineProperty(obj, name, desc)</code>在无法定义属性时，会抛出一个错误，而<code>Reflect.defineProperty(obj, name, desc)</code>则会返回false。</p>
-<figure class="highlight javascript"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment">// 老写法</span></span><br><span class="line"><span class="keyword">try</span> &#123;</span><br><span class="line">  <span class="title class_">Object</span>.<span class="title function_">defineProperty</span>(target, property, attributes);</span><br><span class="line">  <span class="comment">// success</span></span><br><span class="line">&#125; <span class="keyword">catch</span> (e) &#123;</span><br><span class="line">  <span class="comment">// failure</span></span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line"><span class="comment">// 新写法</span></span><br><span class="line"><span class="keyword">if</span> (<span class="title class_">Reflect</span>.<span class="title function_">defineProperty</span>(target, property, attributes)) &#123;</span><br><span class="line">  <span class="comment">// success</span></span><br><span class="line">&#125; <span class="keyword">else</span> &#123;</span><br><span class="line">  <span class="comment">// failure</span></span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
-
-<p>让<code>Object</code>操作都变成函数行为。某些<code>Object</code>操作是命令式，比如<code>name in obj</code>和<code>delete obj[name]</code>，而<code>Reflect.has(obj, name)</code>和<code>Reflect.deleteProperty(obj, name)</code>让它们变成了函数行为。</p>
-<figure class="highlight javascript"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment">// 老写法</span></span><br><span class="line"><span class="string">&#x27;assign&#x27;</span> <span class="keyword">in</span> <span class="title class_">Object</span> <span class="comment">// true</span></span><br><span class="line"></span><br><span class="line"><span class="comment">// 新写法</span></span><br><span class="line"><span class="title class_">Reflect</span>.<span class="title function_">has</span>(<span class="title class_">Object</span>, <span class="string">&#x27;assign&#x27;</span>) <span class="comment">// true</span></span><br></pre></td></tr></table></figure>
-
-<p><code>Reflect</code>对象的方法与<code>Proxy</code>对象的方法一一对应，只要是<code>Proxy</code>对象的方法，就能在<code>Reflect</code>对象上找到对应的方法。这就让<code>Proxy</code>对象可以方便地调用对应的<code>Reflect</code>方法，完成默认行为，作为修改行为的基础。也就是说，不管<code>Proxy</code>怎么修改默认行为，你总可以在<code>Reflect</code>上获取默认行为。</p>
- 
-      <!-- reward -->
-      
-    </div>
-    
-
-    <!-- copyright -->
-    
-    <footer class="article-footer">
-       
-  <ul class="article-tag-list" itemprop="keywords"><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/ES6%E5%9F%BA%E7%A1%80/" rel="tag">ES6基础</a></li><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/JavaScript/" rel="tag">JavaScript</a></li></ul>
-
-    </footer>
-  </div>
-
-   
-    
-</article>
-
-    
-    <article
-  id="post-javascript/proxy"
-  class="article article-type-post"
-  itemscope
-  itemprop="blogPost"
-  data-scroll-reveal
->
-  <div class="article-inner">
-    
-    <header class="article-header">
-       
-<h2 itemprop="name">
-  <a class="article-title" href="/posts/f756b03cc566/"
-    >Proxy</a> 
-</h2>
- 
-
-      
-    </header>
-     
-    <div class="article-meta">
-      <a href="/posts/f756b03cc566/" class="article-date">
-  <time datetime="2020-10-22T04:54:48.000Z" itemprop="datePublished">2020-10-22</time>
-</a> 
-  <div class="article-category">
-    <a class="article-category-link" href="/categories/JavaScript/">JavaScript</a>
-  </div>
-   
-    </div>
-      
-    <div class="article-entry" itemprop="articleBody">
-       
-  <h4 id="简介"><a href="#简介" class="headerlink" title="简介"></a>简介</h4><p>Proxy 用于修改某些操作的默认行为，等同于在语言层面做出修改，所以属于一种“元编程”（meta programming），即对编程语言进行编程。</p>
-<p>可以理解成 Proxy 代理了点运算符，和赋值运算符</p>
-<p>通用用法： ES6 原生提供 Proxy 构造函数，用来生成 Proxy 实例。</p>
-<figure class="highlight javascript"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">var</span> object = &#123; <span class="attr">proxy</span>: <span class="keyword">new</span> <span class="title class_">Proxy</span>(target, handler) &#125;;</span><br></pre></td></tr></table></figure>
-
-<p><code>proxy</code>对象是<code>obj</code>对象的原型，<code>obj</code>对象本身并没有time属性，所以根据原型链，会在<code>proxy</code>对象上读取该属性，导致被拦截。</p>
-<figure class="highlight javascript"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">var</span> proxy = <span class="keyword">new</span> <span class="title class_">Proxy</span>(&#123;&#125;, &#123;</span><br><span class="line">  <span class="attr">get</span>: <span class="keyword">function</span>(<span class="params">target, propKey</span>) &#123;</span><br><span class="line">    <span class="keyword">return</span> <span class="number">35</span>;</span><br><span class="line">  &#125;</span><br><span class="line">&#125;);</span><br><span class="line"></span><br><span class="line"><span class="keyword">let</span> obj = <span class="title class_">Object</span>.<span class="title function_">create</span>(proxy);</span><br><span class="line">obj.<span class="property">time</span> <span class="comment">// 35</span></span><br></pre></td></tr></table></figure>
-
-<h4 id="get"><a href="#get" class="headerlink" title="get()"></a>get()</h4><p><code>get</code> 方法用于拦截某个属性的读取操作，可以接受三个参数，依次为<strong>目标对象、属性名和 <code>proxy</code> 实例本身</strong>（严格地说，是操作行为所针对的对象），其中最后一个参数可选。</p>
-<p><strong>如果一个属性不可配置（configurable）且不可写（writable），则 Proxy 不能修改该属性，否则通过 Proxy 对象访问该属性会报错。</strong></p>
-<figure class="highlight javascript"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">const</span> target = <span class="title class_">Object</span>.<span class="title function_">defineProperties</span>(&#123;&#125;, &#123;</span><br><span class="line">  <span class="attr">foo</span>: &#123;</span><br><span class="line">    <span class="attr">value</span>: <span class="number">123</span>,</span><br><span class="line">    <span class="attr">writable</span>: <span class="literal">false</span>,</span><br><span class="line">    <span class="attr">configurable</span>: <span class="literal">false</span></span><br><span class="line">  &#125;,</span><br><span class="line">&#125;);</span><br><span class="line"></span><br><span class="line"><span class="keyword">const</span> handler = &#123;</span><br><span class="line">  <span class="title function_">get</span>(<span class="params">target, propKey</span>) &#123;</span><br><span class="line">    <span class="keyword">return</span> <span class="string">&#x27;abc&#x27;</span>;</span><br><span class="line">  &#125;</span><br><span class="line">&#125;;</span><br><span class="line"></span><br><span class="line"><span class="keyword">const</span> proxy = <span class="keyword">new</span> <span class="title class_">Proxy</span>(target, handler);</span><br><span class="line"></span><br><span class="line">proxy.<span class="property">foo</span></span><br><span class="line"><span class="comment">// TypeError: Invariant check failed</span></span><br></pre></td></tr></table></figure>
-
-<h4 id="set"><a href="#set" class="headerlink" title="set()"></a>set()</h4><p><code>set</code>方法用来拦截某个属性的赋值操作，可以接受四个参数，依次为目标对象、属性名、属性值和 <code>Proxy</code> 实例本身，其中最后一个参数可选。</p>
-<p><strong>严格模式下，set代理如果没有返回true，就会报错。</strong></p>
-<h4 id="has"><a href="#has" class="headerlink" title="has()"></a>has()</h4><p><strong>如果原对象不可配置或者禁止扩展，这时has()拦截会报错。</strong></p>
-<p><strong>has()拦截只对in运算符生效，对for…in循环不生</strong></p>
-<figure class="highlight javascript"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">var</span> obj = &#123; <span class="attr">a</span>: <span class="number">10</span> &#125;;</span><br><span class="line"><span class="title class_">Object</span>.<span class="title function_">preventExtensions</span>(obj);</span><br><span class="line"></span><br><span class="line"><span class="keyword">var</span> p = <span class="keyword">new</span> <span class="title class_">Proxy</span>(obj, &#123;</span><br><span class="line">  <span class="attr">has</span>: <span class="keyword">function</span>(<span class="params">target, prop</span>) &#123;</span><br><span class="line">    <span class="keyword">return</span> <span class="literal">false</span>;</span><br><span class="line">  &#125;</span><br><span class="line">&#125;);</span><br><span class="line"></span><br><span class="line"><span class="string">&#x27;a&#x27;</span> <span class="keyword">in</span> p <span class="comment">// TypeError is thrown</span></span><br></pre></td></tr></table></figure>
-
-<h4 id="construct"><a href="#construct" class="headerlink" title="construct()"></a>construct()</h4><p><strong>construct()方法返回的必须是一个对象，否则会报错。</strong></p>
-<figure class="highlight javascript"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">const</span> p = <span class="keyword">new</span> <span class="title class_">Proxy</span>(<span class="keyword">function</span>(<span class="params"></span>) &#123;&#125;, &#123;</span><br><span class="line">  <span class="attr">construct</span>: <span class="keyword">function</span>(<span class="params">target, argumentsList</span>) &#123;</span><br><span class="line">    <span class="keyword">return</span> <span class="number">1</span>;</span><br><span class="line">  &#125;</span><br><span class="line">&#125;);</span><br><span class="line"></span><br><span class="line"><span class="keyword">new</span> <span class="title function_">p</span>() <span class="comment">// 报错</span></span><br><span class="line"><span class="comment">// Uncaught TypeError: &#x27;construct&#x27; on proxy: trap returned non-object (&#x27;1&#x27;)</span></span><br></pre></td></tr></table></figure>
-
-<p><strong>由于construct()拦截的是构造函数，所以它的目标对象必须是函数，否则就会报错。</strong></p>
-<figure class="highlight javascript"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">const</span> p = <span class="keyword">new</span> <span class="title class_">Proxy</span>(&#123;&#125;, &#123;</span><br><span class="line">  <span class="attr">construct</span>: <span class="keyword">function</span>(<span class="params">target, argumentsList</span>) &#123;</span><br><span class="line">    <span class="keyword">return</span> &#123;&#125;;</span><br><span class="line">  &#125;</span><br><span class="line">&#125;);</span><br><span class="line"></span><br><span class="line"><span class="keyword">new</span> <span class="title function_">p</span>() <span class="comment">// 报错</span></span><br><span class="line"><span class="comment">// Uncaught TypeError: p is not a constructor</span></span><br></pre></td></tr></table></figure>
-
-<p><strong>construct()方法中的this指向的是handler，而不是实例对象。</strong></p>
-<figure class="highlight javascript"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">const</span> handler = &#123;</span><br><span class="line">  <span class="attr">construct</span>: <span class="keyword">function</span>(<span class="params">target, args</span>) &#123;</span><br><span class="line">    <span class="variable language_">console</span>.<span class="title function_">log</span>(<span class="variable language_">this</span> ===  handler);</span><br><span class="line">    <span class="keyword">return</span> <span class="keyword">new</span> <span class="title function_">target</span>(...args);</span><br><span class="line">  &#125;</span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line"><span class="keyword">let</span> p = <span class="keyword">new</span> <span class="title class_">Proxy</span>(<span class="keyword">function</span> (<span class="params"></span>) &#123;&#125;, handler);</span><br><span class="line"><span class="keyword">new</span> <span class="title function_">p</span>() <span class="comment">// true</span></span><br></pre></td></tr></table></figure>
-
-<h4 id="deleteProperty"><a href="#deleteProperty" class="headerlink" title="deleteProperty()"></a>deleteProperty()</h4><p>目标对象自身的不可配置（configurable）的属性，不能被deleteProperty方法删除，否则报错。</p>
- 
-      <!-- reward -->
-      
-    </div>
-    
-
-    <!-- copyright -->
-    
-    <footer class="article-footer">
-       
-  <ul class="article-tag-list" itemprop="keywords"><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/ES6%E5%9F%BA%E7%A1%80/" rel="tag">ES6基础</a></li><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/JavaScript/" rel="tag">JavaScript</a></li></ul>
-
-    </footer>
-  </div>
-
-   
-    
-</article>
-
-    
-    <article
-  id="post-linux/basic/systemInfo"
-  class="article article-type-post"
-  itemscope
-  itemprop="blogPost"
-  data-scroll-reveal
->
-  <div class="article-inner">
-    
-    <header class="article-header">
-       
-<h2 itemprop="name">
-  <a class="article-title" href="/posts/a878672d2eb4/"
-    >系统信息</a> 
-</h2>
- 
-
-      
-    </header>
-     
-    <div class="article-meta">
-      <a href="/posts/a878672d2eb4/" class="article-date">
-  <time datetime="2020-10-22T02:18:13.000Z" itemprop="datePublished">2020-10-22</time>
-</a> 
-  <div class="article-category">
-    <a class="article-category-link" href="/categories/Linux/">Linux</a> / <a class="article-category-link" href="/categories/Linux/%E5%9F%BA%E7%A1%80%E5%91%BD%E4%BB%A4/">基础命令</a>
-  </div>
-   
-    </div>
-      
-    <div class="article-entry" itemprop="articleBody">
-       
-  <h4 id="时间和日期"><a href="#时间和日期" class="headerlink" title="时间和日期"></a>时间和日期</h4><table>
-<thead>
-<tr>
-<th>序号</th>
-<th>命令</th>
-<th>作用</th>
-</tr>
-</thead>
-<tbody><tr>
-<td>01</td>
-<td>date</td>
-<td>查看系统时间</td>
-</tr>
-<tr>
-<td>02</td>
-<td>cal</td>
-<td>calendar 查看日历，-y 选项可以查看一年的日历</td>
-</tr>
-</tbody></table>
-<h4 id="磁盘信息"><a href="#磁盘信息" class="headerlink" title="磁盘信息"></a>磁盘信息</h4><table>
-<thead>
-<tr>
-<th>序号</th>
-<th>命令</th>
-<th>作用</th>
-</tr>
-</thead>
-<tbody><tr>
-<td>01</td>
-<td>df -h</td>
-<td>disk free 显示磁盘剩余空间</td>
-</tr>
-<tr>
-<td>02</td>
-<td>du -h [目录名]</td>
-<td>disk usage 显示目录下的文件大小</td>
-</tr>
-</tbody></table>
-<blockquote>
-<p>-h 以人性化的方式显示文件大小</p>
-</blockquote>
-<h4 id="进程信息"><a href="#进程信息" class="headerlink" title="进程信息"></a>进程信息</h4><blockquote>
-<p>所谓 进程，通俗地说就是 当前正在执行的一个程序</p>
-</blockquote>
-<table>
-<thead>
-<tr>
-<th>序号</th>
-<th>命令</th>
-<th>作用</th>
-</tr>
-</thead>
-<tbody><tr>
-<td>01</td>
-<td>ps aux</td>
-<td>process status 查看进程的详细状况</td>
-</tr>
-<tr>
-<td>02</td>
-<td>top</td>
-<td>动态显示运行中的进程并且排序</td>
-</tr>
-<tr>
-<td>03</td>
-<td>kill [-9] 进程代号</td>
-<td>终止指定代号的进程，-9 表示强行终止</td>
-</tr>
-</tbody></table>
-<blockquote>
-<p>ps 默认只会显示当前用户通过终端启动的应用程序</p>
-</blockquote>
-<p>ps 选项说明</p>
-<table>
-<thead>
-<tr>
-<th>选项</th>
-<th>含义</th>
-</tr>
-</thead>
-<tbody><tr>
-<td>a</td>
-<td>显示终端上的所有进程，包括其他用户的进程</td>
-</tr>
-<tr>
-<td>u</td>
-<td>显示进程的详细状态</td>
-</tr>
-<tr>
-<td>x</td>
-<td>显示没有控制终端的进程</td>
-</tr>
-</tbody></table>
-<blockquote>
-<p>提示：使用 kill 命令时，最好只终止由当前用户开启的进程，而不要终止 root 身份开启的进程，否则可能导致系统崩溃<br>  要退出 top 可以直接输入 q</p>
-</blockquote>
- 
-      <!-- reward -->
-      
-    </div>
-    
-
-    <!-- copyright -->
-    
-    <footer class="article-footer">
-       
-  <ul class="article-tag-list" itemprop="keywords"><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/Linux/" rel="tag">Linux</a></li></ul>
-
-    </footer>
-  </div>
-
-   
-    
-</article>
-
-    
-    <article
-  id="post-linux/basic/user_managment"
-  class="article article-type-post"
-  itemscope
-  itemprop="blogPost"
-  data-scroll-reveal
->
-  <div class="article-inner">
-    
-    <header class="article-header">
-       
-<h2 itemprop="name">
-  <a class="article-title" href="/posts/6f9ced343f80/"
-    >用户管理</a> 
-</h2>
- 
-
-      
-    </header>
-     
-    <div class="article-meta">
-      <a href="/posts/6f9ced343f80/" class="article-date">
-  <time datetime="2020-10-21T01:14:09.000Z" itemprop="datePublished">2020-10-21</time>
-</a> 
-  <div class="article-category">
-    <a class="article-category-link" href="/categories/Linux/">Linux</a> / <a class="article-category-link" href="/categories/Linux/%E5%9F%BA%E7%A1%80%E5%91%BD%E4%BB%A4/">基础命令</a>
-  </div>
-   
-    </div>
-      
-    <div class="article-entry" itemprop="articleBody">
-       
-  <h4 id="创建用户／设置密码／删除用户"><a href="#创建用户／设置密码／删除用户" class="headerlink" title="创建用户／设置密码／删除用户"></a>创建用户／设置密码／删除用户</h4><blockquote>
-<p>提示：创建用户 &#x2F; 删除用户 &#x2F; 修改其他用户密码 的终端命令都需要通过 <code>sudo</code> 执行</p>
-</blockquote>
-<table>
-<thead>
-<tr>
-<th>序号</th>
-<th>命令</th>
-<th>作用</th>
-<th>说明</th>
-</tr>
-</thead>
-<tbody><tr>
-<td>01</td>
-<td>useradd -m -g 组 新建用户名</td>
-<td>添加新用户</td>
-<td>-m 自动建立用户家目录-g 指定用户所在的组，否则会建立一个和同名的组</td>
-</tr>
-<tr>
-<td>02</td>
-<td>passwd 用户名</td>
-<td>设置用户密码</td>
-<td>使用sudo运行，如果是普通用户，直接用 passwd 可以修改自己的账户密码</td>
-</tr>
-<tr>
-<td>03</td>
-<td>userdel -r 用户名</td>
-<td>删除用户</td>
-<td>-r 选项会自动删除用户家目录</td>
-</tr>
-<tr>
-<td>04</td>
-<td>cat &#x2F;etc&#x2F;passwd | grep 用户名</td>
-<td>确认用户信息</td>
-<td>新建用户后，用户信息会保存在 &#x2F;etc&#x2F;passwd 文件中</td>
-</tr>
-</tbody></table>
-<blockquote>
-<p>提示：</p>
-</blockquote>
-<ul>
-<li><p>创建用户时，如果忘记添加 -m 选项指定新用户的家目录,<strong>最简单的方法就是删除用户</strong>。</p>
-</li>
-<li><p>重新创建创建用户时,默认会创建一个和用户名同名的组名,用户信息保存在 &#x2F;etc&#x2F;passwd 文件中</p>
-</li>
-</ul>
-<h4 id="查看用户信息"><a href="#查看用户信息" class="headerlink" title="查看用户信息"></a>查看用户信息</h4><table>
-<thead>
-<tr>
-<th>序号</th>
-<th>命令</th>
-<th>作用</th>
-</tr>
-</thead>
-<tbody><tr>
-<td>01</td>
-<td>id [用户名]</td>
-<td>查看用户 UID 和 GID 信息,没写用户名默认是当前用户信息</td>
-</tr>
-<tr>
-<td>02</td>
-<td>who</td>
-<td>查看当前所有登录的用户列表</td>
-</tr>
-<tr>
-<td>03</td>
-<td>whoami</td>
-<td>查看当前登录用户的账户名</td>
-</tr>
-</tbody></table>
-<p><img src="/posts/6f9ced343f80/0002.png"></p>
-<p><strong>passwd 文件</strong></p>
-<ul>
-<li>&#x2F;etc&#x2F;passwd 文件存放的是用户的信息，由 6 个分号组成的 7 个信息，分别是</li>
-</ul>
-<ol>
-<li>用户名</li>
-<li>密码（x，表示加密的密码）</li>
-<li>UID（用户标识）</li>
-<li>GID（组标识）</li>
-<li>用户全名或本地帐号</li>
-<li>家目录</li>
-<li>登录使用的 Shell，就是登录之后，使用的终端命令，ubuntu 默认是 dash</li>
-</ol>
-<p><img src="/posts/6f9ced343f80/0001.png"></p>
-<p><strong>usermod</strong></p>
-<ul>
-<li><p>usermod 可以用来设置 用户 的 主组 ／ 附加组 和 登录 Shell</p>
-</li>
-<li><p>主组：通常在新建用户时指定，在 etc&#x2F;passwd 的第 4 列 GID 对应的组</p>
-</li>
-<li><p>附加组：在 etc&#x2F;group 中最后一列表示该组的用户列表，用于指定 用户的附加权限</p>
-</li>
-</ul>
-<blockquote>
-<p>提示：设置了用户的附加组之后，需要重新登录才能生效！</p>
-</blockquote>
-<p>修改用户的主组（passwd 中的 GID）</p>
-<figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">usermod -g 组 用户名</span><br></pre></td></tr></table></figure>
-
-<p>修改用户的附加组</p>
-<figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">usermod -G 组 用户名</span><br></pre></td></tr></table></figure>
-
-<p>修改用户登录 Shell</p>
-<p>由于新建用户默认使用的shell是dash,会导致windows下终端中没有文件高亮，不能使用方向键，所以要修改新建用户的默认shell</p>
-<blockquote>
-<p>提示：设置了用户登录 Shell之后，需要重新登录才能生效！</p>
-</blockquote>
-<p><img src="/posts/6f9ced343f80/0003.png"></p>
-<figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">usermod -s /bin/bash 用户名</span><br></pre></td></tr></table></figure>
-
-<p><strong>which</strong></p>
-<blockquote>
-<p>&#x2F;etc&#x2F;passwd 是用于保存用户信息的文件</p>
-</blockquote>
-<p>  &#x2F;usr&#x2F;bin&#x2F;passwd 是用于修改用户密码的程序</p>
-<p>which 命令可以查看执行命令所在位置，例如:</p>
-<figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line"><span class="built_in">which</span> <span class="built_in">ls</span></span><br></pre></td></tr></table></figure>
-
-<figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line"><span class="built_in">which</span> useradd</span><br><span class="line">///usr/sbin/useradd</span><br></pre></td></tr></table></figure>
-
-<p>bin 和 sbin</p>
-<ul>
-<li><p>在 Linux 中，绝大多数可执行文件都是保存在 &#x2F;bin、&#x2F;sbin、&#x2F;usr&#x2F;bin、&#x2F;usr&#x2F;sbin</p>
-</li>
-<li><p>&#x2F;bin（binary）是二进制执行文件目录，主要用于具体应用</p>
-</li>
-<li><p>&#x2F;sbin（system binary）是系统管理员专用的二进制代码存放目录，主要用于系统管理</p>
-</li>
-<li><p>&#x2F;usr&#x2F;bin（user commands for applications）后期安装的一些软件</p>
-</li>
-<li><p>&#x2F;usr&#x2F;sbin（super user commands for applications）超级用户的一些管理程序</p>
-</li>
-</ul>
-<blockquote>
-<p>cd 这个终端命令是内置在系统内核中的，没有独立的文件，因此用 which 无法找到 cd 命令的位置</p>
-</blockquote>
-<h4 id="切换用户"><a href="#切换用户" class="headerlink" title="切换用户"></a>切换用户</h4><table>
-<thead>
-<tr>
-<th>序号</th>
-<th>命令</th>
-<th>作用</th>
-<th>说明</th>
-</tr>
-</thead>
-<tbody><tr>
-<td>01</td>
-<td>su - 用户名</td>
-<td>切换用户，并且切换目录</td>
-<td>- 可以切换到用户家目录，否则保持位置不变</td>
-</tr>
-<tr>
-<td>02</td>
-<td>exit</td>
-<td>退出当前登录账户</td>
-<td></td>
-</tr>
-</tbody></table>
-<ul>
-<li><p>su 不接用户名，可以切换到 root，但是不推荐使用，因为不安全</p>
-</li>
-<li><p>exit 示意图如下：</p>
-</li>
-</ul>
-<p><img src="/posts/6f9ced343f80/0004.jpg"></p>
- 
-      <!-- reward -->
-      
-    </div>
-    
-
-    <!-- copyright -->
-    
-    <footer class="article-footer">
-       
-  <ul class="article-tag-list" itemprop="keywords"><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/Linux/" rel="tag">Linux</a></li></ul>
-
-    </footer>
-  </div>
-
-   
-    
-</article>
-
-    
-    <article
-  id="post-algorithm/structure/(5)队列和双端队列"
-  class="article article-type-post"
-  itemscope
-  itemprop="blogPost"
-  data-scroll-reveal
->
-  <div class="article-inner">
-    
-    <header class="article-header">
-       
-<h2 itemprop="name">
-  <a class="article-title" href="/posts/733653913063/"
-    >队列和双端队列</a> 
-</h2>
- 
-
-      
-    </header>
-     
-    <div class="article-meta">
-      <a href="/posts/733653913063/" class="article-date">
-  <time datetime="2020-10-20T04:46:56.000Z" itemprop="datePublished">2020-10-20</time>
-</a> 
-  <div class="article-category">
-    <a class="article-category-link" href="/categories/%E7%AE%97%E6%B3%95/">算法</a> / <a class="article-category-link" href="/categories/%E7%AE%97%E6%B3%95/%E6%95%B0%E6%8D%AE%E7%BB%93%E6%9E%84/">数据结构</a>
-  </div>
-   
-    </div>
-      
-    <div class="article-entry" itemprop="articleBody">
-       
-  <h4 id="队列数据结构"><a href="#队列数据结构" class="headerlink" title="队列数据结构"></a>队列数据结构</h4><p>队列是遵循先进先出（FIFO，也称为先来先服务）原则的一组有序的项。队列在尾部添加元素，并从顶部移除元素。最新添加的元素必须排在队列的末尾。</p>
-<h4 id="创建队列"><a href="#创建队列" class="headerlink" title="创建队列"></a>创建队列</h4><p>通过双指针标明队列的头尾</p>
-<figure class="highlight javascript"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br><span class="line">35</span><br><span class="line">36</span><br><span class="line">37</span><br><span class="line">38</span><br><span class="line">39</span><br><span class="line">40</span><br><span class="line">41</span><br><span class="line">42</span><br><span class="line">43</span><br><span class="line">44</span><br><span class="line">45</span><br><span class="line">46</span><br><span class="line">47</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">class</span> <span class="title class_">Queue</span> &#123;</span><br><span class="line">    <span class="title function_">constructor</span>(<span class="params"></span>) &#123;</span><br><span class="line">        <span class="variable language_">this</span>.<span class="property">count</span> = <span class="number">0</span>;</span><br><span class="line">        <span class="variable language_">this</span>.<span class="property">lowestCount</span> = <span class="number">0</span>;</span><br><span class="line">        <span class="variable language_">this</span>.<span class="property">items</span> = &#123;&#125;;</span><br><span class="line">    &#125;</span><br><span class="line">    <span class="title function_">enqueue</span>(<span class="params">element</span>) &#123;</span><br><span class="line">        <span class="variable language_">this</span>.<span class="property">items</span>[<span class="variable language_">this</span>.<span class="property">count</span>] = element;</span><br><span class="line">        <span class="variable language_">this</span>.<span class="property">count</span>++;</span><br><span class="line">    &#125;</span><br><span class="line">    <span class="title function_">dequeue</span>(<span class="params"></span>) &#123;</span><br><span class="line">        <span class="keyword">if</span> (<span class="variable language_">this</span>.<span class="title function_">isEmpty</span>()) &#123;</span><br><span class="line">            <span class="keyword">return</span> <span class="literal">undefined</span>;</span><br><span class="line">        &#125;</span><br><span class="line">        <span class="keyword">const</span> result = <span class="variable language_">this</span>.<span class="property">items</span>[<span class="variable language_">this</span>.<span class="property">lowestCount</span>];</span><br><span class="line">        <span class="keyword">delete</span> <span class="variable language_">this</span>.<span class="property">items</span>[<span class="variable language_">this</span>.<span class="property">lowestCount</span>];</span><br><span class="line">        <span class="variable language_">this</span>.<span class="property">lowestCount</span>++;</span><br><span class="line">        <span class="keyword">return</span> result; </span><br><span class="line">    &#125;</span><br><span class="line">    <span class="title function_">peek</span>(<span class="params"></span>) &#123;</span><br><span class="line">        <span class="keyword">if</span> (<span class="variable language_">this</span>.<span class="title function_">isEmpty</span>()) &#123;</span><br><span class="line">            <span class="keyword">return</span> <span class="literal">undefined</span>;</span><br><span class="line">        &#125;</span><br><span class="line">        <span class="keyword">return</span> <span class="variable language_">this</span>.<span class="property">items</span>[<span class="variable language_">this</span>.<span class="property">lowestCount</span>];</span><br><span class="line">    &#125;</span><br><span class="line">    <span class="title function_">isEmpty</span>(<span class="params"></span>) &#123;</span><br><span class="line">        <span class="keyword">return</span> <span class="variable language_">this</span>.<span class="property">count</span> - <span class="variable language_">this</span>.<span class="property">lowestCount</span> === <span class="number">0</span>;</span><br><span class="line">    &#125;</span><br><span class="line">    <span class="title function_">size</span>(<span class="params"></span>) &#123;</span><br><span class="line">        <span class="keyword">return</span> <span class="variable language_">this</span>.<span class="property">count</span> - <span class="variable language_">this</span>.<span class="property">lowestCount</span>;</span><br><span class="line">    &#125;</span><br><span class="line">    <span class="title function_">clear</span>(<span class="params"></span>) &#123;</span><br><span class="line">        <span class="variable language_">this</span>.<span class="property">items</span> = &#123;&#125;;</span><br><span class="line">        <span class="variable language_">this</span>.<span class="property">count</span> = <span class="number">0</span>;</span><br><span class="line">        <span class="variable language_">this</span>.<span class="property">lowestCount</span> = <span class="number">0</span>;</span><br><span class="line">    &#125;</span><br><span class="line">    <span class="title function_">toString</span>(<span class="params"></span>) &#123;</span><br><span class="line">        <span class="keyword">if</span> (<span class="variable language_">this</span>.<span class="title function_">isEmpty</span>()) &#123;</span><br><span class="line">            <span class="keyword">return</span> <span class="string">&#x27;&#x27;</span>;</span><br><span class="line">        &#125;</span><br><span class="line">        <span class="keyword">let</span> objString = <span class="string">`<span class="subst">$&#123;<span class="variable language_">this</span>.items[<span class="variable language_">this</span>.lowestCount]&#125;</span>`</span>;</span><br><span class="line">        <span class="keyword">for</span> (<span class="keyword">let</span> i = <span class="variable language_">this</span>.<span class="property">lowestCount</span> + <span class="number">1</span>; i &lt; <span class="variable language_">this</span>.<span class="property">count</span>; i++) &#123;</span><br><span class="line">            objString = <span class="string">`<span class="subst">$&#123;objString&#125;</span>,<span class="subst">$&#123;<span class="variable language_">this</span>.items[i]&#125;</span>`</span>;</span><br><span class="line">        &#125;</span><br><span class="line">        <span class="keyword">return</span> objString;</span><br><span class="line">    &#125;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
-
-<h4 id="双端队列数据结构"><a href="#双端队列数据结构" class="headerlink" title="双端队列数据结构"></a>双端队列数据结构</h4><p>双端队列（deque，或称double-ended queue）是一种允许我们同时从前端和后端添加和移除元素的特殊队列。</p>
-<p>双端队列的一个常见应用是存储一系列的撤销操作</p>
-<p>在头部插入的时候为了保证头部索引为0，类似数组的性质，也可以把所有的元素都向后移动一位</p>
-<figure class="highlight javascript"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br><span class="line">35</span><br><span class="line">36</span><br><span class="line">37</span><br><span class="line">38</span><br><span class="line">39</span><br><span class="line">40</span><br><span class="line">41</span><br><span class="line">42</span><br><span class="line">43</span><br><span class="line">44</span><br><span class="line">45</span><br><span class="line">46</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">class</span> <span class="title class_">Deque</span> &#123;</span><br><span class="line">    <span class="title function_">constructor</span>(<span class="params"></span>) &#123;</span><br><span class="line">        <span class="variable language_">this</span>.<span class="property">count</span> = <span class="number">0</span>;</span><br><span class="line">        <span class="variable language_">this</span>.<span class="property">lowestCount</span> = <span class="number">0</span>;</span><br><span class="line">        <span class="variable language_">this</span>.<span class="property">items</span> = &#123;&#125;;</span><br><span class="line">    &#125;</span><br><span class="line">    <span class="title function_">addFront</span>(<span class="params">element</span>) &#123;</span><br><span class="line">        <span class="variable language_">this</span>.<span class="property">lowestCount</span>--;</span><br><span class="line">        <span class="variable language_">this</span>.<span class="property">items</span>[<span class="variable language_">this</span>.<span class="property">lowestCount</span>] = element;</span><br><span class="line">    &#125;</span><br><span class="line">    <span class="title function_">addBack</span>(<span class="params">element</span>) &#123;</span><br><span class="line">        <span class="variable language_">this</span>.<span class="property">items</span>[<span class="variable language_">this</span>.<span class="property">count</span>] = element;</span><br><span class="line">        <span class="variable language_">this</span>.<span class="property">count</span>++;</span><br><span class="line">    &#125;</span><br><span class="line">    <span class="title function_">removeFront</span>(<span class="params"></span>) &#123;</span><br><span class="line">        <span class="keyword">if</span> (<span class="variable language_">this</span>.<span class="title function_">isEmpty</span>()) <span class="keyword">return</span>;</span><br><span class="line">        <span class="keyword">const</span> ele = <span class="variable language_">this</span>.<span class="property">items</span>[<span class="variable language_">this</span>.<span class="property">lowestCount</span>];</span><br><span class="line">        <span class="keyword">delete</span> <span class="variable language_">this</span>.<span class="property">items</span>[<span class="variable language_">this</span>.<span class="property">lowestCount</span>];</span><br><span class="line">        <span class="variable language_">this</span>.<span class="property">lowestCount</span>++;</span><br><span class="line">        <span class="keyword">return</span> ele;</span><br><span class="line">    &#125;</span><br><span class="line">    <span class="title function_">removeBack</span>(<span class="params"></span>) &#123;</span><br><span class="line">        <span class="keyword">if</span> (<span class="variable language_">this</span>.<span class="title function_">isEmpty</span>()) <span class="keyword">return</span>;</span><br><span class="line">        <span class="keyword">const</span> ele = <span class="variable language_">this</span>.<span class="property">items</span>[<span class="variable language_">this</span>.<span class="property">count</span>];</span><br><span class="line">        <span class="keyword">delete</span> <span class="variable language_">this</span>.<span class="property">items</span>[<span class="variable language_">this</span>.<span class="property">count</span>];</span><br><span class="line">        <span class="variable language_">this</span>.<span class="property">lowestCount</span>--;</span><br><span class="line">        <span class="keyword">return</span> ele;</span><br><span class="line">    &#125;</span><br><span class="line">    <span class="title function_">peekFront</span>(<span class="params"></span>) &#123;</span><br><span class="line">        <span class="keyword">return</span> <span class="variable language_">this</span>.<span class="property">items</span>[<span class="variable language_">this</span>.<span class="property">lowestCount</span>];</span><br><span class="line">    &#125;</span><br><span class="line">    <span class="title function_">peekBack</span>(<span class="params"></span>) &#123;</span><br><span class="line">        <span class="keyword">return</span> <span class="variable language_">this</span>.<span class="property">items</span>[<span class="variable language_">this</span>.<span class="property">count</span> - <span class="number">1</span>];</span><br><span class="line">    &#125;</span><br><span class="line">    <span class="title function_">isEmpty</span>(<span class="params"></span>) &#123;</span><br><span class="line">        <span class="keyword">return</span> <span class="variable language_">this</span>.<span class="property">count</span> === <span class="variable language_">this</span>.<span class="property">lowestCount</span></span><br><span class="line">    &#125;</span><br><span class="line">    <span class="title function_">size</span>(<span class="params"></span>) &#123;</span><br><span class="line">        <span class="keyword">return</span> <span class="variable language_">this</span>.<span class="property">count</span> - <span class="variable language_">this</span>.<span class="property">lowestCount</span></span><br><span class="line">    &#125;</span><br><span class="line">    <span class="title function_">clear</span>(<span class="params"></span>) &#123;</span><br><span class="line">        <span class="variable language_">this</span>.<span class="property">count</span> = <span class="number">0</span>;</span><br><span class="line">        <span class="variable language_">this</span>.<span class="property">lowestCount</span> = <span class="number">0</span>;</span><br><span class="line">        <span class="variable language_">this</span>.<span class="property">items</span> = &#123;&#125;;</span><br><span class="line">    &#125;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
-
-<h4 id="循环队列"><a href="#循环队列" class="headerlink" title="循环队列"></a>循环队列</h4><p>队列模拟循环队列，击鼓传花问题</p>
-<p>规则：有五位玩家，从第一位开始游戏，每轮游戏传7次，结束后花在谁手里，谁就被淘汰，从下一个人继续开始</p>
-<ul>
-<li>把玩家加入到上面创建好的队列中</li>
-</ul>
-<figure class="highlight javascript"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">const</span> player = [<span class="string">&#x27;John&#x27;</span>, <span class="string">&#x27;Jack&#x27;</span>, <span class="string">&#x27;Camila&#x27;</span>, <span class="string">&#x27;Ingrid&#x27;</span>, <span class="string">&#x27;Carl&#x27;</span>];</span><br><span class="line"><span class="keyword">const</span> queue = <span class="keyword">new</span> <span class="title class_">Queue</span>();</span><br><span class="line"></span><br><span class="line"><span class="keyword">for</span> (<span class="keyword">let</span> p <span class="keyword">of</span> player) &#123;</span><br><span class="line">    queue.<span class="title function_">enqueue</span>(p);</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
-
-
-<ul>
-<li><p><code>game</code>函数执行，表示游戏开始，输入每轮传花次数7，最终返回获胜玩家</p>
-<p>每次传花经过的人，添加到队列尾部，形成一个循环队列，循环停止时，队列头部的就是拿到花的人，被淘汰即从头部移除</p>
-</li>
-</ul>
-<figure class="highlight javascript"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">function</span> <span class="title function_">game</span>(<span class="params">queue, nums</span>) &#123;</span><br><span class="line">    <span class="keyword">while</span> (queue.<span class="title function_">size</span>() &gt; <span class="number">1</span>) &#123;</span><br><span class="line">        <span class="keyword">for</span> (<span class="keyword">let</span> i = <span class="number">0</span>; i &lt; nums; i++) &#123;</span><br><span class="line">            queue.<span class="title function_">enqueue</span>(queue.<span class="title function_">dequeue</span>());</span><br><span class="line">        &#125;</span><br><span class="line">        <span class="variable language_">console</span>.<span class="title function_">log</span>(<span class="string">&quot;淘汰==&quot;</span> + queue.<span class="title function_">dequeue</span>())</span><br><span class="line">    &#125;</span><br><span class="line">    <span class="variable language_">console</span>.<span class="title function_">log</span>(<span class="string">&#x27;获胜==&#x27;</span> + queue.<span class="title function_">peek</span>());</span><br><span class="line">&#125;</span><br><span class="line"><span class="title function_">game</span>(queue, <span class="number">7</span>)</span><br></pre></td></tr></table></figure>
-
-<h4 id="解决回文数"><a href="#解决回文数" class="headerlink" title="解决回文数"></a>解决回文数</h4><p>可以通过栈这种数据结构解决</p>
-<p>本章也可以使用双端队列解决，先把字符串插入到双端队列中，通过<code>while</code>循环检查头部元素和尾部元素是否相同，不同则跳出</p>
-<h4 id="JavaScript-任务队列"><a href="#JavaScript-任务队列" class="headerlink" title="JavaScript 任务队列"></a>JavaScript 任务队列</h4><p>在浏览器中打开新标签时，就会创建一个任务队列。这是因为每个标签都是单线程处理所有的任务，称为事件循环。</p>
-<p>浏览器要负责多个任务，如渲染HTML、执行JavaScript 代码、处理用户交互（用户输入、鼠标点击等）、执行和处理异步请求</p>
- 
-      <!-- reward -->
-      
-    </div>
-    
-
-    <!-- copyright -->
-    
-    <footer class="article-footer">
-       
-  <ul class="article-tag-list" itemprop="keywords"><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/%E6%95%B0%E6%8D%AE%E7%BB%93%E6%9E%84/" rel="tag">数据结构</a></li><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/%E7%AE%97%E6%B3%95/" rel="tag">算法</a></li><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/%E9%98%9F%E5%88%97/" rel="tag">队列</a></li></ul>
 
     </footer>
   </div>

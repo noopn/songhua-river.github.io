@@ -112,6 +112,535 @@
     
     
     <article
+  id="post-dev/测试环境karma"
+  class="article article-type-post"
+  itemscope
+  itemprop="blogPost"
+  data-scroll-reveal
+>
+  <div class="article-inner">
+    
+    <header class="article-header">
+       
+<h2 itemprop="name">
+  <a class="article-title" href="/posts/ed640e04595a/"
+    >测试环境karma</a> 
+</h2>
+ 
+
+      
+    </header>
+     
+    <div class="article-meta">
+      <a href="/posts/ed640e04595a/" class="article-date">
+  <time datetime="2020-11-23T06:25:20.000Z" itemprop="datePublished">2020-11-23</time>
+</a> 
+  <div class="article-category">
+    <a class="article-category-link" href="/categories/DevOps/">DevOps</a>
+  </div>
+   
+    </div>
+      
+    <div class="article-entry" itemprop="articleBody">
+       
+  <h4 id="初始化"><a href="#初始化" class="headerlink" title="初始化"></a>初始化</h4><figure class="highlight javascript"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">yarn init -y</span><br></pre></td></tr></table></figure>
+
+<h4 id="实现第一个测试用例"><a href="#实现第一个测试用例" class="headerlink" title="实现第一个测试用例"></a>实现第一个测试用例</h4><p>index.js</p>
+<figure class="highlight javascript"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">var</span> add = <span class="keyword">function</span>(<span class="params">a</span>)&#123;</span><br><span class="line">  <span class="keyword">return</span> <span class="number">1</span> + a</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+<p>index.spec.js</p>
+<figure class="highlight javascript"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br></pre></td><td class="code"><pre><span class="line"><span class="title function_">describe</span>(<span class="string">&#x27;测试基本api&#x27;</span>,<span class="keyword">function</span>(<span class="params"></span>)&#123;</span><br><span class="line">  <span class="title function_">it</span>(<span class="string">&#x27;add&#x27;</span>,<span class="keyword">function</span>(<span class="params"></span>)&#123;</span><br><span class="line">    <span class="title function_">except</span>(<span class="title function_">add</span>(<span class="number">1</span>)).<span class="title function_">toBe</span>(<span class="number">2</span>)</span><br><span class="line">  &#125;)</span><br><span class="line">&#125;)</span><br></pre></td></tr></table></figure>
+
+<h4 id="如何让上面的代码运行"><a href="#如何让上面的代码运行" class="headerlink" title="如何让上面的代码运行"></a>如何让上面的代码运行</h4><p>安装karma测试框架</p>
+<figure class="highlight javascript"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">yarn add -D karma</span><br></pre></td></tr></table></figure>
+
+<p>配置package.json可以执行karma命令，如果不想配置可以安装 karma-cli</p>
+<figure class="highlight json"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><span class="line"><span class="attr">&quot;scripts&quot;</span><span class="punctuation">:</span><span class="punctuation">&#123;</span></span><br><span class="line">  <span class="attr">&quot;karma-init&quot;</span><span class="punctuation">:</span><span class="string">&quot;karma init&quot;</span></span><br><span class="line"><span class="punctuation">&#125;</span></span><br></pre></td></tr></table></figure>
+
+<p>执行命令初始化</p>
+<figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">yarn karma-init</span><br></pre></td></tr></table></figure>
+
+<ul>
+<li>Which testing framework do you want to use?</li>
+</ul>
+<p>想要使用的单元测试框架 jasmine</p>
+<ul>
+<li>Do you want to use Require.js</li>
+</ul>
+<p>是否想要用Requirejs， 不需要</p>
+<ul>
+<li>Do you want to capture any browsers automatically？</li>
+</ul>
+<p>想要自动调用的浏览器 PhantomJS</p>
+<p>PhantomJS是一个可编程的无头浏览器:一个完整的浏览器内核,包括js解析引擎,渲染引擎,请求处理等,但是不包括显示和用户交互页面的浏览器。</p>
+<p>hantomJS的适用范围就是无头浏览器的适用范围。通常无头浏览器可以用于页面自动化，网页监控，网络爬虫等：</p>
+<p>页面自动化测试：希望自动的登陆网站并做一些操作然后检查结果是否正常。<br>网页监控：希望定期打开页面，检查网站是否能正常加载，加载结果是否符合预期。加载速度如何等。<br>网络爬虫：获取页面中使用js来下载和渲染信息，或者是获取链接处使用js来跳转后的真实地址</p>
+<ul>
+<li>What is the location of your source and test files</li>
+</ul>
+<p>想要测试的文件位置，暂时留空</p>
+<ul>
+<li>Should any of the files included by the previous patterns be excluded？</li>
+</ul>
+<p>想要排除哪些文件暂时留空</p>
+<ul>
+<li>Do you want Karma to watch all the files and run the tests on change？</li>
+</ul>
+<p>是否需要监听文件改变， 暂时选no,不监听</p>
+<p><strong>下一步</strong></p>
+<p>打开生成的karma.conf.js文件</p>
+<figure class="highlight javascript"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br></pre></td><td class="code"><pre><span class="line">&#123;</span><br><span class="line">  <span class="comment">// 测试框架名称</span></span><br><span class="line">  <span class="attr">frameworks</span>: [<span class="string">&#x27;jasmine&#x27;</span>],</span><br><span class="line"></span><br><span class="line">  <span class="comment">//测试文件目录</span></span><br><span class="line">  <span class="attr">files</span>: [</span><br><span class="line">    <span class="string">&quot;./test/unit/**/*.js&quot;</span>,</span><br><span class="line">    <span class="string">&quot;./test/unit/**/*.spec.js&quot;</span></span><br><span class="line">  ],</span><br><span class="line"></span><br><span class="line">  <span class="attr">singleRun</span>:<span class="literal">true</span></span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+<p>在package.json中添加运行命令</p>
+<figure class="highlight javascript"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br></pre></td><td class="code"><pre><span class="line"> <span class="string">&quot;scripts&quot;</span>: &#123;</span><br><span class="line">  <span class="string">&quot;karma-init&quot;</span>: <span class="string">&quot;karma init&quot;</span>,</span><br><span class="line">  <span class="string">&quot;karma-start&quot;</span>: <span class="string">&quot;karma start&quot;</span></span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+<p>安装无头浏览器和jasmine适配器</p>
+<figure class="highlight javascript"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">yarn add -D karma-jasmine karma-phantomjs-launcher phantomjs</span><br></pre></td></tr></table></figure>
+
+<p>编写测试用例</p>
+<p>index.js</p>
+<figure class="highlight javascript"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">function</span> <span class="title function_">add</span>(<span class="params">a</span>) &#123;</span><br><span class="line">  <span class="keyword">if</span> (a == <span class="number">1</span>) &#123;</span><br><span class="line">    <span class="keyword">return</span> a + <span class="number">1</span>;</span><br><span class="line">  &#125; <span class="keyword">else</span> &#123;</span><br><span class="line">    <span class="keyword">return</span> a + <span class="number">2</span>;</span><br><span class="line">  &#125;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+<p>index.spec.js</p>
+<figure class="highlight javascript"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br></pre></td><td class="code"><pre><span class="line"><span class="title function_">describe</span>(<span class="string">&#x27;单元测试&#x27;</span>,<span class="keyword">function</span>(<span class="params"></span>)&#123;</span><br><span class="line">  <span class="title function_">it</span>(<span class="string">&quot;contains spec with an expectation&quot;</span>, <span class="keyword">function</span>(<span class="params"></span>) &#123;</span><br><span class="line">    <span class="title function_">expect</span>(<span class="title function_">add</span>(<span class="number">1</span>)).<span class="title function_">toBe</span>(<span class="number">2</span>);</span><br><span class="line">  &#125;)</span><br><span class="line">&#125;)</span><br></pre></td></tr></table></figure>
+
+<p>执行 <code>karma-start</code> 进行单元测试</p>
+<p><img src="/posts/ed640e04595a/0001.png"></p>
+<h4 id="覆盖率测试"><a href="#覆盖率测试" class="headerlink" title="覆盖率测试"></a>覆盖率测试</h4><p>安装 <code>karma-coverage</code></p>
+<figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">yarn add -D karma-coverage</span><br></pre></td></tr></table></figure>
+
+<p>修改配置项</p>
+<figure class="highlight javascript"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br></pre></td><td class="code"><pre><span class="line">&#123;</span><br><span class="line">  <span class="attr">preprocessors</span>: &#123;</span><br><span class="line">    <span class="string">&quot;./test/unit/**/*.js&quot;</span>:<span class="string">&quot;coverage&quot;</span></span><br><span class="line">  &#125;,</span><br><span class="line"></span><br><span class="line">  <span class="attr">reporters</span>: [<span class="string">&#x27;progress&#x27;</span>,<span class="string">&#x27;coverage&#x27;</span>],</span><br><span class="line"></span><br><span class="line">  <span class="attr">coverageReporter</span>: &#123;</span><br><span class="line">    <span class="attr">dir</span>: <span class="string">&#x27;doc/coverage&#x27;</span>,</span><br><span class="line">    <span class="attr">reporters</span>: [</span><br><span class="line">      <span class="comment">// reporters not supporting the `file` property</span></span><br><span class="line">      &#123; <span class="attr">type</span>: <span class="string">&#x27;html&#x27;</span>, <span class="attr">subdir</span>: <span class="string">&#x27;report-html&#x27;</span> &#125;,</span><br><span class="line">    ]</span><br><span class="line">  &#125;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+<p>执行再次执行 <code>karma-start</code></p>
+<h4 id="UI测试"><a href="#UI测试" class="headerlink" title="UI测试"></a>UI测试</h4><p>安装 backstop</p>
+<figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">yarn add -D backstop</span><br></pre></td></tr></table></figure>
+
+<p>添加 package.json 命令行</p>
+<figure class="highlight javascript"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br></pre></td><td class="code"><pre><span class="line">&#123;</span><br><span class="line">  <span class="string">&quot;scripts&quot;</span>: &#123;</span><br><span class="line">    <span class="string">&quot;backstop-init&quot;</span>: <span class="string">&quot;backstop init&quot;</span>,</span><br><span class="line">    <span class="string">&quot;backstop-start&quot;</span>: <span class="string">&quot;backstop test&quot;</span></span><br><span class="line">  &#125;</span><br><span class="line">&#125;</span><br><span class="line"></span><br></pre></td></tr></table></figure>
+
+<p>执行 <code>backstop-init</code> 生成文件目录</p>
+<p>修改文件目录配置</p>
+<figure class="highlight javascript"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br><span class="line">35</span><br><span class="line">36</span><br><span class="line">37</span><br><span class="line">38</span><br><span class="line">39</span><br><span class="line">40</span><br><span class="line">41</span><br><span class="line">42</span><br><span class="line">43</span><br><span class="line">44</span><br><span class="line">45</span><br><span class="line">46</span><br><span class="line">47</span><br><span class="line">48</span><br><span class="line">49</span><br><span class="line">50</span><br><span class="line">51</span><br><span class="line">52</span><br><span class="line">53</span><br><span class="line">54</span><br><span class="line">55</span><br><span class="line">56</span><br><span class="line">57</span><br><span class="line">58</span><br><span class="line">59</span><br></pre></td><td class="code"><pre><span class="line">&#123;</span><br><span class="line">  <span class="string">&quot;id&quot;</span>: <span class="string">&quot;baidu&quot;</span>,</span><br><span class="line"></span><br><span class="line">  <span class="comment">// 设计图分辨率设置</span></span><br><span class="line">  <span class="string">&quot;viewports&quot;</span>: [</span><br><span class="line">    &#123;</span><br><span class="line">      <span class="string">&quot;label&quot;</span>: <span class="string">&quot;phone&quot;</span>,</span><br><span class="line">      <span class="string">&quot;width&quot;</span>: <span class="number">375</span>,</span><br><span class="line">      <span class="string">&quot;height&quot;</span>: <span class="number">667</span></span><br><span class="line">    &#125;,</span><br><span class="line">    &#123;</span><br><span class="line">      <span class="string">&quot;label&quot;</span>: <span class="string">&quot;tablet&quot;</span>,</span><br><span class="line">      <span class="string">&quot;width&quot;</span>: <span class="number">1024</span>,</span><br><span class="line">      <span class="string">&quot;height&quot;</span>: <span class="number">768</span></span><br><span class="line">    &#125;</span><br><span class="line">  ],</span><br><span class="line"></span><br><span class="line">  <span class="comment">//调用 puppeteer 库的脚本</span></span><br><span class="line">  <span class="string">&quot;onBeforeScript&quot;</span>: <span class="string">&quot;puppet/onBefore.js&quot;</span>,</span><br><span class="line">  <span class="string">&quot;onReadyScript&quot;</span>: <span class="string">&quot;puppet/onReady.js&quot;</span>,</span><br><span class="line">  <span class="string">&quot;scenarios&quot;</span>: [</span><br><span class="line">    &#123;</span><br><span class="line">      <span class="string">&quot;label&quot;</span>: <span class="string">&quot;baidu home&quot;</span>,</span><br><span class="line">      <span class="string">&quot;cookiePath&quot;</span>: <span class="string">&quot;backstop_data/engine_scripts/cookies.json&quot;</span>,</span><br><span class="line">      <span class="string">&quot;url&quot;</span>: <span class="string">&quot;https://garris.github.io/BackstopJS/&quot;</span>,</span><br><span class="line">      <span class="string">&quot;referenceUrl&quot;</span>: <span class="string">&quot;&quot;</span>,</span><br><span class="line">      <span class="string">&quot;readyEvent&quot;</span>: <span class="string">&quot;&quot;</span>,</span><br><span class="line">      <span class="string">&quot;readySelector&quot;</span>: <span class="string">&quot;&quot;</span>,</span><br><span class="line">      <span class="string">&quot;delay&quot;</span>: <span class="number">0</span>,</span><br><span class="line">      <span class="string">&quot;hideSelectors&quot;</span>: [],</span><br><span class="line">      <span class="string">&quot;removeSelectors&quot;</span>: [],</span><br><span class="line">      <span class="string">&quot;hoverSelector&quot;</span>: <span class="string">&quot;&quot;</span>,</span><br><span class="line">      <span class="string">&quot;clickSelector&quot;</span>: <span class="string">&quot;&quot;</span>,</span><br><span class="line">      <span class="string">&quot;postInteractionWait&quot;</span>: <span class="number">0</span>,</span><br><span class="line">      <span class="string">&quot;selectors&quot;</span>: [],</span><br><span class="line">      <span class="string">&quot;selectorExpansion&quot;</span>: <span class="literal">true</span>,</span><br><span class="line">      <span class="string">&quot;expect&quot;</span>: <span class="number">0</span>,</span><br><span class="line">      <span class="string">&quot;misMatchThreshold&quot;</span> : <span class="number">0.1</span>,</span><br><span class="line">      <span class="string">&quot;requireSameDimensions&quot;</span>: <span class="literal">true</span></span><br><span class="line">    &#125;</span><br><span class="line">  ],</span><br><span class="line">  <span class="string">&quot;paths&quot;</span>: &#123;</span><br><span class="line">    <span class="string">&quot;bitmaps_reference&quot;</span>: <span class="string">&quot;backstop_data/bitmaps_reference&quot;</span>,</span><br><span class="line">    <span class="string">&quot;bitmaps_test&quot;</span>: <span class="string">&quot;backstop_data/bitmaps_test&quot;</span>,</span><br><span class="line">    <span class="string">&quot;engine_scripts&quot;</span>: <span class="string">&quot;backstop_data/engine_scripts&quot;</span>,</span><br><span class="line">    <span class="string">&quot;html_report&quot;</span>: <span class="string">&quot;doc/backstop_data/html_report&quot;</span>,</span><br><span class="line">    <span class="string">&quot;ci_report&quot;</span>: <span class="string">&quot;backstop_data/ci_report&quot;</span></span><br><span class="line">  &#125;,</span><br><span class="line">  <span class="string">&quot;report&quot;</span>: [<span class="string">&quot;browser&quot;</span>],</span><br><span class="line">  <span class="string">&quot;engine&quot;</span>: <span class="string">&quot;puppeteer&quot;</span>,</span><br><span class="line">  <span class="string">&quot;engineOptions&quot;</span>: &#123;</span><br><span class="line">    <span class="string">&quot;args&quot;</span>: [<span class="string">&quot;--no-sandbox&quot;</span>]</span><br><span class="line">  &#125;,</span><br><span class="line">  <span class="string">&quot;asyncCaptureLimit&quot;</span>: <span class="number">5</span>,</span><br><span class="line">  <span class="string">&quot;asyncCompareLimit&quot;</span>: <span class="number">50</span>,</span><br><span class="line">  <span class="string">&quot;debug&quot;</span>: <span class="literal">false</span>,</span><br><span class="line">  <span class="string">&quot;debugWindow&quot;</span>: <span class="literal">false</span></span><br><span class="line">&#125;</span><br><span class="line"></span><br></pre></td></tr></table></figure> 
+      <!-- reward -->
+      
+    </div>
+    
+
+    <!-- copyright -->
+    
+    <footer class="article-footer">
+       
+  <ul class="article-tag-list" itemprop="keywords"><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/DevOps/" rel="tag">DevOps</a></li><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/%E5%B7%A5%E7%A8%8B%E5%8C%96/" rel="tag">工程化</a></li></ul>
+
+    </footer>
+  </div>
+
+   
+    
+</article>
+
+    
+    <article
+  id="post-dev/单元测试"
+  class="article article-type-post"
+  itemscope
+  itemprop="blogPost"
+  data-scroll-reveal
+>
+  <div class="article-inner">
+    
+    <header class="article-header">
+       
+<h2 itemprop="name">
+  <a class="article-title" href="/posts/6b25526c6b65/"
+    >单元测试理论</a> 
+</h2>
+ 
+
+      
+    </header>
+     
+    <div class="article-meta">
+      <a href="/posts/6b25526c6b65/" class="article-date">
+  <time datetime="2020-11-23T05:43:23.000Z" itemprop="datePublished">2020-11-23</time>
+</a> 
+  <div class="article-category">
+    <a class="article-category-link" href="/categories/DevOps/">DevOps</a>
+  </div>
+   
+    </div>
+      
+    <div class="article-entry" itemprop="articleBody">
+       
+  <h4 id="TDD-测试驱动开发"><a href="#TDD-测试驱动开发" class="headerlink" title="TDD 测试驱动开发"></a>TDD 测试驱动开发</h4><ul>
+<li>首先，开发者在码业务前写一些测试用例</li>
+<li>运行这些测试用例。结果肯定是运行失败，因为测试用例中的业务逻辑还没实现嘛</li>
+<li>开发者实现测试用例中的业务逻辑</li>
+<li>再运行测试用例， 如果开发者代码能力不错，这些测试用例应该可以跑通了(pass)</li>
+<li>对业务代码及时重构，包括增加注释，清理重复等。因为没人比开发者自己更了解哪些代码会对哪些部分造成影响从而导致测试失败(fail)</li>
+</ul>
+<p><img src="/posts/6b25526c6b65/0001.png"></p>
+<p>我们通过举例来了解一下如何实践TDD。例子中的代码可以从github上获取tdd-vs-bdd。将代码clone下来，执行命令npm install &amp;&amp; grunt</p>
+<p>假设我们想写一个计算阶乘的函数(这是一个很刻意的例子，但是这个例子对我们指出TDD和BDD的区别很有帮助)。TDD的常用方式是运行某函数，然后断言结果满足某个值。</p>
+<p>在阶乘的例子中，我们使用的javascript测试框架是Mocha。废话不说，上代码：</p>
+<figure class="highlight javascript"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">var</span> assert = <span class="built_in">require</span>(<span class="string">&#x27;assert&#x27;</span>),</span><br><span class="line">    factorial = <span class="built_in">require</span>(<span class="string">&#x27;../index&#x27;</span>);</span><br><span class="line"> </span><br><span class="line"><span class="title function_">suite</span>(<span class="string">&#x27;Test&#x27;</span>, <span class="keyword">function</span> (<span class="params"></span>)&#123;</span><br><span class="line">    <span class="title function_">setup</span>(<span class="keyword">function</span> (<span class="params"></span>)&#123;</span><br><span class="line">        <span class="comment">// Create any objects that we might need</span></span><br><span class="line">    &#125;);</span><br><span class="line"> </span><br><span class="line">    <span class="title function_">suite</span>(<span class="string">&#x27;#factorial()&#x27;</span>, <span class="keyword">function</span> (<span class="params"></span>)&#123;</span><br><span class="line">        <span class="title function_">test</span>(<span class="string">&#x27;equals 1 for sets of zero length&#x27;</span>, <span class="keyword">function</span> (<span class="params"></span>)&#123;</span><br><span class="line">            assert.<span class="title function_">equal</span>(<span class="number">1</span>, <span class="title function_">factorial</span>(<span class="number">0</span>));</span><br><span class="line">        &#125;);</span><br><span class="line"> </span><br><span class="line">        <span class="title function_">test</span>(<span class="string">&#x27;equals 1 for sets of length one&#x27;</span>, <span class="keyword">function</span> (<span class="params"></span>)&#123;</span><br><span class="line">            assert.<span class="title function_">equal</span>(<span class="number">1</span>, <span class="title function_">factorial</span>(<span class="number">1</span>));</span><br><span class="line">        &#125;);</span><br><span class="line"> </span><br><span class="line">        <span class="title function_">test</span>(<span class="string">&#x27;equals 2 for sets of length two&#x27;</span>, <span class="keyword">function</span> (<span class="params"></span>)&#123;</span><br><span class="line">            assert.<span class="title function_">equal</span>(<span class="number">2</span>, <span class="title function_">factorial</span>(<span class="number">2</span>));</span><br><span class="line">        &#125;);</span><br><span class="line"> </span><br><span class="line">        <span class="title function_">test</span>(<span class="string">&#x27;equals 6 for sets of length three&#x27;</span>, <span class="keyword">function</span> (<span class="params"></span>)&#123;</span><br><span class="line">            assert.<span class="title function_">equal</span>(<span class="number">6</span>, <span class="title function_">factorial</span>(<span class="number">3</span>));</span><br><span class="line">        &#125;);</span><br><span class="line">    &#125;);</span><br><span class="line">&#125;);</span><br><span class="line"></span><br></pre></td></tr></table></figure>
+
+<p>显然上述测试会失败，因为我们尚未实现函数功能。所以接下来我们需要实现满足上述测试用例的阶乘函数。代码如下</p>
+<figure class="highlight javascript"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br></pre></td><td class="code"><pre><span class="line"><span class="variable language_">module</span>.<span class="property">exports</span> = <span class="keyword">function</span> (<span class="params">n</span>) &#123;</span><br><span class="line">    <span class="keyword">if</span> (n &lt; <span class="number">0</span>) <span class="keyword">return</span> <span class="title class_">NaN</span>;</span><br><span class="line">    <span class="keyword">if</span> (n === <span class="number">0</span>) <span class="keyword">return</span> <span class="number">1</span>;</span><br><span class="line"> </span><br><span class="line">    <span class="keyword">return</span> n * <span class="title function_">factorial</span>(n - <span class="number">1</span>);</span><br><span class="line"></span><br></pre></td></tr></table></figure>
+
+<p>现在我们再次运行测试用例，所有的case都跑通了! 这就是TDD的使用方式。</p>
+<h4 id="BDD-行为驱动开发"><a href="#BDD-行为驱动开发" class="headerlink" title="BDD 行为驱动开发"></a>BDD 行为驱动开发</h4><p>BDD旨在消除TDD过程中可能造成的问题。</p>
+<p>与TDD相比，BDD是通过编写行为和规范来驱动软件开发。 行为和规范可能看起来与测试非常相似，但是它们之间却有着微妙但重要的区别。</p>
+<figure class="highlight javascript"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">var</span> assert = <span class="built_in">require</span>(<span class="string">&#x27;assert&#x27;</span>),</span><br><span class="line">    factorial = <span class="built_in">require</span>(<span class="string">&#x27;../index&#x27;</span>);</span><br><span class="line"> </span><br><span class="line"><span class="title function_">describe</span>(<span class="string">&#x27;Test&#x27;</span>, <span class="keyword">function</span> (<span class="params"></span>)&#123;</span><br><span class="line">    <span class="title function_">before</span>(<span class="keyword">function</span>(<span class="params"></span>)&#123;</span><br><span class="line">        <span class="comment">// Stuff to do before the tests, like imports, what not</span></span><br><span class="line">    &#125;);</span><br><span class="line"> </span><br><span class="line">    <span class="title function_">describe</span>(<span class="string">&#x27;#factorial()&#x27;</span>, <span class="keyword">function</span> (<span class="params"></span>)&#123;</span><br><span class="line">        <span class="title function_">it</span>(<span class="string">&#x27;should return 1 when given 0&#x27;</span>, <span class="keyword">function</span> (<span class="params"></span>)&#123;</span><br><span class="line">            <span class="title function_">factorial</span>(<span class="number">0</span>).<span class="property">should</span>.<span class="title function_">equal</span>(<span class="number">1</span>);</span><br><span class="line">        &#125;);</span><br><span class="line"> </span><br><span class="line">        <span class="title function_">it</span>(<span class="string">&#x27;should return 1 when given 1&#x27;</span>, <span class="keyword">function</span> (<span class="params"></span>)&#123;</span><br><span class="line">            <span class="title function_">factorial</span>(<span class="number">1</span>).<span class="property">should</span>.<span class="title function_">equal</span>(<span class="number">1</span>);</span><br><span class="line">        &#125;);</span><br><span class="line"> </span><br><span class="line">        <span class="title function_">it</span>(<span class="string">&#x27;should return 2 when given 2&#x27;</span>, <span class="keyword">function</span> (<span class="params"></span>)&#123;</span><br><span class="line">            <span class="title function_">factorial</span>(<span class="number">2</span>).<span class="property">should</span>.<span class="title function_">equal</span>(<span class="number">2</span>);</span><br><span class="line">        &#125;);</span><br><span class="line"> </span><br><span class="line">        <span class="title function_">it</span>(<span class="string">&#x27;should return 6 when given 3&#x27;</span>, <span class="keyword">function</span> (<span class="params"></span>)&#123;</span><br><span class="line">            <span class="title function_">factorial</span>(<span class="number">3</span>).<span class="property">should</span>.<span class="title function_">equal</span>(<span class="number">6</span>);</span><br><span class="line">        &#125;);</span><br><span class="line">    &#125;);</span><br><span class="line"> </span><br><span class="line">    <span class="title function_">after</span>(<span class="keyword">function</span> (<span class="params"></span>) &#123;</span><br><span class="line">        <span class="comment">// Anything after the tests have finished</span></span><br><span class="line">    &#125;);</span><br><span class="line">&#125;);</span><br></pre></td></tr></table></figure>
+
+<h4 id="敏捷开发"><a href="#敏捷开发" class="headerlink" title="敏捷开发"></a>敏捷开发</h4><p>敏捷开发以用户的需求进化为核心，采用迭代、循序渐进的方法进行软件开发。在敏捷开发中，软件项目在构建初期被切分成多个子项目，各个子项目的成果都经过测试，具备可视、可集成和可运行使用的特征。换言之，就是把一个大项目分为多个相互联系，但也可独立运行的小项目，并分别完成，在此过程中软件一直处于可使用状态。</p>
+ 
+      <!-- reward -->
+      
+    </div>
+    
+
+    <!-- copyright -->
+    
+    <footer class="article-footer">
+       
+  <ul class="article-tag-list" itemprop="keywords"><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/DevOps/" rel="tag">DevOps</a></li><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/%E5%8D%95%E5%85%83%E6%B5%8B%E8%AF%95/" rel="tag">单元测试</a></li><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/%E5%B7%A5%E7%A8%8B%E5%8C%96/" rel="tag">工程化</a></li></ul>
+
+    </footer>
+  </div>
+
+   
+    
+</article>
+
+    
+    <article
+  id="post-javascript/偏函数和函数柯里化"
+  class="article article-type-post"
+  itemscope
+  itemprop="blogPost"
+  data-scroll-reveal
+>
+  <div class="article-inner">
+    
+    <header class="article-header">
+       
+<h2 itemprop="name">
+  <a class="article-title" href="/posts/cf3b0ed7034e/"
+    >偏函数和函数柯里化</a> 
+</h2>
+ 
+
+      
+    </header>
+     
+    <div class="article-meta">
+      <a href="/posts/cf3b0ed7034e/" class="article-date">
+  <time datetime="2020-11-22T06:52:50.000Z" itemprop="datePublished">2020-11-22</time>
+</a> 
+  <div class="article-category">
+    <a class="article-category-link" href="/categories/JavaScript/">JavaScript</a>
+  </div>
+   
+    </div>
+      
+    <div class="article-entry" itemprop="articleBody">
+       
+  <h4 id="偏函数-Partial-application"><a href="#偏函数-Partial-application" class="headerlink" title="偏函数 (Partial application)"></a>偏函数 (Partial application)</h4><blockquote>
+<p>In computer science, partial application (or partial function application) refers to the process of fixing a number of arguments to a function, producing another function of smaller arity.</p>
+</blockquote>
+<p>在计算机科学中，局部应用是指<strong>固定一个函数的一些参数，然后产生另一个更小元的函数</strong>。（什么是元？元是指函数参数的个数，比如一个带有两个参数的函数被称为二元函数。）</p>
+<h5 id="没有上下文的偏函数"><a href="#没有上下文的偏函数" class="headerlink" title="没有上下文的偏函数"></a>没有上下文的偏函数</h5><figure class="highlight javascript"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">const</span> <span class="title function_">partial</span> = (<span class="params">fn, ...args</span>) =&gt; &#123;</span><br><span class="line">  <span class="keyword">return</span> <span class="function">(<span class="params">...args2</span>) =&gt;</span>  fn.<span class="title function_">call</span>(<span class="variable language_">this</span>, ...args, ...args2)</span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line"><span class="variable language_">console</span>.<span class="title function_">log</span>(<span class="title function_">partial</span>(<span class="keyword">function</span> (<span class="params">a, b, c, d</span>) &#123;</span><br><span class="line">  <span class="keyword">return</span> a + b + c + d</span><br><span class="line">&#125;, <span class="number">1</span>, <span class="number">2</span>)(<span class="number">3</span>, <span class="number">4</span>))</span><br></pre></td></tr></table></figure>
+
+<h5 id="bind-实现"><a href="#bind-实现" class="headerlink" title="bind 实现"></a>bind 实现</h5><ul>
+<li>类型判断，错误处理</li>
+<li>缓存一级参数</li>
+<li>定义返回的新函数</li>
+<li>处理原型链</li>
+<li>绑定新函数的执行上下文，判断是否通过new调用</li>
+</ul>
+<figure class="highlight javascript"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br></pre></td><td class="code"><pre><span class="line"><span class="title class_">Function</span>.<span class="property"><span class="keyword">prototype</span></span>.<span class="property">bind</span> = <span class="keyword">function</span> (<span class="params">ctx</span>) &#123;</span><br><span class="line">  <span class="keyword">if</span> (<span class="keyword">typeof</span> <span class="variable language_">this</span> !== <span class="string">&#x27;function&#x27;</span>) <span class="keyword">throw</span> <span class="keyword">new</span> <span class="title class_">Error</span>();</span><br><span class="line">  <span class="keyword">var</span> args = <span class="title class_">Array</span>.<span class="property"><span class="keyword">prototype</span></span>.<span class="property">slice</span>.<span class="title function_">call</span>(<span class="variable language_">arguments</span>, <span class="number">1</span>);</span><br><span class="line">  <span class="keyword">var</span> toBind = <span class="variable language_">this</span>;</span><br><span class="line">  <span class="keyword">var</span> fn = <span class="keyword">function</span> <span class="title function_">_fn</span>(<span class="params"></span>) &#123;</span><br><span class="line">    args = args.<span class="title function_">concat</span>(<span class="title class_">Array</span>.<span class="property"><span class="keyword">prototype</span></span>.<span class="property">slice</span>.<span class="title function_">call</span>(<span class="variable language_">arguments</span>, <span class="number">0</span>))</span><br><span class="line">    toBind.<span class="title function_">apply</span>(<span class="variable language_">this</span> <span class="keyword">instanceof</span> _fn ? <span class="variable language_">this</span> : ctx, args)</span><br><span class="line">  &#125;</span><br><span class="line">  <span class="keyword">if</span> (toBind.<span class="property"><span class="keyword">prototype</span></span>) &#123;</span><br><span class="line">    fn.<span class="property"><span class="keyword">prototype</span></span> = <span class="title class_">Object</span>.<span class="title function_">create</span>(toBind.<span class="property"><span class="keyword">prototype</span></span>)</span><br><span class="line">  &#125;</span><br><span class="line">  <span class="keyword">return</span> fn;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+<figure class="highlight javascript"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br></pre></td><td class="code"><pre><span class="line"><span class="title class_">Function</span>.<span class="property"><span class="keyword">prototype</span></span>.<span class="property">bind</span> = <span class="keyword">function</span> (<span class="params">ctx</span>) &#123;</span><br><span class="line">  <span class="keyword">if</span> (<span class="keyword">typeof</span> <span class="variable language_">this</span> !== <span class="string">&#x27;function&#x27;</span>) <span class="keyword">throw</span> <span class="keyword">new</span> <span class="title class_">Error</span>();</span><br><span class="line">  <span class="keyword">var</span> args = <span class="title class_">Array</span>.<span class="property"><span class="keyword">prototype</span></span>.<span class="property">slice</span>.<span class="title function_">call</span>(<span class="variable language_">arguments</span>, <span class="number">1</span>);</span><br><span class="line">  <span class="keyword">var</span> toBind = <span class="variable language_">this</span>;</span><br><span class="line">  <span class="keyword">var</span> noop = <span class="keyword">function</span>(<span class="params"></span>)&#123;&#125;</span><br><span class="line">  <span class="keyword">var</span> fn = <span class="keyword">function</span> <span class="title function_">_fn</span>(<span class="params"></span>) &#123;</span><br><span class="line">    args = args.<span class="title function_">concat</span>(<span class="title class_">Array</span>.<span class="property"><span class="keyword">prototype</span></span>.<span class="property">slice</span>.<span class="title function_">call</span>(<span class="variable language_">arguments</span>, <span class="number">0</span>))</span><br><span class="line">    toBind.<span class="title function_">apply</span>(noop.<span class="property"><span class="keyword">prototype</span></span>.<span class="title function_">isPrototypeOf</span>(<span class="variable language_">this</span>) ? <span class="variable language_">this</span> : ctx, args)</span><br><span class="line">  &#125;</span><br><span class="line">  <span class="keyword">if</span> (toBind.<span class="property"><span class="keyword">prototype</span></span>) &#123;</span><br><span class="line">    noop.<span class="property"><span class="keyword">prototype</span></span> = toBind.<span class="property"><span class="keyword">prototype</span></span>;</span><br><span class="line">  &#125;</span><br><span class="line">  fn.<span class="property"><span class="keyword">prototype</span></span> = <span class="keyword">new</span> <span class="title function_">noop</span>()</span><br><span class="line">  <span class="keyword">return</span> fn;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+<h4 id="柯里化-Currying"><a href="#柯里化-Currying" class="headerlink" title="柯里化 (Currying)"></a>柯里化 (Currying)</h4><blockquote>
+<p>In mathematics and computer science, currying is the technique of translating the evaluation of a function that takes multiple arguments (or a tuple of arguments) into evaluating a sequence of functions, each with a single argument.</p>
+</blockquote>
+<p>在数学和计算机科学中，柯里化是一种将使用多个参数的一个函数转换成一系列使用一个参数的函数的技术</p>
+<h5 id="ES6实现"><a href="#ES6实现" class="headerlink" title="ES6实现"></a>ES6实现</h5><figure class="highlight javascript"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">const</span> <span class="title function_">curry</span> = (<span class="params">fn, args = []</span>) =&gt;</span><br><span class="line">  fn.<span class="property">length</span> === args.<span class="property">length</span> ? <span class="title function_">fn</span>(...args) : <span class="function">(<span class="params">...args2</span>) =&gt;</span> <span class="title function_">curry</span>(fn, [...args, ...args2])</span><br></pre></td></tr></table></figure>
+
+<h5 id="反柯理化"><a href="#反柯理化" class="headerlink" title="反柯理化"></a>反柯理化</h5><p>使用箭头函数不能绑定函数的this</p>
+<figure class="highlight javascript"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">const</span> <span class="title function_">uncurry</span> = (<span class="params">fn</span>) =&gt; <span class="function">(<span class="params">...args</span>) =&gt;</span> fn.<span class="title function_">apply</span>(<span class="variable language_">this</span>, args)</span><br></pre></td></tr></table></figure>
+
+<figure class="highlight javascript"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br></pre></td><td class="code"><pre><span class="line"><span class="title class_">Function</span>.<span class="property"><span class="keyword">prototype</span></span>.<span class="property">uncurring</span> = <span class="keyword">function</span> (<span class="params"></span>) &#123;</span><br><span class="line">  <span class="keyword">var</span> self = <span class="variable language_">this</span>;</span><br><span class="line">  <span class="keyword">return</span> <span class="keyword">function</span> (<span class="params"></span>) &#123;</span><br><span class="line">    <span class="keyword">return</span> self.<span class="title function_">apply</span>(<span class="variable language_">this</span>, <span class="variable language_">arguments</span>);</span><br><span class="line">  &#125;;</span><br><span class="line">&#125;;</span><br></pre></td></tr></table></figure>
+
+<h4 id="偏函数与柯里化区别"><a href="#偏函数与柯里化区别" class="headerlink" title="偏函数与柯里化区别"></a>偏函数与柯里化区别</h4><p>柯里化是将一个多参数函数转换成多个单参数函数，也就是将一个 n 元函数转换成 n 个一元函数。</p>
+<p>局部应用则是固定一个函数的一个或者多个参数，也就是将一个 n 元函数转换成一个 n - x 元函数。</p>
+ 
+      <!-- reward -->
+      
+    </div>
+    
+
+    <!-- copyright -->
+    
+    <footer class="article-footer">
+       
+  <ul class="article-tag-list" itemprop="keywords"><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/%E5%87%BD%E6%95%B0%E5%BC%8F%E7%BC%96%E7%A8%8B/" rel="tag">函数式编程</a></li></ul>
+
+    </footer>
+  </div>
+
+   
+    
+</article>
+
+    
+    <article
+  id="post-linux/question/bashr和profile的区别"
+  class="article article-type-post"
+  itemscope
+  itemprop="blogPost"
+  data-scroll-reveal
+>
+  <div class="article-inner">
+    
+    <header class="article-header">
+       
+<h2 itemprop="name">
+  <a class="article-title" href="/posts/8f395db5cbb3/"
+    >.bashr 和 .profile的区别</a> 
+</h2>
+ 
+
+      
+    </header>
+     
+    <div class="article-meta">
+      <a href="/posts/8f395db5cbb3/" class="article-date">
+  <time datetime="2020-11-22T03:52:48.000Z" itemprop="datePublished">2020-11-22</time>
+</a> 
+  <div class="article-category">
+    <a class="article-category-link" href="/categories/Linux/">Linux</a> / <a class="article-category-link" href="/categories/Linux/%E5%B8%B8%E8%A7%81%E9%97%AE%E9%A2%98/">常见问题</a>
+  </div>
+   
+    </div>
+      
+    <div class="article-entry" itemprop="articleBody">
+       
+  <h1 id=""><a href="#" class="headerlink" title=""></a></h1><p>要搞清bashrc与profile的区别，首先要弄明白什么是交互式shell和非交互式shell，什么是login shell 和non-login shell。</p>
+<p><strong>交互式模式</strong></p>
+<p>shell等待你的输入，并且执行你提交的命令。这种模式被称作交互式是因为shell与用户进行交互。</p>
+<p>这种模式也是大多数用户非常熟悉的：登录、执行一些命令、签退。当你签退后，shell也终止了</p>
+<p><strong>非交互式模式</strong></p>
+<p>shell不与你进行交互，而是读取存放在文件中的命令,并且执行它们。当它读到文件的结尾，shell也就终止了。</p>
+<p><strong>bashrc与profile都用于保存用户的环境信息，bashrc用于非交互式non-loginshell，而profile用于交互式login shell。</strong></p>
+<p>系统中存在许多bashrc和profile文件：</p>
+<ul>
+<li><p>&#x2F;etc&#x2F;profile 此文件为系统的每个用户设置环境信息,当第一个用户登录时,该文件被执行.并从&#x2F;etc&#x2F;profile.d目录的配置文件中搜集shell的设置.</p>
+<p>每个用户都可使用该文件输入专用于自己使用的shell信息,当用户登录时,该文件仅仅执行一次!默认情况下,它设置一些环境变量,然后执行用户的.bashrc文件.</p>
+</li>
+<li><p>&#x2F;etc&#x2F;bashrc:为每一个运行bash shell的用户执行此文件.当bash shell被打开时,该文件被读取。有些linux版本中的&#x2F;etc目录下已经没有了bashrc文件。</p>
+<p>该文件包含专用于某个用户的bash shell的bash信息,当该用户登录时以及每次打开新的shell时,该文件被读取.另外,&#x2F;etc&#x2F;profile中设定的变量(全局)的可以作用于任何用户,而~&#x2F;.bashrc等中设定的变量(局部)只能继承&#x2F;etc&#x2F;profile中的变量,他们是”父子”关系.</p>
+</li>
+</ul>
+<p>&#x2F;etc&#x2F;profile，&#x2F;etc&#x2F;bashrc 是系统全局环境变量设定</p>
+<p><del>&#x2F;.profile，</del>&#x2F;.bashrc用户家目录下的私有环境变量设定</p>
+<p>当登入系统时候获得一个shell进程时，其读取环境设定档有三步</p>
+<ol>
+<li><p>首先读入的是全局环境变量设定档&#x2F;etc&#x2F;profile，然后根据其内容读取额外的设定的文档，如&#x2F;etc&#x2F;profile.d和&#x2F;etc&#x2F;inputrc</p>
+</li>
+<li><p>然后根据不同使用者帐号，去其家目录读取<del>&#x2F;.bash_profile，如果这读取不了就读取</del>&#x2F;.bash_login，这个也读取不了才会读取~&#x2F;.profile，这三个文档设定基本上是一样的，读取有优先关系</p>
+</li>
+<li><p>然后在根据用户帐号读取<del>&#x2F;.bashrc至于</del>&#x2F;.profile与~&#x2F;.bashrc的不区别都具有个性化定制功能</p>
+</li>
+</ol>
+<p>  ~&#x2F;.profile可以设定本用户专有的路径，环境变量，等，它只能登入的时候执行一次<br>  ~&#x2F;.bashrc也是某用户专有设定文档，可以设定路径，命令别名，每次shell script的执行都会使用它一次</p>
+ 
+      <!-- reward -->
+      
+    </div>
+    
+
+    <!-- copyright -->
+    
+    <footer class="article-footer">
+       
+  <ul class="article-tag-list" itemprop="keywords"><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/Linux/" rel="tag">Linux</a></li></ul>
+
+    </footer>
+  </div>
+
+   
+    
+</article>
+
+    
+    <article
+  id="post-javascript/前后端分离理念"
+  class="article article-type-post"
+  itemscope
+  itemprop="blogPost"
+  data-scroll-reveal
+>
+  <div class="article-inner">
+    
+    <header class="article-header">
+       
+<h2 itemprop="name">
+  <a class="article-title" href="/posts/d1d20bf07f77/"
+    >前后端分离理念</a> 
+</h2>
+ 
+
+      
+    </header>
+     
+    <div class="article-meta">
+      <a href="/posts/d1d20bf07f77/" class="article-date">
+  <time datetime="2020-11-18T02:30:42.000Z" itemprop="datePublished">2020-11-18</time>
+</a> 
+  <div class="article-category">
+    <a class="article-category-link" href="/categories/JavaScript/">JavaScript</a>
+  </div>
+   
+    </div>
+      
+    <div class="article-entry" itemprop="articleBody">
+       
+   
+      <!-- reward -->
+      
+    </div>
+    
+
+    <!-- copyright -->
+    
+    <footer class="article-footer">
+       
+  <ul class="article-tag-list" itemprop="keywords"><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/JavaScript/" rel="tag">JavaScript</a></li><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/%E5%BA%94%E7%94%A8%E6%A1%88%E4%BE%8B/" rel="tag">应用案例</a></li></ul>
+
+    </footer>
+  </div>
+
+   
+    
+</article>
+
+    
+    <article
+  id="post-javascript/class"
+  class="article article-type-post"
+  itemscope
+  itemprop="blogPost"
+  data-scroll-reveal
+>
+  <div class="article-inner">
+    
+    <header class="article-header">
+       
+<h2 itemprop="name">
+  <a class="article-title" href="/posts/737671a80928/"
+    >Class 类</a> 
+</h2>
+ 
+
+      
+    </header>
+     
+    <div class="article-meta">
+      <a href="/posts/737671a80928/" class="article-date">
+  <time datetime="2020-11-16T00:47:26.000Z" itemprop="datePublished">2020-11-16</time>
+</a> 
+  <div class="article-category">
+    <a class="article-category-link" href="/categories/JavaScript/">JavaScript</a>
+  </div>
+   
+    </div>
+      
+    <div class="article-entry" itemprop="articleBody">
+       
+  <h4 id="修改返回的this对象"><a href="#修改返回的this对象" class="headerlink" title="修改返回的this对象"></a>修改返回的this对象</h4><p>constructor方法默认返回实例对象（即this），完全可以指定返回另外一个对象。</p>
+<figure class="highlight javascript"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">class</span> <span class="title class_">Foo</span> &#123;</span><br><span class="line">  <span class="title function_">constructor</span>(<span class="params"></span>) &#123;</span><br><span class="line">    <span class="keyword">return</span> <span class="title class_">Object</span>.<span class="title function_">create</span>(<span class="literal">null</span>);</span><br><span class="line">  &#125;</span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line"><span class="keyword">new</span> <span class="title class_">Foo</span>() <span class="keyword">instanceof</span> <span class="title class_">Foo</span></span><br><span class="line"><span class="comment">// false</span></span><br></pre></td></tr></table></figure>
+
+<h4 id="Class-表达式"><a href="#Class-表达式" class="headerlink" title="Class 表达式"></a>Class 表达式</h4><figure class="highlight javascript"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">const</span> <span class="title class_">MyClass</span> = <span class="keyword">class</span> <span class="title class_">Me</span> &#123;</span><br><span class="line">  <span class="title function_">getClassName</span>(<span class="params"></span>) &#123;</span><br><span class="line">    <span class="keyword">return</span> <span class="title class_">Me</span>.<span class="property">name</span>;</span><br><span class="line">  &#125;</span><br><span class="line">&#125;;</span><br></pre></td></tr></table></figure>
+
+<p>上面代码使用表达式定义了一个类。需要注意的是，这个类的名字是Me，但是Me只在 Class 的内部可用，指代当前类。在 Class 外部，这个类只能用MyClass引用。</p>
+<p>如果类的内部没用到的话，可以省略Me</p>
+<p>采用 Class 表达式，可以写出立即执行的 Class。</p>
+<figure class="highlight javascript"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">let</span> person = <span class="keyword">new</span> <span class="keyword">class</span> &#123;</span><br><span class="line">  <span class="title function_">constructor</span>(<span class="params">name</span>) &#123;</span><br><span class="line">    <span class="variable language_">this</span>.<span class="property">name</span> = name;</span><br><span class="line">  &#125;</span><br><span class="line"></span><br><span class="line">  <span class="title function_">sayName</span>(<span class="params"></span>) &#123;</span><br><span class="line">    <span class="variable language_">console</span>.<span class="title function_">log</span>(<span class="variable language_">this</span>.<span class="property">name</span>);</span><br><span class="line">  &#125;</span><br><span class="line">&#125;(<span class="string">&#x27;张三&#x27;</span>);</span><br><span class="line"></span><br><span class="line">person.<span class="title function_">sayName</span>(); <span class="comment">// &quot;张三&quot;</span></span><br></pre></td></tr></table></figure>
+
+<h4 id="注意"><a href="#注意" class="headerlink" title="注意"></a>注意</h4><ul>
+<li>ES6 实际上把整个语言升级到了严格模式。</li>
+<li>类不存在变量提升（hoist），这一点与 ES5 完全不同。必须保证子类在父类之后定义。</li>
+<li>name属性总是返回紧跟在class关键字后面的类名。</li>
+<li>Generator 方法</li>
+</ul>
+<figure class="highlight javascript"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">class</span> <span class="title class_">Foo</span> &#123;</span><br><span class="line">  <span class="title function_">constructor</span>(<span class="params">...args</span>) &#123;</span><br><span class="line">    <span class="variable language_">this</span>.<span class="property">args</span> = args;</span><br><span class="line">  &#125;</span><br><span class="line">  * [<span class="title class_">Symbol</span>.<span class="property">iterator</span>]() &#123;</span><br><span class="line">    <span class="keyword">for</span> (<span class="keyword">let</span> arg <span class="keyword">of</span> <span class="variable language_">this</span>.<span class="property">args</span>) &#123;</span><br><span class="line">      <span class="keyword">yield</span> arg;</span><br><span class="line">    &#125;</span><br><span class="line">  &#125;</span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line"><span class="keyword">for</span> (<span class="keyword">let</span> x <span class="keyword">of</span> <span class="keyword">new</span> <span class="title class_">Foo</span>(<span class="string">&#x27;hello&#x27;</span>, <span class="string">&#x27;world&#x27;</span>)) &#123;</span><br><span class="line">  <span class="variable language_">console</span>.<span class="title function_">log</span>(x);</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+<ul>
+<li>自动绑定this</li>
+</ul>
+<figure class="highlight javascript"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">function</span> <span class="title function_">selfish</span> (target) &#123;</span><br><span class="line">  <span class="keyword">const</span> cache = <span class="keyword">new</span> <span class="title class_">WeakMap</span>();</span><br><span class="line">  <span class="keyword">const</span> handler = &#123;</span><br><span class="line">    get (target, key) &#123;</span><br><span class="line">      <span class="keyword">const</span> value = <span class="title class_">Reflect</span>.<span class="title function_">get</span>(target, key);</span><br><span class="line">      <span class="keyword">if</span> (<span class="keyword">typeof</span> value !== <span class="string">&#x27;function&#x27;</span>) &#123;</span><br><span class="line">        <span class="keyword">return</span> value;</span><br><span class="line">      &#125;</span><br><span class="line">      <span class="keyword">if</span> (!cache.<span class="title function_">has</span>(value)) &#123;</span><br><span class="line">        cache.<span class="title function_">set</span>(value, value.<span class="title function_">bind</span>(target));</span><br><span class="line">      &#125;</span><br><span class="line">      <span class="keyword">return</span> cache.<span class="title function_">get</span>(value);</span><br><span class="line">    &#125;</span><br><span class="line">  &#125;;</span><br><span class="line">  <span class="keyword">const</span> proxy = <span class="keyword">new</span> <span class="title class_">Proxy</span>(target, handler);</span><br><span class="line">  <span class="keyword">return</span> proxy;</span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line"><span class="keyword">const</span> logger = <span class="title function_">selfish</span>(<span class="keyword">new</span> <span class="title class_">Logger</span>());</span><br></pre></td></tr></table></figure>
+
+<h4 id="私有方法和私有属性"><a href="#私有方法和私有属性" class="headerlink" title="私有方法和私有属性"></a>私有方法和私有属性</h4><p>内部使用Proxy禁止内部属性的访问</p>
+<h4 id="new-target-属性"><a href="#new-target-属性" class="headerlink" title="new.target 属性"></a>new.target 属性</h4><p>new是从构造函数生成实例对象的命令。ES6 为new命令引入了一个new.target属性，该属性一般用在构造函数之中，返回new命令作用于的那个构造函数。如果构造函数不是通过new命令或Reflect.construct()调用的，new.target会返回undefined，因此这个属性可以用来确定构造函数是怎么调用的。</p>
+<p><strong>需要注意的是，子类继承父类时，new.target会返回子类。</strong>利用这个特点，可以写出不能独立使用、必须继承后才能使用的类。</p>
+<h4 id="继承"><a href="#继承" class="headerlink" title="继承"></a>继承</h4><p>子类必须在constructor方法中调用super方法，否则新建实例时会报错。这是因为子类自己的this对象，必须先通过父类的构造函数完成塑造，得到与父类同样的实例属性和方法，然后再对其进行加工，加上子类自己的实例属性和方法。如果不调用super方法，子类就得不到this对象。</p>
+<p><strong>另一个需要注意的地方是，在子类的构造函数中，只有调用super之后，才可以使用this关键字，否则会报错。这是因为子类实例的构建，基于父类实例，只有super方法才能调用父类实例。</strong></p>
+<h4 id="获取父类"><a href="#获取父类" class="headerlink" title="获取父类"></a>获取父类</h4><p><code>Object.getPrototypeOf</code>方法可以用来从子类上获取父类。因此，可以使用这个方法判断，一个类是否继承了另一个类。</p>
+<figure class="highlight javascript"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line"><span class="title class_">Object</span>.<span class="title function_">getPrototypeOf</span>(<span class="title class_">ColorPoint</span>) === <span class="title class_">Point</span></span><br><span class="line"><span class="comment">// true</span></span><br></pre></td></tr></table></figure>
+
+<h4 id="super-关键字"><a href="#super-关键字" class="headerlink" title="super 关键字"></a>super 关键字</h4><p>super这个关键字，既可以当作函数使用，也可以当作对象使用。在这两种情况下，它的用法完全不同。</p>
+<ul>
+<li>作为函数使用</li>
+</ul>
+<p><strong>super()只能用在子类的构造函数之中，用在其他地方就会报错。</strong></p>
+<p><strong>super虽然代表了父类A的构造函数，但是返回的是子类B的实例，即super内部的this指的是B的实例，因此super()在这里相当于A.prototype.constructor.call(this)。</strong></p>
+<figure class="highlight javascript"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">class</span> <span class="title class_">A</span> &#123;</span><br><span class="line">  <span class="title function_">constructor</span>(<span class="params"></span>) &#123;</span><br><span class="line">    <span class="variable language_">console</span>.<span class="title function_">log</span>(<span class="keyword">new</span>.<span class="property">target</span>.<span class="property">name</span>);</span><br><span class="line">  &#125;</span><br><span class="line">&#125;</span><br><span class="line"><span class="keyword">class</span> <span class="title class_">B</span> <span class="keyword">extends</span> <span class="title class_ inherited__">A</span> &#123;</span><br><span class="line">  <span class="title function_">constructor</span>(<span class="params"></span>) &#123;</span><br><span class="line">    <span class="variable language_">super</span>();</span><br><span class="line">  &#125;</span><br><span class="line">&#125;</span><br><span class="line"><span class="keyword">new</span> <span class="title function_">A</span>() <span class="comment">// A</span></span><br><span class="line"><span class="keyword">new</span> <span class="title function_">B</span>() <span class="comment">// B</span></span><br></pre></td></tr></table></figure>
+
+<ul>
+<li>作为对象使用</li>
+</ul>
+<p>super作为对象时，在普通方法中，指向父类的原型对象；在静态方法中，指向父类。</p>
+<p><strong>super在普通方法之中，指向A.prototype，所以super.p()就相当于A.prototype.p()。</strong>，由于super指向父类的原型对象，所以定义在父类实例上的方法或属性，是无法通过super调用的。</p>
+<p><strong>ES6 规定，在子类普通方法中通过super调用父类的方法时，方法内部的this指向当前的子类实例。</strong>，由于this指向子类实例，所以如果通过super对某个属性赋值，这时super就是this，赋值的属性会变成子类实例的属性。</p>
+<figure class="highlight javascript"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br></pre></td><td class="code"><pre><span class="line"><span class="variable language_">this</span>.<span class="property">x</span> = <span class="number">2</span>;</span><br><span class="line"><span class="variable language_">super</span>.<span class="property">x</span> = <span class="number">3</span>;</span><br><span class="line"><span class="variable language_">console</span>.<span class="title function_">log</span>(<span class="variable language_">super</span>.<span class="property">x</span>); <span class="comment">// undefined</span></span><br><span class="line"><span class="variable language_">console</span>.<span class="title function_">log</span>(<span class="variable language_">this</span>.<span class="property">x</span>); <span class="comment">// 3</span></span><br></pre></td></tr></table></figure>
+
+<p><strong>如果super作为对象，用在静态方法之中，这时super将指向父类，而不是父类的原型对象。</strong></p>
+<p><strong>在子类的静态方法中通过super调用父类的方法时，方法内部的this指向当前的子类，而不是子类的实例。</strong></p>
+<p>由于对象总是继承其他对象的，所以可以在任意一个对象中，使用super关键字。</p>
+<figure class="highlight javascript"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">var</span> obj = &#123;</span><br><span class="line">  <span class="title function_">toString</span>(<span class="params"></span>) &#123;</span><br><span class="line">    <span class="keyword">return</span> <span class="string">&quot;MyObject: &quot;</span> + <span class="variable language_">super</span>.<span class="title function_">toString</span>();</span><br><span class="line">  &#125;</span><br><span class="line">&#125;;</span><br><span class="line"></span><br><span class="line">obj.<span class="title function_">toString</span>(); <span class="comment">// MyObject: [object Object]</span></span><br></pre></td></tr></table></figure>
+
+<h4 id="类的-prototype-属性和-proto-属性"><a href="#类的-prototype-属性和-proto-属性" class="headerlink" title="类的 prototype 属性和__proto__属性"></a>类的 prototype 属性和__proto__属性</h4><figure class="highlight javascript"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">class</span> <span class="title class_">A</span> &#123;&#125;</span><br><span class="line"></span><br><span class="line">A.<span class="property">__proto__</span> ===<span class="title class_">Function</span>.<span class="property"><span class="keyword">prototype</span></span></span><br><span class="line"></span><br><span class="line">A.<span class="property"><span class="keyword">prototype</span></span>.<span class="property">__proto__</span>=== <span class="title class_">Object</span>.<span class="property"><span class="keyword">prototype</span></span></span><br><span class="line"></span><br></pre></td></tr></table></figure>
+
+<p>继承的实现方式</p>
+<figure class="highlight javascript"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">class</span> <span class="title class_">A</span> &#123;</span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line"><span class="keyword">class</span> <span class="title class_">B</span> &#123;</span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line"><span class="comment">// B 的实例继承 A 的实例</span></span><br><span class="line"><span class="title class_">Object</span>.<span class="title function_">setPrototypeOf</span>(B.<span class="property"><span class="keyword">prototype</span></span>, A.<span class="property"><span class="keyword">prototype</span></span>);</span><br><span class="line"></span><br><span class="line"><span class="comment">// B 继承 A 的静态属性</span></span><br><span class="line"><span class="title class_">Object</span>.<span class="title function_">setPrototypeOf</span>(B, A);</span><br><span class="line"></span><br><span class="line"><span class="keyword">const</span> b = <span class="keyword">new</span> <span class="title function_">B</span>();</span><br></pre></td></tr></table></figure>
+
+<figure class="highlight javascript"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br></pre></td><td class="code"><pre><span class="line"><span class="title class_">Object</span>.<span class="title function_">setPrototypeOf</span>(B.<span class="property"><span class="keyword">prototype</span></span>, A.<span class="property"><span class="keyword">prototype</span></span>);</span><br><span class="line"><span class="comment">// 等同于</span></span><br><span class="line">B.<span class="property"><span class="keyword">prototype</span></span>.<span class="property">__proto__</span> = A.<span class="property"><span class="keyword">prototype</span></span>;</span><br><span class="line"></span><br><span class="line"><span class="title class_">Object</span>.<span class="title function_">setPrototypeOf</span>(B, A);</span><br><span class="line"><span class="comment">// 等同于</span></span><br><span class="line">B.<span class="property">__proto__</span> = A;</span><br></pre></td></tr></table></figure>
+
+<h4 id="mixIn"><a href="#mixIn" class="headerlink" title="mixIn"></a>mixIn</h4><figure class="highlight javascript"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">function</span> <span class="title function_">mix</span>(<span class="params">...mixIns</span>) &#123;</span><br><span class="line">    <span class="keyword">class</span> <span class="title class_">Mix</span> &#123;</span><br><span class="line">        <span class="title function_">constructor</span>(<span class="params"></span>) &#123;</span><br><span class="line">            <span class="keyword">for</span> (<span class="keyword">let</span> mixIn <span class="keyword">of</span> mixIns) &#123;</span><br><span class="line">                <span class="title function_">copy</span>(<span class="variable language_">this</span>, <span class="keyword">new</span> <span class="title function_">mixIn</span>())</span><br><span class="line">            &#125;</span><br><span class="line">        &#125;</span><br><span class="line">    &#125;</span><br><span class="line">    <span class="keyword">for</span> (<span class="keyword">let</span> mixIn <span class="keyword">of</span> mixIns) &#123;</span><br><span class="line">        <span class="title function_">copy</span>(<span class="title class_">Mix</span>, mixIn);</span><br><span class="line">        <span class="title function_">copy</span>(<span class="title class_">Mix</span>.<span class="property"><span class="keyword">prototype</span></span>, mixIn.<span class="property"><span class="keyword">prototype</span></span>)</span><br><span class="line">    &#125;</span><br><span class="line">    <span class="keyword">return</span> <span class="title class_">Mix</span></span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line"><span class="keyword">function</span> <span class="title function_">copy</span>(<span class="params">target, source</span>) &#123;</span><br><span class="line">    <span class="keyword">for</span> (<span class="keyword">let</span> key <span class="keyword">of</span> <span class="title class_">Reflect</span>.<span class="title function_">ownKeys</span>(source)) &#123;</span><br><span class="line">        <span class="keyword">if</span> (</span><br><span class="line">            key !== <span class="string">&#x27;constructor&#x27;</span> &amp;&amp;</span><br><span class="line">            key !== <span class="string">&#x27;name&#x27;</span> &amp;&amp;</span><br><span class="line">            key !== <span class="string">&#x27;prototype&#x27;</span></span><br><span class="line">        ) &#123;</span><br><span class="line">            <span class="keyword">const</span> desc = <span class="title class_">Object</span>.<span class="title function_">getOwnPropertyDescriptor</span>(source, key);</span><br><span class="line">            <span class="title class_">Object</span>.<span class="title function_">defineProperty</span>(target, key, desc);</span><br><span class="line">        &#125;</span><br><span class="line">    &#125;</span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line"><span class="keyword">class</span> <span class="title class_">A</span> <span class="keyword">extends</span> <span class="title class_ inherited__">mix</span>(B) &#123;</span><br><span class="line"></span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure> 
+      <!-- reward -->
+      
+    </div>
+    
+
+    <!-- copyright -->
+    
+    <footer class="article-footer">
+       
+  <ul class="article-tag-list" itemprop="keywords"><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/ES6%E5%9F%BA%E7%A1%80/" rel="tag">ES6基础</a></li><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/JavaScript/" rel="tag">JavaScript</a></li></ul>
+
+    </footer>
+  </div>
+
+   
+    
+</article>
+
+    
+    <article
   id="post-javascript/你不知道的JavaScript"
   class="article article-type-post"
   itemscope
@@ -537,9 +1066,9 @@
 
 <p><strong>复杂度分析</strong></p>
 <ul>
-<li><p>时间复杂度：<mjx-container class="MathJax" jax="SVG"><svg style="vertical-align: -0.566ex;" xmlns="http://www.w3.org/2000/svg" width="5.832ex" height="2.451ex" role="img" focusable="false" viewBox="0 -833.2 2577.6 1083.2" xmlns:xlink="http://www.w3.org/1999/xlink"><defs><path id="MJX-13-TEX-I-1D442" d="M740 435Q740 320 676 213T511 42T304 -22Q207 -22 138 35T51 201Q50 209 50 244Q50 346 98 438T227 601Q351 704 476 704Q514 704 524 703Q621 689 680 617T740 435ZM637 476Q637 565 591 615T476 665Q396 665 322 605Q242 542 200 428T157 216Q157 126 200 73T314 19Q404 19 485 98T608 313Q637 408 637 476Z"></path><path id="MJX-13-TEX-N-28" d="M94 250Q94 319 104 381T127 488T164 576T202 643T244 695T277 729T302 750H315H319Q333 750 333 741Q333 738 316 720T275 667T226 581T184 443T167 250T184 58T225 -81T274 -167T316 -220T333 -241Q333 -250 318 -250H315H302L274 -226Q180 -141 137 -14T94 250Z"></path><path id="MJX-13-TEX-I-1D45B" d="M21 287Q22 293 24 303T36 341T56 388T89 425T135 442Q171 442 195 424T225 390T231 369Q231 367 232 367L243 378Q304 442 382 442Q436 442 469 415T503 336T465 179T427 52Q427 26 444 26Q450 26 453 27Q482 32 505 65T540 145Q542 153 560 153Q580 153 580 145Q580 144 576 130Q568 101 554 73T508 17T439 -10Q392 -10 371 17T350 73Q350 92 386 193T423 345Q423 404 379 404H374Q288 404 229 303L222 291L189 157Q156 26 151 16Q138 -11 108 -11Q95 -11 87 -5T76 7T74 17Q74 30 112 180T152 343Q153 348 153 366Q153 405 129 405Q91 405 66 305Q60 285 60 284Q58 278 41 278H27Q21 284 21 287Z"></path><path id="MJX-13-TEX-N-33" d="M127 463Q100 463 85 480T69 524Q69 579 117 622T233 665Q268 665 277 664Q351 652 390 611T430 522Q430 470 396 421T302 350L299 348Q299 347 308 345T337 336T375 315Q457 262 457 175Q457 96 395 37T238 -22Q158 -22 100 21T42 130Q42 158 60 175T105 193Q133 193 151 175T169 130Q169 119 166 110T159 94T148 82T136 74T126 70T118 67L114 66Q165 21 238 21Q293 21 321 74Q338 107 338 175V195Q338 290 274 322Q259 328 213 329L171 330L168 332Q166 335 166 348Q166 366 174 366Q202 366 232 371Q266 376 294 413T322 525V533Q322 590 287 612Q265 626 240 626Q208 626 181 615T143 592T132 580H135Q138 579 143 578T153 573T165 566T175 555T183 540T186 520Q186 498 172 481T127 463Z"></path><path id="MJX-13-TEX-N-29" d="M60 749L64 750Q69 750 74 750H86L114 726Q208 641 251 514T294 250Q294 182 284 119T261 12T224 -76T186 -143T145 -194T113 -227T90 -246Q87 -249 86 -250H74Q66 -250 63 -250T58 -247T55 -238Q56 -237 66 -225Q221 -64 221 250T66 725Q56 737 55 738Q55 746 60 749Z"></path></defs><g stroke="currentColor" fill="currentColor" stroke-width="0" transform="scale(1,-1)"><g data-mml-node="math"><g data-mml-node="mi"><use data-c="1D442" xlink:href="#MJX-13-TEX-I-1D442"></use></g><g data-mml-node="mo" transform="translate(763,0)"><use data-c="28" xlink:href="#MJX-13-TEX-N-28"></use></g><g data-mml-node="msup" transform="translate(1152,0)"><g data-mml-node="mi"><use data-c="1D45B" xlink:href="#MJX-13-TEX-I-1D45B"></use></g><g data-mml-node="mn" transform="translate(633,363) scale(0.707)"><use data-c="33" xlink:href="#MJX-13-TEX-N-33"></use></g></g><g data-mml-node="mo" transform="translate(2188.6,0)"><use data-c="29" xlink:href="#MJX-13-TEX-N-29"></use></g></g></g></svg></mjx-container></p>
+<li><p>时间复杂度：<mjx-container class="MathJax" jax="SVG"><svg style="vertical-align: -0.566ex;" xmlns="http://www.w3.org/2000/svg" width="5.832ex" height="2.451ex" role="img" focusable="false" viewBox="0 -833.2 2577.6 1083.2" xmlns:xlink="http://www.w3.org/1999/xlink"><defs><path id="MJX-14-TEX-I-1D442" d="M740 435Q740 320 676 213T511 42T304 -22Q207 -22 138 35T51 201Q50 209 50 244Q50 346 98 438T227 601Q351 704 476 704Q514 704 524 703Q621 689 680 617T740 435ZM637 476Q637 565 591 615T476 665Q396 665 322 605Q242 542 200 428T157 216Q157 126 200 73T314 19Q404 19 485 98T608 313Q637 408 637 476Z"></path><path id="MJX-14-TEX-N-28" d="M94 250Q94 319 104 381T127 488T164 576T202 643T244 695T277 729T302 750H315H319Q333 750 333 741Q333 738 316 720T275 667T226 581T184 443T167 250T184 58T225 -81T274 -167T316 -220T333 -241Q333 -250 318 -250H315H302L274 -226Q180 -141 137 -14T94 250Z"></path><path id="MJX-14-TEX-I-1D45B" d="M21 287Q22 293 24 303T36 341T56 388T89 425T135 442Q171 442 195 424T225 390T231 369Q231 367 232 367L243 378Q304 442 382 442Q436 442 469 415T503 336T465 179T427 52Q427 26 444 26Q450 26 453 27Q482 32 505 65T540 145Q542 153 560 153Q580 153 580 145Q580 144 576 130Q568 101 554 73T508 17T439 -10Q392 -10 371 17T350 73Q350 92 386 193T423 345Q423 404 379 404H374Q288 404 229 303L222 291L189 157Q156 26 151 16Q138 -11 108 -11Q95 -11 87 -5T76 7T74 17Q74 30 112 180T152 343Q153 348 153 366Q153 405 129 405Q91 405 66 305Q60 285 60 284Q58 278 41 278H27Q21 284 21 287Z"></path><path id="MJX-14-TEX-N-33" d="M127 463Q100 463 85 480T69 524Q69 579 117 622T233 665Q268 665 277 664Q351 652 390 611T430 522Q430 470 396 421T302 350L299 348Q299 347 308 345T337 336T375 315Q457 262 457 175Q457 96 395 37T238 -22Q158 -22 100 21T42 130Q42 158 60 175T105 193Q133 193 151 175T169 130Q169 119 166 110T159 94T148 82T136 74T126 70T118 67L114 66Q165 21 238 21Q293 21 321 74Q338 107 338 175V195Q338 290 274 322Q259 328 213 329L171 330L168 332Q166 335 166 348Q166 366 174 366Q202 366 232 371Q266 376 294 413T322 525V533Q322 590 287 612Q265 626 240 626Q208 626 181 615T143 592T132 580H135Q138 579 143 578T153 573T165 566T175 555T183 540T186 520Q186 498 172 481T127 463Z"></path><path id="MJX-14-TEX-N-29" d="M60 749L64 750Q69 750 74 750H86L114 726Q208 641 251 514T294 250Q294 182 284 119T261 12T224 -76T186 -143T145 -194T113 -227T90 -246Q87 -249 86 -250H74Q66 -250 63 -250T58 -247T55 -238Q56 -237 66 -225Q221 -64 221 250T66 725Q56 737 55 738Q55 746 60 749Z"></path></defs><g stroke="currentColor" fill="currentColor" stroke-width="0" transform="scale(1,-1)"><g data-mml-node="math"><g data-mml-node="mi"><use data-c="1D442" xlink:href="#MJX-14-TEX-I-1D442"></use></g><g data-mml-node="mo" transform="translate(763,0)"><use data-c="28" xlink:href="#MJX-14-TEX-N-28"></use></g><g data-mml-node="msup" transform="translate(1152,0)"><g data-mml-node="mi"><use data-c="1D45B" xlink:href="#MJX-14-TEX-I-1D45B"></use></g><g data-mml-node="mn" transform="translate(633,363) scale(0.707)"><use data-c="33" xlink:href="#MJX-14-TEX-N-33"></use></g></g><g data-mml-node="mo" transform="translate(2188.6,0)"><use data-c="29" xlink:href="#MJX-14-TEX-N-29"></use></g></g></g></svg></mjx-container></p>
 </li>
-<li><p>空间复杂度：<mjx-container class="MathJax" jax="SVG"><svg style="vertical-align: -0.566ex;" xmlns="http://www.w3.org/2000/svg" width="4.618ex" height="2.262ex" role="img" focusable="false" viewBox="0 -750 2041 1000" xmlns:xlink="http://www.w3.org/1999/xlink"><defs><path id="MJX-12-TEX-I-1D442" d="M740 435Q740 320 676 213T511 42T304 -22Q207 -22 138 35T51 201Q50 209 50 244Q50 346 98 438T227 601Q351 704 476 704Q514 704 524 703Q621 689 680 617T740 435ZM637 476Q637 565 591 615T476 665Q396 665 322 605Q242 542 200 428T157 216Q157 126 200 73T314 19Q404 19 485 98T608 313Q637 408 637 476Z"></path><path id="MJX-12-TEX-N-28" d="M94 250Q94 319 104 381T127 488T164 576T202 643T244 695T277 729T302 750H315H319Q333 750 333 741Q333 738 316 720T275 667T226 581T184 443T167 250T184 58T225 -81T274 -167T316 -220T333 -241Q333 -250 318 -250H315H302L274 -226Q180 -141 137 -14T94 250Z"></path><path id="MJX-12-TEX-N-31" d="M213 578L200 573Q186 568 160 563T102 556H83V602H102Q149 604 189 617T245 641T273 663Q275 666 285 666Q294 666 302 660V361L303 61Q310 54 315 52T339 48T401 46H427V0H416Q395 3 257 3Q121 3 100 0H88V46H114Q136 46 152 46T177 47T193 50T201 52T207 57T213 61V578Z"></path><path id="MJX-12-TEX-N-29" d="M60 749L64 750Q69 750 74 750H86L114 726Q208 641 251 514T294 250Q294 182 284 119T261 12T224 -76T186 -143T145 -194T113 -227T90 -246Q87 -249 86 -250H74Q66 -250 63 -250T58 -247T55 -238Q56 -237 66 -225Q221 -64 221 250T66 725Q56 737 55 738Q55 746 60 749Z"></path></defs><g stroke="currentColor" fill="currentColor" stroke-width="0" transform="scale(1,-1)"><g data-mml-node="math"><g data-mml-node="mi"><use data-c="1D442" xlink:href="#MJX-12-TEX-I-1D442"></use></g><g data-mml-node="mo" transform="translate(763,0)"><use data-c="28" xlink:href="#MJX-12-TEX-N-28"></use></g><g data-mml-node="mn" transform="translate(1152,0)"><use data-c="31" xlink:href="#MJX-12-TEX-N-31"></use></g><g data-mml-node="mo" transform="translate(1652,0)"><use data-c="29" xlink:href="#MJX-12-TEX-N-29"></use></g></g></g></svg></mjx-container></p>
+<li><p>空间复杂度：<mjx-container class="MathJax" jax="SVG"><svg style="vertical-align: -0.566ex;" xmlns="http://www.w3.org/2000/svg" width="4.618ex" height="2.262ex" role="img" focusable="false" viewBox="0 -750 2041 1000" xmlns:xlink="http://www.w3.org/1999/xlink"><defs><path id="MJX-13-TEX-I-1D442" d="M740 435Q740 320 676 213T511 42T304 -22Q207 -22 138 35T51 201Q50 209 50 244Q50 346 98 438T227 601Q351 704 476 704Q514 704 524 703Q621 689 680 617T740 435ZM637 476Q637 565 591 615T476 665Q396 665 322 605Q242 542 200 428T157 216Q157 126 200 73T314 19Q404 19 485 98T608 313Q637 408 637 476Z"></path><path id="MJX-13-TEX-N-28" d="M94 250Q94 319 104 381T127 488T164 576T202 643T244 695T277 729T302 750H315H319Q333 750 333 741Q333 738 316 720T275 667T226 581T184 443T167 250T184 58T225 -81T274 -167T316 -220T333 -241Q333 -250 318 -250H315H302L274 -226Q180 -141 137 -14T94 250Z"></path><path id="MJX-13-TEX-N-31" d="M213 578L200 573Q186 568 160 563T102 556H83V602H102Q149 604 189 617T245 641T273 663Q275 666 285 666Q294 666 302 660V361L303 61Q310 54 315 52T339 48T401 46H427V0H416Q395 3 257 3Q121 3 100 0H88V46H114Q136 46 152 46T177 47T193 50T201 52T207 57T213 61V578Z"></path><path id="MJX-13-TEX-N-29" d="M60 749L64 750Q69 750 74 750H86L114 726Q208 641 251 514T294 250Q294 182 284 119T261 12T224 -76T186 -143T145 -194T113 -227T90 -246Q87 -249 86 -250H74Q66 -250 63 -250T58 -247T55 -238Q56 -237 66 -225Q221 -64 221 250T66 725Q56 737 55 738Q55 746 60 749Z"></path></defs><g stroke="currentColor" fill="currentColor" stroke-width="0" transform="scale(1,-1)"><g data-mml-node="math"><g data-mml-node="mi"><use data-c="1D442" xlink:href="#MJX-13-TEX-I-1D442"></use></g><g data-mml-node="mo" transform="translate(763,0)"><use data-c="28" xlink:href="#MJX-13-TEX-N-28"></use></g><g data-mml-node="mn" transform="translate(1152,0)"><use data-c="31" xlink:href="#MJX-13-TEX-N-31"></use></g><g data-mml-node="mo" transform="translate(1652,0)"><use data-c="29" xlink:href="#MJX-13-TEX-N-29"></use></g></g></g></svg></mjx-container></p>
 </li>
 </ul>
 <h4 id="暴力解法优化"><a href="#暴力解法优化" class="headerlink" title="暴力解法优化"></a>暴力解法优化</h4><p>通过map缓存已经查找过的值</p>
@@ -548,9 +1077,9 @@
 
 <p><strong>复杂度分析</strong></p>
 <ul>
-<li><p>时间复杂度：<mjx-container class="MathJax" jax="SVG"><svg style="vertical-align: -0.566ex;" xmlns="http://www.w3.org/2000/svg" width="5.832ex" height="2.452ex" role="img" focusable="false" viewBox="0 -833.9 2577.6 1083.9" xmlns:xlink="http://www.w3.org/1999/xlink"><defs><path id="MJX-12-TEX-I-1D442" d="M740 435Q740 320 676 213T511 42T304 -22Q207 -22 138 35T51 201Q50 209 50 244Q50 346 98 438T227 601Q351 704 476 704Q514 704 524 703Q621 689 680 617T740 435ZM637 476Q637 565 591 615T476 665Q396 665 322 605Q242 542 200 428T157 216Q157 126 200 73T314 19Q404 19 485 98T608 313Q637 408 637 476Z"></path><path id="MJX-12-TEX-N-28" d="M94 250Q94 319 104 381T127 488T164 576T202 643T244 695T277 729T302 750H315H319Q333 750 333 741Q333 738 316 720T275 667T226 581T184 443T167 250T184 58T225 -81T274 -167T316 -220T333 -241Q333 -250 318 -250H315H302L274 -226Q180 -141 137 -14T94 250Z"></path><path id="MJX-12-TEX-I-1D45B" d="M21 287Q22 293 24 303T36 341T56 388T89 425T135 442Q171 442 195 424T225 390T231 369Q231 367 232 367L243 378Q304 442 382 442Q436 442 469 415T503 336T465 179T427 52Q427 26 444 26Q450 26 453 27Q482 32 505 65T540 145Q542 153 560 153Q580 153 580 145Q580 144 576 130Q568 101 554 73T508 17T439 -10Q392 -10 371 17T350 73Q350 92 386 193T423 345Q423 404 379 404H374Q288 404 229 303L222 291L189 157Q156 26 151 16Q138 -11 108 -11Q95 -11 87 -5T76 7T74 17Q74 30 112 180T152 343Q153 348 153 366Q153 405 129 405Q91 405 66 305Q60 285 60 284Q58 278 41 278H27Q21 284 21 287Z"></path><path id="MJX-12-TEX-N-32" d="M109 429Q82 429 66 447T50 491Q50 562 103 614T235 666Q326 666 387 610T449 465Q449 422 429 383T381 315T301 241Q265 210 201 149L142 93L218 92Q375 92 385 97Q392 99 409 186V189H449V186Q448 183 436 95T421 3V0H50V19V31Q50 38 56 46T86 81Q115 113 136 137Q145 147 170 174T204 211T233 244T261 278T284 308T305 340T320 369T333 401T340 431T343 464Q343 527 309 573T212 619Q179 619 154 602T119 569T109 550Q109 549 114 549Q132 549 151 535T170 489Q170 464 154 447T109 429Z"></path><path id="MJX-12-TEX-N-29" d="M60 749L64 750Q69 750 74 750H86L114 726Q208 641 251 514T294 250Q294 182 284 119T261 12T224 -76T186 -143T145 -194T113 -227T90 -246Q87 -249 86 -250H74Q66 -250 63 -250T58 -247T55 -238Q56 -237 66 -225Q221 -64 221 250T66 725Q56 737 55 738Q55 746 60 749Z"></path></defs><g stroke="currentColor" fill="currentColor" stroke-width="0" transform="scale(1,-1)"><g data-mml-node="math"><g data-mml-node="mi"><use data-c="1D442" xlink:href="#MJX-12-TEX-I-1D442"></use></g><g data-mml-node="mo" transform="translate(763,0)"><use data-c="28" xlink:href="#MJX-12-TEX-N-28"></use></g><g data-mml-node="msup" transform="translate(1152,0)"><g data-mml-node="mi"><use data-c="1D45B" xlink:href="#MJX-12-TEX-I-1D45B"></use></g><g data-mml-node="mn" transform="translate(633,363) scale(0.707)"><use data-c="32" xlink:href="#MJX-12-TEX-N-32"></use></g></g><g data-mml-node="mo" transform="translate(2188.6,0)"><use data-c="29" xlink:href="#MJX-12-TEX-N-29"></use></g></g></g></svg></mjx-container>,</p>
+<li><p>时间复杂度：<mjx-container class="MathJax" jax="SVG"><svg style="vertical-align: -0.566ex;" xmlns="http://www.w3.org/2000/svg" width="5.832ex" height="2.452ex" role="img" focusable="false" viewBox="0 -833.9 2577.6 1083.9" xmlns:xlink="http://www.w3.org/1999/xlink"><defs><path id="MJX-13-TEX-I-1D442" d="M740 435Q740 320 676 213T511 42T304 -22Q207 -22 138 35T51 201Q50 209 50 244Q50 346 98 438T227 601Q351 704 476 704Q514 704 524 703Q621 689 680 617T740 435ZM637 476Q637 565 591 615T476 665Q396 665 322 605Q242 542 200 428T157 216Q157 126 200 73T314 19Q404 19 485 98T608 313Q637 408 637 476Z"></path><path id="MJX-13-TEX-N-28" d="M94 250Q94 319 104 381T127 488T164 576T202 643T244 695T277 729T302 750H315H319Q333 750 333 741Q333 738 316 720T275 667T226 581T184 443T167 250T184 58T225 -81T274 -167T316 -220T333 -241Q333 -250 318 -250H315H302L274 -226Q180 -141 137 -14T94 250Z"></path><path id="MJX-13-TEX-I-1D45B" d="M21 287Q22 293 24 303T36 341T56 388T89 425T135 442Q171 442 195 424T225 390T231 369Q231 367 232 367L243 378Q304 442 382 442Q436 442 469 415T503 336T465 179T427 52Q427 26 444 26Q450 26 453 27Q482 32 505 65T540 145Q542 153 560 153Q580 153 580 145Q580 144 576 130Q568 101 554 73T508 17T439 -10Q392 -10 371 17T350 73Q350 92 386 193T423 345Q423 404 379 404H374Q288 404 229 303L222 291L189 157Q156 26 151 16Q138 -11 108 -11Q95 -11 87 -5T76 7T74 17Q74 30 112 180T152 343Q153 348 153 366Q153 405 129 405Q91 405 66 305Q60 285 60 284Q58 278 41 278H27Q21 284 21 287Z"></path><path id="MJX-13-TEX-N-32" d="M109 429Q82 429 66 447T50 491Q50 562 103 614T235 666Q326 666 387 610T449 465Q449 422 429 383T381 315T301 241Q265 210 201 149L142 93L218 92Q375 92 385 97Q392 99 409 186V189H449V186Q448 183 436 95T421 3V0H50V19V31Q50 38 56 46T86 81Q115 113 136 137Q145 147 170 174T204 211T233 244T261 278T284 308T305 340T320 369T333 401T340 431T343 464Q343 527 309 573T212 619Q179 619 154 602T119 569T109 550Q109 549 114 549Q132 549 151 535T170 489Q170 464 154 447T109 429Z"></path><path id="MJX-13-TEX-N-29" d="M60 749L64 750Q69 750 74 750H86L114 726Q208 641 251 514T294 250Q294 182 284 119T261 12T224 -76T186 -143T145 -194T113 -227T90 -246Q87 -249 86 -250H74Q66 -250 63 -250T58 -247T55 -238Q56 -237 66 -225Q221 -64 221 250T66 725Q56 737 55 738Q55 746 60 749Z"></path></defs><g stroke="currentColor" fill="currentColor" stroke-width="0" transform="scale(1,-1)"><g data-mml-node="math"><g data-mml-node="mi"><use data-c="1D442" xlink:href="#MJX-13-TEX-I-1D442"></use></g><g data-mml-node="mo" transform="translate(763,0)"><use data-c="28" xlink:href="#MJX-13-TEX-N-28"></use></g><g data-mml-node="msup" transform="translate(1152,0)"><g data-mml-node="mi"><use data-c="1D45B" xlink:href="#MJX-13-TEX-I-1D45B"></use></g><g data-mml-node="mn" transform="translate(633,363) scale(0.707)"><use data-c="32" xlink:href="#MJX-13-TEX-N-32"></use></g></g><g data-mml-node="mo" transform="translate(2188.6,0)"><use data-c="29" xlink:href="#MJX-13-TEX-N-29"></use></g></g></g></svg></mjx-container>,</p>
 </li>
-<li><p>空间复杂度：<mjx-container class="MathJax" jax="SVG"><svg style="vertical-align: -0.566ex;" xmlns="http://www.w3.org/2000/svg" width="4.844ex" height="2.262ex" role="img" focusable="false" viewBox="0 -750 2141 1000" xmlns:xlink="http://www.w3.org/1999/xlink"><defs><path id="MJX-11-TEX-I-1D442" d="M740 435Q740 320 676 213T511 42T304 -22Q207 -22 138 35T51 201Q50 209 50 244Q50 346 98 438T227 601Q351 704 476 704Q514 704 524 703Q621 689 680 617T740 435ZM637 476Q637 565 591 615T476 665Q396 665 322 605Q242 542 200 428T157 216Q157 126 200 73T314 19Q404 19 485 98T608 313Q637 408 637 476Z"></path><path id="MJX-11-TEX-N-28" d="M94 250Q94 319 104 381T127 488T164 576T202 643T244 695T277 729T302 750H315H319Q333 750 333 741Q333 738 316 720T275 667T226 581T184 443T167 250T184 58T225 -81T274 -167T316 -220T333 -241Q333 -250 318 -250H315H302L274 -226Q180 -141 137 -14T94 250Z"></path><path id="MJX-11-TEX-I-1D45B" d="M21 287Q22 293 24 303T36 341T56 388T89 425T135 442Q171 442 195 424T225 390T231 369Q231 367 232 367L243 378Q304 442 382 442Q436 442 469 415T503 336T465 179T427 52Q427 26 444 26Q450 26 453 27Q482 32 505 65T540 145Q542 153 560 153Q580 153 580 145Q580 144 576 130Q568 101 554 73T508 17T439 -10Q392 -10 371 17T350 73Q350 92 386 193T423 345Q423 404 379 404H374Q288 404 229 303L222 291L189 157Q156 26 151 16Q138 -11 108 -11Q95 -11 87 -5T76 7T74 17Q74 30 112 180T152 343Q153 348 153 366Q153 405 129 405Q91 405 66 305Q60 285 60 284Q58 278 41 278H27Q21 284 21 287Z"></path><path id="MJX-11-TEX-N-29" d="M60 749L64 750Q69 750 74 750H86L114 726Q208 641 251 514T294 250Q294 182 284 119T261 12T224 -76T186 -143T145 -194T113 -227T90 -246Q87 -249 86 -250H74Q66 -250 63 -250T58 -247T55 -238Q56 -237 66 -225Q221 -64 221 250T66 725Q56 737 55 738Q55 746 60 749Z"></path></defs><g stroke="currentColor" fill="currentColor" stroke-width="0" transform="scale(1,-1)"><g data-mml-node="math"><g data-mml-node="mi"><use data-c="1D442" xlink:href="#MJX-11-TEX-I-1D442"></use></g><g data-mml-node="mo" transform="translate(763,0)"><use data-c="28" xlink:href="#MJX-11-TEX-N-28"></use></g><g data-mml-node="mi" transform="translate(1152,0)"><use data-c="1D45B" xlink:href="#MJX-11-TEX-I-1D45B"></use></g><g data-mml-node="mo" transform="translate(1752,0)"><use data-c="29" xlink:href="#MJX-11-TEX-N-29"></use></g></g></g></svg></mjx-container>,时间换空间</p>
+<li><p>空间复杂度：<mjx-container class="MathJax" jax="SVG"><svg style="vertical-align: -0.566ex;" xmlns="http://www.w3.org/2000/svg" width="4.844ex" height="2.262ex" role="img" focusable="false" viewBox="0 -750 2141 1000" xmlns:xlink="http://www.w3.org/1999/xlink"><defs><path id="MJX-13-TEX-I-1D442" d="M740 435Q740 320 676 213T511 42T304 -22Q207 -22 138 35T51 201Q50 209 50 244Q50 346 98 438T227 601Q351 704 476 704Q514 704 524 703Q621 689 680 617T740 435ZM637 476Q637 565 591 615T476 665Q396 665 322 605Q242 542 200 428T157 216Q157 126 200 73T314 19Q404 19 485 98T608 313Q637 408 637 476Z"></path><path id="MJX-13-TEX-N-28" d="M94 250Q94 319 104 381T127 488T164 576T202 643T244 695T277 729T302 750H315H319Q333 750 333 741Q333 738 316 720T275 667T226 581T184 443T167 250T184 58T225 -81T274 -167T316 -220T333 -241Q333 -250 318 -250H315H302L274 -226Q180 -141 137 -14T94 250Z"></path><path id="MJX-13-TEX-I-1D45B" d="M21 287Q22 293 24 303T36 341T56 388T89 425T135 442Q171 442 195 424T225 390T231 369Q231 367 232 367L243 378Q304 442 382 442Q436 442 469 415T503 336T465 179T427 52Q427 26 444 26Q450 26 453 27Q482 32 505 65T540 145Q542 153 560 153Q580 153 580 145Q580 144 576 130Q568 101 554 73T508 17T439 -10Q392 -10 371 17T350 73Q350 92 386 193T423 345Q423 404 379 404H374Q288 404 229 303L222 291L189 157Q156 26 151 16Q138 -11 108 -11Q95 -11 87 -5T76 7T74 17Q74 30 112 180T152 343Q153 348 153 366Q153 405 129 405Q91 405 66 305Q60 285 60 284Q58 278 41 278H27Q21 284 21 287Z"></path><path id="MJX-13-TEX-N-29" d="M60 749L64 750Q69 750 74 750H86L114 726Q208 641 251 514T294 250Q294 182 284 119T261 12T224 -76T186 -143T145 -194T113 -227T90 -246Q87 -249 86 -250H74Q66 -250 63 -250T58 -247T55 -238Q56 -237 66 -225Q221 -64 221 250T66 725Q56 737 55 738Q55 746 60 749Z"></path></defs><g stroke="currentColor" fill="currentColor" stroke-width="0" transform="scale(1,-1)"><g data-mml-node="math"><g data-mml-node="mi"><use data-c="1D442" xlink:href="#MJX-13-TEX-I-1D442"></use></g><g data-mml-node="mo" transform="translate(763,0)"><use data-c="28" xlink:href="#MJX-13-TEX-N-28"></use></g><g data-mml-node="mi" transform="translate(1152,0)"><use data-c="1D45B" xlink:href="#MJX-13-TEX-I-1D45B"></use></g><g data-mml-node="mo" transform="translate(1752,0)"><use data-c="29" xlink:href="#MJX-13-TEX-N-29"></use></g></g></g></svg></mjx-container>,时间换空间</p>
 </li>
 </ul>
 <h4 id="窗口移动"><a href="#窗口移动" class="headerlink" title="窗口移动"></a>窗口移动</h4><ul>
@@ -564,9 +1093,9 @@
 
 <p><strong>复杂度分析</strong></p>
 <ul>
-<li><p>时间复杂度：<mjx-container class="MathJax" jax="SVG"><svg style="vertical-align: -0.566ex;" xmlns="http://www.w3.org/2000/svg" width="4.844ex" height="2.262ex" role="img" focusable="false" viewBox="0 -750 2141 1000" xmlns:xlink="http://www.w3.org/1999/xlink"><defs><path id="MJX-11-TEX-I-1D442" d="M740 435Q740 320 676 213T511 42T304 -22Q207 -22 138 35T51 201Q50 209 50 244Q50 346 98 438T227 601Q351 704 476 704Q514 704 524 703Q621 689 680 617T740 435ZM637 476Q637 565 591 615T476 665Q396 665 322 605Q242 542 200 428T157 216Q157 126 200 73T314 19Q404 19 485 98T608 313Q637 408 637 476Z"></path><path id="MJX-11-TEX-N-28" d="M94 250Q94 319 104 381T127 488T164 576T202 643T244 695T277 729T302 750H315H319Q333 750 333 741Q333 738 316 720T275 667T226 581T184 443T167 250T184 58T225 -81T274 -167T316 -220T333 -241Q333 -250 318 -250H315H302L274 -226Q180 -141 137 -14T94 250Z"></path><path id="MJX-11-TEX-I-1D45B" d="M21 287Q22 293 24 303T36 341T56 388T89 425T135 442Q171 442 195 424T225 390T231 369Q231 367 232 367L243 378Q304 442 382 442Q436 442 469 415T503 336T465 179T427 52Q427 26 444 26Q450 26 453 27Q482 32 505 65T540 145Q542 153 560 153Q580 153 580 145Q580 144 576 130Q568 101 554 73T508 17T439 -10Q392 -10 371 17T350 73Q350 92 386 193T423 345Q423 404 379 404H374Q288 404 229 303L222 291L189 157Q156 26 151 16Q138 -11 108 -11Q95 -11 87 -5T76 7T74 17Q74 30 112 180T152 343Q153 348 153 366Q153 405 129 405Q91 405 66 305Q60 285 60 284Q58 278 41 278H27Q21 284 21 287Z"></path><path id="MJX-11-TEX-N-29" d="M60 749L64 750Q69 750 74 750H86L114 726Q208 641 251 514T294 250Q294 182 284 119T261 12T224 -76T186 -143T145 -194T113 -227T90 -246Q87 -249 86 -250H74Q66 -250 63 -250T58 -247T55 -238Q56 -237 66 -225Q221 -64 221 250T66 725Q56 737 55 738Q55 746 60 749Z"></path></defs><g stroke="currentColor" fill="currentColor" stroke-width="0" transform="scale(1,-1)"><g data-mml-node="math"><g data-mml-node="mi"><use data-c="1D442" xlink:href="#MJX-11-TEX-I-1D442"></use></g><g data-mml-node="mo" transform="translate(763,0)"><use data-c="28" xlink:href="#MJX-11-TEX-N-28"></use></g><g data-mml-node="mi" transform="translate(1152,0)"><use data-c="1D45B" xlink:href="#MJX-11-TEX-I-1D45B"></use></g><g data-mml-node="mo" transform="translate(1752,0)"><use data-c="29" xlink:href="#MJX-11-TEX-N-29"></use></g></g></g></svg></mjx-container>,</p>
+<li><p>时间复杂度：<mjx-container class="MathJax" jax="SVG"><svg style="vertical-align: -0.566ex;" xmlns="http://www.w3.org/2000/svg" width="4.844ex" height="2.262ex" role="img" focusable="false" viewBox="0 -750 2141 1000" xmlns:xlink="http://www.w3.org/1999/xlink"><defs><path id="MJX-12-TEX-I-1D442" d="M740 435Q740 320 676 213T511 42T304 -22Q207 -22 138 35T51 201Q50 209 50 244Q50 346 98 438T227 601Q351 704 476 704Q514 704 524 703Q621 689 680 617T740 435ZM637 476Q637 565 591 615T476 665Q396 665 322 605Q242 542 200 428T157 216Q157 126 200 73T314 19Q404 19 485 98T608 313Q637 408 637 476Z"></path><path id="MJX-12-TEX-N-28" d="M94 250Q94 319 104 381T127 488T164 576T202 643T244 695T277 729T302 750H315H319Q333 750 333 741Q333 738 316 720T275 667T226 581T184 443T167 250T184 58T225 -81T274 -167T316 -220T333 -241Q333 -250 318 -250H315H302L274 -226Q180 -141 137 -14T94 250Z"></path><path id="MJX-12-TEX-I-1D45B" d="M21 287Q22 293 24 303T36 341T56 388T89 425T135 442Q171 442 195 424T225 390T231 369Q231 367 232 367L243 378Q304 442 382 442Q436 442 469 415T503 336T465 179T427 52Q427 26 444 26Q450 26 453 27Q482 32 505 65T540 145Q542 153 560 153Q580 153 580 145Q580 144 576 130Q568 101 554 73T508 17T439 -10Q392 -10 371 17T350 73Q350 92 386 193T423 345Q423 404 379 404H374Q288 404 229 303L222 291L189 157Q156 26 151 16Q138 -11 108 -11Q95 -11 87 -5T76 7T74 17Q74 30 112 180T152 343Q153 348 153 366Q153 405 129 405Q91 405 66 305Q60 285 60 284Q58 278 41 278H27Q21 284 21 287Z"></path><path id="MJX-12-TEX-N-29" d="M60 749L64 750Q69 750 74 750H86L114 726Q208 641 251 514T294 250Q294 182 284 119T261 12T224 -76T186 -143T145 -194T113 -227T90 -246Q87 -249 86 -250H74Q66 -250 63 -250T58 -247T55 -238Q56 -237 66 -225Q221 -64 221 250T66 725Q56 737 55 738Q55 746 60 749Z"></path></defs><g stroke="currentColor" fill="currentColor" stroke-width="0" transform="scale(1,-1)"><g data-mml-node="math"><g data-mml-node="mi"><use data-c="1D442" xlink:href="#MJX-12-TEX-I-1D442"></use></g><g data-mml-node="mo" transform="translate(763,0)"><use data-c="28" xlink:href="#MJX-12-TEX-N-28"></use></g><g data-mml-node="mi" transform="translate(1152,0)"><use data-c="1D45B" xlink:href="#MJX-12-TEX-I-1D45B"></use></g><g data-mml-node="mo" transform="translate(1752,0)"><use data-c="29" xlink:href="#MJX-12-TEX-N-29"></use></g></g></g></svg></mjx-container>,</p>
 </li>
-<li><p>空间复杂度：<mjx-container class="MathJax" jax="SVG"><svg style="vertical-align: -0.566ex;" xmlns="http://www.w3.org/2000/svg" width="4.844ex" height="2.262ex" role="img" focusable="false" viewBox="0 -750 2141 1000" xmlns:xlink="http://www.w3.org/1999/xlink"><defs><path id="MJX-11-TEX-I-1D442" d="M740 435Q740 320 676 213T511 42T304 -22Q207 -22 138 35T51 201Q50 209 50 244Q50 346 98 438T227 601Q351 704 476 704Q514 704 524 703Q621 689 680 617T740 435ZM637 476Q637 565 591 615T476 665Q396 665 322 605Q242 542 200 428T157 216Q157 126 200 73T314 19Q404 19 485 98T608 313Q637 408 637 476Z"></path><path id="MJX-11-TEX-N-28" d="M94 250Q94 319 104 381T127 488T164 576T202 643T244 695T277 729T302 750H315H319Q333 750 333 741Q333 738 316 720T275 667T226 581T184 443T167 250T184 58T225 -81T274 -167T316 -220T333 -241Q333 -250 318 -250H315H302L274 -226Q180 -141 137 -14T94 250Z"></path><path id="MJX-11-TEX-I-1D45B" d="M21 287Q22 293 24 303T36 341T56 388T89 425T135 442Q171 442 195 424T225 390T231 369Q231 367 232 367L243 378Q304 442 382 442Q436 442 469 415T503 336T465 179T427 52Q427 26 444 26Q450 26 453 27Q482 32 505 65T540 145Q542 153 560 153Q580 153 580 145Q580 144 576 130Q568 101 554 73T508 17T439 -10Q392 -10 371 17T350 73Q350 92 386 193T423 345Q423 404 379 404H374Q288 404 229 303L222 291L189 157Q156 26 151 16Q138 -11 108 -11Q95 -11 87 -5T76 7T74 17Q74 30 112 180T152 343Q153 348 153 366Q153 405 129 405Q91 405 66 305Q60 285 60 284Q58 278 41 278H27Q21 284 21 287Z"></path><path id="MJX-11-TEX-N-29" d="M60 749L64 750Q69 750 74 750H86L114 726Q208 641 251 514T294 250Q294 182 284 119T261 12T224 -76T186 -143T145 -194T113 -227T90 -246Q87 -249 86 -250H74Q66 -250 63 -250T58 -247T55 -238Q56 -237 66 -225Q221 -64 221 250T66 725Q56 737 55 738Q55 746 60 749Z"></path></defs><g stroke="currentColor" fill="currentColor" stroke-width="0" transform="scale(1,-1)"><g data-mml-node="math"><g data-mml-node="mi"><use data-c="1D442" xlink:href="#MJX-11-TEX-I-1D442"></use></g><g data-mml-node="mo" transform="translate(763,0)"><use data-c="28" xlink:href="#MJX-11-TEX-N-28"></use></g><g data-mml-node="mi" transform="translate(1152,0)"><use data-c="1D45B" xlink:href="#MJX-11-TEX-I-1D45B"></use></g><g data-mml-node="mo" transform="translate(1752,0)"><use data-c="29" xlink:href="#MJX-11-TEX-N-29"></use></g></g></g></svg></mjx-container>,时间换空间</p>
+<li><p>空间复杂度：<mjx-container class="MathJax" jax="SVG"><svg style="vertical-align: -0.566ex;" xmlns="http://www.w3.org/2000/svg" width="4.844ex" height="2.262ex" role="img" focusable="false" viewBox="0 -750 2141 1000" xmlns:xlink="http://www.w3.org/1999/xlink"><defs><path id="MJX-12-TEX-I-1D442" d="M740 435Q740 320 676 213T511 42T304 -22Q207 -22 138 35T51 201Q50 209 50 244Q50 346 98 438T227 601Q351 704 476 704Q514 704 524 703Q621 689 680 617T740 435ZM637 476Q637 565 591 615T476 665Q396 665 322 605Q242 542 200 428T157 216Q157 126 200 73T314 19Q404 19 485 98T608 313Q637 408 637 476Z"></path><path id="MJX-12-TEX-N-28" d="M94 250Q94 319 104 381T127 488T164 576T202 643T244 695T277 729T302 750H315H319Q333 750 333 741Q333 738 316 720T275 667T226 581T184 443T167 250T184 58T225 -81T274 -167T316 -220T333 -241Q333 -250 318 -250H315H302L274 -226Q180 -141 137 -14T94 250Z"></path><path id="MJX-12-TEX-I-1D45B" d="M21 287Q22 293 24 303T36 341T56 388T89 425T135 442Q171 442 195 424T225 390T231 369Q231 367 232 367L243 378Q304 442 382 442Q436 442 469 415T503 336T465 179T427 52Q427 26 444 26Q450 26 453 27Q482 32 505 65T540 145Q542 153 560 153Q580 153 580 145Q580 144 576 130Q568 101 554 73T508 17T439 -10Q392 -10 371 17T350 73Q350 92 386 193T423 345Q423 404 379 404H374Q288 404 229 303L222 291L189 157Q156 26 151 16Q138 -11 108 -11Q95 -11 87 -5T76 7T74 17Q74 30 112 180T152 343Q153 348 153 366Q153 405 129 405Q91 405 66 305Q60 285 60 284Q58 278 41 278H27Q21 284 21 287Z"></path><path id="MJX-12-TEX-N-29" d="M60 749L64 750Q69 750 74 750H86L114 726Q208 641 251 514T294 250Q294 182 284 119T261 12T224 -76T186 -143T145 -194T113 -227T90 -246Q87 -249 86 -250H74Q66 -250 63 -250T58 -247T55 -238Q56 -237 66 -225Q221 -64 221 250T66 725Q56 737 55 738Q55 746 60 749Z"></path></defs><g stroke="currentColor" fill="currentColor" stroke-width="0" transform="scale(1,-1)"><g data-mml-node="math"><g data-mml-node="mi"><use data-c="1D442" xlink:href="#MJX-12-TEX-I-1D442"></use></g><g data-mml-node="mo" transform="translate(763,0)"><use data-c="28" xlink:href="#MJX-12-TEX-N-28"></use></g><g data-mml-node="mi" transform="translate(1152,0)"><use data-c="1D45B" xlink:href="#MJX-12-TEX-I-1D45B"></use></g><g data-mml-node="mo" transform="translate(1752,0)"><use data-c="29" xlink:href="#MJX-12-TEX-N-29"></use></g></g></g></svg></mjx-container>,时间换空间</p>
 </li>
 </ul>
 <h4 id="优化窗口移动"><a href="#优化窗口移动" class="headerlink" title="优化窗口移动"></a>优化窗口移动</h4><figure class="highlight javascript"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">var</span> lengthOfLongestSubstring = <span class="keyword">function</span> (<span class="params">s</span>) &#123;</span><br><span class="line">    <span class="keyword">let</span> map = <span class="keyword">new</span> <span class="title class_">Map</span>(),</span><br><span class="line">        <span class="comment">//i为上面方法的start指针</span></span><br><span class="line">        i = <span class="number">0</span>,</span><br><span class="line">        j = <span class="number">0</span>,</span><br><span class="line">        max = <span class="number">0</span>;</span><br><span class="line">    <span class="keyword">for</span> (j = <span class="number">0</span>; j &lt; s.<span class="property">length</span>; j++) &#123;</span><br><span class="line">        <span class="keyword">if</span> (map.<span class="title function_">has</span>(s[j])) &#123;</span><br><span class="line">            <span class="comment">//如果存在，当前这个值对应的索引不能比start指针小</span></span><br><span class="line">            i = <span class="title class_">Math</span>.<span class="title function_">max</span>(map.<span class="title function_">get</span>(s[j]) + <span class="number">1</span>, i)</span><br><span class="line">        &#125;</span><br><span class="line">        map.<span class="title function_">set</span>(s[j], j);</span><br><span class="line">        max = <span class="title class_">Math</span>.<span class="title function_">max</span>(max, j - i + <span class="number">1</span>)</span><br><span class="line">        <span class="variable language_">console</span>.<span class="title function_">log</span>(map, i, max);</span><br><span class="line"></span><br><span class="line">    &#125;</span><br><span class="line">    <span class="keyword">return</span> max;</span><br><span class="line">&#125;;</span><br></pre></td></tr></table></figure> 
@@ -580,538 +1109,6 @@
     <footer class="article-footer">
        
   <ul class="article-tag-list" itemprop="keywords"><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/LeetCode/" rel="tag">LeetCode</a></li><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/%E7%AE%97%E6%B3%95/" rel="tag">算法</a></li></ul>
-
-    </footer>
-  </div>
-
-   
-    
-</article>
-
-    
-    <article
-  id="post-javascript/(4)模块化且可重用的代码"
-  class="article article-type-post"
-  itemscope
-  itemprop="blogPost"
-  data-scroll-reveal
->
-  <div class="article-inner">
-    
-    <header class="article-header">
-       
-<h2 itemprop="name">
-  <a class="article-title" href="/posts/90b882fa913b/"
-    >4.模块化且可重用的代码</a> 
-</h2>
- 
-
-      
-    </header>
-     
-    <div class="article-meta">
-      <a href="/posts/90b882fa913b/" class="article-date">
-  <time datetime="2020-11-03T00:56:22.000Z" itemprop="datePublished">2020-11-03</time>
-</a> 
-  <div class="article-category">
-    <a class="article-category-link" href="/categories/JavaScript/">JavaScript</a>
-  </div>
-   
-    </div>
-      
-    <div class="article-entry" itemprop="articleBody">
-       
-  <p>函数链与函数管道的比较<br>Ramda.js 函数库<br>柯里化、部分应用（partial application）和函数绑定<br>通过函数式组合构建模块化程序<br>利用函数组合子增强程序的控制流</p>
-<p>先将问题分解成较小的部分，再重建这些部分以形成整体的解决方案。</p>
-<h4 id="方法链与函数管道的比较"><a href="#方法链与函数管道的比较" class="headerlink" title="方法链与函数管道的比较"></a>方法链与函数管道的比较</h4><p>Haskell中定义函数的符号。该符号先给出了函数的名称，随后用一个操作符来设置函数的输入和输出类型</p>
-<p><img src="/posts/90b882fa913b/0001.jpg"></p>
-<h4 id="方法链接（紧耦合，有限的表现力）"><a href="#方法链接（紧耦合，有限的表现力）" class="headerlink" title="方法链接（紧耦合，有限的表现力）"></a>方法链接（紧耦合，有限的表现力）</h4><p>它与方法所属的对象紧紧地耦合在一起，限制链中可以使用的方法数量，也就限制了代码的表现力。这样就只能够使用由Lodash提供的操作，而无法轻松地将不同函数库的（或自定义的）函数连接在一起。</p>
-<figure class="highlight javascript"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br></pre></td><td class="code"><pre><span class="line">_.<span class="title function_">chain</span>(names)</span><br><span class="line">.<span class="title function_">filter</span>(isValid) <span class="comment">//每一个“点”后只能调用 Lodash 提供的方法</span></span><br><span class="line">.<span class="title function_">map</span>(<span class="function"><span class="params">s</span> =&gt;</span> s.<span class="title function_">replace</span>(<span class="regexp">/_/</span>, <span class="string">&#x27; &#x27;</span>))</span><br><span class="line">.<span class="title function_">uniq</span>()</span><br><span class="line">.<span class="title function_">map</span>(_.<span class="property">startCase</span>)</span><br><span class="line">.<span class="title function_">sort</span>()</span><br><span class="line">.<span class="title function_">value</span>();</span><br></pre></td></tr></table></figure>
-
-<p><img src="/posts/90b882fa913b/0002.jpg"></p>
-<p><strong>函数的管道化（松耦合，灵活）</strong></p>
-<p><img src="/posts/90b882fa913b/0003.jpg"></p>
-<p>方法链接通过对象的方法紧密连接；而管道以函数作为组件，将函数的输入和输出松散地连接在一起。但是，为了实现管道，被连接的函数必须在元数（arity）和类型上相互兼容。</p>
-<p>函数式编程将管道视为构建程序的唯一方法.</p>
-<p>对于不同的任务，问题的定义与解决方案间总是存在很大的差异。因此，特定的计算必须在特定的阶段进行。这些阶段由不同的函数表征，而所选函数的输入和输出需要满足以下两个兼容条件。</p>
-<p><strong>类型&#x3D;&gt;函数的返回类型必须与接收函数的参数类型相匹配。</strong></p>
-<p><strong>元数&#x3D;&gt;接收函数必须声明至少一个参数才能处理上一个函数的返回值。</strong></p>
-<p><strong>元组</strong></p>
-<p>对传入的参数进行参数类型，和个数的校验，可以用TS替代</p>
-<ul>
-<li>不可变的——一旦创建，就无法改变一个元组的内部内容。</li>
-<li>避免创建临时类型——元组可以将可能毫不相关的数据相关联。而定义和实例化一些仅用于数据分组的新类型使得模型复杂并令人费解。</li>
-<li>避免创建异构数组——包含不同类型元素的数组使用起来颇为困难，因为会导致代码中充满大量的防御性类型检查。传统上，数组意在存储相同类型的对象。</li>
-</ul>
-<h4 id="柯里化"><a href="#柯里化" class="headerlink" title="柯里化"></a>柯里化</h4><p>要求所有参数都被明确地定义，因此当使用部分参数调用时，它会返回一个新的函数，在真正运行之前等待外部提供其余的参数。</p>
-<p>R._curry1</p>
-<figure class="highlight javascript"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">function</span> <span class="title function_">curry1</span>(<span class="params">fn</span>) &#123;</span><br><span class="line">    <span class="keyword">return</span> <span class="keyword">function</span> <span class="title function_">f1</span>(<span class="params">a</span>) &#123;</span><br><span class="line">        <span class="comment">// 判断a是否为占位符</span></span><br><span class="line">        <span class="keyword">if</span> (<span class="variable language_">arguments</span>.<span class="property">length</span> === <span class="number">0</span> || <span class="title function_">_isPlaceholder</span>(a)) &#123;</span><br><span class="line">            <span class="keyword">return</span> f1</span><br><span class="line">        &#125; <span class="keyword">else</span> &#123;</span><br><span class="line">            <span class="comment">// 多余的参数也可以传入</span></span><br><span class="line">            <span class="keyword">return</span> fn.<span class="title function_">apply</span>(<span class="variable language_">this</span>, <span class="variable language_">arguments</span>);</span><br><span class="line">        &#125;</span><br><span class="line">    &#125;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
-
-<h4 id="部分应用和函数绑定"><a href="#部分应用和函数绑定" class="headerlink" title="部分应用和函数绑定"></a>部分应用和函数绑定</h4><ul>
-<li><p>柯里化在每次分步调用时都会生成嵌套的一元函数。在底层，函数的最终结果是由这些一元函数的逐步组合产生的。同时，curry的变体允许同时传递一部分参数。因此，可以完全控制函数求值的时间与方式。</p>
-</li>
-<li><p>部分应用将函数的参数与一些预设值绑定（赋值），从而产生一个拥有更少参数的新函数。该函数的闭包中包含了这些已赋值的参数，在之后的调用中被完全求值。</p>
-</li>
-</ul>
-<h4 id="延迟函数绑定"><a href="#延迟函数绑定" class="headerlink" title="延迟函数绑定"></a>延迟函数绑定</h4><p>当期望目标函数使用某个所属对象来执行时，使用函数绑定来设置上下文对象就变得尤为重要。例如，浏览器中的setTimeout和setInterval等函数，如果不将this的引用设为全局上下文，即window对象，是不能正常工作的。传递undefined在运行时正确设置它们的上下文。</p>
-<figure class="highlight javascript"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">const</span> <span class="title class_">Scheduler</span> = (<span class="keyword">function</span> (<span class="params"></span>) &#123;</span><br><span class="line">  <span class="keyword">const</span> delayedFn = _.<span class="title function_">bind</span>(<span class="built_in">setTimeout</span>, <span class="literal">undefined</span>, _, _);</span><br><span class="line">  <span class="keyword">return</span> &#123;</span><br><span class="line">    <span class="attr">delay5</span>: _.<span class="title function_">partial</span>(delayedFn, _, <span class="number">5000</span>),</span><br><span class="line">    <span class="attr">delay10</span>: _.<span class="title function_">partial</span>(delayedFn, _, <span class="number">10000</span>),</span><br><span class="line">    <span class="attr">delay</span>: _.<span class="title function_">partial</span>(delayedFn, _, _)</span><br><span class="line">    &#125;;</span><br><span class="line">  &#125;)();</span><br><span class="line"><span class="title class_">Scheduler</span>.<span class="title function_">delay5</span>(<span class="keyword">function</span> (<span class="params"></span>) &#123;</span><br><span class="line">  <span class="title function_">consoleLog</span>(<span class="string">&#x27;Executing After 5 seconds!&#x27;</span>)</span><br><span class="line">&#125;);</span><br></pre></td></tr></table></figure>
-
-<h4 id="函数组合"><a href="#函数组合" class="headerlink" title="函数组合"></a>函数组合</h4><figure class="highlight javascript"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line"><span class="title class_">Function</span>.<span class="property"><span class="keyword">prototype</span></span>.<span class="property">compose</span> = R.<span class="property">compose</span>;</span><br><span class="line"><span class="keyword">const</span> cleanInput = checkLengthSsn.<span class="title function_">compose</span>(normalize).<span class="title function_">compose</span>(trim);</span><br></pre></td></tr></table></figure>
-
-<p><strong>对副作用的处理是，拆分副作用的函数，并且固定副作用函数的参数</strong></p>
-<h4 id="point-free编程"><a href="#point-free编程" class="headerlink" title="point-free编程"></a>point-free编程</h4><p>使用compose（或者pipe）就意味着永远不必再声明参数了（称为函数的points），这无疑会使代码更加声明式、更加简洁，或更加point-free。</p>
-<figure class="highlight javascript"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">R.<span class="title function_">compose</span>(first, getName, reverse, sortByGrade, combine);</span><br></pre></td></tr></table></figure>
-
-<p>point-free编程使JavaScript的函数式代码更接近于Haskell和UNIX的理念。它可以用来提高抽象度，促使开发者关注高级组件的组合，而不是低级的函数求值的细节。柯里化在这里也起着很重要的作用，因为它能够灵活地部分定义一个只差最后一个参数的内联函数。这种编码风格也被称为Tacit编程。</p>
-<p><strong>在将组合改为这种编码风格时，要记住，过度的使用会使得程序晦涩且令人费解。</strong></p>
-<h4 id="组合子"><a href="#组合子" class="headerlink" title="组合子"></a>组合子</h4><p>组合器是一些可以组合其他函数（或其他组合子），并作为控制逻辑运行的高阶函数。组合子通常不声明任何变量，也不包含任何业务逻辑，它们旨在管理函数式程序的流程。除了compose和pipe，还有无数的组合子，一些最常见的组合子如下。</p>
-<ul>
-<li>identity（I-combinator）</li>
-</ul>
-<p>为以函数为参数的更高阶函数提供数据，如之前清单4.12中的point-free代码。<br>在单元测试的函数组合器控制流中作为简单的函数结果来进行断言。例如，可以使用identity函数来编写compose的单元测试。<br>函数式地从封装类型中提取数据</p>
-<figure class="highlight javascript"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment">//identity :: (a) -&gt; a</span></span><br></pre></td></tr></table></figure>
-
-<ul>
-<li>tap（K-组合子）</li>
-</ul>
-<p>该函数接收一个输入对象a和一个对a执行指定操作的函数。它使用提供的对象调用给定的函数，然后再返回该对象</p>
-<figure class="highlight javascript"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">function</span> <span class="title function_">tap</span>(<span class="params">fn, x</span>) &#123;</span><br><span class="line">  <span class="title function_">fn</span>(x);</span><br><span class="line">  <span class="keyword">return</span> x;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
-
-<ul>
-<li>alt （OR-组合子） alternation</li>
-</ul>
-<p>alt组合子能够在提供函数响应的默认行为时执行简单的条件逻辑。该组合器以两个函数为参数，如<br>果第一个函数返回值已定义（即，不是false、null或undefined)</p>
-<p>用于处理if else 逻辑</p>
-<figure class="highlight javascript"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">const</span> alt = <span class="keyword">function</span> (<span class="params">func1, func2</span>) &#123;</span><br><span class="line">  <span class="keyword">return</span> <span class="keyword">function</span> (<span class="params">val</span>) &#123;</span><br><span class="line">    <span class="keyword">return</span> <span class="title function_">func1</span>(val) || <span class="title function_">func2</span>(val);</span><br><span class="line">&#125;</span><br><span class="line">&#125;;</span><br></pre></td></tr></table></figure>
-
-<ul>
-<li>seq（S-组合子） sequence</li>
-</ul>
-<p>seq组合子用于遍历函数序列。它以两个或更多的函数作为参数并返回一个新的函数，<strong>会用相同的值顺序调用所有这些函数</strong></p>
-<p>seq组合子不会返回任何值，只会一个一个地执行一系列操作。如果要将其嵌入函数组合之间，可以使用R.tap将它与其余部分进行桥接。</p>
-<figure class="highlight javascript"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">const</span> seq = <span class="keyword">function</span>(<span class="params"><span class="comment">/*funcs*/</span></span>) &#123;</span><br><span class="line">  <span class="keyword">const</span> funcs = <span class="title class_">Array</span>.<span class="property"><span class="keyword">prototype</span></span>.<span class="property">slice</span>.<span class="title function_">call</span>(<span class="variable language_">arguments</span>);</span><br><span class="line">    <span class="keyword">return</span> <span class="keyword">function</span> (<span class="params">val</span>) &#123;</span><br><span class="line">      funcs.<span class="title function_">forEach</span>(<span class="keyword">function</span> (<span class="params">fn</span>) &#123;</span><br><span class="line">      <span class="title function_">fn</span>(val);</span><br><span class="line">    &#125;);</span><br><span class="line">  &#125;;</span><br><span class="line">&#125;;</span><br></pre></td></tr></table></figure>
-
-<ul>
-<li>fork（join）组合子</li>
-</ul>
-<p><img src="/posts/90b882fa913b/0004.jpg"></p>
-<figure class="highlight javascript"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">const</span> fork = <span class="keyword">function</span>(<span class="params">join, func1, func2</span>)&#123;</span><br><span class="line">  <span class="keyword">return</span> <span class="keyword">function</span>(<span class="params">val</span>) &#123;</span><br><span class="line">    <span class="keyword">return</span> <span class="title function_">join</span>(<span class="title function_">func1</span>(val), <span class="title function_">func2</span>(val));</span><br><span class="line">  &#125;;</span><br><span class="line">&#125;;</span><br></pre></td></tr></table></figure>
-
-<figure class="highlight javascript"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">const</span> eqMedianAverage = <span class="title function_">fork</span>(R.<span class="property">equals</span>, R.<span class="property">median</span>, R.<span class="property">mean</span>);</span><br><span class="line"><span class="title function_">eqMedianAverage</span>([<span class="number">80</span>, <span class="number">90</span>, <span class="number">100</span>])); <span class="comment">//-&gt; True</span></span><br><span class="line"><span class="title function_">eqMedianAverage</span>([<span class="number">81</span>, <span class="number">90</span>, <span class="number">100</span>])); <span class="comment">//-&gt; False</span></span><br></pre></td></tr></table></figure>
-
-<h4 id="总结"><a href="#总结" class="headerlink" title="总结"></a>总结</h4><ul>
-<li>用于连接可重用的、模块化的、组件化程序的函数链与管道。</li>
-<li>Ramda.js是一个功能强大的函数库，适用于函数的柯里化与组合。</li>
-<li>可以通过部分求值和柯里化来减少函数元数，利用对参数子集的部分求值将函数转化为一元函数。</li>
-<li>可以将任务分解为多个简单的函数，再通过组合来获得整个解决方案。</li>
-<li>以point-free的风格编写，并用函数组合子来组织的程序控制流，可解决现实问题。</li>
-</ul>
- 
-      <!-- reward -->
-      
-    </div>
-    
-
-    <!-- copyright -->
-    
-    <footer class="article-footer">
-       
-  <ul class="article-tag-list" itemprop="keywords"><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/%E5%87%BD%E6%95%B0%E5%BC%8F%E7%BC%96%E7%A8%8B/" rel="tag">函数式编程</a></li></ul>
-
-    </footer>
-  </div>
-
-   
-    
-</article>
-
-    
-    <article
-  id="post-javascript/generator_async"
-  class="article article-type-post"
-  itemscope
-  itemprop="blogPost"
-  data-scroll-reveal
->
-  <div class="article-inner">
-    
-    <header class="article-header">
-       
-<h2 itemprop="name">
-  <a class="article-title" href="/posts/18bcaf615ff5/"
-    >Generator 异步</a> 
-</h2>
- 
-
-      
-    </header>
-     
-    <div class="article-meta">
-      <a href="/posts/18bcaf615ff5/" class="article-date">
-  <time datetime="2020-11-02T01:13:11.000Z" itemprop="datePublished">2020-11-02</time>
-</a> 
-  <div class="article-category">
-    <a class="article-category-link" href="/categories/JavaScript/">JavaScript</a> / <a class="article-category-link" href="/categories/JavaScript/%E5%9F%BA%E7%A1%80/">基础</a>
-  </div>
-   
-    </div>
-      
-    <div class="article-entry" itemprop="articleBody">
-       
-  <p>es6 之前实现异步的方法</p>
-<ul>
-<li>回调函数</li>
-<li>事件监听</li>
-<li>发布&#x2F;订阅</li>
-<li>Promise 对象</li>
-</ul>
-<h4 id="异步"><a href="#异步" class="headerlink" title="异步"></a>异步</h4><p>所谓”异步”，简单说就是一个任务不是连续完成的，可以理解成该任务被人为分成两段，先执行第一段，然后转而执行其他任务，等做好了准备，再回过头执行第二段。</p>
-<p>Promise 的最大问题是代码冗余，原来的任务被 Promise 包装了一下，不管什么操作，一眼看去都是一堆then，原来的语义变得很不清楚。</p>
-<h4 id="错误处理"><a href="#错误处理" class="headerlink" title="错误处理"></a>错误处理</h4><p>Generator 函数内部还可以部署错误处理代码，捕获函数体外抛出的错误。</p>
-<p>使用指针对象的throw方法抛出的错误，可以被函数体内的try…catch代码块捕获。这意味着，出错的代码与处理错误的代码，实现了时间和空间上的分离</p>
-<figure class="highlight javascript"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">function</span>* <span class="title function_">gen</span>(<span class="params">x</span>)&#123;</span><br><span class="line">  <span class="keyword">try</span> &#123;</span><br><span class="line">    <span class="keyword">var</span> y = <span class="keyword">yield</span> x + <span class="number">2</span>;</span><br><span class="line">  &#125; <span class="keyword">catch</span> (e)&#123;</span><br><span class="line">    <span class="variable language_">console</span>.<span class="title function_">log</span>(e);</span><br><span class="line">  &#125;</span><br><span class="line">  <span class="keyword">return</span> y;</span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line"><span class="keyword">var</span> g = <span class="title function_">gen</span>(<span class="number">1</span>);</span><br><span class="line">g.<span class="title function_">next</span>();</span><br><span class="line">g.<span class="keyword">throw</span>(<span class="string">&#x27;出错了&#x27;</span>);</span><br><span class="line"><span class="comment">// 出错了</span></span><br></pre></td></tr></table></figure>
-
-<h4 id="异步任务的封装"><a href="#异步任务的封装" class="headerlink" title="异步任务的封装"></a>异步任务的封装</h4><p>虽然 Generator 函数将异步操作表示得很简洁，但是流程管理却不方便（即何时执行第一阶段、何时执行第二阶段）。</p>
-<figure class="highlight javascript"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">var</span> fetch = <span class="built_in">require</span>(<span class="string">&#x27;node-fetch&#x27;</span>);</span><br><span class="line"></span><br><span class="line"><span class="keyword">function</span>* <span class="title function_">gen</span>(<span class="params"></span>)&#123;</span><br><span class="line">  <span class="keyword">var</span> url = <span class="string">&#x27;https://api.github.com/users/github&#x27;</span>;</span><br><span class="line">  <span class="keyword">var</span> result = <span class="keyword">yield</span> <span class="title function_">fetch</span>(url);</span><br><span class="line">  <span class="variable language_">console</span>.<span class="title function_">log</span>(result.<span class="property">bio</span>);</span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line"><span class="keyword">var</span> g = <span class="title function_">gen</span>();</span><br><span class="line"><span class="keyword">var</span> result = g.<span class="title function_">next</span>();</span><br><span class="line"></span><br><span class="line">result.<span class="property">value</span>.<span class="title function_">then</span>(<span class="keyword">function</span>(<span class="params">data</span>)&#123;</span><br><span class="line">  <span class="keyword">return</span> data.<span class="title function_">json</span>();</span><br><span class="line">&#125;).<span class="title function_">then</span>(<span class="keyword">function</span>(<span class="params">data</span>)&#123;</span><br><span class="line">  g.<span class="title function_">next</span>(data);</span><br><span class="line">&#125;);</span><br></pre></td></tr></table></figure>
-
-<h4 id="Thunk-函数的含义"><a href="#Thunk-函数的含义" class="headerlink" title="Thunk 函数的含义"></a>Thunk 函数的含义</h4><p>编译器的“传名调用”实现，往往是将参数放到一个临时函数之中，再将这个临时函数传入函数体。这个临时函数就叫做 Thunk 函数。</p>
-<h4 id="JavaScript-语言的-Thunk-函数"><a href="#JavaScript-语言的-Thunk-函数" class="headerlink" title="JavaScript 语言的 Thunk 函数"></a>JavaScript 语言的 Thunk 函数</h4><p>“传值调用”（call by value），即在进入函数体之前，就计算x + 5的值（等于 6），再将这个值传入函数f。C 语言就采用这种策略。</p>
-<p>“传名调用”（call by name），即直接将表达式x + 5传入函数体，只在用到它的时候求值。Haskell 语言采用这种策略。</p>
-<figure class="highlight javascript"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment">// Thunk版本的readFile（单参数版本）</span></span><br><span class="line"><span class="keyword">var</span> <span class="title class_">Thunk</span> = <span class="keyword">function</span> (<span class="params">fileName</span>) &#123;</span><br><span class="line">  <span class="keyword">return</span> <span class="keyword">function</span> (<span class="params">callback</span>) &#123;</span><br><span class="line">    <span class="keyword">return</span> fs.<span class="title function_">readFile</span>(fileName, callback);</span><br><span class="line">  &#125;;</span><br><span class="line">&#125;;</span><br><span class="line"></span><br><span class="line"><span class="keyword">var</span> readFileThunk = <span class="title class_">Thunk</span>(fileName);</span><br><span class="line"><span class="title function_">readFileThunk</span>(callback);</span><br></pre></td></tr></table></figure>
-
-
-<h4 id="Thunkify"><a href="#Thunkify" class="headerlink" title="Thunkify"></a>Thunkify</h4><p>增加了重复执行的判断</p>
-<figure class="highlight javascript"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">function</span> <span class="title function_">thunkify</span>(<span class="params">fn</span>) &#123;</span><br><span class="line">  <span class="keyword">return</span> <span class="keyword">function</span>(<span class="params"></span>) &#123;</span><br><span class="line">    <span class="keyword">var</span> args = <span class="keyword">new</span> <span class="title class_">Array</span>(<span class="variable language_">arguments</span>.<span class="property">length</span>);</span><br><span class="line">    <span class="keyword">var</span> ctx = <span class="variable language_">this</span>;</span><br><span class="line"></span><br><span class="line">    <span class="keyword">for</span> (<span class="keyword">var</span> i = <span class="number">0</span>; i &lt; args.<span class="property">length</span>; ++i) &#123;</span><br><span class="line">      args[i] = <span class="variable language_">arguments</span>[i];</span><br><span class="line">    &#125;</span><br><span class="line"></span><br><span class="line">    <span class="keyword">return</span> <span class="keyword">function</span> (<span class="params">done</span>) &#123;</span><br><span class="line">      <span class="keyword">var</span> called;</span><br><span class="line"></span><br><span class="line">      args.<span class="title function_">push</span>(<span class="keyword">function</span> (<span class="params"></span>) &#123;</span><br><span class="line">        <span class="keyword">if</span> (called) <span class="keyword">return</span>;</span><br><span class="line">        called = <span class="literal">true</span>;</span><br><span class="line">        done.<span class="title function_">apply</span>(<span class="literal">null</span>, <span class="variable language_">arguments</span>);</span><br><span class="line">      &#125;);</span><br><span class="line"></span><br><span class="line">      <span class="keyword">try</span> &#123;</span><br><span class="line">        fn.<span class="title function_">apply</span>(ctx, args);</span><br><span class="line">      &#125; <span class="keyword">catch</span> (err) &#123;</span><br><span class="line">        <span class="title function_">done</span>(err);</span><br><span class="line">      &#125;</span><br><span class="line">    &#125;</span><br><span class="line">  &#125;</span><br><span class="line">&#125;;</span><br></pre></td></tr></table></figure>
-
-<h4 id="基于Thunk自动流程管理"><a href="#基于Thunk自动流程管理" class="headerlink" title="基于Thunk自动流程管理"></a>基于Thunk自动流程管理</h4><ul>
-<li>实现自动执行，一定会自动调用<code>Generator</code>函数执行后的<code>next()</code>方法</li>
-</ul>
-<p>通过<code>while</code>的判断是否需要执行下一步</p>
-<figure class="highlight javascript"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">function</span> <span class="title function_">run</span>(<span class="params">fn</span>) &#123;</span><br><span class="line">    <span class="keyword">const</span> g = <span class="title function_">fn</span>();</span><br><span class="line">    <span class="keyword">let</span> res = g.<span class="title function_">next</span>();</span><br><span class="line">    <span class="keyword">while</span> (res.<span class="property">value</span>) &#123;</span><br><span class="line">        res = g.<span class="title function_">next</span>();</span><br><span class="line">    &#125;</span><br><span class="line">&#125;;</span><br><span class="line"></span><br><span class="line"><span class="keyword">function</span>* <span class="title function_">g</span>(<span class="params"></span>) &#123;</span><br><span class="line">    <span class="keyword">yield</span> <span class="number">1</span>;</span><br><span class="line">    <span class="keyword">yield</span> <span class="number">2</span>;</span><br><span class="line">    <span class="keyword">return</span> <span class="number">3</span></span><br><span class="line">&#125;</span><br><span class="line"><span class="title function_">run</span>(g);</span><br></pre></td></tr></table></figure>
-
-<p>结合函数式编程的思想，这里不应该通过循环实现，应该递归调用，考虑创建一个子函数 <code>next</code>用于递归调用</p>
-<figure class="highlight javascript"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">function</span> <span class="title function_">run</span>(<span class="params">fn</span>) &#123;</span><br><span class="line">    <span class="keyword">const</span> g = <span class="title function_">fn</span>();</span><br><span class="line">    <span class="keyword">function</span> <span class="title function_">next</span>(<span class="params"></span>) &#123;</span><br><span class="line">        <span class="keyword">const</span> res = g.<span class="title function_">next</span>();</span><br><span class="line">        <span class="keyword">if</span> (!res.<span class="property">done</span>) <span class="title function_">next</span>()</span><br><span class="line">    &#125;</span><br><span class="line">    <span class="title function_">next</span>()</span><br><span class="line">&#125;;</span><br><span class="line"></span><br><span class="line"><span class="keyword">function</span>* <span class="title function_">g</span>(<span class="params"></span>) &#123;</span><br><span class="line">    <span class="keyword">yield</span> <span class="number">1</span>;</span><br><span class="line">    <span class="keyword">yield</span> <span class="number">2</span>;</span><br><span class="line">    <span class="keyword">return</span> <span class="number">3</span></span><br><span class="line">&#125;</span><br><span class="line"><span class="title function_">run</span>(g);</span><br></pre></td></tr></table></figure>
-
-<p>有返回值的情况</p>
-<figure class="highlight javascript"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">function</span> <span class="title function_">run</span>(<span class="params">fn</span>) &#123;</span><br><span class="line">    <span class="keyword">const</span> g = <span class="title function_">fn</span>();</span><br><span class="line"></span><br><span class="line">    <span class="keyword">function</span> <span class="title function_">next</span>(<span class="params">val</span>) &#123;</span><br><span class="line">        <span class="keyword">const</span> res = g.<span class="title function_">next</span>(val);</span><br><span class="line">        <span class="keyword">if</span> (!res.<span class="property">done</span>) <span class="title function_">next</span>(res.<span class="property">value</span>)</span><br><span class="line">    &#125;</span><br><span class="line">    <span class="title function_">next</span>()</span><br><span class="line">&#125;;</span><br><span class="line"></span><br><span class="line"><span class="keyword">function</span>* <span class="title function_">g</span>(<span class="params"></span>) &#123;</span><br><span class="line">    <span class="keyword">const</span> a = <span class="keyword">yield</span> <span class="number">2</span>;</span><br><span class="line">    <span class="keyword">const</span> b = <span class="keyword">yield</span> a * <span class="number">2</span>;</span><br><span class="line">    <span class="keyword">const</span> c = <span class="keyword">yield</span> b * <span class="number">2</span>;</span><br><span class="line">    <span class="keyword">return</span> c * <span class="number">2</span></span><br><span class="line">&#125;</span><br><span class="line"><span class="title function_">run</span>(g);</span><br></pre></td></tr></table></figure>
-
-<p>内部的next函数就是 Thunk 的回调函数。next函数先将指针移到 Generator 函数的下一步（gen.next方法），然后判断 Generator 函数是否结束（result.done属性），如果没结束，就将next函数再传入 Thunk 函数（result.value属性），否则就直接退出。</p>
-<figure class="highlight javascript"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">const</span> fs = <span class="built_in">require</span>(<span class="string">&#x27;fs&#x27;</span>);</span><br><span class="line"><span class="keyword">const</span> <span class="title class_">Thunk</span> = <span class="keyword">function</span> (<span class="params">fn</span>) &#123;</span><br><span class="line">  <span class="keyword">return</span> <span class="keyword">function</span> (<span class="params">...args</span>) &#123;</span><br><span class="line">    <span class="keyword">return</span> <span class="keyword">function</span> (<span class="params">callback</span>) &#123;</span><br><span class="line">      <span class="keyword">return</span> fn.<span class="title function_">call</span>(<span class="variable language_">this</span>, ...args, callback);</span><br><span class="line">    &#125;</span><br><span class="line">  &#125;;</span><br><span class="line">&#125;;</span><br><span class="line"></span><br><span class="line"><span class="keyword">const</span> readFileThunk1 = <span class="title class_">Thunk</span>(fs.<span class="property">readFile</span>)(<span class="string">&#x27;./1.txt&#x27;</span>);</span><br><span class="line"><span class="keyword">const</span> readFileThunk2 = <span class="title class_">Thunk</span>(fs.<span class="property">readFile</span>)(<span class="string">&#x27;./2.txt&#x27;</span>);</span><br><span class="line"><span class="keyword">const</span> readFileThunk3 = <span class="title class_">Thunk</span>(fs.<span class="property">readFile</span>)(<span class="string">&#x27;./3.txt&#x27;</span>);</span><br><span class="line"></span><br><span class="line"><span class="keyword">function</span> <span class="title function_">run</span>(<span class="params">fn</span>) &#123;</span><br><span class="line">  <span class="keyword">const</span> g = <span class="title function_">fn</span>();</span><br><span class="line"></span><br><span class="line">  <span class="keyword">function</span> <span class="title function_">next</span>(<span class="params">err, data</span>) &#123;</span><br><span class="line">    <span class="keyword">if</span> (err) <span class="keyword">throw</span> <span class="keyword">new</span> <span class="title class_">Error</span>();</span><br><span class="line">    <span class="keyword">const</span> res = g.<span class="title function_">next</span>(data)</span><br><span class="line">    <span class="keyword">if</span> (!res.<span class="property">done</span>) res.<span class="title function_">value</span>(next)</span><br><span class="line">  &#125;</span><br><span class="line">  <span class="title function_">next</span>()</span><br><span class="line">&#125;;</span><br><span class="line"></span><br><span class="line"><span class="keyword">function</span>* <span class="title function_">g</span>(<span class="params"></span>) &#123;</span><br><span class="line">  <span class="keyword">const</span> a = <span class="keyword">yield</span> readFileThunk1;</span><br><span class="line">  <span class="keyword">const</span> b = <span class="keyword">yield</span> readFileThunk2;</span><br><span class="line">  <span class="keyword">const</span> c = <span class="keyword">yield</span> readFileThunk3;</span><br><span class="line">&#125;</span><br><span class="line"><span class="variable language_">console</span>.<span class="title function_">log</span>(<span class="title function_">run</span>(g));</span><br></pre></td></tr></table></figure>
-
-<h4 id="基于Promise的自动执行器"><a href="#基于Promise的自动执行器" class="headerlink" title="基于Promise的自动执行器"></a>基于Promise的自动执行器</h4><figure class="highlight javascript"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">const</span> fs = <span class="built_in">require</span>(<span class="string">&#x27;fs&#x27;</span>);</span><br><span class="line"></span><br><span class="line"><span class="keyword">const</span> readFile = <span class="keyword">function</span> (<span class="params">path</span>) &#123;</span><br><span class="line">  <span class="keyword">return</span> <span class="keyword">new</span> <span class="title class_">Promise</span>(<span class="function">(<span class="params">resolve, reject</span>) =&gt;</span> &#123;</span><br><span class="line">    fs.<span class="title function_">readFile</span>(path, <span class="keyword">function</span> (<span class="params">err, data</span>) &#123;</span><br><span class="line">      <span class="keyword">if</span> (err) <span class="keyword">return</span> <span class="title function_">reject</span>(err);</span><br><span class="line">      <span class="title function_">resolve</span>(data);</span><br><span class="line">    &#125;)</span><br><span class="line">  &#125;)</span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line"></span><br><span class="line"><span class="keyword">function</span> <span class="title function_">run</span>(<span class="params">fn</span>) &#123;</span><br><span class="line">  <span class="keyword">const</span> g = <span class="title function_">fn</span>();</span><br><span class="line"></span><br><span class="line">  <span class="keyword">function</span> <span class="title function_">next</span>(<span class="params">data</span>) &#123;</span><br><span class="line">    <span class="keyword">const</span> res = g.<span class="title function_">next</span>(data);</span><br><span class="line">    <span class="keyword">if</span> (!res.<span class="property">done</span>) res.<span class="property">value</span>.<span class="title function_">then</span>(<span class="function"><span class="params">data</span> =&gt;</span> <span class="title function_">next</span>(data));</span><br><span class="line">    <span class="keyword">return</span> res.<span class="property">value</span>;</span><br><span class="line">  &#125;</span><br><span class="line">  <span class="title function_">next</span>()</span><br><span class="line">&#125;;</span><br><span class="line"></span><br><span class="line"><span class="keyword">function</span>* <span class="title function_">g</span>(<span class="params"></span>) &#123;</span><br><span class="line">  <span class="keyword">const</span> a = <span class="keyword">yield</span> <span class="title function_">readFile</span>(<span class="string">&#x27;./1.txt&#x27;</span>);</span><br><span class="line">  <span class="keyword">const</span> b = <span class="keyword">yield</span> <span class="title function_">readFile</span>(<span class="string">&#x27;./2.txt&#x27;</span>);</span><br><span class="line">  <span class="keyword">const</span> c = <span class="keyword">yield</span> <span class="title function_">readFile</span>(<span class="string">&#x27;./3.txt&#x27;</span>);</span><br><span class="line">  <span class="keyword">return</span> <span class="string">&#x27;end&#x27;</span></span><br><span class="line">&#125;</span><br><span class="line"><span class="title function_">run</span>(g)</span><br></pre></td></tr></table></figure>
-
-<h4 id="co的实现"><a href="#co的实现" class="headerlink" title="co的实现"></a>co的实现</h4><figure class="highlight javascript"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br><span class="line">35</span><br><span class="line">36</span><br><span class="line">37</span><br><span class="line">38</span><br><span class="line">39</span><br><span class="line">40</span><br><span class="line">41</span><br><span class="line">42</span><br><span class="line">43</span><br><span class="line">44</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">function</span> <span class="title function_">co</span>(<span class="params">gen</span>) &#123;</span><br><span class="line">    <span class="keyword">var</span> ctx = <span class="variable language_">this</span>;</span><br><span class="line">    <span class="keyword">var</span> args = slice.<span class="title function_">call</span>(<span class="variable language_">arguments</span>, <span class="number">1</span>);</span><br><span class="line">    <span class="comment">// 统一返回Promise对象</span></span><br><span class="line">    <span class="keyword">return</span> <span class="keyword">new</span> <span class="title class_">Promise</span>(<span class="keyword">function</span> (<span class="params">resolve, reject</span>) &#123;</span><br><span class="line">        <span class="comment">//co 先检查参数gen是否为 Generator 函数。如果是，就执行该函数，得到一个内部指针对象；如果不是就返回，并将 Promise 对象的状态改为resolved。</span></span><br><span class="line">        <span class="keyword">if</span> (<span class="keyword">typeof</span> gen === <span class="string">&#x27;function&#x27;</span>) gen = gen.<span class="title function_">apply</span>(ctx, args);</span><br><span class="line">        <span class="keyword">if</span> (!gen || <span class="keyword">typeof</span> gen.<span class="property">next</span> !== <span class="string">&#x27;function&#x27;</span>) <span class="keyword">return</span> <span class="title function_">resolve</span>(gen);</span><br><span class="line">        <span class="title function_">onFulfilled</span>();</span><br><span class="line">        <span class="comment">//co 将 Generator 函数的内部指针对象的next方法，包装成onFulfilled函数。这主要是为了能够捕捉抛出的错误。</span></span><br><span class="line">        <span class="keyword">function</span> <span class="title function_">onFulfilled</span>(<span class="params">res</span>) &#123;</span><br><span class="line">            <span class="keyword">var</span> ret;</span><br><span class="line">            <span class="keyword">try</span> &#123;</span><br><span class="line">                ret = gen.<span class="title function_">next</span>(res);</span><br><span class="line">            &#125; <span class="keyword">catch</span> (e) &#123;</span><br><span class="line">                <span class="keyword">return</span> <span class="title function_">reject</span>(e);</span><br><span class="line">            &#125;</span><br><span class="line">            <span class="title function_">next</span>(ret);</span><br><span class="line">            <span class="keyword">return</span> <span class="literal">null</span>;</span><br><span class="line">        &#125;</span><br><span class="line"></span><br><span class="line">        <span class="keyword">function</span> <span class="title function_">onRejected</span>(<span class="params">err</span>) &#123;</span><br><span class="line">            <span class="keyword">var</span> ret;</span><br><span class="line">            <span class="keyword">try</span> &#123;</span><br><span class="line">                ret = gen.<span class="keyword">throw</span>(err);</span><br><span class="line">            &#125; <span class="keyword">catch</span> (e) &#123;</span><br><span class="line">                <span class="keyword">return</span> <span class="title function_">reject</span>(e);</span><br><span class="line">            &#125;</span><br><span class="line">            <span class="title function_">next</span>(ret);</span><br><span class="line">        &#125;</span><br><span class="line"></span><br><span class="line">        <span class="keyword">function</span> <span class="title function_">next</span>(<span class="params">ret</span>) &#123;</span><br><span class="line">            <span class="keyword">if</span> (ret.<span class="property">done</span>) <span class="keyword">return</span> <span class="title function_">resolve</span>(ret.<span class="property">value</span>);</span><br><span class="line">            <span class="comment">//确保每一步的返回值，是 Promise 对象。</span></span><br><span class="line">            <span class="keyword">var</span> value = toPromise.<span class="title function_">call</span>(ctx, ret.<span class="property">value</span>);</span><br><span class="line">            <span class="comment">//使用then方法，为返回值加上回调函数，然后通过onFulfilled函数再次调用next函数。</span></span><br><span class="line">            <span class="keyword">if</span> (value &amp;&amp; <span class="title function_">isPromise</span>(value)) <span class="keyword">return</span> value.<span class="title function_">then</span>(onFulfilled, onRejected);</span><br><span class="line">            <span class="comment">//在参数不符合要求的情况下（参数非 Thunk 函数和 Promise 对象），将 Promise 对象的状态改为rejected，从而终止执行。</span></span><br><span class="line">            <span class="keyword">return</span> <span class="title function_">onRejected</span>(<span class="keyword">new</span> <span class="title class_">TypeError</span>(</span><br><span class="line">                <span class="string">&#x27;You may only yield a function, promise, generator, array, or object, &#x27;</span> +</span><br><span class="line">                <span class="string">&#x27;but the following object was passed: &quot;&#x27;</span> + <span class="title class_">String</span>(ret.<span class="property">value</span>) + <span class="string">&#x27;&quot;&#x27;</span>));</span><br><span class="line">        &#125;</span><br><span class="line">    &#125;);</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure> 
-      <!-- reward -->
-      
-    </div>
-    
-
-    <!-- copyright -->
-    
-    <footer class="article-footer">
-       
-  <ul class="article-tag-list" itemprop="keywords"><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/ES6%E5%9F%BA%E7%A1%80/" rel="tag">ES6基础</a></li><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/JavaScript/" rel="tag">JavaScript</a></li></ul>
-
-    </footer>
-  </div>
-
-   
-    
-</article>
-
-    
-    <article
-  id="post-algorithm/leetcode/(O53)que-shi-de-shu-zi-lcof"
-  class="article article-type-post"
-  itemscope
-  itemprop="blogPost"
-  data-scroll-reveal
->
-  <div class="article-inner">
-    
-    <header class="article-header">
-       
-<h2 itemprop="name">
-  <a class="article-title" href="/posts/c0dab2eedc6f/"
-    >O53.0～n-1中缺失的数字</a> 
-</h2>
- 
-
-      
-    </header>
-     
-    <div class="article-meta">
-      <a href="/posts/c0dab2eedc6f/" class="article-date">
-  <time datetime="2020-11-01T11:38:05.000Z" itemprop="datePublished">2020-11-01</time>
-</a> 
-  <div class="article-category">
-    <a class="article-category-link" href="/categories/%E7%AE%97%E6%B3%95/">算法</a> / <a class="article-category-link" href="/categories/%E7%AE%97%E6%B3%95/LeetCode/">LeetCode</a> / <a class="article-category-link" href="/categories/%E7%AE%97%E6%B3%95/LeetCode/Easy/">Easy</a>
-  </div>
-   
-    </div>
-      
-    <div class="article-entry" itemprop="articleBody">
-       
-  <p><strong><a target="_blank" rel="noopener" href="https://leetcode-cn.com/problems/que-shi-de-shu-zi-lcof/">LeetCode</a></strong></p>
-<blockquote>
-<p><strong>注意</strong></p>
-</blockquote>
-<ul>
-<li>清楚题目的意思，有一个数字不在数组中，是返回这个数字的本身，而不是索引。<code>[0]</code>长度为1，取值范围是<code>[0,1]</code>其中1不在数组中，所以返回1</li>
-</ul>
-<h4 id="暴力解法"><a href="#暴力解法" class="headerlink" title="暴力解法"></a>暴力解法</h4><figure class="highlight javascript"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">var</span> missingNumber = <span class="keyword">function</span>(<span class="params">nums</span>) &#123;</span><br><span class="line">    <span class="keyword">var</span> i=<span class="number">0</span>;</span><br><span class="line">    <span class="keyword">var</span> len = nums.<span class="property">length</span>;</span><br><span class="line">    <span class="keyword">for</span>(<span class="keyword">var</span> i=<span class="number">0</span>;i&lt;len;i++)&#123;</span><br><span class="line">        <span class="keyword">if</span>(nums[i]!==i)&#123;</span><br><span class="line">            <span class="keyword">return</span> i;</span><br><span class="line">        &#125;</span><br><span class="line">    &#125;</span><br><span class="line">    <span class="keyword">return</span> i;</span><br><span class="line">&#125;;</span><br></pre></td></tr></table></figure>
-
-<p><strong>复杂度分析</strong></p>
-<ul>
-<li><p>时间复杂度：<mjx-container class="MathJax" jax="SVG"><svg style="vertical-align: -0.566ex;" xmlns="http://www.w3.org/2000/svg" width="4.844ex" height="2.262ex" role="img" focusable="false" viewBox="0 -750 2141 1000" xmlns:xlink="http://www.w3.org/1999/xlink"><defs><path id="MJX-24-TEX-I-1D442" d="M740 435Q740 320 676 213T511 42T304 -22Q207 -22 138 35T51 201Q50 209 50 244Q50 346 98 438T227 601Q351 704 476 704Q514 704 524 703Q621 689 680 617T740 435ZM637 476Q637 565 591 615T476 665Q396 665 322 605Q242 542 200 428T157 216Q157 126 200 73T314 19Q404 19 485 98T608 313Q637 408 637 476Z"></path><path id="MJX-24-TEX-N-28" d="M94 250Q94 319 104 381T127 488T164 576T202 643T244 695T277 729T302 750H315H319Q333 750 333 741Q333 738 316 720T275 667T226 581T184 443T167 250T184 58T225 -81T274 -167T316 -220T333 -241Q333 -250 318 -250H315H302L274 -226Q180 -141 137 -14T94 250Z"></path><path id="MJX-24-TEX-I-1D45B" d="M21 287Q22 293 24 303T36 341T56 388T89 425T135 442Q171 442 195 424T225 390T231 369Q231 367 232 367L243 378Q304 442 382 442Q436 442 469 415T503 336T465 179T427 52Q427 26 444 26Q450 26 453 27Q482 32 505 65T540 145Q542 153 560 153Q580 153 580 145Q580 144 576 130Q568 101 554 73T508 17T439 -10Q392 -10 371 17T350 73Q350 92 386 193T423 345Q423 404 379 404H374Q288 404 229 303L222 291L189 157Q156 26 151 16Q138 -11 108 -11Q95 -11 87 -5T76 7T74 17Q74 30 112 180T152 343Q153 348 153 366Q153 405 129 405Q91 405 66 305Q60 285 60 284Q58 278 41 278H27Q21 284 21 287Z"></path><path id="MJX-24-TEX-N-29" d="M60 749L64 750Q69 750 74 750H86L114 726Q208 641 251 514T294 250Q294 182 284 119T261 12T224 -76T186 -143T145 -194T113 -227T90 -246Q87 -249 86 -250H74Q66 -250 63 -250T58 -247T55 -238Q56 -237 66 -225Q221 -64 221 250T66 725Q56 737 55 738Q55 746 60 749Z"></path></defs><g stroke="currentColor" fill="currentColor" stroke-width="0" transform="scale(1,-1)"><g data-mml-node="math"><g data-mml-node="mi"><use data-c="1D442" xlink:href="#MJX-24-TEX-I-1D442"></use></g><g data-mml-node="mo" transform="translate(763,0)"><use data-c="28" xlink:href="#MJX-24-TEX-N-28"></use></g><g data-mml-node="mi" transform="translate(1152,0)"><use data-c="1D45B" xlink:href="#MJX-24-TEX-I-1D45B"></use></g><g data-mml-node="mo" transform="translate(1752,0)"><use data-c="29" xlink:href="#MJX-24-TEX-N-29"></use></g></g></g></svg></mjx-container></p>
-</li>
-<li><p>空间复杂度：<mjx-container class="MathJax" jax="SVG"><svg style="vertical-align: -0.566ex;" xmlns="http://www.w3.org/2000/svg" width="4.618ex" height="2.262ex" role="img" focusable="false" viewBox="0 -750 2041 1000" xmlns:xlink="http://www.w3.org/1999/xlink"><defs><path id="MJX-23-TEX-I-1D442" d="M740 435Q740 320 676 213T511 42T304 -22Q207 -22 138 35T51 201Q50 209 50 244Q50 346 98 438T227 601Q351 704 476 704Q514 704 524 703Q621 689 680 617T740 435ZM637 476Q637 565 591 615T476 665Q396 665 322 605Q242 542 200 428T157 216Q157 126 200 73T314 19Q404 19 485 98T608 313Q637 408 637 476Z"></path><path id="MJX-23-TEX-N-28" d="M94 250Q94 319 104 381T127 488T164 576T202 643T244 695T277 729T302 750H315H319Q333 750 333 741Q333 738 316 720T275 667T226 581T184 443T167 250T184 58T225 -81T274 -167T316 -220T333 -241Q333 -250 318 -250H315H302L274 -226Q180 -141 137 -14T94 250Z"></path><path id="MJX-23-TEX-N-31" d="M213 578L200 573Q186 568 160 563T102 556H83V602H102Q149 604 189 617T245 641T273 663Q275 666 285 666Q294 666 302 660V361L303 61Q310 54 315 52T339 48T401 46H427V0H416Q395 3 257 3Q121 3 100 0H88V46H114Q136 46 152 46T177 47T193 50T201 52T207 57T213 61V578Z"></path><path id="MJX-23-TEX-N-29" d="M60 749L64 750Q69 750 74 750H86L114 726Q208 641 251 514T294 250Q294 182 284 119T261 12T224 -76T186 -143T145 -194T113 -227T90 -246Q87 -249 86 -250H74Q66 -250 63 -250T58 -247T55 -238Q56 -237 66 -225Q221 -64 221 250T66 725Q56 737 55 738Q55 746 60 749Z"></path></defs><g stroke="currentColor" fill="currentColor" stroke-width="0" transform="scale(1,-1)"><g data-mml-node="math"><g data-mml-node="mi"><use data-c="1D442" xlink:href="#MJX-23-TEX-I-1D442"></use></g><g data-mml-node="mo" transform="translate(763,0)"><use data-c="28" xlink:href="#MJX-23-TEX-N-28"></use></g><g data-mml-node="mn" transform="translate(1152,0)"><use data-c="31" xlink:href="#MJX-23-TEX-N-31"></use></g><g data-mml-node="mo" transform="translate(1652,0)"><use data-c="29" xlink:href="#MJX-23-TEX-N-29"></use></g></g></g></svg></mjx-container></p>
-</li>
-</ul>
-<h4 id="二分法"><a href="#二分法" class="headerlink" title="二分法"></a>二分法</h4><figure class="highlight javascript"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">var</span> missingNumber = <span class="keyword">function</span> (<span class="params">nums</span>) &#123;</span><br><span class="line">    <span class="keyword">var</span> left = <span class="number">0</span>;</span><br><span class="line">    <span class="keyword">var</span> right = nums.<span class="property">length</span>-<span class="number">1</span>;</span><br><span class="line">    <span class="keyword">var</span> middle = <span class="title class_">Math</span>.<span class="title function_">floor</span>((left + right) / <span class="number">2</span>)</span><br><span class="line">    <span class="keyword">while</span> (left &lt;= right) &#123;</span><br><span class="line">        <span class="keyword">if</span> (nums[middle] === middle) &#123;</span><br><span class="line">            left = middle + <span class="number">1</span>;</span><br><span class="line">        &#125; <span class="keyword">else</span> &#123;</span><br><span class="line">            right = middle-<span class="number">1</span>;</span><br><span class="line">        &#125;</span><br><span class="line">        middle = <span class="title class_">Math</span>.<span class="title function_">floor</span>((left + right) / <span class="number">2</span>)</span><br><span class="line">    &#125;</span><br><span class="line">    <span class="keyword">return</span> left</span><br><span class="line">&#125;;</span><br></pre></td></tr></table></figure>
-<p><strong>复杂度分析</strong></p>
-<ul>
-<li><p>时间复杂度：<mjx-container class="MathJax" jax="SVG"><svg style="vertical-align: -0.566ex;" xmlns="http://www.w3.org/2000/svg" width="7.695ex" height="2.262ex" role="img" focusable="false" viewBox="0 -750 3401 1000" xmlns:xlink="http://www.w3.org/1999/xlink"><defs><path id="MJX-19-TEX-I-1D442" d="M740 435Q740 320 676 213T511 42T304 -22Q207 -22 138 35T51 201Q50 209 50 244Q50 346 98 438T227 601Q351 704 476 704Q514 704 524 703Q621 689 680 617T740 435ZM637 476Q637 565 591 615T476 665Q396 665 322 605Q242 542 200 428T157 216Q157 126 200 73T314 19Q404 19 485 98T608 313Q637 408 637 476Z"></path><path id="MJX-19-TEX-N-28" d="M94 250Q94 319 104 381T127 488T164 576T202 643T244 695T277 729T302 750H315H319Q333 750 333 741Q333 738 316 720T275 667T226 581T184 443T167 250T184 58T225 -81T274 -167T316 -220T333 -241Q333 -250 318 -250H315H302L274 -226Q180 -141 137 -14T94 250Z"></path><path id="MJX-19-TEX-I-1D459" d="M117 59Q117 26 142 26Q179 26 205 131Q211 151 215 152Q217 153 225 153H229Q238 153 241 153T246 151T248 144Q247 138 245 128T234 90T214 43T183 6T137 -11Q101 -11 70 11T38 85Q38 97 39 102L104 360Q167 615 167 623Q167 626 166 628T162 632T157 634T149 635T141 636T132 637T122 637Q112 637 109 637T101 638T95 641T94 647Q94 649 96 661Q101 680 107 682T179 688Q194 689 213 690T243 693T254 694Q266 694 266 686Q266 675 193 386T118 83Q118 81 118 75T117 65V59Z"></path><path id="MJX-19-TEX-I-1D45C" d="M201 -11Q126 -11 80 38T34 156Q34 221 64 279T146 380Q222 441 301 441Q333 441 341 440Q354 437 367 433T402 417T438 387T464 338T476 268Q476 161 390 75T201 -11ZM121 120Q121 70 147 48T206 26Q250 26 289 58T351 142Q360 163 374 216T388 308Q388 352 370 375Q346 405 306 405Q243 405 195 347Q158 303 140 230T121 120Z"></path><path id="MJX-19-TEX-I-1D454" d="M311 43Q296 30 267 15T206 0Q143 0 105 45T66 160Q66 265 143 353T314 442Q361 442 401 394L404 398Q406 401 409 404T418 412T431 419T447 422Q461 422 470 413T480 394Q480 379 423 152T363 -80Q345 -134 286 -169T151 -205Q10 -205 10 -137Q10 -111 28 -91T74 -71Q89 -71 102 -80T116 -111Q116 -121 114 -130T107 -144T99 -154T92 -162L90 -164H91Q101 -167 151 -167Q189 -167 211 -155Q234 -144 254 -122T282 -75Q288 -56 298 -13Q311 35 311 43ZM384 328L380 339Q377 350 375 354T369 368T359 382T346 393T328 402T306 405Q262 405 221 352Q191 313 171 233T151 117Q151 38 213 38Q269 38 323 108L331 118L384 328Z"></path><path id="MJX-19-TEX-I-1D45B" d="M21 287Q22 293 24 303T36 341T56 388T89 425T135 442Q171 442 195 424T225 390T231 369Q231 367 232 367L243 378Q304 442 382 442Q436 442 469 415T503 336T465 179T427 52Q427 26 444 26Q450 26 453 27Q482 32 505 65T540 145Q542 153 560 153Q580 153 580 145Q580 144 576 130Q568 101 554 73T508 17T439 -10Q392 -10 371 17T350 73Q350 92 386 193T423 345Q423 404 379 404H374Q288 404 229 303L222 291L189 157Q156 26 151 16Q138 -11 108 -11Q95 -11 87 -5T76 7T74 17Q74 30 112 180T152 343Q153 348 153 366Q153 405 129 405Q91 405 66 305Q60 285 60 284Q58 278 41 278H27Q21 284 21 287Z"></path><path id="MJX-19-TEX-N-29" d="M60 749L64 750Q69 750 74 750H86L114 726Q208 641 251 514T294 250Q294 182 284 119T261 12T224 -76T186 -143T145 -194T113 -227T90 -246Q87 -249 86 -250H74Q66 -250 63 -250T58 -247T55 -238Q56 -237 66 -225Q221 -64 221 250T66 725Q56 737 55 738Q55 746 60 749Z"></path></defs><g stroke="currentColor" fill="currentColor" stroke-width="0" transform="scale(1,-1)"><g data-mml-node="math"><g data-mml-node="mi"><use data-c="1D442" xlink:href="#MJX-19-TEX-I-1D442"></use></g><g data-mml-node="mo" transform="translate(763,0)"><use data-c="28" xlink:href="#MJX-19-TEX-N-28"></use></g><g data-mml-node="mi" transform="translate(1152,0)"><use data-c="1D459" xlink:href="#MJX-19-TEX-I-1D459"></use></g><g data-mml-node="mi" transform="translate(1450,0)"><use data-c="1D45C" xlink:href="#MJX-19-TEX-I-1D45C"></use></g><g data-mml-node="mi" transform="translate(1935,0)"><use data-c="1D454" xlink:href="#MJX-19-TEX-I-1D454"></use></g><g data-mml-node="mi" transform="translate(2412,0)"><use data-c="1D45B" xlink:href="#MJX-19-TEX-I-1D45B"></use></g><g data-mml-node="mo" transform="translate(3012,0)"><use data-c="29" xlink:href="#MJX-19-TEX-N-29"></use></g></g></g></svg></mjx-container></p>
-</li>
-<li><p>空间复杂度：<mjx-container class="MathJax" jax="SVG"><svg style="vertical-align: -0.566ex;" xmlns="http://www.w3.org/2000/svg" width="4.618ex" height="2.262ex" role="img" focusable="false" viewBox="0 -750 2041 1000" xmlns:xlink="http://www.w3.org/1999/xlink"><defs><path id="MJX-16-TEX-I-1D442" d="M740 435Q740 320 676 213T511 42T304 -22Q207 -22 138 35T51 201Q50 209 50 244Q50 346 98 438T227 601Q351 704 476 704Q514 704 524 703Q621 689 680 617T740 435ZM637 476Q637 565 591 615T476 665Q396 665 322 605Q242 542 200 428T157 216Q157 126 200 73T314 19Q404 19 485 98T608 313Q637 408 637 476Z"></path><path id="MJX-16-TEX-N-28" d="M94 250Q94 319 104 381T127 488T164 576T202 643T244 695T277 729T302 750H315H319Q333 750 333 741Q333 738 316 720T275 667T226 581T184 443T167 250T184 58T225 -81T274 -167T316 -220T333 -241Q333 -250 318 -250H315H302L274 -226Q180 -141 137 -14T94 250Z"></path><path id="MJX-16-TEX-N-31" d="M213 578L200 573Q186 568 160 563T102 556H83V602H102Q149 604 189 617T245 641T273 663Q275 666 285 666Q294 666 302 660V361L303 61Q310 54 315 52T339 48T401 46H427V0H416Q395 3 257 3Q121 3 100 0H88V46H114Q136 46 152 46T177 47T193 50T201 52T207 57T213 61V578Z"></path><path id="MJX-16-TEX-N-29" d="M60 749L64 750Q69 750 74 750H86L114 726Q208 641 251 514T294 250Q294 182 284 119T261 12T224 -76T186 -143T145 -194T113 -227T90 -246Q87 -249 86 -250H74Q66 -250 63 -250T58 -247T55 -238Q56 -237 66 -225Q221 -64 221 250T66 725Q56 737 55 738Q55 746 60 749Z"></path></defs><g stroke="currentColor" fill="currentColor" stroke-width="0" transform="scale(1,-1)"><g data-mml-node="math"><g data-mml-node="mi"><use data-c="1D442" xlink:href="#MJX-16-TEX-I-1D442"></use></g><g data-mml-node="mo" transform="translate(763,0)"><use data-c="28" xlink:href="#MJX-16-TEX-N-28"></use></g><g data-mml-node="mn" transform="translate(1152,0)"><use data-c="31" xlink:href="#MJX-16-TEX-N-31"></use></g><g data-mml-node="mo" transform="translate(1652,0)"><use data-c="29" xlink:href="#MJX-16-TEX-N-29"></use></g></g></g></svg></mjx-container></p>
-</li>
-</ul>
- 
-      <!-- reward -->
-      
-    </div>
-    
-
-    <!-- copyright -->
-    
-    <footer class="article-footer">
-       
-  <ul class="article-tag-list" itemprop="keywords"><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/LeetCode/" rel="tag">LeetCode</a></li><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/%E7%AE%97%E6%B3%95/" rel="tag">算法</a></li></ul>
-
-    </footer>
-  </div>
-
-   
-    
-</article>
-
-    
-    <article
-  id="post-javascript/(3)轻数据结构,重操作"
-  class="article article-type-post"
-  itemscope
-  itemprop="blogPost"
-  data-scroll-reveal
->
-  <div class="article-inner">
-    
-    <header class="article-header">
-       
-<h2 itemprop="name">
-  <a class="article-title" href="/posts/8fa41b2ec73f/"
-    >3.轻数据结构,重操作</a> 
-</h2>
- 
-
-      
-    </header>
-     
-    <div class="article-meta">
-      <a href="/posts/8fa41b2ec73f/" class="article-date">
-  <time datetime="2020-11-01T10:19:31.000Z" itemprop="datePublished">2020-11-01</time>
-</a> 
-  <div class="article-category">
-    <a class="article-category-link" href="/categories/JavaScript/">JavaScript</a>
-  </div>
-   
-    </div>
-      
-    <div class="article-entry" itemprop="articleBody">
-       
-  <p>理解程序的控制流<br>更易理解的代码与数据<br>命令抽象函数map、reduce 以及filter<br>Lodash.js 及函数链<br>递归的思考</p>
-<h4 id="理解程序的控制流"><a href="#理解程序的控制流" class="headerlink" title="理解程序的控制流"></a>理解程序的控制流</h4><p>程序为实现业务目标所要行进的路径被称为控制流。命令式程序需要通过暴露所有的必要步骤才能极其详细地描述其控制流。</p>
-<h4 id="链接方法"><a href="#链接方法" class="headerlink" title="链接方法"></a>链接方法</h4><figure class="highlight javascript"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br></pre></td><td class="code"><pre><span class="line"><span class="string">&#x27;Functional Programming&#x27;</span>.<span class="title function_">substring</span>(<span class="number">0</span>, <span class="number">10</span>).<span class="title function_">toLowerCase</span>() + <span class="string">&#x27; is fun&#x27;</span>;</span><br><span class="line"></span><br><span class="line"><span class="comment">//函数式</span></span><br><span class="line"><span class="title function_">concat</span>(<span class="title function_">toLowerCase</span>(<span class="title function_">substring</span>(<span class="string">&#x27;Functional Programming&#x27;</span>, <span class="number">1</span>, <span class="number">10</span>))),<span class="string">&#x27; is fun&#x27;</span>);</span><br></pre></td></tr></table></figure>
-
-<h4 id="函数链"><a href="#函数链" class="headerlink" title="函数链"></a>函数链</h4><ul>
-<li>lambda表达式</li>
-</ul>
-<p>lambda表达式适用于函数式的函数定义，因为它总是需要返回一个值。</p>
-<ul>
-<li>R.map()</li>
-</ul>
-<figure class="highlight javascript"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">export</span> <span class="keyword">default</span> <span class="keyword">function</span> <span class="title function_">_map</span>(<span class="params">fn, functor</span>) &#123;</span><br><span class="line">  <span class="keyword">var</span> idx = <span class="number">0</span>;</span><br><span class="line">  <span class="keyword">var</span> len = functor.<span class="property">length</span>;</span><br><span class="line">  <span class="keyword">var</span> result = <span class="title class_">Array</span>(len);</span><br><span class="line">  <span class="keyword">while</span> (idx &lt; len) &#123;</span><br><span class="line">    result[idx] = <span class="title function_">fn</span>(functor[idx]);</span><br><span class="line">    idx += <span class="number">1</span>;</span><br><span class="line">  &#125;</span><br><span class="line">  <span class="keyword">return</span> result;</span><br><span class="line">&#125;</span><br><span class="line"></span><br></pre></td></tr></table></figure>
-
- 
-      <!-- reward -->
-      
-    </div>
-    
-
-    <!-- copyright -->
-    
-    <footer class="article-footer">
-       
-  <ul class="article-tag-list" itemprop="keywords"><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/%E5%87%BD%E6%95%B0%E5%BC%8F%E7%BC%96%E7%A8%8B/" rel="tag">函数式编程</a></li></ul>
-
-    </footer>
-  </div>
-
-   
-    
-</article>
-
-    
-    <article
-  id="post-javascript/generator"
-  class="article article-type-post"
-  itemscope
-  itemprop="blogPost"
-  data-scroll-reveal
->
-  <div class="article-inner">
-    
-    <header class="article-header">
-       
-<h2 itemprop="name">
-  <a class="article-title" href="/posts/82e2e8174a56/"
-    >Generator</a> 
-</h2>
- 
-
-      
-    </header>
-     
-    <div class="article-meta">
-      <a href="/posts/82e2e8174a56/" class="article-date">
-  <time datetime="2020-11-01T08:44:40.000Z" itemprop="datePublished">2020-11-01</time>
-</a> 
-  <div class="article-category">
-    <a class="article-category-link" href="/categories/JavaScript/">JavaScript</a> / <a class="article-category-link" href="/categories/JavaScript/%E5%9F%BA%E7%A1%80/">基础</a>
-  </div>
-   
-    </div>
-      
-    <div class="article-entry" itemprop="articleBody">
-       
-  <h4 id="概念"><a href="#概念" class="headerlink" title="概念"></a>概念</h4><p>Generator 函数是 ES6 提供的一种异步编程解决方案</p>
-<p>Generator 函数有多种理解角度。语法上，首先可以把它理解成，Generator 函数是一个状态机，封装了多个内部状态。</p>
-<p>执行 Generator 函数会返回一个遍历器对象，也就是说，Generator 函数除了状态机，还是一个遍历器对象生成函数。返回的遍历器对象，可以依次遍历 Generator 函数内部的每一个状态。</p>
-<p>调用 Generator 函数后，该函数并不执行，返回的也不是函数运行结果，而是一个指向内部状态的指针对象，也就是上一章介绍的遍历器对象（Iterator Object）。</p>
-<h4 id="yeild"><a href="#yeild" class="headerlink" title="yeild"></a>yeild</h4><p>yield表达式与return语句既有相似之处，也有区别。相似之处在于，都能返回紧跟在语句后面的那个表达式的值。区别在于每次遇到yield，函数暂停执行，下一次再从该位置继续向后执行，而return语句不具备位置记忆的功能。</p>
-<p>yield表达式如果用在另一个表达式之中，必须放在圆括号里面。</p>
-<figure class="highlight javascript"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">function</span>* <span class="title function_">demo</span>(<span class="params"></span>) &#123;</span><br><span class="line">  <span class="variable language_">console</span>.<span class="title function_">log</span>(<span class="string">&#x27;Hello&#x27;</span> + <span class="keyword">yield</span>); <span class="comment">// SyntaxError</span></span><br><span class="line">  <span class="variable language_">console</span>.<span class="title function_">log</span>(<span class="string">&#x27;Hello&#x27;</span> + <span class="keyword">yield</span> <span class="number">123</span>); <span class="comment">// SyntaxError</span></span><br><span class="line"></span><br><span class="line">  <span class="variable language_">console</span>.<span class="title function_">log</span>(<span class="string">&#x27;Hello&#x27;</span> + (<span class="keyword">yield</span>)); <span class="comment">// OK</span></span><br><span class="line">  <span class="variable language_">console</span>.<span class="title function_">log</span>(<span class="string">&#x27;Hello&#x27;</span> + (<span class="keyword">yield</span> <span class="number">123</span>)); <span class="comment">// OK</span></span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
-
-<p>yield表达式用作函数参数或放在赋值表达式的右边，可以不加括号。</p>
-<figure class="highlight javascript"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">function</span>* <span class="title function_">demo</span>(<span class="params"></span>) &#123;</span><br><span class="line">  <span class="title function_">foo</span>(<span class="keyword">yield</span> <span class="string">&#x27;a&#x27;</span>, <span class="keyword">yield</span> <span class="string">&#x27;b&#x27;</span>); <span class="comment">// OK</span></span><br><span class="line">  <span class="keyword">let</span> input = <span class="keyword">yield</span>; <span class="comment">// OK</span></span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
-
-<h4 id="与-Iterator-接口的关系"><a href="#与-Iterator-接口的关系" class="headerlink" title="与 Iterator 接口的关系"></a>与 Iterator 接口的关系</h4><p>任意一个对象的Symbol.iterator方法，等于该对象的遍历器生成函数，调用该函数会返回该对象的一个遍历器对象。由于 Generator 函数就是遍历器生成函数，因此可以把 Generator 赋值给对象的Symbol.iterator属性，从而使得该对象具有 Iterator 接口。</p>
-<figure class="highlight javascript"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">function</span>* <span class="title function_">gen</span>(<span class="params"></span>)&#123;</span><br><span class="line">  <span class="comment">// some code</span></span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line"><span class="keyword">var</span> g = <span class="title function_">gen</span>();</span><br><span class="line"></span><br><span class="line">g[<span class="title class_">Symbol</span>.<span class="property">iterator</span>]() === g</span><br><span class="line"><span class="comment">// true</span></span><br></pre></td></tr></table></figure>
-
-<h4 id="next-方法的参数"><a href="#next-方法的参数" class="headerlink" title="next 方法的参数"></a>next 方法的参数</h4><p>yield表达式本身没有返回值，或者说总是返回undefined。next方法可以带一个参数，该参数就会被当作上一个yield表达式的返回值。</p>
-<p><strong>这个功能有很重要的语法意义。Generator 函数从暂停状态到恢复运行，它的上下文状态（context）是不变的。通过next方法的参数，就有办法在 Generator 函数开始运行之后，继续向函数体内部注入值。也就是说，可以在 Generator 函数运行的不同阶段，从外部向内部注入不同的值，从而调整函数行为。</strong></p>
-<h4 id="for…of-循环"><a href="#for…of-循环" class="headerlink" title="for…of 循环"></a>for…of 循环</h4><p><code>for...of</code>循环可以自动遍历 <code>Generator</code> 函数运行时生成的<code>Iterator</code>对象，且此时不再需要调用<code>next</code>方法。</p>
-<p>一旦<code>next</code>方法的返回对象的<code>done</code>属性为<code>true</code>，<code>for...of</code>循环就会中止,<code>return</code>语句返回的不包括在<code>for...of</code>循环之中。</p>
-<h4 id="Generator-prototype-throw"><a href="#Generator-prototype-throw" class="headerlink" title="Generator.prototype.throw()"></a>Generator.prototype.throw()</h4><h4 id="Generator-prototype-return"><a href="#Generator-prototype-return" class="headerlink" title="Generator.prototype.return()"></a>Generator.prototype.return()</h4><h4 id="共同点"><a href="#共同点" class="headerlink" title="共同点"></a>共同点</h4><p><code>next()</code>、<code>throw()</code>、<code>return()</code>这三个方法本质上是同一件事，可以放在一起理解。它们的作用都是让 <code>Generator</code> 函数恢复执行，并且使用不同的语句替换<code>yield</code>表达式。</p>
-<h4 id="yield"><a href="#yield" class="headerlink" title="yield*"></a>yield*</h4><p>如果在 Generator 函数内部，调用另一个 Generator 函数。需要在前者的函数体内部，自己手动完成遍历。</p>
-<p>ES6 提供了yield*表达式，作为解决办法，用来在一个 Generator 函数里面执行另一个 Generator 函数。</p>
-<h4 id="this"><a href="#this" class="headerlink" title="this"></a>this</h4><p>Generator 函数总是返回一个遍历器，ES6 规定这个遍历器是 Generator 函数的实例，也继承了 Generator 函数的prototype对象上的方法。</p>
-<p>Generator 函数也不能跟new命令一起用，会报错。</p>
-<p>首先，生成一个空对象，使用call方法绑定 Generator 函数内部的this。这样，构造函数调用以后，这个空对象就是 Generator 函数的实例对象了。</p>
-<figure class="highlight javascript"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">function</span>* <span class="title function_">gen</span>(<span class="params"></span>) &#123;</span><br><span class="line">  <span class="variable language_">this</span>.<span class="property">a</span> = <span class="number">1</span>;</span><br><span class="line">  <span class="keyword">yield</span> <span class="variable language_">this</span>.<span class="property">b</span> = <span class="number">2</span>;</span><br><span class="line">  <span class="keyword">yield</span> <span class="variable language_">this</span>.<span class="property">c</span> = <span class="number">3</span>;</span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line"><span class="keyword">function</span> <span class="title function_">F</span>(<span class="params"></span>) &#123;</span><br><span class="line">  <span class="keyword">return</span> gen.<span class="title function_">call</span>(gen.<span class="property"><span class="keyword">prototype</span></span>);</span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line"><span class="keyword">var</span> f = <span class="keyword">new</span> <span class="title function_">F</span>();</span><br><span class="line"></span><br><span class="line">f.<span class="title function_">next</span>();  <span class="comment">// Object &#123;value: 2, done: false&#125;</span></span><br><span class="line">f.<span class="title function_">next</span>();  <span class="comment">// Object &#123;value: 3, done: false&#125;</span></span><br><span class="line">f.<span class="title function_">next</span>();  <span class="comment">// Object &#123;value: undefined, done: true&#125;</span></span><br><span class="line"></span><br><span class="line">f.<span class="property">a</span> <span class="comment">// 1</span></span><br><span class="line">f.<span class="property">b</span> <span class="comment">// 2</span></span><br><span class="line">f.<span class="property">c</span> <span class="comment">// 3</span></span><br></pre></td></tr></table></figure>
-
-<h4 id="Generator-与状态机"><a href="#Generator-与状态机" class="headerlink" title="Generator 与状态机"></a>Generator 与状态机</h4><p>Generator 之所以可以不用外部变量保存状态，是因为它本身就包含了一个状态信息，即目前是否处于暂停态。</p>
-<figure class="highlight javascript"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">var</span> clock = <span class="keyword">function</span>* () &#123;</span><br><span class="line">  <span class="keyword">while</span> (<span class="literal">true</span>) &#123;</span><br><span class="line">    <span class="variable language_">console</span>.<span class="title function_">log</span>(<span class="string">&#x27;Tick!&#x27;</span>);</span><br><span class="line">    <span class="keyword">yield</span>;</span><br><span class="line">    <span class="variable language_">console</span>.<span class="title function_">log</span>(<span class="string">&#x27;Tock!&#x27;</span>);</span><br><span class="line">    <span class="keyword">yield</span>;</span><br><span class="line">  &#125;</span><br><span class="line">&#125;;</span><br></pre></td></tr></table></figure>
-
-<h4 id="应用"><a href="#应用" class="headerlink" title="应用"></a>应用</h4><ul>
-<li>异步操作的同步化表达</li>
-</ul>
-<figure class="highlight javascript"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">function</span>* <span class="title function_">main</span>(<span class="params"></span>) &#123;</span><br><span class="line">  <span class="keyword">var</span> result = <span class="keyword">yield</span> <span class="title function_">request</span>(<span class="string">&quot;http://some.url&quot;</span>);</span><br><span class="line">  <span class="keyword">var</span> resp = <span class="title class_">JSON</span>.<span class="title function_">parse</span>(result);</span><br><span class="line">    <span class="variable language_">console</span>.<span class="title function_">log</span>(resp.<span class="property">value</span>);</span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line"><span class="keyword">function</span> <span class="title function_">request</span>(<span class="params">url</span>) &#123;</span><br><span class="line">  <span class="title function_">makeAjaxCall</span>(url, <span class="keyword">function</span>(<span class="params">response</span>)&#123;</span><br><span class="line">    it.<span class="title function_">next</span>(response);</span><br><span class="line">  &#125;);</span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line"><span class="keyword">var</span> it = <span class="title function_">main</span>();</span><br><span class="line">it.<span class="title function_">next</span>();</span><br></pre></td></tr></table></figure>
-
-<ul>
-<li><p>控制流管理</p>
-</li>
-<li><p>部署 Iterator 接口</p>
-</li>
-<li><p>作为数据结构</p>
-</li>
-</ul>
- 
-      <!-- reward -->
-      
-    </div>
-    
-
-    <!-- copyright -->
-    
-    <footer class="article-footer">
-       
-  <ul class="article-tag-list" itemprop="keywords"><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/ES6%E5%9F%BA%E7%A1%80/" rel="tag">ES6基础</a></li><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/JavaScript/" rel="tag">JavaScript</a></li></ul>
-
-    </footer>
-  </div>
-
-   
-    
-</article>
-
-    
-    <article
-  id="post-javascript/(2)高阶Javascript"
-  class="article article-type-post"
-  itemscope
-  itemprop="blogPost"
-  data-scroll-reveal
->
-  <div class="article-inner">
-    
-    <header class="article-header">
-       
-<h2 itemprop="name">
-  <a class="article-title" href="/posts/0c62b4573380/"
-    >2.进阶</a> 
-</h2>
- 
-
-      
-    </header>
-     
-    <div class="article-meta">
-      <a href="/posts/0c62b4573380/" class="article-date">
-  <time datetime="2020-10-30T04:34:24.000Z" itemprop="datePublished">2020-10-30</time>
-</a> 
-  <div class="article-category">
-    <a class="article-category-link" href="/categories/JavaScript/">JavaScript</a>
-  </div>
-   
-    </div>
-      
-    <div class="article-entry" itemprop="articleBody">
-       
-  <p>为什么说JavaScript是适合函数式的编程语言<br>JavaScript语言的多范型开发<br>不可变性和变化的对策<br>理解高阶函数和一等函数<br>闭包和作用域的概念探讨<br>闭包的实际使用</p>
-<h4 id="函数式与面向对象"><a href="#函数式与面向对象" class="headerlink" title="函数式与面向对象"></a>函数式与面向对象</h4><p>面向对象的关键是创建继承层次结构（如继承Person的Student对象）并将方法与数据紧密的绑定在一起。函数式编程则更倾向于通过广义的多态函数交叉应用于不同的数据类型，同时避免使用this</p>
-<h4 id="属性保护"><a href="#属性保护" class="headerlink" title="属性保护"></a>属性保护</h4><p><img src="/posts/0c62b4573380/0001.jpg"></p>
-<p>试用递归来冻结数属性</p>
-<figure class="highlight javascript"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">var</span> <span class="title function_">isObject</span> = (<span class="params">val</span>) =&gt; val &amp;&amp; <span class="keyword">typeof</span> val === <span class="string">&#x27;object&#x27;</span>;</span><br><span class="line"><span class="keyword">function</span> <span class="title function_">deepFreeze</span>(<span class="params">obj</span>) &#123;</span><br><span class="line">  <span class="keyword">if</span>(<span class="title function_">isObject</span>(obj) <span class="comment">//遍历所有属性并递归调用Object.freeze()（使用第3章介绍的map）</span></span><br><span class="line">    &amp;&amp; !<span class="title class_">Object</span>.<span class="title function_">isFrozen</span>(obj)) &#123; <span class="comment">//跳过已经冻结过的对象，冻结没有被冻结过的对象</span></span><br><span class="line">    <span class="title class_">Object</span>.<span class="title function_">keys</span>(obj). <span class="comment">//跳过所有的函数，即使从技术上说，函数也可以被修改，但是我们更希望注意在数据的属性上</span></span><br><span class="line">  <span class="title function_">forEach</span>(<span class="function"><span class="params">name</span> =&gt;</span> <span class="title function_">deepFreeze</span>(obj[name])); <span class="comment">//递归地自调用（第3章会介绍递归）</span></span><br><span class="line">    <span class="title class_">Object</span>.<span class="title function_">freeze</span>(obj); <span class="comment">//冻结根对象</span></span><br><span class="line">  &#125;</span><br><span class="line"><span class="keyword">return</span> obj;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
-
-<p><strong>R.lensProp</strong> 保证对象属性的不可变性</p>
-<h4 id="函数"><a href="#函数" class="headerlink" title="函数"></a>函数</h4><p>需要区分表达式（如返回一个值的函数）和语句（如不返回值的函数）。命令式编程和过程式程序大多是由一系列有序的语句组成的，而函数式编程完全依赖于表达式，因此无值函数在该范式下并没有意义。</p>
-<ul>
-<li><p>一等函数</p>
-</li>
-<li><p>高阶函数</p>
-</li>
-</ul>
-<h4 id="闭包作用域"><a href="#闭包作用域" class="headerlink" title="闭包作用域"></a>闭包作用域</h4> 
-      <!-- reward -->
-      
-    </div>
-    
-
-    <!-- copyright -->
-    
-    <footer class="article-footer">
-       
-  <ul class="article-tag-list" itemprop="keywords"><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/%E5%87%BD%E6%95%B0%E5%BC%8F%E7%BC%96%E7%A8%8B/" rel="tag">函数式编程</a></li></ul>
 
     </footer>
   </div>

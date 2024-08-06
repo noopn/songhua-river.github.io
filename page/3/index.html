@@ -112,6 +112,574 @@
     
     
     <article
+  id="posts-design/pattern/⑧模板模式"
+  class="article article-type-posts"
+  itemscope
+  itemprop="blogPost"
+  data-scroll-reveal
+>
+  <div class="article-inner">
+    
+    <header class="article-header">
+       
+<h2 itemprop="name">
+  <a class="article-title" href="/posts/455c67a5db49/"
+    >⑧抽取算法-模板方法模式</a> 
+</h2>
+ 
+
+      
+    </header>
+     
+    <div class="article-meta">
+      <a href="/posts/455c67a5db49/" class="article-date">
+  <time datetime="2023-01-20T06:08:04.000Z" itemprop="datePublished">2023-01-20</time>
+</a> 
+  <div class="article-category">
+    <a class="article-category-link" href="/categories/%E8%AE%BE%E8%AE%A1%E6%A8%A1%E5%BC%8F/">设计模式</a>
+  </div>
+   
+    </div>
+      
+    <div class="article-entry" itemprop="articleBody">
+       
+  <h4 id="抽取公共算法"><a href="#抽取公共算法" class="headerlink" title="抽取公共算法"></a>抽取公共算法</h4><p>现在有一个场景，需要让你实现煮方便面和挂面，他们的过程如下。</p>
+<p>挂面：</p>
+<ul>
+<li>加水</li>
+<li>水开后加入挂面</li>
+<li>一分钟后加入葱花</li>
+<li>装盘</li>
+</ul>
+<p>方便面：</p>
+<ul>
+<li>加水</li>
+<li>水开后加入方便面</li>
+<li>一分钟后加入调料包</li>
+<li>装盘</li>
+</ul>
+<p>可能第一反应会想到继承，父类中抽取加水和装盘的步骤，而中间两步因为实现不同所以不能抽取，而让子类去实现。</p>
+<p>虽然中间的两步他们的逻辑相似但是针对的对象不同，一个需要加葱花，一个需要加调料包。而对与程序而言可以理解成算法相同而参数不同。</p>
+<figure class="highlight ts"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">abstract</span> <span class="keyword">class</span> <span class="title class_">MakeNoodles</span> &#123;</span><br><span class="line">  <span class="keyword">public</span> <span class="title function_">addWater</span>(<span class="params"></span>) &#123;&#125;</span><br><span class="line">  <span class="comment">// 加入某种类型的面</span></span><br><span class="line">  <span class="keyword">public</span> <span class="title function_">addNoodle</span>(<span class="params">noodleType: <span class="built_in">string</span></span>) &#123;</span><br><span class="line">    <span class="variable language_">console</span>.<span class="title function_">log</span>(<span class="string">&quot;加入&quot;</span> + noodleType);</span><br><span class="line">  &#125;</span><br><span class="line">  <span class="comment">// 等一分钟加入调料</span></span><br><span class="line">  <span class="keyword">public</span> <span class="title function_">waitMinuteAddCondiment</span>(<span class="params">condiment: <span class="built_in">string</span></span>) &#123;</span><br><span class="line">    <span class="variable language_">console</span>.<span class="title function_">log</span>(<span class="string">&quot;一分钟后加入&quot;</span> + condiment);</span><br><span class="line">  &#125;</span><br><span class="line">  <span class="comment">// 装盘</span></span><br><span class="line">  <span class="keyword">public</span> <span class="title function_">sabot</span>(<span class="params"></span>) &#123;&#125;</span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line"><span class="comment">// 挂面</span></span><br><span class="line"><span class="keyword">class</span> <span class="title class_">MakeFineDriedNoodles</span> <span class="keyword">extends</span> <span class="title class_ inherited__">MakeNoodles</span> &#123;</span><br><span class="line">  <span class="title function_">addNoodle</span>(<span class="params"><span class="keyword">type</span>: <span class="built_in">string</span></span>) &#123;</span><br><span class="line">    <span class="variable language_">super</span>.<span class="title function_">addNoodle</span>(<span class="keyword">type</span>);</span><br><span class="line">  &#125;</span><br><span class="line">  <span class="title function_">waitMinuteAddCondiment</span>(<span class="params">condiment: <span class="built_in">string</span></span>) &#123;</span><br><span class="line">    <span class="variable language_">super</span>.<span class="title function_">waitMinuteAddCondiment</span>(condiment);</span><br><span class="line">  &#125;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+<p>当然也可以使用组合的方法</p>
+<figure class="highlight ts"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">type</span> <span class="title class_">MakeNoodlesType</span> = &#123;</span><br><span class="line">  <span class="keyword">new</span> (): <span class="built_in">any</span>;</span><br><span class="line">&#125;;</span><br><span class="line"><span class="comment">// 挂面</span></span><br><span class="line"><span class="keyword">class</span> <span class="title class_">MakeFineDriedNoodles</span> &#123;</span><br><span class="line">  <span class="attr">makeNoodles</span>: <span class="title class_">MakeNoodles</span>;</span><br><span class="line">  <span class="title function_">constructor</span>(<span class="params">MakeNoodlesConstructor: MakeNoodlesType</span>) &#123;</span><br><span class="line">    <span class="variable language_">this</span>.<span class="property">makeNoodles</span> = <span class="keyword">new</span> <span class="title class_">MakeNoodlesConstructor</span>();</span><br><span class="line">  &#125;</span><br><span class="line">  <span class="title function_">addNoodle</span>(<span class="params"><span class="keyword">type</span>: <span class="built_in">string</span></span>) &#123;</span><br><span class="line">    <span class="variable language_">this</span>.<span class="property">makeNoodles</span>.<span class="title function_">addNoodle</span>(<span class="keyword">type</span>);</span><br><span class="line">  &#125;</span><br><span class="line">  <span class="title function_">waitMinuteAddCondiment</span>(<span class="params">condiment: <span class="built_in">string</span></span>) &#123;</span><br><span class="line">    <span class="variable language_">this</span>.<span class="property">makeNoodles</span>.<span class="title function_">waitMinuteAddCondiment</span>(condiment);</span><br><span class="line">  &#125;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+<p>这就是模板方法模式的雏形，最大限度的抽取公共算法，而称为模板方法也是因为此模式经常作为方法调用，而仅限于用于类的继承。</p>
+<h4 id="模板方法模式"><a href="#模板方法模式" class="headerlink" title="模板方法模式"></a>模板方法模式</h4><p><strong>模板方法模式：在一个方法中定义一个算法骨架，而将一些步骤延续到子类中。模板方法使得子类可以在不改变算法结构的情况下，重新定义算法中的某些步骤</strong>。</p>
+<p>另外在类的模板方法中经常会定义 <strong>Hooks(钩子方法）</strong>，为子类实现流程控制提供可能。</p>
+<p>继承的方式:</p>
+<figure class="highlight ts"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">abstract</span> <span class="keyword">class</span> <span class="title class_">MakeNoodles</span> &#123;</span><br><span class="line">  <span class="comment">// 等一分钟加入调料</span></span><br><span class="line">  <span class="keyword">public</span> <span class="title function_">waitMinuteAddCondiment</span>(<span class="params">condiment: <span class="built_in">string</span></span>) &#123;</span><br><span class="line">    <span class="keyword">if</span> (<span class="variable language_">this</span>.<span class="title function_">likeCondiment</span>()) &#123;</span><br><span class="line">      <span class="variable language_">console</span>.<span class="title function_">log</span>(<span class="string">&quot;一分钟后加入&quot;</span> + condiment);</span><br><span class="line">    &#125;</span><br><span class="line">  &#125;</span><br><span class="line">  <span class="keyword">public</span> <span class="title function_">likeCondiment</span>(<span class="params"></span>) &#123;</span><br><span class="line">    <span class="keyword">return</span> <span class="literal">true</span>;</span><br><span class="line">  &#125;</span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line"><span class="comment">// 挂面</span></span><br><span class="line"><span class="keyword">class</span> <span class="title class_">MakeFineDriedNoodles</span> <span class="keyword">extends</span> <span class="title class_ inherited__">MakeNoodles</span> &#123;</span><br><span class="line">  <span class="title function_">likeCondiment</span>(<span class="params"></span>) &#123;</span><br><span class="line">    <span class="keyword">return</span> <span class="literal">false</span>;</span><br><span class="line">  &#125;</span><br><span class="line">  <span class="title function_">waitMinuteAddCondiment</span>(<span class="params">condiment: <span class="built_in">string</span></span>) &#123;</span><br><span class="line">    <span class="variable language_">super</span>.<span class="title function_">waitMinuteAddCondiment</span>(condiment);</span><br><span class="line">  &#125;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+<p>组合的方式：</p>
+<figure class="highlight ts"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">class</span> <span class="title class_">MakeNoodles</span> &#123;</span><br><span class="line">  <span class="comment">// 等一分钟加入调料</span></span><br><span class="line">  <span class="keyword">public</span> <span class="title function_">waitMinuteAddCondiment</span>(<span class="params">condiment: <span class="built_in">string</span></span>) &#123;</span><br><span class="line">    <span class="keyword">if</span> (<span class="variable language_">this</span>.<span class="title function_">likeCondiment</span>()) &#123;</span><br><span class="line">      <span class="variable language_">console</span>.<span class="title function_">log</span>(<span class="string">&quot;一分钟后加入&quot;</span> + condiment);</span><br><span class="line">    &#125;</span><br><span class="line">  &#125;</span><br><span class="line">  <span class="keyword">public</span> <span class="title function_">likeCondiment</span>(<span class="params"></span>) &#123;</span><br><span class="line">    <span class="keyword">return</span> <span class="literal">true</span>;</span><br><span class="line">  &#125;</span><br><span class="line">&#125;</span><br><span class="line"><span class="keyword">type</span> <span class="title class_">MakeNoodlesType</span> = &#123;</span><br><span class="line">  <span class="keyword">new</span> (): <span class="built_in">any</span>;</span><br><span class="line">&#125;;</span><br><span class="line"><span class="comment">// 挂面</span></span><br><span class="line"><span class="keyword">class</span> <span class="title class_">MakeFineDriedNoodles</span> &#123;</span><br><span class="line">  <span class="attr">makeNoodles</span>: <span class="title class_">MakeNoodles</span>;</span><br><span class="line">  <span class="title function_">constructor</span>(<span class="params">MakeNoodlesConstructor: MakeNoodlesType</span>) &#123;</span><br><span class="line">    <span class="variable language_">this</span>.<span class="property">makeNoodles</span> = <span class="keyword">new</span> <span class="title class_">MakeNoodlesConstructor</span>();</span><br><span class="line">  &#125;</span><br><span class="line">  <span class="title function_">likeCondiment</span>(<span class="params"></span>) &#123;</span><br><span class="line">    <span class="keyword">return</span> <span class="literal">false</span>;</span><br><span class="line">  &#125;</span><br><span class="line">  <span class="title function_">waitMinuteAddCondiment</span>(<span class="params">condiment: <span class="built_in">string</span></span>) &#123;</span><br><span class="line">    <span class="variable language_">this</span>.<span class="property">makeNoodles</span>.<span class="property">likeCondiment</span> = <span class="variable language_">this</span>.<span class="property">likeCondiment</span>;</span><br><span class="line">    <span class="variable language_">this</span>.<span class="property">makeNoodles</span>.<span class="title function_">waitMinuteAddCondiment</span>(condiment);</span><br><span class="line">  &#125;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+<p>如果对于某些算法是可选的，可以考虑使用 Hooks, 而 Hooks 不一定只是子类控制模板的算法流程，也能使是子类直接使用模板算法里面的 Hooks 控制子类的逻辑。</p>
+<p>而这种子类和父类互相调用的场景经常存在，这也涉及到一个原则 <strong>避免底层和高层组件之间有明显的环状依赖。</strong></p>
+<h4 id="方法中的模板模式"><a href="#方法中的模板模式" class="headerlink" title="方法中的模板模式"></a>方法中的模板模式</h4><p>很多场景下模板模式体现的并不明显，如 lodash 中的 add 方法.</p>
+<figure class="highlight js"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">const</span> add = <span class="title function_">createMathOperation</span>(<span class="function">(<span class="params">augend, addend</span>) =&gt;</span> augend + addend, <span class="number">0</span>);</span><br></pre></td></tr></table></figure>
+
+<p>add 方法中，你可以将传入的回调函数看作是模板方法，但并没有直接返回相加的结果，而是将相加的算法传入 createMathOperation， 而在这个方法中处理数据类型转换的问题。这个方法补充了模板方法的空白。</p>
+<p>你也可一把他看作是装饰方法，但不是装饰模式，装饰模式通常会被定义为装饰者和被装饰者实现相同的接口。</p>
+ 
+      <!-- reward -->
+      
+    </div>
+    
+
+    <!-- copyright -->
+    
+    <footer class="article-footer">
+       
+  <ul class="article-tag-list" itemprop="keywords"><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/%E8%AE%BE%E8%AE%A1%E6%A8%A1%E5%BC%8F/" rel="tag">设计模式</a></li></ul>
+
+    </footer>
+  </div>
+
+   
+    
+</article>
+
+    
+    <article
+  id="posts-javascript/service-worker"
+  class="article article-type-posts"
+  itemscope
+  itemprop="blogPost"
+  data-scroll-reveal
+>
+  <div class="article-inner">
+    
+    <header class="article-header">
+       
+<h2 itemprop="name">
+  <a class="article-title" href="/posts/e38739fa7213/"
+    >service worker 离线访问</a> 
+</h2>
+ 
+
+      
+    </header>
+     
+    <div class="article-meta">
+      <a href="/posts/e38739fa7213/" class="article-date">
+  <time datetime="2023-01-19T00:32:05.000Z" itemprop="datePublished">2023-01-19</time>
+</a> 
+  <div class="article-category">
+    <a class="article-category-link" href="/categories/JavaScript/">JavaScript</a>
+  </div>
+   
+    </div>
+      
+    <div class="article-entry" itemprop="articleBody">
+       
+  <h4 id="注册"><a href="#注册" class="headerlink" title="注册"></a>注册</h4><blockquote>
+<p>index.html</p>
+</blockquote>
+<p><strong>service worker 的 scope 范围与 sw.js 所在的路径相关，只能对 sw.js 所在路径以及其子路径生效</strong></p>
+<figure class="highlight js"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">const</span> url = <span class="keyword">new</span> <span class="title function_">URL</span>(location.<span class="property">href</span>);</span><br><span class="line"><span class="keyword">if</span> (<span class="string">&quot;serviceWorker&quot;</span> <span class="keyword">in</span> navigator) &#123;</span><br><span class="line">  <span class="title function_">addEventListener</span>(<span class="string">&quot;load&quot;</span>, <span class="function">() =&gt;</span> &#123;</span><br><span class="line">    navigator.<span class="property">serviceWorker</span></span><br><span class="line">      .<span class="title function_">register</span>(<span class="string">&quot;./sw.js&quot;</span>, &#123; <span class="attr">scope</span>: <span class="string">&quot;/&quot;</span> &#125;)</span><br><span class="line">      .<span class="title function_">then</span>(<span class="function">(<span class="params">registration</span>) =&gt;</span> &#123;</span><br><span class="line">        <span class="keyword">var</span> serviceWorker;</span><br><span class="line">        <span class="keyword">if</span> (registration.<span class="property">installing</span>) &#123;</span><br><span class="line">          serviceWorker = registration.<span class="property">installing</span>;</span><br><span class="line">          <span class="comment">// 这里可以处理正在安装状态</span></span><br><span class="line">        &#125; <span class="keyword">else</span> <span class="keyword">if</span> (registration.<span class="property">waiting</span>) &#123;</span><br><span class="line">          serviceWorker = registration.<span class="property">waiting</span>;</span><br><span class="line">          <span class="comment">// 这里可以处理等待状态</span></span><br><span class="line">        &#125; <span class="keyword">else</span> <span class="keyword">if</span> (registration.<span class="property">active</span>) &#123;</span><br><span class="line">          serviceWorker = registration.<span class="property">active</span>;</span><br><span class="line">          <span class="title function_">emitCacheList</span>(serviceWorker);</span><br><span class="line">        &#125;</span><br><span class="line"></span><br><span class="line">        <span class="keyword">if</span> (serviceWorker) &#123;</span><br><span class="line">          serviceWorker.<span class="title function_">addEventListener</span>(<span class="string">&quot;statechange&quot;</span>, <span class="keyword">function</span> (<span class="params">e</span>) &#123;</span><br><span class="line">            <span class="keyword">if</span> (e.<span class="property">target</span>.<span class="property">state</span> === <span class="string">&quot;activated&quot;</span>) &#123;</span><br><span class="line">              <span class="comment">// Service Worker 已经激活，可以发送消息</span></span><br><span class="line">              <span class="title function_">emitCacheList</span>(serviceWorker);</span><br><span class="line">            &#125;</span><br><span class="line">          &#125;);</span><br><span class="line">        &#125;</span><br><span class="line">      &#125;)</span><br><span class="line">      .<span class="title function_">catch</span>(<span class="function">(<span class="params">err</span>) =&gt;</span> &#123;</span><br><span class="line">        <span class="variable language_">console</span>.<span class="title function_">warn</span>(<span class="string">&quot;desktop_sw register fail.&quot;</span>);</span><br><span class="line">      &#125;);</span><br><span class="line">  &#125;);</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+<h4 id="安装"><a href="#安装" class="headerlink" title="安装"></a>安装</h4><figure class="highlight js"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><span class="line"><span class="variable language_">this</span>.<span class="title function_">addEventListener</span>(<span class="string">&quot;install&quot;</span>, <span class="keyword">function</span> (<span class="params">event</span>) &#123;</span><br><span class="line">  <span class="variable language_">console</span>.<span class="title function_">log</span>(<span class="string">&quot;install&quot;</span>);</span><br><span class="line">&#125;);</span><br></pre></td></tr></table></figure>
+
+<h4 id="激活"><a href="#激活" class="headerlink" title="激活"></a>激活</h4><p>不一定每次都能触发。前一个还在工作状态那么后一个就会进 waiting 阶段,只有等到前一个被 terminated 后,后一个才能完全替换 A 的工作</p>
+<figure class="highlight js"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><span class="line"><span class="variable language_">this</span>.<span class="title function_">addEventListener</span>(<span class="string">&quot;activate&quot;</span>, <span class="keyword">function</span> (<span class="params">event</span>) &#123;</span><br><span class="line">  <span class="variable language_">console</span>.<span class="title function_">log</span>(<span class="string">&quot;activate&quot;</span>);</span><br><span class="line">&#125;);</span><br></pre></td></tr></table></figure>
+
+<h4 id="更新"><a href="#更新" class="headerlink" title="更新"></a>更新</h4><p><a target="_blank" rel="noopener" href="https://developer.chrome.com/docs/workbox/service-worker-lifecycle#handling_service_worker_updates">在这些条件中会执行更新操作</a></p>
+<p>主动在每次注册后执行更新</p>
+<figure class="highlight js"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br></pre></td><td class="code"><pre><span class="line">navigator.<span class="property">serviceWorker</span></span><br><span class="line">  .<span class="title function_">register</span>(<span class="string">&quot;/sw.js&quot;</span>, &#123;</span><br><span class="line">    <span class="attr">scope</span>: <span class="string">&quot;/&quot;</span>,</span><br><span class="line">  &#125;)</span><br><span class="line">  .<span class="title function_">then</span>(<span class="function">(<span class="params">registration: any</span>) =&gt;</span> &#123;</span><br><span class="line">    registration.<span class="title function_">update</span>();</span><br><span class="line">  &#125;);</span><br><span class="line"></span><br><span class="line"><span class="comment">// 使用 workbox</span></span><br><span class="line">wb.<span class="title function_">register</span>().<span class="title function_">then</span>(<span class="function">(<span class="params">registration: any</span>) =&gt;</span> &#123;</span><br><span class="line">  registration.<span class="title function_">update</span>();</span><br><span class="line">&#125;);</span><br></pre></td></tr></table></figure>
+
+<h4 id="关闭"><a href="#关闭" class="headerlink" title="关闭"></a>关闭</h4><ul>
+<li>terminated</li>
+<li>关闭浏览器一段时间</li>
+<li>手动清除 serviceworker</li>
+<li>在 sw 安装时直接跳过 waiting 阶段 self.skipWaiting();</li>
+</ul>
+<h4 id="拦截请求"><a href="#拦截请求" class="headerlink" title="拦截请求"></a>拦截请求</h4><p>拦截请求 只有 activate 之后才能工作</p>
+<p><strong>页面本身的 URL 不在 Service Worker 的 scope 内时，Service Worker 并不会对该页面加载过程中的任何请求（包括在 scope 内的资源）有控制权。页面的控制权是从最顶层的文档开始的，如果顶层文档（页面）不在 Service Worker 的 scope 内，那么 Service Worker 就不能影响到从这个页面发出的任何请求，即使这些请求本身的目标 URL 是在 Service Worker 的 scope 范围内。</strong></p>
+<figure class="highlight js"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br></pre></td><td class="code"><pre><span class="line"><span class="variable language_">this</span>.<span class="title function_">addEventListener</span>(<span class="string">&quot;fetch&quot;</span>, <span class="keyword">function</span> (<span class="params">event</span>) &#123;</span><br><span class="line">  <span class="comment">// 返回jSON HTML</span></span><br><span class="line">  <span class="keyword">const</span> json = <span class="title class_">JSON</span>.<span class="title function_">stringify</span>(&#123; <span class="attr">a</span>: <span class="number">1</span> &#125;, <span class="literal">null</span>, <span class="number">2</span>);</span><br><span class="line">  <span class="keyword">return</span> event.<span class="title function_">respondWith</span>(</span><br><span class="line">    <span class="keyword">new</span> <span class="title class_">Response</span>(json, &#123;</span><br><span class="line">      <span class="attr">headers</span>: &#123;</span><br><span class="line">        <span class="string">&quot;content-type&quot;</span>: <span class="string">&quot;application/json;charset=UTF-8&quot;</span>,</span><br><span class="line">      &#125;,</span><br><span class="line">    &#125;)</span><br><span class="line">  );</span><br><span class="line">&#125;);</span><br></pre></td></tr></table></figure>
+
+<figure class="highlight js"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment">// 拦击请求 只有activate之后才能工作</span></span><br><span class="line"><span class="variable language_">this</span>.<span class="title function_">addEventListener</span>(<span class="string">&quot;fetch&quot;</span>, <span class="keyword">function</span> (<span class="params">event</span>) &#123;</span><br><span class="line">  <span class="keyword">const</span> html = <span class="string">&quot;&lt;html&gt;&lt;div&gt;html&lt;/div&gt;&lt;/html&gt;&quot;</span>;</span><br><span class="line">  <span class="keyword">return</span> event.<span class="title function_">respondWith</span>(</span><br><span class="line">    <span class="keyword">new</span> <span class="title class_">Response</span>(html, &#123;</span><br><span class="line">      <span class="attr">headers</span>: &#123;</span><br><span class="line">        <span class="string">&quot;content-type&quot;</span>: <span class="string">&quot;text/html;charset=UTF-8&quot;</span>,</span><br><span class="line">      &#125;,</span><br><span class="line">    &#125;)</span><br><span class="line">  );</span><br><span class="line">  <span class="comment">// 重定向</span></span><br><span class="line">  <span class="keyword">return</span> event.<span class="title function_">respondWith</span>(<span class="title class_">Response</span>.<span class="title function_">redirect</span>(<span class="string">&quot;https://baidu.com&quot;</span>, <span class="number">301</span>));</span><br><span class="line">&#125;);</span><br></pre></td></tr></table></figure>
+
+<figure class="highlight js"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br></pre></td><td class="code"><pre><span class="line"><span class="variable language_">this</span>.<span class="title function_">addEventListener</span>(<span class="string">&quot;fetch&quot;</span>, <span class="keyword">function</span> (<span class="params">event</span>) &#123;</span><br><span class="line">  <span class="keyword">const</span> url = <span class="keyword">new</span> <span class="title function_">URL</span>(event.<span class="property">request</span>.<span class="property">url</span>);</span><br><span class="line">  <span class="keyword">if</span> (location.<span class="property">origin</span> !== url.<span class="property">origin</span>) <span class="keyword">return</span>;</span><br><span class="line">  <span class="keyword">return</span> event.<span class="title function_">respondWith</span>(</span><br><span class="line">    caches.<span class="title function_">match</span>(event.<span class="property">request</span>).<span class="title function_">then</span>(<span class="function">(<span class="params">res</span>) =&gt;</span> &#123;</span><br><span class="line">      <span class="keyword">if</span> (res) <span class="keyword">return</span> res;</span><br><span class="line">      <span class="keyword">return</span> <span class="title function_">fetch</span>(event.<span class="property">request</span>).<span class="title function_">then</span>(<span class="function">(<span class="params">res</span>) =&gt;</span> &#123;</span><br><span class="line">        <span class="keyword">if</span> (!res || res.<span class="property">status</span> !== <span class="number">200</span> || res.<span class="property">type</span> !== <span class="string">&quot;basic&quot;</span>) &#123;</span><br><span class="line">          <span class="keyword">return</span> res;</span><br><span class="line">        &#125;</span><br><span class="line">        <span class="keyword">const</span> clone = res.<span class="title function_">clone</span>();</span><br><span class="line">        caches.<span class="title function_">open</span>(config.<span class="property">CACHE_VERSION</span>).<span class="title function_">then</span>(<span class="function">(<span class="params">caches</span>) =&gt;</span> &#123;</span><br><span class="line">          caches.<span class="title function_">put</span>(event.<span class="property">request</span>, clone);</span><br><span class="line">        &#125;);</span><br><span class="line">        <span class="keyword">return</span> res;</span><br><span class="line">      &#125;);</span><br><span class="line">    &#125;)</span><br><span class="line">  );</span><br><span class="line">&#125;);</span><br></pre></td></tr></table></figure>
+
+<h4 id="通信"><a href="#通信" class="headerlink" title="通信"></a>通信</h4><p>客户端向 sw 发送消息，需要保证 sw 已经处于 activated 状态</p>
+<figure class="highlight js"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment">// index.html</span></span><br><span class="line">serviceWorker.<span class="title function_">postMessage</span>(&#123; <span class="attr">a</span>: <span class="number">1</span> &#125;);</span><br><span class="line"></span><br><span class="line"><span class="comment">// sw.js</span></span><br><span class="line"><span class="variable language_">this</span>.<span class="title function_">addEventListener</span>(<span class="string">&quot;message&quot;</span>, <span class="keyword">function</span> (<span class="params">event</span>) &#123;</span><br><span class="line">  <span class="variable language_">console</span>.<span class="title function_">log</span>(<span class="string">&quot;收到页面消息&quot;</span>, event.<span class="property">data</span>);</span><br><span class="line">&#125;);</span><br></pre></td></tr></table></figure>
+
+<p>数据同步， sw 可以监听客户端发起的 sync 请求，当离线环境时，sw 在后台将任务挂起，当网络恢复会执行回调函数， <strong>相同的 tag 在网络恢复后只会执行一次</strong>， tag 不能用于传输数据， 离线数据应该使用持久化保存。</p>
+<figure class="highlight js"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment">// index.html</span></span><br><span class="line">navigator.<span class="property">serviceWorker</span>.<span class="property">ready</span>.<span class="title function_">then</span>(<span class="keyword">function</span> (<span class="params">registration</span>) &#123;</span><br><span class="line">  <span class="variable language_">document</span>.<span class="property">body</span>.<span class="title function_">addEventListener</span>(<span class="string">&quot;click&quot;</span>, <span class="function">() =&gt;</span> &#123;</span><br><span class="line">    registration.<span class="property">sync</span></span><br><span class="line">      .<span class="title function_">register</span>(<span class="string">&quot;data_sync&quot;</span>)</span><br><span class="line">      .<span class="title function_">then</span>(<span class="keyword">function</span> (<span class="params"></span>) &#123;</span><br><span class="line">        <span class="variable language_">console</span>.<span class="title function_">log</span>(<span class="string">&quot;后台同步已触发&quot;</span>);</span><br><span class="line">      &#125;)</span><br><span class="line">      .<span class="title function_">catch</span>(<span class="keyword">function</span> (<span class="params">err</span>) &#123;</span><br><span class="line">        <span class="variable language_">console</span>.<span class="title function_">log</span>(<span class="string">&quot;后台同步触发失败&quot;</span>, err);</span><br><span class="line">      &#125;);</span><br><span class="line">  &#125;);</span><br><span class="line">&#125;);</span><br><span class="line"></span><br><span class="line"><span class="comment">// sw.js</span></span><br><span class="line">self.<span class="title function_">addEventListener</span>(<span class="string">&quot;sync&quot;</span>, <span class="keyword">function</span> (<span class="params">e</span>) &#123;</span><br><span class="line">  <span class="keyword">switch</span> (e.<span class="property">tag</span>) &#123;</span><br><span class="line">    <span class="keyword">case</span> <span class="string">&quot;data_sync&quot;</span>:</span><br><span class="line">      <span class="keyword">break</span>;</span><br><span class="line">    <span class="attr">default</span>:</span><br><span class="line">      <span class="keyword">return</span>;</span><br><span class="line">  &#125;</span><br><span class="line">&#125;);</span><br></pre></td></tr></table></figure>
+
+<h3 id="workbox"><a href="#workbox" class="headerlink" title="workbox"></a>workbox</h3><p><a target="_blank" rel="noopener" href="https://developer.chrome.com/docs/workbox/modules">workbox docs</a></p>
+<ul>
+<li><p>注册</p>
+<figure class="highlight js"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment">// index.html</span></span><br><span class="line"><span class="keyword">if</span> (<span class="string">&quot;serviceWorker&quot;</span> <span class="keyword">in</span> navigator) &#123;</span><br><span class="line">  <span class="keyword">const</span> &#123; <span class="title class_">Workbox</span> &#125; = <span class="keyword">await</span> <span class="title function_">import</span>(<span class="string">&quot;workbox-window&quot;</span>);</span><br><span class="line">  <span class="keyword">const</span> wb = <span class="keyword">new</span> <span class="title class_">Workbox</span>(<span class="string">&quot;sw.js&quot;</span>);</span><br><span class="line"></span><br><span class="line">  <span class="comment">// 实现 window 与 sw 通信</span></span><br><span class="line">  wb.<span class="title function_">addEventListener</span>(<span class="string">&quot;activated&quot;</span>, <span class="function">(<span class="params">event</span>) =&gt;</span> &#123;</span><br><span class="line">    <span class="keyword">const</span> urlsToCache = [</span><br><span class="line">      location.<span class="property">href</span>,</span><br><span class="line">      ...performance.<span class="title function_">getEntriesByType</span>(<span class="string">&quot;resource&quot;</span>).<span class="title function_">map</span>(<span class="function">(<span class="params">r</span>) =&gt;</span> r.<span class="property">name</span>),</span><br><span class="line">    ];</span><br><span class="line">    wb.<span class="title function_">messageSW</span>(&#123;</span><br><span class="line">      <span class="attr">type</span>: <span class="string">&quot;CACHE_URLS&quot;</span>,</span><br><span class="line">      <span class="attr">payload</span>: urlsToCache,</span><br><span class="line">    &#125;);</span><br><span class="line">  &#125;);</span><br><span class="line">  wb.<span class="title function_">register</span>();</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+</li>
+<li><p>使用预设</p>
+<p>通常不需要手动设置 workbox-precaching， 应该使用 workbox-build 或 workbox-webpack-plugin 自动生成依赖文件</p>
+<figure class="highlight js"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment">// sw.js</span></span><br><span class="line"></span><br><span class="line"><span class="keyword">import</span> &#123; pageCache, staticResourceCache, imageCache &#125; <span class="keyword">from</span> <span class="string">&quot;workbox-recipes&quot;</span>;</span><br><span class="line"><span class="keyword">import</span> &#123; precacheAndRoute &#125; <span class="keyword">from</span> <span class="string">&quot;workbox-precaching&quot;</span>;</span><br><span class="line"></span><br><span class="line"><span class="title function_">pageCache</span>();</span><br><span class="line"><span class="title function_">staticResourceCache</span>();</span><br><span class="line"><span class="title function_">imageCache</span>();</span><br><span class="line"></span><br><span class="line"><span class="comment">// 表示缓存所有 webpack 打包的 manifest 文件</span></span><br><span class="line"><span class="title function_">precacheAndRoute</span>(self.<span class="property">__WB_MANIFEST</span> || []);</span><br></pre></td></tr></table></figure>
+</li>
+<li><p>使用 workbox-precaching 缓存</p>
+<p>当应用首次载入 install 事件中，workbox-precaching 会查看你要下载的资源，删除重复的并使用 SW 事件下载并缓存资源。资源的 URL 中已经包含了可以用作缓存 key 的信息</p>
+</li>
+<li><p>使用 workbox-webpack-plugin</p>
+<p><strong>GenerateSW</strong> : 适用与预缓存文件，或有简单的缓存需求。 不适用与使用其他的 SW 特新，例如 Web Push, 或有自定一的缓存逻辑</p>
+<p><strong>InjectManifest</strong>： InjectManifest 插件将生成一个要预缓存的 url 列表，并将该预缓存清单添加到现有的 service worker 文件中。否则它将使文件保持原样。</p>
+<p>适用于想要更多的控制 SW，缓存文件，自定义路由策略，想要使用其他的 SW 特性，</p>
+<p>会在 output.path 中生成 sw.js 文件，需要手动在 index.html 中引入</p>
+<figure class="highlight js"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment">// webpack.config.js</span></span><br><span class="line"><span class="keyword">const</span> &#123; <span class="title class_">InjectManifest</span> &#125; = <span class="built_in">require</span>(<span class="string">&quot;workbox-webpack-plugin&quot;</span>);</span><br><span class="line"></span><br><span class="line"><span class="variable language_">module</span>.<span class="property">exports</span> = &#123;</span><br><span class="line">  <span class="attr">plugins</span>: [</span><br><span class="line">    <span class="keyword">new</span> <span class="title class_">InjectManifest</span>(&#123;</span><br><span class="line">      <span class="attr">swSrc</span>: <span class="string">&quot;sw.js&quot;</span>,</span><br><span class="line">      <span class="attr">exclude</span>: [</span><br><span class="line">        <span class="regexp">/\.map$/</span>,</span><br><span class="line">        <span class="regexp">/manifest$/</span>,</span><br><span class="line">        <span class="regexp">/\.htaccess$/</span>,</span><br><span class="line">        <span class="regexp">/service-worker\.js$/</span>,</span><br><span class="line">        <span class="regexp">/sw\.js$/</span>,</span><br><span class="line">      ],</span><br><span class="line">    &#125;),</span><br><span class="line">  ],</span><br><span class="line">&#125;;</span><br></pre></td></tr></table></figure></li>
+</ul>
+ 
+      <!-- reward -->
+      
+    </div>
+    
+
+    <!-- copyright -->
+    
+    <footer class="article-footer">
+       
+  <ul class="article-tag-list" itemprop="keywords"><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/service-worker/" rel="tag">service-worker</a></li></ul>
+
+    </footer>
+  </div>
+
+   
+    
+</article>
+
+    
+    <article
+  id="posts-design/pattern/⑦适配器-外观模式"
+  class="article article-type-posts"
+  itemscope
+  itemprop="blogPost"
+  data-scroll-reveal
+>
+  <div class="article-inner">
+    
+    <header class="article-header">
+       
+<h2 itemprop="name">
+  <a class="article-title" href="/posts/6c834f681484/"
+    >⑦适配器模式-外观模式</a> 
+</h2>
+ 
+
+      
+    </header>
+     
+    <div class="article-meta">
+      <a href="/posts/6c834f681484/" class="article-date">
+  <time datetime="2023-01-13T04:53:16.000Z" itemprop="datePublished">2023-01-13</time>
+</a> 
+  <div class="article-category">
+    <a class="article-category-link" href="/categories/%E8%AE%BE%E8%AE%A1%E6%A8%A1%E5%BC%8F/">设计模式</a>
+  </div>
+   
+    </div>
+      
+    <div class="article-entry" itemprop="articleBody">
+       
+  <h4 id="适配器模式"><a href="#适配器模式" class="headerlink" title="适配器模式"></a>适配器模式</h4><p>适配器就像是转换国内充电器和香港充电器的插座一样，能让原本可以使用的插座在另一个地方也能正常使用。</p>
+<p>而转换的过过程中，并没有修改原有插座的功能，只是将他的功能进行转换，这也是适配器的核心逻辑，有别于外观模式，和之前的装饰者模式。</p>
+<p><strong>适配器模式：将一个类的接口，转换为消费方期望的另一个接口。适配器让原本不兼容的类可以正常使用。</strong>， 而装饰着模式通常为类提供额外的功能接口，已达到增强类的目的。</p>
+<p>真实的场景中适配器模式可以适配对象或类。</p>
+<p><strong>通常对类的扩展操作会考虑继承，但是 JS 中的扩展方式很灵活，也可以通过函数的形式对对象或类进行操作。</strong></p>
+<p>通过一个适配器，为对象实现 iterator</p>
+<figure class="highlight ts"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br><span class="line">35</span><br><span class="line">36</span><br><span class="line">37</span><br><span class="line">38</span><br><span class="line">39</span><br><span class="line">40</span><br><span class="line">41</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">const</span> obj = &#123;</span><br><span class="line">  <span class="attr">a</span>: <span class="number">1</span>,</span><br><span class="line">  <span class="attr">b</span>: <span class="number">2</span>,</span><br><span class="line">&#125;;</span><br><span class="line"></span><br><span class="line"><span class="keyword">const</span> objIteratorAdapter = (</span><br><span class="line">  <span class="attr">obj</span>: <span class="title class_">Record</span>&lt;<span class="built_in">string</span>, <span class="built_in">any</span>&gt;</span><br><span class="line">): <span class="title class_">Record</span>&lt;<span class="built_in">string</span>, <span class="built_in">any</span>&gt; &amp; &#123; [<span class="title class_">Symbol</span>.<span class="property">iterator</span>]: <span class="function">() =&gt;</span> <span class="built_in">any</span> &#125; =&gt; &#123;</span><br><span class="line">  <span class="keyword">const</span> iterator = (): &#123; <span class="attr">next</span>: <span class="function">() =&gt;</span> <span class="built_in">any</span> &#125; =&gt; &#123;</span><br><span class="line">    <span class="keyword">let</span> keys = <span class="title class_">Object</span>.<span class="title function_">keys</span>(obj);</span><br><span class="line">    <span class="keyword">let</span> index = <span class="number">0</span>;</span><br><span class="line">    <span class="keyword">return</span> &#123;</span><br><span class="line">      <span class="title function_">next</span>(<span class="params"></span>) &#123;</span><br><span class="line">        <span class="keyword">return</span> index &lt; keys.<span class="property">length</span></span><br><span class="line">          ? &#123;</span><br><span class="line">              <span class="attr">value</span>: obj[keys[index++]],</span><br><span class="line">              <span class="attr">done</span>: <span class="literal">false</span>,</span><br><span class="line">            &#125;</span><br><span class="line">          : &#123;</span><br><span class="line">              <span class="attr">value</span>: <span class="literal">undefined</span>,</span><br><span class="line">              <span class="attr">done</span>: <span class="literal">true</span>,</span><br><span class="line">            &#125;;</span><br><span class="line">      &#125;,</span><br><span class="line">    &#125;;</span><br><span class="line">  &#125;;</span><br><span class="line">  <span class="keyword">const</span> iteratorObj = <span class="title class_">Object</span>.<span class="title function_">create</span>(obj, &#123;</span><br><span class="line">    [<span class="title class_">Symbol</span>.<span class="property">iterator</span>]: &#123;</span><br><span class="line">      <span class="attr">value</span>: iterator,</span><br><span class="line">      <span class="attr">writable</span>: <span class="literal">false</span>,</span><br><span class="line">      <span class="attr">enumerable</span>: <span class="literal">false</span>,</span><br><span class="line">      <span class="attr">configurable</span>: <span class="literal">false</span>,</span><br><span class="line">    &#125;,</span><br><span class="line">  &#125;);</span><br><span class="line"></span><br><span class="line">  <span class="keyword">return</span> iteratorObj;</span><br><span class="line">&#125;;</span><br><span class="line"></span><br><span class="line"><span class="keyword">const</span> newObj = <span class="title function_">objIteratorAdapter</span>(obj);</span><br><span class="line"><span class="keyword">for</span> (<span class="keyword">let</span> i <span class="keyword">of</span> newObj) &#123;</span><br><span class="line">  <span class="variable language_">console</span>.<span class="title function_">log</span>(i);</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+<h4 id="外观模式"><a href="#外观模式" class="headerlink" title="外观模式"></a>外观模式</h4><p><strong>外观模式提供了统一的接口，用来访问子系统中的一群接口。外观定义了一个高层接口，让子系统的接口更容易使用。</strong></p>
+<p>外观模式并不会封装新的功能，而是封装了一段子系统的接口。</p>
+<p>虽然外观模式定义简单，但是引出了一个设计理念， <strong>最少知识原则，只和你的密友谈话。</strong></p>
+<p>在对象的方法调用中，应该遵循几个原则：</p>
+<ul>
+<li>调用该对象本身的方法</li>
+<li>调用当作参数出入对象中的方法</li>
+<li>调用通过此方法创建或实例化对象中的方法</li>
+<li>调用对象实例中引用的对象中的方法</li>
+</ul>
+ 
+      <!-- reward -->
+      
+    </div>
+    
+
+    <!-- copyright -->
+    
+    <footer class="article-footer">
+       
+  <ul class="article-tag-list" itemprop="keywords"><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/%E8%AE%BE%E8%AE%A1%E6%A8%A1%E5%BC%8F/" rel="tag">设计模式</a></li></ul>
+
+    </footer>
+  </div>
+
+   
+    
+</article>
+
+    
+    <article
+  id="posts-design/pattern/⑥命令模式"
+  class="article article-type-posts"
+  itemscope
+  itemprop="blogPost"
+  data-scroll-reveal
+>
+  <div class="article-inner">
+    
+    <header class="article-header">
+       
+<h2 itemprop="name">
+  <a class="article-title" href="/posts/8e304e32a4e8/"
+    >⑥封装调用-命令模式</a> 
+</h2>
+ 
+
+      
+    </header>
+     
+    <div class="article-meta">
+      <a href="/posts/8e304e32a4e8/" class="article-date">
+  <time datetime="2023-01-12T04:00:16.000Z" itemprop="datePublished">2023-01-12</time>
+</a> 
+  <div class="article-category">
+    <a class="article-category-link" href="/categories/%E8%AE%BE%E8%AE%A1%E6%A8%A1%E5%BC%8F/">设计模式</a>
+  </div>
+   
+    </div>
+      
+    <div class="article-entry" itemprop="articleBody">
+       
+  <h4 id="解耦调用者和请求者"><a href="#解耦调用者和请求者" class="headerlink" title="解耦调用者和请求者"></a>解耦调用者和请求者</h4><p>现在有 2 个开关需要控制 2 台设备的开机和停止。设备的开机和停止是一个繁琐的过程，需要设置一些参数，并经历几步操作。</p>
+<p>如果我们把对机器的操作都写在开关的实现中，一旦开关流程改变或是更换了设备，都需要重新修改开关的代码。</p>
+<p>所以我们考虑先把设备的开机和停止过程封装在一个对象方法里面，开关只要直接调用这个对象的方法就能实现设备开始和停止，不需要关心实现的细节。</p>
+<figure class="highlight ts"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">interface</span> <span class="title class_">ICommand</span> &#123;</span><br><span class="line">  <span class="title function_">execute</span>(): <span class="built_in">void</span>;</span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line"><span class="keyword">class</span> <span class="title class_">Device1</span> <span class="keyword">implements</span> <span class="title class_">ICommand</span> &#123;</span><br><span class="line">  <span class="title function_">setOption</span>(<span class="params"></span>) &#123;&#125;</span><br><span class="line">  <span class="title function_">step1</span>(<span class="params"></span>) &#123;&#125;</span><br><span class="line">  <span class="title function_">step2</span>(<span class="params"></span>) &#123;&#125;</span><br><span class="line">  <span class="title function_">on</span>(<span class="params"></span>) &#123;&#125;</span><br><span class="line">  <span class="title function_">execute</span>(<span class="params"></span>) &#123;</span><br><span class="line">    <span class="variable language_">this</span>.<span class="title function_">setOption</span>();</span><br><span class="line">    <span class="variable language_">this</span>.<span class="title function_">step1</span>();</span><br><span class="line">    <span class="variable language_">this</span>.<span class="title function_">step2</span>();</span><br><span class="line">    <span class="variable language_">this</span>.<span class="title function_">on</span>();</span><br><span class="line">    <span class="variable language_">console</span>.<span class="title function_">log</span>(<span class="string">&quot;设备已经开启&quot;</span>);</span><br><span class="line">  &#125;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+<p>开关类接受命令类，并直接调用命令类的方法。</p>
+<figure class="highlight ts"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">class</span> <span class="title class_">ControlA</span> &#123;</span><br><span class="line">  <span class="attr">command</span>: <span class="title class_">ICommand</span>;</span><br><span class="line">  <span class="title function_">constructor</span>(<span class="params">command: ICommand</span>) &#123;</span><br><span class="line">    <span class="variable language_">this</span>.<span class="property">command</span> = command;</span><br><span class="line">  &#125;</span><br><span class="line">  <span class="title function_">setCommand</span>(<span class="params">command: ICommand</span>) &#123;</span><br><span class="line">    <span class="variable language_">this</span>.<span class="property">command</span> = command;</span><br><span class="line">  &#125;</span><br><span class="line">  <span class="title function_">on</span>(<span class="params"></span>) &#123;</span><br><span class="line">    <span class="variable language_">this</span>.<span class="property">command</span>.<span class="title function_">execute</span>();</span><br><span class="line">  &#125;</span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line"><span class="keyword">const</span> controlA = <span class="keyword">new</span> <span class="title class_">ControlA</span>(<span class="keyword">new</span> <span class="title class_">Device1</span>());</span><br><span class="line">controlA.<span class="title function_">on</span>();</span><br></pre></td></tr></table></figure>
+
+<p>对于某些按钮，可能没有实现 <code>execute</code> 方法，而我们又不想通过 <code>if</code> 或 <code>else</code> 判断破坏代码风格，可以使用占位符类。</p>
+<figure class="highlight ts"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">class</span> <span class="title class_">NoCommand</span> <span class="keyword">implements</span> <span class="title class_">ICommand</span> &#123;</span><br><span class="line">  <span class="title function_">execute</span>(<span class="params"></span>) &#123;&#125;</span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line"><span class="keyword">const</span> controlB = <span class="keyword">new</span> <span class="title class_">ControlA</span>(<span class="keyword">new</span> <span class="title class_">NoCommand</span>());</span><br><span class="line">controlB.<span class="title function_">on</span>();</span><br></pre></td></tr></table></figure>
+
+<h4 id="命令模式"><a href="#命令模式" class="headerlink" title="命令模式"></a>命令模式</h4><p><strong>将请求封装成对象，以便使用不同的请求，队列，或日志来参数化其他的对象，命令模式也支持可撤销的操作。</strong></p>
+<h4 id="宏命令"><a href="#宏命令" class="headerlink" title="宏命令"></a>宏命令</h4><p>把所有的命令对象通过一个类编排起来，统一执行，就实现了宏命令</p>
+<figure class="highlight ts"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">class</span> <span class="title class_">MacroCommand</span> <span class="keyword">implements</span> <span class="title class_">ICommand</span> &#123;</span><br><span class="line">  <span class="attr">commandStack</span>: <span class="title class_">ICommand</span>[] = [];</span><br><span class="line">  <span class="title function_">setCommand</span>(<span class="params">command: ICommand</span>) &#123;</span><br><span class="line">    <span class="variable language_">this</span>.<span class="property">commandStack</span>.<span class="title function_">push</span>(command);</span><br><span class="line">  &#125;</span><br><span class="line">  <span class="title function_">execute</span>(): <span class="built_in">void</span> &#123;</span><br><span class="line">    <span class="keyword">for</span> (<span class="keyword">let</span> i = <span class="number">0</span>; i &lt; <span class="variable language_">this</span>.<span class="property">commandStack</span>.<span class="property">length</span>; i++) &#123;</span><br><span class="line">      <span class="variable language_">this</span>.<span class="property">commandStack</span>[i].<span class="title function_">execute</span>();</span><br><span class="line">    &#125;</span><br><span class="line">  &#125;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+ 
+      <!-- reward -->
+      
+    </div>
+    
+
+    <!-- copyright -->
+    
+    <footer class="article-footer">
+       
+  <ul class="article-tag-list" itemprop="keywords"><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/%E8%AE%BE%E8%AE%A1%E6%A8%A1%E5%BC%8F/" rel="tag">设计模式</a></li></ul>
+
+    </footer>
+  </div>
+
+   
+    
+</article>
+
+    
+    <article
+  id="posts-design/pattern/⑤单例模式"
+  class="article article-type-posts"
+  itemscope
+  itemprop="blogPost"
+  data-scroll-reveal
+>
+  <div class="article-inner">
+    
+    <header class="article-header">
+       
+<h2 itemprop="name">
+  <a class="article-title" href="/posts/53ed512d939b/"
+    >⑤独一无二-单例模式</a> 
+</h2>
+ 
+
+      
+    </header>
+     
+    <div class="article-meta">
+      <a href="/posts/53ed512d939b/" class="article-date">
+  <time datetime="2023-01-09T01:20:41.000Z" itemprop="datePublished">2023-01-09</time>
+</a> 
+  <div class="article-category">
+    <a class="article-category-link" href="/categories/%E8%AE%BE%E8%AE%A1%E6%A8%A1%E5%BC%8F/">设计模式</a>
+  </div>
+   
+    </div>
+      
+    <div class="article-entry" itemprop="articleBody">
+       
+  <h4 id="单例模式"><a href="#单例模式" class="headerlink" title="单例模式"></a>单例模式</h4><p><strong>确保一类只有一个实例，并提供全局访问点</strong>。</p>
+<p>这个模式很简单，目的就是让类只能被实例化一次，思路就是如果没有被实例化就实例化类，如果已经实例化直接返回实例化的对象。</p>
+<p>因为在 JS 中，类的静态方法不能访问类的实例属性，所以考虑把类的实例缓存在类的静态属性中。</p>
+<figure class="highlight ts"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">class</span> <span class="title class_">Singleton</span> &#123;</span><br><span class="line">  <span class="keyword">static</span> <span class="attr">instance</span>: <span class="title class_">InstanceType</span>&lt;<span class="keyword">typeof</span> <span class="title class_">Singleton</span>&gt; | <span class="literal">null</span> = <span class="literal">null</span>;</span><br><span class="line">  <span class="keyword">static</span> <span class="title function_">getInstance</span>(<span class="params"></span>) &#123;</span><br><span class="line">    <span class="keyword">if</span> (!<span class="variable language_">this</span>.<span class="property">instance</span>) &#123;</span><br><span class="line">      <span class="keyword">return</span> (<span class="variable language_">this</span>.<span class="property">instance</span> = <span class="keyword">new</span> <span class="title class_">Singleton</span>());</span><br><span class="line">    &#125; <span class="keyword">else</span> &#123;</span><br><span class="line">      <span class="keyword">return</span> <span class="variable language_">this</span>.<span class="property">instance</span>;</span><br><span class="line">    &#125;</span><br><span class="line">  &#125;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+<p>如果不使用 ES6 class 实现，可以使用函数的方式配合模块化规范，导出创建方法</p>
+<figure class="highlight ts"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">interface</span> <span class="title class_">ISingleton</span> &#123;&#125;</span><br><span class="line"><span class="keyword">interface</span> <span class="title class_">ISingletonConstructor</span> &#123;</span><br><span class="line">  <span class="keyword">new</span> (): <span class="title class_">ISingleton</span>;</span><br><span class="line">&#125;</span><br><span class="line"><span class="keyword">class</span> <span class="title class_">Singleton</span> <span class="keyword">implements</span> <span class="title class_">ISingleton</span> &#123;</span><br><span class="line">  <span class="title function_">constructor</span>(<span class="params"></span>) &#123;&#125;</span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line"><span class="keyword">let</span> getSingletonInstance = (<span class="title class_">Singleton</span>: <span class="title class_">ISingletonConstructor</span>): <span class="function"><span class="params">ISingleton</span> =&gt;</span> &#123;</span><br><span class="line">  <span class="keyword">let</span> <span class="attr">instance</span>: <span class="title class_">ISingleton</span> = <span class="keyword">new</span> <span class="title class_">Singleton</span>();</span><br><span class="line">  getSingletonInstance = (<span class="title class_">Singleton</span>?: <span class="title class_">ISingletonConstructor</span>): <span class="function"><span class="params">ISingleton</span> =&gt;</span></span><br><span class="line">    instance;</span><br><span class="line">  <span class="keyword">return</span> instance;</span><br><span class="line">&#125;;</span><br><span class="line"></span><br><span class="line"><span class="keyword">export</span> &#123; getSingletonInstance &#125;;</span><br></pre></td></tr></table></figure>
+ 
+      <!-- reward -->
+      
+    </div>
+    
+
+    <!-- copyright -->
+    
+    <footer class="article-footer">
+       
+  <ul class="article-tag-list" itemprop="keywords"><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/%E8%AE%BE%E8%AE%A1%E6%A8%A1%E5%BC%8F/" rel="tag">设计模式</a></li></ul>
+
+    </footer>
+  </div>
+
+   
+    
+</article>
+
+    
+    <article
+  id="posts-design/pattern/④工厂模式"
+  class="article article-type-posts"
+  itemscope
+  itemprop="blogPost"
+  data-scroll-reveal
+>
+  <div class="article-inner">
+    
+    <header class="article-header">
+       
+<h2 itemprop="name">
+  <a class="article-title" href="/posts/9ddddaf8aec3/"
+    >④隐藏new操作符-工厂模式</a> 
+</h2>
+ 
+
+      
+    </header>
+     
+    <div class="article-meta">
+      <a href="/posts/9ddddaf8aec3/" class="article-date">
+  <time datetime="2023-01-04T01:36:43.000Z" itemprop="datePublished">2023-01-04</time>
+</a> 
+  <div class="article-category">
+    <a class="article-category-link" href="/categories/%E8%AE%BE%E8%AE%A1%E6%A8%A1%E5%BC%8F/">设计模式</a>
+  </div>
+   
+    </div>
+      
+    <div class="article-entry" itemprop="articleBody">
+       
+  <h4 id="new-有什么不对"><a href="#new-有什么不对" class="headerlink" title="new 有什么不对"></a>new 有什么不对</h4><p><strong>实例化对象的过程不应该总是公开的进行，这里面会有一些耦合的问题。</strong></p>
+<p>对 new 本身来讲并没有什么不对，需要通过 new 操作符实例化对象。但是对于设计模式来讲，new 操作符让我们针对业务编写代码，初始化的逻辑可能在一段条件语句中，如果添加了新的类，必须修改原来的代码。也就是说我们代码没有对修改关闭。</p>
+<p>当有一些相关类实例化的时候，可能会写出下面的代码，每当加入新的类这段代码就会被修改，也就违反对修改关闭的设计原则。</p>
+<figure class="highlight ts"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">if</span> (picnic) &#123;duck = <span class="keyword">new</span> <span class="title class_">MallardDuck</span>();&#125;</span><br><span class="line"><span class="keyword">else</span> <span class="keyword">if</span> (hunting) (duck = <span class="keyword">new</span> <span class="title class_">DecoyDuck</span>();)</span><br><span class="line"><span class="keyword">else</span> <span class="keyword">if</span> (inBathTub) &#123;duck = <span class="keyword">new</span> <span class="title class_">RubberDuck</span>()&#125;</span><br></pre></td></tr></table></figure>
+
+<h4 id="简单工厂"><a href="#简单工厂" class="headerlink" title="简单工厂"></a>简单工厂</h4><p>一个最简单的工厂就是把实例化对象的过程提取出来，单独放到一个工厂类中，并暴露方法，允许第三方类通过这个方法实例化对象。</p>
+<figure class="highlight ts"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br><span class="line">35</span><br><span class="line">36</span><br><span class="line">37</span><br><span class="line">38</span><br><span class="line">39</span><br><span class="line">40</span><br><span class="line">41</span><br><span class="line">42</span><br><span class="line">43</span><br><span class="line">44</span><br><span class="line">45</span><br><span class="line">46</span><br><span class="line">47</span><br><span class="line">48</span><br><span class="line">49</span><br><span class="line">50</span><br><span class="line">51</span><br><span class="line">52</span><br><span class="line">53</span><br><span class="line">54</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">abstract</span> <span class="keyword">class</span> <span class="title class_">FruitFactory</span> &#123;</span><br><span class="line">  <span class="comment">// 抽象工厂类的公用方法</span></span><br><span class="line">  <span class="title function_">common</span>(<span class="params"></span>) &#123;&#125;</span><br><span class="line">  <span class="comment">// 需要子类重新实现</span></span><br><span class="line">  <span class="keyword">abstract</span> <span class="title function_">createTea</span>(<span class="attr">type</span>: <span class="built_in">string</span>): <span class="title class_">AppleTea</span>;</span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line"><span class="keyword">interface</span> <span class="title class_">AppleTea</span> &#123;</span><br><span class="line">  <span class="title function_">name</span>(): <span class="built_in">void</span>;</span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line"><span class="keyword">class</span> <span class="title class_">Type1AppleTea</span> <span class="keyword">implements</span> <span class="title class_">AppleTea</span> &#123;</span><br><span class="line">  <span class="title function_">name</span>(<span class="params"></span>) &#123;</span><br><span class="line">    <span class="variable language_">console</span>.<span class="title function_">log</span>(<span class="string">&quot;苹果茶类型1&quot;</span>);</span><br><span class="line">  &#125;</span><br><span class="line">&#125;</span><br><span class="line"><span class="keyword">class</span> <span class="title class_">Type2AppleTea</span> <span class="keyword">implements</span> <span class="title class_">AppleTea</span> &#123;</span><br><span class="line">  <span class="title function_">name</span>(<span class="params"></span>) &#123;</span><br><span class="line">    <span class="variable language_">console</span>.<span class="title function_">log</span>(<span class="string">&quot;苹果茶类型2&quot;</span>);</span><br><span class="line">  &#125;</span><br><span class="line">&#125;</span><br><span class="line"><span class="keyword">class</span> <span class="title class_">Apple</span> <span class="keyword">extends</span> <span class="title class_ inherited__">FruitFactory</span> &#123;</span><br><span class="line">  <span class="title function_">taste</span>(<span class="params"></span>) &#123;</span><br><span class="line">    <span class="variable language_">console</span>.<span class="title function_">log</span>(<span class="string">&quot;苹果很甜&quot;</span>);</span><br><span class="line">  &#125;</span><br><span class="line">  <span class="keyword">public</span> <span class="title function_">createTea</span>(<span class="attr">type</span>: <span class="built_in">string</span>): <span class="title class_">AppleTea</span> &#123;</span><br><span class="line">    <span class="keyword">if</span> (<span class="keyword">type</span> == <span class="string">&quot;appleTeaType1&quot;</span>) &#123;</span><br><span class="line">      <span class="keyword">return</span> <span class="keyword">new</span> <span class="title class_">Type1AppleTea</span>();</span><br><span class="line">    &#125; <span class="keyword">else</span> <span class="keyword">if</span> (<span class="keyword">type</span> == <span class="string">&quot;appleTeaType1&quot;</span>) &#123;</span><br><span class="line">      <span class="keyword">return</span> <span class="keyword">new</span> <span class="title class_">Type2AppleTea</span>();</span><br><span class="line">    &#125;</span><br><span class="line">    <span class="keyword">return</span> <span class="keyword">new</span> <span class="title class_">Type1AppleTea</span>();</span><br><span class="line">  &#125;</span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line"><span class="keyword">class</span> <span class="title class_">FruitStore</span> &#123;</span><br><span class="line">  <span class="attr">factory</span>: <span class="title class_">FruitFactory</span>;</span><br><span class="line">  <span class="title function_">constructor</span>(<span class="params">factory: FruitFactory</span>) &#123;</span><br><span class="line">    <span class="variable language_">this</span>.<span class="property">factory</span> = factory;</span><br><span class="line">  &#125;</span><br><span class="line">  <span class="title function_">makeFruitTea</span>(<span class="params"><span class="keyword">type</span>: <span class="built_in">string</span></span>) &#123;</span><br><span class="line">    <span class="keyword">return</span> <span class="variable language_">this</span>.<span class="property">factory</span>.<span class="title function_">createTea</span>(<span class="string">&quot;type1&quot;</span>);</span><br><span class="line">  &#125;</span><br><span class="line">  <span class="title function_">orderTea</span>(<span class="params"></span>) &#123;</span><br><span class="line">    <span class="keyword">const</span> tea = <span class="variable language_">this</span>.<span class="title function_">makeFruitTea</span>(<span class="string">&quot;type1&quot;</span>);</span><br><span class="line">    tea.<span class="title function_">name</span>();</span><br><span class="line">  &#125;</span><br><span class="line"></span><br><span class="line">  <span class="comment">//  公用的茶的制作方法</span></span><br><span class="line">  <span class="comment">//  ...</span></span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line"><span class="keyword">const</span> store = <span class="keyword">new</span> <span class="title class_">FruitStore</span>(<span class="keyword">new</span> <span class="title class_">Apple</span>());</span><br><span class="line">store.<span class="title function_">orderTea</span>();</span><br></pre></td></tr></table></figure>
+
+<p><strong>工厂方法模式： 定义了一个创建对象的接口，但由子类决定要实例化的类是哪一个的，工厂方法让类把实例化推迟到子类。</strong></p>
+<p>上面的代码中可以看到工厂是外部传入，可以创建不同类型的茶，但是茶的制作行为更像是 Store 的一部分，所以做一点改变。</p>
+<ul>
+<li>定义一个 Store 的抽象类，所有的 Store 都要实现这个抽象类。</li>
+<li>在 Store 抽象类中定义 createTea 的抽象方法，这个方法的内容就是之前外部传入的工厂。</li>
+<li>换句话说， 工厂方法转移到子类中实现</li>
+</ul>
+<figure class="highlight ts"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br><span class="line">35</span><br><span class="line">36</span><br><span class="line">37</span><br><span class="line">38</span><br><span class="line">39</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">interface</span> <span class="title class_">AppleTea</span> &#123;</span><br><span class="line">  <span class="title function_">name</span>(): <span class="built_in">void</span>;</span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line"><span class="keyword">class</span> <span class="title class_">Type1AppleTea</span> <span class="keyword">implements</span> <span class="title class_">AppleTea</span> &#123;</span><br><span class="line">  <span class="title function_">name</span>(<span class="params"></span>) &#123;</span><br><span class="line">    <span class="variable language_">console</span>.<span class="title function_">log</span>(<span class="string">&quot;苹果茶类型1&quot;</span>);</span><br><span class="line">  &#125;</span><br><span class="line">&#125;</span><br><span class="line"><span class="keyword">class</span> <span class="title class_">Type2AppleTea</span> <span class="keyword">implements</span> <span class="title class_">AppleTea</span> &#123;</span><br><span class="line">  <span class="title function_">name</span>(<span class="params"></span>) &#123;</span><br><span class="line">    <span class="variable language_">console</span>.<span class="title function_">log</span>(<span class="string">&quot;苹果茶类型2&quot;</span>);</span><br><span class="line">  &#125;</span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line"><span class="keyword">abstract</span> <span class="keyword">class</span> <span class="title class_">FruitStore</span> &#123;</span><br><span class="line">  <span class="keyword">abstract</span> <span class="title function_">createTea</span>(<span class="attr">type</span>: <span class="built_in">string</span>): <span class="built_in">any</span>;</span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line"><span class="keyword">class</span> <span class="title class_">AppleFruitStore</span> <span class="keyword">extends</span> <span class="title class_ inherited__">FruitStore</span> &#123;</span><br><span class="line">  <span class="title function_">constructor</span>(<span class="params"></span>) &#123;</span><br><span class="line">    <span class="variable language_">super</span>();</span><br><span class="line">  &#125;</span><br><span class="line">  <span class="keyword">public</span> <span class="title function_">createTea</span>(<span class="attr">type</span>: <span class="built_in">string</span>): <span class="title class_">AppleTea</span> &#123;</span><br><span class="line">    <span class="keyword">if</span> (<span class="keyword">type</span> == <span class="string">&quot;type1&quot;</span>) &#123;</span><br><span class="line">      <span class="keyword">return</span> <span class="keyword">new</span> <span class="title class_">Type1AppleTea</span>();</span><br><span class="line">    &#125; <span class="keyword">else</span> <span class="keyword">if</span> (<span class="keyword">type</span> == <span class="string">&quot;type2&quot;</span>) &#123;</span><br><span class="line">      <span class="keyword">return</span> <span class="keyword">new</span> <span class="title class_">Type2AppleTea</span>();</span><br><span class="line">    &#125;</span><br><span class="line">    <span class="keyword">return</span> <span class="keyword">new</span> <span class="title class_">Type1AppleTea</span>();</span><br><span class="line">  &#125;</span><br><span class="line">  <span class="title function_">orderTea</span>(<span class="params"></span>) &#123;</span><br><span class="line">    <span class="keyword">const</span> tea = <span class="variable language_">this</span>.<span class="title function_">createTea</span>(<span class="string">&quot;type1&quot;</span>);</span><br><span class="line">    tea.<span class="title function_">name</span>();</span><br><span class="line">  &#125;</span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line"><span class="keyword">const</span> store = <span class="keyword">new</span> <span class="title class_">AppleFruitStore</span>();</span><br><span class="line">store.<span class="title function_">orderTea</span>();</span><br></pre></td></tr></table></figure>
+
+<p><strong>所有的工厂模式都是用来封装对象创建的。</strong>， <strong>创建者类</strong> 需要有一个抽象创建者类，定义了一个<strong>抽象工厂方法</strong>，所有实现了抽象创建者类的子类，都可以用自己实现的工厂方法生产产品。<strong>产品类</strong> 是在创建者实例的工厂方法中创建出来的。</p>
+<h4 id="依赖倒置与抽象工厂"><a href="#依赖倒置与抽象工厂" class="headerlink" title="依赖倒置与抽象工厂"></a>依赖倒置与抽象工厂</h4><p><strong>依赖倒置原则：要依赖抽象，不要依赖具体类</strong>，这句话很像是要面向接口编程，而不是具体的类。没错，但是这句话更强调，高层的组件不应该依赖低层的组件，而是应该两者都依赖于 <strong>抽象</strong>。抽象可以是接口，也可以是抽象类。</p>
+<p><strong>抽象工厂模式：提供一个接口，用于创建相关或依赖对象的家族，而不需要明确指定具体类</strong>。</p>
+<h4 id="思考"><a href="#思考" class="headerlink" title="思考"></a>思考</h4><ul>
+<li>当只有一个创建者类的时候是否应该使用工厂模式，答案是肯定的，工厂模式让你便于扩展，并将产品类的创建与使用解耦。</li>
+<li>所有的工厂都是用来封装对象的创建</li>
+<li>简单工厂，虽然不是真正的设计模式，但仍不失为一个简单的方法，可以将客户程序从具体类解耦。</li>
+<li>工厂方法使用继承:把对象的创建委托给子类，子类实现工厂方法来创建对象。</li>
+<li>抽象工厂使用对象组合:对象的创建被实现在工厂接口所暴露出来的方法中</li>
+<li>所有工厂模式都通过减少应用程序和具体类之间的依赖促进松耦合。</li>
+<li>工厂方法允许类将实例化延迟到子类进行。</li>
+<li>抽象工厂创建相关的对象家族，而不需要依赖它们的具体类。</li>
+<li>依赖倒置原则，指导我们避免依赖具体类型，而要尽量依赖抽象。</li>
+<li>工厂是很有威力的技巧，帮助我们针对抽象编程，而不要针对具体类编程。</li>
+</ul>
+ 
+      <!-- reward -->
+      
+    </div>
+    
+
+    <!-- copyright -->
+    
+    <footer class="article-footer">
+       
+  <ul class="article-tag-list" itemprop="keywords"><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/%E8%AE%BE%E8%AE%A1%E6%A8%A1%E5%BC%8F/" rel="tag">设计模式</a></li></ul>
+
+    </footer>
+  </div>
+
+   
+    
+</article>
+
+    
+    <article
+  id="posts-design/pattern/①策略模式"
+  class="article article-type-posts"
+  itemscope
+  itemprop="blogPost"
+  data-scroll-reveal
+>
+  <div class="article-inner">
+    
+    <header class="article-header">
+       
+<h2 itemprop="name">
+  <a class="article-title" href="/posts/0c95a2f8f35a/"
+    >①从继承中解脱-策略模式</a> 
+</h2>
+ 
+
+      
+    </header>
+     
+    <div class="article-meta">
+      <a href="/posts/0c95a2f8f35a/" class="article-date">
+  <time datetime="2022-12-27T04:49:16.000Z" itemprop="datePublished">2022-12-27</time>
+</a> 
+  <div class="article-category">
+    <a class="article-category-link" href="/categories/%E8%AE%BE%E8%AE%A1%E6%A8%A1%E5%BC%8F/">设计模式</a>
+  </div>
+   
+    </div>
+      
+    <div class="article-entry" itemprop="articleBody">
+       
+  <h4 id="继承真的合理么"><a href="#继承真的合理么" class="headerlink" title="继承真的合理么"></a>继承真的合理么</h4><p>想象一下有一个汽车类，你用它创造了很多汽车，他们都跑在虚拟游戏世界里面。</p>
+<figure class="highlight ts"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">class</span> <span class="title class_">CarSuper</span> &#123;</span><br><span class="line">  <span class="keyword">public</span> <span class="title function_">run</span>(<span class="params"></span>) &#123;</span><br><span class="line">    <span class="variable language_">console</span>.<span class="title function_">log</span>(<span class="string">&quot;快快跑&quot;</span>);</span><br><span class="line">  &#125;</span><br><span class="line">  <span class="keyword">public</span> <span class="title function_">blow</span>(<span class="params"></span>) &#123;</span><br><span class="line">    <span class="variable language_">console</span>.<span class="title function_">log</span>(<span class="string">&quot;滴滴叫&quot;</span>);</span><br><span class="line">  &#125;</span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line"><span class="keyword">const</span> benz = <span class="keyword">new</span> <span class="title class_">CarSuper</span>();</span><br><span class="line"><span class="keyword">const</span> bmw = <span class="keyword">new</span> <span class="title class_">CarSuper</span>();</span><br></pre></td></tr></table></figure>
+
+<p>但是并不是所有的汽车都是 <code>快快跑</code> ，它们都有自己的极限速度，所以你很容易想到应该有一个子类，让子类去实现特有方法。</p>
+<figure class="highlight ts"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">class</span> <span class="title class_">Benz</span> <span class="keyword">extends</span> <span class="title class_ inherited__">CarSuper</span> &#123;</span><br><span class="line">  <span class="keyword">public</span> <span class="title function_">run</span>(<span class="params"></span>) &#123;</span><br><span class="line">    <span class="variable language_">console</span>.<span class="title function_">log</span>(<span class="string">&quot;飞速跑&quot;</span>);</span><br><span class="line">  &#125;</span><br><span class="line">&#125;</span><br><span class="line"><span class="keyword">const</span> benz = <span class="keyword">new</span> <span class="title class_">Benz</span>();</span><br></pre></td></tr></table></figure>
+
+<p>现在你已经在继承中体会到了好处，突然有一天，你觉得创造出来的汽车应该可以载人，这正是你擅长的东西，所以不假思索的在 <code>CarSuper</code>类上添加了 <code>carrying</code> 公用方法,并开心的睡觉去了。</p>
+<figure class="highlight ts"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">class</span> <span class="title class_">CarSuper</span> &#123;</span><br><span class="line">  <span class="keyword">public</span> <span class="title function_">run</span>(<span class="params"></span>) &#123;</span><br><span class="line">    <span class="variable language_">console</span>.<span class="title function_">log</span>(<span class="string">&quot;快快跑&quot;</span>);</span><br><span class="line">  &#125;</span><br><span class="line">  <span class="keyword">public</span> <span class="title function_">blow</span>(<span class="params"></span>) &#123;</span><br><span class="line">    <span class="variable language_">console</span>.<span class="title function_">log</span>(<span class="string">&quot;滴滴叫&quot;</span>);</span><br><span class="line">  &#125;</span><br><span class="line">  <span class="keyword">public</span> <span class="title function_">carrying</span>(<span class="params"></span>) &#123;&#125;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+<p>第二天起来，你不敢相信自己的眼睛，一位乘客上了一辆玩具车，所以你赶紧关停了游戏服务。并紧急的思考对策，显然载人的行为并不通用，每一个不能载人的车，都需要重写载人的方法，例如玩具车。</p>
+<p>其实你还有一个想法，既然载人的方法不通用，不如把类似载人这样的功能看作是一个接口，每一个子类都需要实现这个接口</p>
+<figure class="highlight ts"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">interface</span> <span class="title class_">Carrying</span> &#123;</span><br><span class="line">  <span class="attr">carrying</span>: <span class="function">() =&gt;</span> <span class="built_in">void</span>;</span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line"><span class="keyword">class</span> <span class="title class_">Benz</span> <span class="keyword">extends</span> <span class="title class_ inherited__">CarSuper</span> <span class="keyword">implements</span> <span class="title class_">Carrying</span> &#123;</span><br><span class="line">  <span class="keyword">public</span> <span class="title function_">run</span>(<span class="params"></span>) &#123;</span><br><span class="line">    <span class="variable language_">console</span>.<span class="title function_">log</span>(<span class="string">&quot;飞速跑&quot;</span>);</span><br><span class="line">  &#125;</span><br><span class="line">  <span class="keyword">public</span> <span class="title function_">carrying</span>(<span class="params"></span>) &#123;</span><br><span class="line">    <span class="variable language_">console</span>.<span class="title function_">log</span>(<span class="string">&quot;拉商人&quot;</span>);</span><br><span class="line">  &#125;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+<p>这显然不是一个好办法，<strong>接口不具有实现代码</strong>，虽然子类自己实现增加了灵活性，但却使子类显的非常冗余，每一个子类后面都跟着一串各不相同且需要独立实现的接口。</p>
+<blockquote>
+<p>为了复用而是用继承可能是导致难以维护<br>  比如上面的玩具车可以载人，是因为没有重写子类载人的方法。</p>
+</blockquote>
+<h4 id="找到变化之处"><a href="#找到变化之处" class="headerlink" title="找到变化之处"></a>找到变化之处</h4><p>类的行为在不断改变，所以一旦把这个行为变成类的一部分，就需要大量的经历去跟踪这些行为会在那里造成影响，有一个原则能帮助我们 <strong>❤‍🔥 把变化的内容独立出来，不要和稳定的代码混在一起</strong></p>
+<p>现在就可以着手于将载人的行为分离出来，那么这个行为应该以哪种形式存在呢，方法，类，还是对象？ 其实一谈到设计模式绕不开的就是 OO(面向对象设计模式)，所以我们还是采用 OO 的思想，使用类来实现这个行为。</p>
+<figure class="highlight ts"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br><span class="line">35</span><br><span class="line">36</span><br><span class="line">37</span><br><span class="line">38</span><br><span class="line">39</span><br><span class="line">40</span><br><span class="line">41</span><br><span class="line">42</span><br><span class="line">43</span><br><span class="line">44</span><br><span class="line">45</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">interface</span> <span class="title class_">CarryingBehavior</span> &#123;</span><br><span class="line">  <span class="attr">carrying</span>: <span class="function">() =&gt;</span> <span class="built_in">void</span>;</span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line"><span class="keyword">class</span> <span class="title class_">BusinessCarrying</span> <span class="keyword">implements</span> <span class="title class_">CarryingBehavior</span> &#123;</span><br><span class="line">  <span class="keyword">public</span> <span class="title function_">carrying</span>(<span class="params"></span>) &#123;</span><br><span class="line">    <span class="variable language_">console</span>.<span class="title function_">log</span>(<span class="string">&quot;载商人&quot;</span>);</span><br><span class="line">  &#125;</span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line"><span class="keyword">class</span> <span class="title class_">ToyCarrying</span> <span class="keyword">implements</span> <span class="title class_">CarryingBehavior</span> &#123;</span><br><span class="line">  <span class="keyword">public</span> <span class="title function_">carrying</span>(<span class="params"></span>) &#123;</span><br><span class="line">    <span class="variable language_">console</span>.<span class="title function_">log</span>(<span class="string">&quot;载玩具&quot;</span>);</span><br><span class="line">  &#125;</span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line"><span class="keyword">class</span> <span class="title class_">CarSuper</span> &#123;</span><br><span class="line">  <span class="keyword">protected</span> <span class="attr">carryingBehavior</span>: <span class="title class_">CarryingBehavior</span>;</span><br><span class="line">  <span class="title function_">constructor</span>(<span class="params">&#123; carryingBehavior &#125;: &#123; carryingBehavior: CarryingBehavior &#125;</span>) &#123;</span><br><span class="line">    <span class="variable language_">this</span>.<span class="property">carryingBehavior</span> = carryingBehavior;</span><br><span class="line">  &#125;</span><br><span class="line">  <span class="keyword">public</span> <span class="title function_">run</span>(<span class="params"></span>) &#123;&#125;</span><br><span class="line">  <span class="keyword">public</span> <span class="title function_">blow</span>(<span class="params"></span>) &#123;&#125;</span><br><span class="line">  <span class="keyword">public</span> <span class="title function_">carrying</span>(<span class="params"></span>) &#123;</span><br><span class="line">    <span class="variable language_">this</span>.<span class="property">carryingBehavior</span>.<span class="title function_">carrying</span>();</span><br><span class="line">  &#125;</span><br><span class="line">  <span class="keyword">public</span> <span class="title function_">setCarryingBehavior</span>(<span class="params">behavior: CarryingBehavior</span>) &#123;</span><br><span class="line">    <span class="variable language_">this</span>.<span class="property">carryingBehavior</span> = behavior;</span><br><span class="line">  &#125;</span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line"><span class="keyword">class</span> <span class="title class_">Benz</span> <span class="keyword">extends</span> <span class="title class_ inherited__">CarSuper</span> &#123;</span><br><span class="line">  <span class="title function_">constructor</span>(<span class="params"></span>) &#123;</span><br><span class="line">    <span class="variable language_">super</span>(&#123;</span><br><span class="line">      <span class="attr">carryingBehavior</span>: <span class="keyword">new</span> <span class="title class_">BusinessCarrying</span>(),</span><br><span class="line">    &#125;);</span><br><span class="line">  &#125;</span><br><span class="line">  <span class="keyword">public</span> <span class="title function_">run</span>(<span class="params"></span>) &#123;</span><br><span class="line">    <span class="variable language_">console</span>.<span class="title function_">log</span>(<span class="string">&quot;飞速跑&quot;</span>);</span><br><span class="line">  &#125;</span><br><span class="line">&#125;</span><br><span class="line"><span class="keyword">const</span> benz = <span class="keyword">new</span> <span class="title class_">Benz</span>();</span><br><span class="line">benz.<span class="title function_">carrying</span>();</span><br><span class="line">benz.<span class="title function_">setCarryingBehavior</span>(<span class="keyword">new</span> <span class="title class_">ToyCarrying</span>());</span><br><span class="line">benz.<span class="title function_">carrying</span>();</span><br></pre></td></tr></table></figure>
+
+<p>我们将汽车的行为抽象为 <code>BusinessCarrying</code> 类，抽象为类和抽象为接口的区别就是<strong>分离了实现</strong>。</p>
+<p>而 <code>BusinessCarrying</code> 类有自己的行为类接口，可就保证了行为类的灵活性，为相同的行为实现不同的效果，例如汽车载人坐在前排还是后排。</p>
+<p>通过上面的改造，只需要让汽车类提供一个能设置行为的方法，就可以实现行为的动态化，这也是另一个设计原则 <strong>❤‍🔥 针对接口，而不是实现编程</strong>。 </p>
+<blockquote>
+<p>这样的话和私有方法有什么区别？ 行为是可抽象的，是可以被穷举的，他会动态的散布在各种各样的汽车子类中。而私有方法是无法被穷举的，一旦定义一个新的子类，那么他就有自己的私有方法和私有属性。</p>
+</blockquote>
+<p>现在我们分离了一种行为类，在共有类中被声明但不会实现，而是在子类中实例化这个行为类，这其中的原则就是 <strong>❤‍🔥 多用组合，少用继承</strong>， 巧合的是 React 哲学中也提到了这样的思想。</p>
+<p>最后用官方语言定义策略模式： <strong>定义算法族，分别封装起来，让他们之间可以相互替换，让算法的变换独立于使用算法的客户</strong></p>
+<ul>
+<li>知道OO基础，并不足以让你设计出良好的OO系统。</li>
+<li>良好的OO设计必须具备可复用、可扩充、可维护三个特性。</li>
+<li>模式可以让我们建造出具有良好OO设计质量的系统。</li>
+<li>模式被认为是历经验证的O0设计经验。</li>
+<li>模式不是代码，而是针对设计问题的通用解决方案。你可把它们应用到特定的应用中。</li>
+<li>模式不是被发明，而是被发现。</li>
+<li>大多数的模式和原则，都着眼于软件变化的主题。</li>
+<li>大多数的模式都允许系统局部改变独立于其他部分。</li>
+<li>我们常把系统中会变化的部分抽出来封装。</li>
+<li>模式让开发人员之间有共享的语言，能够最大化沟通的价值。</li>
+</ul>
+ 
+      <!-- reward -->
+      
+    </div>
+    
+
+    <!-- copyright -->
+    
+    <footer class="article-footer">
+       
+  <ul class="article-tag-list" itemprop="keywords"><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/%E8%AE%BE%E8%AE%A1%E6%A8%A1%E5%BC%8F/" rel="tag">设计模式</a></li></ul>
+
+    </footer>
+  </div>
+
+   
+    
+</article>
+
+    
+    <article
   id="posts-design/pattern/②观察者模式"
   class="article article-type-posts"
   itemscope
@@ -350,846 +918,6 @@
 <li>离线，或弱网环境中的使用能力。(serviceWorker)</li>
 <li>web应用缺少了消息推送能力 (serviceWorker)</li>
 <li>web应用缺少一级入口，希望可以从桌面直接打开而不是在浏览器中。(manifest.json)</li>
-</ul>
- 
-      <!-- reward -->
-      
-    </div>
-    
-
-    <!-- copyright -->
-    
-    <footer class="article-footer">
-       
-  <ul class="article-tag-list" itemprop="keywords"><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/HTTP/" rel="tag">HTTP</a></li><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/%E6%B5%8F%E8%A7%88%E5%99%A8/" rel="tag">浏览器</a></li></ul>
-
-    </footer>
-  </div>
-
-   
-    
-</article>
-
-    
-    <article
-  id="posts-react/v18新特性"
-  class="article article-type-posts"
-  itemscope
-  itemprop="blogPost"
-  data-scroll-reveal
->
-  <div class="article-inner">
-    
-    <header class="article-header">
-       
-<h2 itemprop="name">
-  <a class="article-title" href="/posts/0dfb128a2887/"
-    >React 18 新特性</a> 
-</h2>
- 
-
-      
-    </header>
-     
-    <div class="article-meta">
-      <a href="/posts/0dfb128a2887/" class="article-date">
-  <time datetime="2022-06-01T02:11:46.000Z" itemprop="datePublished">2022-06-01</time>
-</a> 
-  <div class="article-category">
-    <a class="article-category-link" href="/categories/React/">React</a>
-  </div>
-   
-    </div>
-      
-    <div class="article-entry" itemprop="articleBody">
-       
-  <h4 id="兼容性"><a href="#兼容性" class="headerlink" title="兼容性"></a>兼容性</h4><p>V18 已不再支持 IE11,计划时间是 2022 年 6 月 15 日, 因为用到的一些现代浏览器新特性如 <code>micro-tasks</code>,在 IE 中无法充分 polyfill .</p>
-<h4 id="并发"><a href="#并发" class="headerlink" title="并发"></a>并发</h4><p>V18 版本在 V17 的基础上又做了一些调整。在过去的 V17 版本中,传统模式和并发模式是共存的， 通过 <code>createRoot</code> API 就可以启用并发模式。React 为向并发模式迁移的最初策略是设计三种模式。</p>
-<ul>
-<li>Legacy 模式： V17 中默认使用的模式。默认开启严格模式。默认同步更新。Legacy Suspense semantics。</li>
-<li>Blocking 模式： Legacy 和 Concurrent 混合模式。默认开启严格模式。默认同步更新。开放一些新特性。</li>
-<li>Concurrent 模式：V18 使用的模式。默认开启严格模式。默认并发更新。开发所有的新特性。</li>
-</ul>
-<p>React 最初的计划是用户可以从 Legacy 切换到 Blocking 模式，并不需要修改任何语法，配合严格模式（StrictMode）修改其中的报错，当所有错误被解决之后，可以直接切换到的 Concurrent 模式。</p>
-<p>但在实际的场景 React 思考了以下几个问题:</p>
-<ul>
-<li>项目中会有成百上千个文件，开启严格模式，会有大量的错误信息，虽然不影响程序运行，但是会干扰开发并且不能快速的一次性解决。</li>
-<li>启用并发模式的好处不言而喻，可能会在未来默认启用。提供 <code>startTransition</code> <code>Suspense</code> 等 API 在内部实现并发特性。用户可以增量的选择性的使用这些 API 从而获得并发的特性。</li>
-<li>如果按照上述的思路，那么 Concurrent 模式和 Blocking 模式的唯一区别就只有是否提示错误信息。那么如果默认不启用并发模式，就可以不开启严格模式，用于提示错误信息。</li>
-</ul>
-<p>基于上面的思考，V18 的策略是不会默认启用并发的特性，即使用 <code>createRoot</code> 启用并发模式并不能体验并发的特性，如果想体验并发的特性，需要使用例如 <code>startTransition</code> 等支持并发特性的 API. 所以官方描述为 <strong>没有并发模式，只有并发特性</strong></p>
-<h4 id="API"><a href="#API" class="headerlink" title="API"></a>API</h4><ul>
-<li>startTransition</li>
-</ul>
-<p>这个 API 可以防止渲染任务立即执行，允许将应用程序中的某些更新标记为非紧急更新，因此它们会暂停，同时优先考虑更紧急的更新。这可以在一个复杂的更新中相应用户输入。</p>
-<figure class="highlight ts"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br><span class="line">35</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">function</span> <span class="title function_">aaaaaaaaaaaaaaa</span>(<span class="params"></span>) &#123;</span><br><span class="line">  <span class="keyword">for</span> (<span class="keyword">let</span> i = <span class="number">0</span>; i &lt; <span class="number">100000000</span>; i += <span class="number">1</span>) &#123;</span><br><span class="line">    <span class="keyword">const</span> a = <span class="number">1</span>;</span><br><span class="line">  &#125;</span><br><span class="line">&#125;</span><br><span class="line"><span class="keyword">const</span> [num, setNum] = useState&lt;<span class="built_in">string</span>&gt;(<span class="string">&quot;&quot;</span>);</span><br><span class="line"><span class="keyword">const</span> [list, setList] = useState&lt;<span class="built_in">any</span>[]&gt;([]);</span><br><span class="line"><span class="title function_">useEffect</span>(<span class="function">() =&gt;</span> &#123;</span><br><span class="line">  <span class="title function_">setList</span>(<span class="keyword">new</span> <span class="title class_">Array</span>(<span class="number">20000</span>).<span class="title function_">fill</span>(<span class="literal">null</span>));</span><br><span class="line">  <span class="built_in">setTimeout</span>(<span class="function">() =&gt;</span> &#123;</span><br><span class="line">    <span class="keyword">const</span> event = <span class="variable language_">document</span>.<span class="title function_">createEvent</span>(<span class="string">&quot;MouseEvents&quot;</span>);</span><br><span class="line">    event.<span class="title function_">initEvent</span>(<span class="string">&quot;click&quot;</span>, <span class="literal">true</span>, <span class="literal">true</span>);</span><br><span class="line">    <span class="variable language_">document</span>.<span class="title function_">getElementById</span>(<span class="string">&quot;button&quot;</span>)!.<span class="title function_">dispatchEvent</span>(event);</span><br><span class="line">  &#125;, <span class="number">500</span>);</span><br><span class="line">&#125;, []);</span><br><span class="line"><span class="keyword">return</span> (</span><br><span class="line">  <span class="language-xml"><span class="tag">&lt;&gt;</span></span></span><br><span class="line"><span class="language-xml">    <span class="tag">&lt;<span class="name">button</span></span></span></span><br><span class="line"><span class="tag"><span class="language-xml">      <span class="attr">id</span>=<span class="string">&quot;button&quot;</span></span></span></span><br><span class="line"><span class="tag"><span class="language-xml">      <span class="attr">type</span>=<span class="string">&quot;button&quot;</span></span></span></span><br><span class="line"><span class="tag"><span class="language-xml">      <span class="attr">onClick</span>=<span class="string">&#123;()</span> =&gt;</span> &#123;</span></span><br><span class="line"><span class="language-xml">        setNum(() =&gt; &#123;</span></span><br><span class="line"><span class="language-xml">          aaaaaaaaaaaaaaa();</span></span><br><span class="line"><span class="language-xml">          return &quot;123&quot;;</span></span><br><span class="line"><span class="language-xml">        &#125;);</span></span><br><span class="line"><span class="language-xml">      &#125;&#125;</span></span><br><span class="line"><span class="language-xml">    &gt;</span></span><br><span class="line"><span class="language-xml">      点击</span></span><br><span class="line"><span class="language-xml">    <span class="tag">&lt;/<span class="name">button</span>&gt;</span></span></span><br><span class="line"><span class="language-xml">    <span class="tag">&lt;<span class="name">p</span>&gt;</span>&#123;num&#125;<span class="tag">&lt;/<span class="name">p</span>&gt;</span></span></span><br><span class="line"><span class="language-xml">    &#123;list.map((_, i) =&gt; (</span></span><br><span class="line"><span class="language-xml">      <span class="tag">&lt;<span class="name">div</span> <span class="attr">key</span>=<span class="string">&#123;Math.random()&#125;</span>&gt;</span>&#123;i&#125;<span class="tag">&lt;/<span class="name">div</span>&gt;</span></span></span><br><span class="line"><span class="language-xml">    ))&#125;</span></span><br><span class="line"><span class="language-xml">  <span class="tag">&lt;/&gt;</span></span></span><br><span class="line">);</span><br></pre></td></tr></table></figure>
-
-<p>在没有使用并发特性的时候，列表的渲染是一个同步任务，不会相应模拟的用户事件</p>
-<p><img src="/posts/0dfb128a2887/0001.png"></p>
-<p>当开启了并发特性之后，会被拆分成小任务异步执行</p>
-<figure class="highlight ts"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><span class="line"><span class="title function_">startTransition</span>(<span class="function">() =&gt;</span> &#123;</span><br><span class="line">  <span class="title function_">setList</span>(<span class="keyword">new</span> <span class="title class_">Array</span>(<span class="number">20000</span>).<span class="title function_">fill</span>(<span class="literal">null</span>));</span><br><span class="line">&#125;);</span><br></pre></td></tr></table></figure>
-
-<p><img src="/posts/0dfb128a2887/0002.png"></p>
-<ul>
-<li>useDeferredValue</li>
-</ul>
-<p>会创建一个数据的副本，如果当前更新是一个紧急更新，useDeferredValue 会返回之前的状态，从而优先响应紧急更新。当紧急更新渲染完成后，才会去执行的当前更新。底层实现与 useDeferredValue 类似。</p>
-<p>使用 <code>useDeferredValue</code> 也可以实现相同的效果</p>
-<figure class="highlight ts"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">const</span> [list, setList] = useState&lt;<span class="built_in">any</span>[]&gt;([]);</span><br><span class="line"><span class="keyword">const</span> dList = <span class="title function_">useDeferredValue</span>(list);</span><br></pre></td></tr></table></figure>
-
-<ul>
-<li>useId</li>
-</ul>
-<p>生成一个唯一 ID, 在服务端与客户端生成的相同，防止 ID 不匹配</p>
-<ul>
-<li>useSyncExternalStore</li>
-</ul>
-<p>useSyncExternalStore  是一个新的 api，经历了一次修改，由  useMutableSource  改变而来，主要用来解决外部数据撕裂问题。</p>
-<p>useSyncExternalStore 能够通过强制同步更新数据让 React 组件在 CM 下安全地有效地读取外接数据源。 在 Concurrent Mode 下，React 一次渲染会分片执行（以 fiber 为单位），中间可能穿插优先级更高的更新。假如在高优先级的更新中改变了公共数据（比如 redux 中的数据），那之前低优先的渲染必须要重新开始执行，否则就会出现前后状态不一致的情况。</p>
-<p>useSyncExternalStore 一般是三方状态管理库使用，我们在日常业务中不需要关注。因为 React 自身的 useState 已经原生的解决的并发特性下的 tear（撕裂）问题。useSyncExternalStore 主要对于框架开发者，比如 redux，它在控制状态时可能并非直接使用的 React 的 state，而是自己在外部维护了一个 store 对象，用发布订阅模式实现了数据更新，脱离了 React 的管理，也就无法依靠 React 自动解决撕裂问题。因此 React 对外提供了这样一个 API。</p>
-<p>目前 React-Redux 8.0 已经基于 useSyncExternalStore 实现。</p>
-<ul>
-<li>useInsertionEffect</li>
-</ul>
-<p>这个 <a target="_blank" rel="noopener" href="https://github.com/reactwg/react-18/discussions/110">Hooks</a> 只建议  css-in-js 库来使用。 这个 Hooks 执行时机在 DOM 生成之后，useLayoutEffect 之前，它的工作原理大致和  useLayoutEffect  相同，只是此时无法访问  DOM  节点的引用，一般用于提前注入  <code>&lt;style&gt;</code>  脚本。</p>
-<ul>
-<li>Suspense</li>
-</ul>
-<p>官方对 空的 fallback 属性的处理方式做了改变：不再跳过 缺失值 或 值为 null 的 fallback 的 Suspense。如果没有指定 fallback 将会把 fallback 呈现为 null。</p>
-<h4 id="批处理"><a href="#批处理" class="headerlink" title="批处理"></a>批处理</h4><p>在 18 之前，只有在 react 事件处理函数中，才会自动执行批处理，其它情况会多次更新</p>
-<p>在 18 之后，任何情况都会自动执行批处理，多次更新始终合并为一次</p>
-<p>如果想要跳出批处理使用 <code>flushSync</code></p>
-<h4 id="关于卸载组件时的更新状态警告"><a href="#关于卸载组件时的更新状态警告" class="headerlink" title="关于卸载组件时的更新状态警告"></a>关于卸载组件时的更新状态警告</h4><p>有的时候会遇到如下的错误</p>
-<p><img src="/posts/0dfb128a2887/0003.png"></p>
-<p>这个错误表示：无法对未挂载（已卸载）的组件执行状态更新。这是一个无效操作，并且表明我们的代码中存在内存泄漏。</p>
-<p>实际上，这个错误并不多见，在以往的版本中，这个警告被广泛误解，并且有些误导。</p>
-<p>这个错误的初衷，原本旨在针对一些特殊场景，譬如 你在 useEffect 里面设置了定时器，或者订阅了某个事件，从而在组件内部产生了副作用，而且忘记 return 一个函数清除副作用，则会发生内存泄漏…… 之类的场景</p>
-<p>但是在实际开发中，更多的场景是，我们在 useEffect 里面发送了一个异步请求，在异步函数还没有被 resolve 或者被 reject 的时候，我们就卸载了组件。 在这种场景中，警告同样会触发。但是，在这种情况下，组件内部并没有内存泄漏，因为这个异步函数已经被垃圾回收了，此时，警告具有误导性。</p>
-<p>综上所述原因，在 React 18 中，官方删除了这个报错。</p>
-<h4 id="返回值类型"><a href="#返回值类型" class="headerlink" title="返回值类型"></a>返回值类型</h4><p>在 React 18 中，不再检查因返回 undefined 而导致崩溃。既能返回 null，也能返回 undefined。但需要修改相应的 dts 文件。</p>
-<h4 id="Strict-Mode"><a href="#Strict-Mode" class="headerlink" title="Strict Mode"></a>Strict Mode</h4><p>严格模式会打印两次日志，可以在 React DevTools 中关闭。</p>
-<p>在 React 17 中，取消了其中一次渲染的控制台日志，以便让日志更容易阅读。</p>
-<p>在 React 18 中，官方取消了这个限制。如果你安装了 React DevTools，第二次渲染的日志信息将显示为灰色，以柔和的方式显式在控制台。</p>
- 
-      <!-- reward -->
-      
-    </div>
-    
-
-    <!-- copyright -->
-    
-    <footer class="article-footer">
-       
-  <ul class="article-tag-list" itemprop="keywords"><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/React/" rel="tag">React</a></li></ul>
-
-    </footer>
-  </div>
-
-   
-    
-</article>
-
-    
-    <article
-  id="posts-http/⑤浏览器工作原理"
-  class="article article-type-posts"
-  itemscope
-  itemprop="blogPost"
-  data-scroll-reveal
->
-  <div class="article-inner">
-    
-    <header class="article-header">
-       
-<h2 itemprop="name">
-  <a class="article-title" href="/posts/91913fe965fd/"
-    >浏览器工作原理 ⑤ 页面循环系统</a> 
-</h2>
- 
-
-      
-    </header>
-     
-    <div class="article-meta">
-      <a href="/posts/91913fe965fd/" class="article-date">
-  <time datetime="2022-05-29T03:30:52.000Z" itemprop="datePublished">2022-05-29</time>
-</a> 
-  <div class="article-category">
-    <a class="article-category-link" href="/categories/HTTP%E4%B8%8E%E6%B5%8F%E8%A7%88%E5%99%A8/">HTTP与浏览器</a>
-  </div>
-   
-    </div>
-      
-    <div class="article-entry" itemprop="articleBody">
-       
-  <h4 id="处理新任务"><a href="#处理新任务" class="headerlink" title="处理新任务"></a>处理新任务</h4><p>当一个线程在执行任务的时候，如何可以处理新任务，最简单的办法就是通过一个循环，不断检测是否有新的任务产生。</p>
-<p>这样可以解决同一个线程中产生的新任务，但是无法解决其他线程中产生的新任务。因为没有办法直接检测其他线程是否有新任务的产生。</p>
-<p>通用的模型就是<strong>消息队列</strong>，息队列是一种数据结构，可以存放要执行的任务。它符合队列“先进先出”的特点，也就是说要添加任务的话，添加到队列的尾部；要取出任务的话，从队列头部去取。</p>
-<p><strong>渲染进程专门有一个 IO 线程用来接收其他进程传进来的消息</strong>，接收到消息之后，会将这些消息组装成任务发送给渲染主线程</p>
-<h4 id="任务类型"><a href="#任务类型" class="headerlink" title="任务类型"></a>任务类型</h4><p>任务类型包括， 输入事件（鼠标滚动、点击、移动）、微任务、文件读写、WebSocket、JavaScript 定时器等等。</p>
-<p>除此之外，消息队列中还包含了很多与页面相关的事件，如 JavaScript 执行、解析 DOM、样式计算、布局计算、CSS 动画等。</p>
-<p>以上这些事件都是在主线程中执行的，所以在编写 Web 应用时，你还需要衡量这些事件所占用的时长，并想办法解决单个任务占用主线程过久的问题。</p>
-<h4 id="高优先级任务"><a href="#高优先级任务" class="headerlink" title="高优先级任务"></a>高优先级任务</h4><p>一个典型的场景是监听 DOM 的改变做一些逻辑处理，如果不加入消息队列选择同步处理，在 DOM 频繁改变的时候，当前任务会被延长，导致后面的任务不能及时处理。</p>
-<p>如果加入到消息队尾部，又可能影响效率，因为可能已经有很多任务在排队了。</p>
-<p>针对这种情况<strong>微任务</strong>就产生了，通常我们把消息队列中的任务称为宏任务，每个宏任务中都包含了一个微任务队列，在执行宏任务的过程中，如果 DOM 有变化，那么就会将该变化添加到微任务列表中，等宏任务中的主要功能都直接完成之后，这时候，渲染引擎并不着急去执行下一个宏任务，而是执行当前宏任务中的微任务，因为 DOM 变化的事件都保存在这些微任务队列中，这样也就解决了实时性问题。</p>
-<h4 id="事件循环"><a href="#事件循环" class="headerlink" title="事件循环"></a>事件循环</h4><p>浏览器处理消息队列用到了事件循环系统，但这个事件循环与 nodejs 事件循环没有关系。</p>
-<ul>
-<li>V8: V8 引擎自己实现了一个事件循环，但是 nodejs 和 浏览器都没有采用</li>
-<li>浏览器： 不同的厂商实现可能不同，chrome 浏览器使用 <a target="_blank" rel="noopener" href="https://libevent.org/">libevent</a> 实现事件循环。</li>
-<li>nodejs： 使用 <a target="_blank" rel="noopener" href="http://docs.libuv.org/en/v1.x/">libuv</a> 实现事件循环。</li>
-</ul>
-<h4 id="setTimeout-如何实现"><a href="#setTimeout-如何实现" class="headerlink" title="setTimeout 如何实现"></a>setTimeout 如何实现</h4><p>从使用方式上能感觉到，setTimeout 需要等待指定时间才能执行，而消息队列中的任务是立即执行的，所以 setTimeout 中的回调函数不能立即加入到消息队列中。</p>
-<p>所以浏览器还维护着一个延时任务列表，包括定时器和内部一些延时任务，创建一个定时器时，渲染进程会将该定时器的回调任务添加到延迟队列中。这个回调任务包括，定义的回调函数，发起时间，延时时间。</p>
-<p>在处理消息队列的时候，会调用出延时任务的方法 ProcessTimerTask 。这个方法的调用时机是当前事件循环中一个任务处理结束后开始执行。</p>
-<p>ProcessDelayTask 函数会根据发起时间和延迟时间计算出到期的任务，然后依次执行这些到期的任务。等到期的任务执行完成之后，再继续下一个循环过程。</p>
-<p><strong>在 Chrome 中，定时器被嵌套调用 5 次以上，系统会判断该函数方法被阻塞了，在 5 次调用之后，如果定时器的调用时间间隔小于 4 毫秒，那么浏览器会将每次调用的时间间隔设置为 4 毫秒。</strong></p>
-<p><strong>未被激活的页面中定时器最小值大于 1000 毫秒，也就是说，如果标签不是当前的激活标签，那么定时器最小的时间间隔是 1000 毫秒，目的是为了优化后台页面的加载损耗以及降低耗电量。</strong></p>
-<p>Chrome、Safari、Firefox 都是以 32 个 bit 来存储延时值的，32bit <strong>最大只能存放的数字是 2147483647 毫秒</strong>，这就意味着，如果 setTimeout 设置的延迟值大于 2147483647 毫秒（大约 24.8 天）时就会溢出，那么相当于延时值被设置为 0 了，这导致定时器会被立即执行。</p>
-<h4 id="XMLHttpRequest-实现流程"><a href="#XMLHttpRequest-实现流程" class="headerlink" title="XMLHttpRequest 实现流程"></a>XMLHttpRequest 实现流程</h4><p>渲染进程会将请求发送给网络进程，然后网络进程负责资源的下载，等网络进程接收到数据之后，就会利用 IPC 来通知渲染进程；渲染进程接收到消息之后，会将 xhr 的回调函数封装成任务并添加到消息队列中，等主线程循环系统执行到该任务的时候，就会根据相关的状态来调用对应的回调函数。</p>
-<h4 id="宏任务和微任务"><a href="#宏任务和微任务" class="headerlink" title="宏任务和微任务"></a>宏任务和微任务</h4><p>前面已经介绍过微任务的由来。</p>
-<p><strong>宏任务：</strong></p>
-<ul>
-<li>渲染事件（如解析 DOM、计算布局、绘制）；</li>
-<li>用户交互事件（如鼠标点击、滚动页面、放大缩小等）；</li>
-<li>JavaScript 脚本执行事件；</li>
-<li>网络请求完成</li>
-<li>文件读写完成事件</li>
-</ul>
-<p><strong>WHATWG 规范中定义事件循环机制：</strong></p>
-<ul>
-<li>先从多个消息队列中选出一个最老的任务，这个任务称为 oldestTask；</li>
-<li>然后循环系统记录任务开始执行的时间，并把这个 oldestTask 设置为当前正在执行的任务；</li>
-<li>当任务执行完成之后，删除当前正在执行的任务，并从对应的消息队列中删除掉这个 oldestTask；</li>
-<li>最后统计执行完成的时长等信息。</li>
-</ul>
-<p>由于宏任务不能精细的控制执行的时机，因为两个红任务之间可能被插入了很多系统级的任务。</p>
-<p><strong>微任务：</strong></p>
-<p>微任务就是一个需要异步执行的函数，执行时机是在主函数执行结束之后、当前宏任务结束之前。</p>
-<ul>
-<li>MutationObserver 监控某个 DOM 节点，然后再通过 JavaScript 来修改这个节点，或者为这个节点添加、删除部分子节点，当 DOM 节点发生变化时，就会产生 DOM 变化记录的微任务。</li>
-<li>Promise 当调用 Promise.resolve() 或者 Promise.reject() 的时候，也会产生微任务。</li>
-</ul>
-<p>在当前宏任务中的 JavaScript 快执行完成时，也就在 JavaScript 引擎准备退出全局执行上下文并清空调用栈的时候，JavaScript 引擎会检查全局执行上下文中的微任务队列，然后按照顺序执行队列中的微任务。WHATWG 把执行微任务的时间点称为检查点。</p>
-<p>如果在执行微任务的过程中，产生了新的微任务，同样会将该微任务添加到微任务队列中，V8 引擎一直循环执行微任务队列中的任务，直到队列为空才算执行结束。也就是说在执行微任务过程中产生的新的微任务并不会推迟到下个宏任务中执行，而是在当前的宏任务中继续执行。</p>
-<ul>
-<li>微任务和宏任务是绑定的，每个宏任务在执行时，会创建自己的微任务队列。</li>
-<li>微任务的执行时长会影响到当前宏任务的时长。</li>
-<li>在一个宏任务中，分别创建一个用于回调的宏任务和微任务，无论什么情况下，微任务都早于宏任务执行。</li>
-</ul>
-<p>通过异步操作解决了同步操作的性能问题；通过微任务解决了实时性的问题。</p>
-<p><strong>W3C 最新解释</strong>:</p>
-<ul>
-<li><p>每一个任务都有一个任务类型，同一个类型的任务必须在一个队列，不同类型的任务可以分属于不同的队列，在一次事件循环中，浏览器可以根据实际情况从不同的队列中取出任务执行。</p>
-</li>
-<li><p>浏览器必须准备好一个微队列，微队列中的任务优先所有其他任务执行。</p>
-</li>
-</ul>
-<p>因此现在 chrome 中至少有 3 个队列：</p>
-<ul>
-<li>延时队列： 用于存放定时器到达后的回调任务，优先级中</li>
-<li>交互任务： 用于存放用户交互产生的任务，优先级高</li>
-<li>微队列： 用于存放最快需要执行的任务，优先级最高</li>
-</ul>
-<h4 id="Promise-then-返回-Promise-的行为"><a href="#Promise-then-返回-Promise-的行为" class="headerlink" title="Promise.then 返回 Promise 的行为"></a>Promise.then 返回 Promise 的行为</h4><p>当一个 promise.then 方法返回另一个 Promise 时，thenable 的状态会吸收返回的 promise 的状态，也就是说 thenable 的状态与返回的 promise 状态保持一致</p>
-<p>但是这种状态并不是立即吸收的，返回的 promise 会被使用 then 方法，包装成新的 promise 对象，并添加到微队列中</p>
-<figure class="highlight js"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br><span class="line">35</span><br><span class="line">36</span><br><span class="line">37</span><br></pre></td><td class="code"><pre><span class="line"><span class="title class_">Promise</span>.<span class="title function_">resolve</span>()</span><br><span class="line">  .<span class="title function_">then</span>(<span class="function">() =&gt;</span> &#123;</span><br><span class="line">    <span class="comment">//1 添加到微队列</span></span><br><span class="line">    <span class="variable language_">console</span>.<span class="title function_">log</span>(<span class="number">0</span>);</span><br><span class="line">    <span class="comment">//3 打印0</span></span><br><span class="line">    <span class="comment">//4 包装成 (Promise.resolve(4).then(res=&gt;res)).then(res=&gt;res)  =&gt; p4.then(res=&gt;res)添加到微队列</span></span><br><span class="line">    <span class="comment">//7 res=&gt;res 添加到微队列</span></span><br><span class="line">    <span class="keyword">return</span> <span class="title class_">Promise</span>.<span class="title function_">resolve</span>(<span class="number">4</span>).<span class="title function_">then</span>(<span class="function">(<span class="params">res</span>) =&gt;</span> res);</span><br><span class="line">    <span class="comment">//10 完成状态</span></span><br><span class="line">  &#125;)</span><br><span class="line">  .<span class="title function_">then</span>(<span class="function">(<span class="params">res</span>) =&gt;</span> &#123;</span><br><span class="line">    <span class="comment">//11 添加到微队列</span></span><br><span class="line">    <span class="variable language_">console</span>.<span class="title function_">log</span>(res);</span><br><span class="line">    <span class="comment">//14 打印4</span></span><br><span class="line">  &#125;);</span><br><span class="line"></span><br><span class="line"><span class="title class_">Promise</span>.<span class="title function_">resolve</span>()</span><br><span class="line">  .<span class="title function_">then</span>(<span class="function">() =&gt;</span> &#123;</span><br><span class="line">    <span class="comment">//2 添加到微队列</span></span><br><span class="line">    <span class="variable language_">console</span>.<span class="title function_">log</span>(<span class="number">1</span>);</span><br><span class="line">    <span class="comment">//5 打印1</span></span><br><span class="line">  &#125;)</span><br><span class="line">  .<span class="title function_">then</span>(<span class="function">() =&gt;</span> &#123;</span><br><span class="line">    <span class="comment">//6 添加到微队列</span></span><br><span class="line">    <span class="variable language_">console</span>.<span class="title function_">log</span>(<span class="number">2</span>);</span><br><span class="line">    <span class="comment">//8 打印2</span></span><br><span class="line">  &#125;)</span><br><span class="line">  .<span class="title function_">then</span>(<span class="function">() =&gt;</span> &#123;</span><br><span class="line">    <span class="comment">//9 添加到微队列</span></span><br><span class="line">    <span class="variable language_">console</span>.<span class="title function_">log</span>(<span class="number">3</span>);</span><br><span class="line">    <span class="comment">//12 打印3</span></span><br><span class="line">  &#125;)</span><br><span class="line">  .<span class="title function_">then</span>(<span class="function">() =&gt;</span> &#123;</span><br><span class="line">    <span class="comment">//13 添加到微队列</span></span><br><span class="line">    <span class="variable language_">console</span>.<span class="title function_">log</span>(<span class="number">5</span>);</span><br><span class="line">    <span class="comment">//15 打印3</span></span><br><span class="line">  &#125;);</span><br></pre></td></tr></table></figure>
- 
-      <!-- reward -->
-      
-    </div>
-    
-
-    <!-- copyright -->
-    
-    <footer class="article-footer">
-       
-  <ul class="article-tag-list" itemprop="keywords"><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/HTTP/" rel="tag">HTTP</a></li><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/%E6%B5%8F%E8%A7%88%E5%99%A8/" rel="tag">浏览器</a></li></ul>
-
-    </footer>
-  </div>
-
-   
-    
-</article>
-
-    
-    <article
-  id="posts-http/④浏览器工作原理"
-  class="article article-type-posts"
-  itemscope
-  itemprop="blogPost"
-  data-scroll-reveal
->
-  <div class="article-inner">
-    
-    <header class="article-header">
-       
-<h2 itemprop="name">
-  <a class="article-title" href="/posts/142898c1a436/"
-    >浏览器工作原理 ④ V8相关原理</a> 
-</h2>
- 
-
-      
-    </header>
-     
-    <div class="article-meta">
-      <a href="/posts/142898c1a436/" class="article-date">
-  <time datetime="2022-05-25T01:55:26.000Z" itemprop="datePublished">2022-05-25</time>
-</a> 
-  <div class="article-category">
-    <a class="article-category-link" href="/categories/HTTP%E4%B8%8E%E6%B5%8F%E8%A7%88%E5%99%A8/">HTTP与浏览器</a>
-  </div>
-   
-    </div>
-      
-    <div class="article-entry" itemprop="articleBody">
-       
-  <h4 id="内存"><a href="#内存" class="headerlink" title="内存"></a>内存</h4><p>JavaScript 是一种弱类型的、动态的语言.</p>
-<ul>
-<li>弱类型，意味着你不需要告诉 JavaScript 引擎这个或那个变量是什么数据类型，JavaScript 引擎在运行代码的时候自己会计算出来。</li>
-<li>动态，意味着你可以使用同一个变量保存不同类型的数据。</li>
-</ul>
-<p>数据科技分为<strong>原始类型</strong>和<strong>引用类型</strong></p>
-<p>原始类型的数据保存在环境变量或词法环境中,包含这两个区域的执行上下文又被压入调用栈中,所以可以说原始类型是保存在栈空间中的.</p>
-<p><strong>字符串，symbol，bigint 虽然是原始类型，实际还是存放在堆空间的。</strong></p>
-<p>如果是一个引用类型,会单独存放到堆空间中,在分配了引用类型数据之后会拿到一个堆中的地址,在把这个地址保存到环境变量中.</p>
-<p>JavaScript 引擎需要用栈来维护程序执行期间上下文的状态，如果栈空间大了话，所有的数据都存放在栈空间里面，那么会影响到上下文切换的效率，进而又影响到整个程序的执行效率。JavaScript 引擎需要离开当前的执行上下文，只需要将指针下移到上个执行上下文的地址就可以了.</p>
-<p>所以通常情况下，栈空间都不会设置太大，主要用来存放一些原始类型的小数据。而引用类型的数据占用的空间都比较大，所以这一类数据会被存放到堆中，堆空间很大，能存放很多大的数据，不过缺点是分配内存和回收内存都会占用一定的时间。</p>
-<p><strong>原始类型的赋值会完整复制变量值，而引用类型的赋值是复制引用地址。</strong></p>
-<p>从内存的角度来理解<a href="/posts/6a1cb22d998b/#%E9%97%AD%E5%8C%85">闭包</a>:</p>
-<figure class="highlight js"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">function</span> <span class="title function_">foo</span>(<span class="params"></span>) &#123;</span><br><span class="line">  <span class="keyword">let</span> name = <span class="string">&quot;one&quot;</span>;</span><br><span class="line">  <span class="keyword">const</span> obj = &#123;</span><br><span class="line">    <span class="title function_">getName</span>(<span class="params"></span>) &#123;</span><br><span class="line">      <span class="keyword">return</span> name;</span><br><span class="line">    &#125;,</span><br><span class="line">    <span class="title function_">setName</span>(<span class="params">_name</span>) &#123;</span><br><span class="line">      name = _name;</span><br><span class="line">    &#125;,</span><br><span class="line">  &#125;;</span><br><span class="line">  <span class="keyword">return</span> obj;</span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line"><span class="keyword">var</span> bar = <span class="title function_">foo</span>();</span><br><span class="line">bar.<span class="title function_">setName</span>(<span class="string">&quot;two&quot;</span>);</span><br><span class="line">bar.<span class="title function_">getName</span>();</span><br></pre></td></tr></table></figure>
-
-<p>当 foo 函数执行的时候,首先是编译的过程,当遇到对象的两个方法时还需要对两个方法进行词法分析, 发现引用了 name 变量.</p>
-<p>JavaScript 引擎判断这是一个闭包，于是在堆空间创建换一个“closure(foo)”的对象（这是一个内部对象，JavaScript 是无法访问的），用来保存 name 变量。并把堆空间的地址保存在 foo 执行上下文中的环境变量中.</p>
-<h4 id="垃圾回收"><a href="#垃圾回收" class="headerlink" title="垃圾回收"></a>垃圾回收</h4><p>分为栈内存回收,堆内存回收</p>
-<p>栈内存回收需要用到一个<strong>记录当前执行状态的指针（称为 ESP）</strong>,指向的就是当前的执行上下文,JavaScript 引擎会通过向下移动 ESP 来销毁该函数保存在栈中的执行上下文。当下移之后如果有新的函数调用,原来的内存位置就会写入新的执行上下文.</p>
-<p>回收堆中的垃圾数据，就需要用到 JavaScript 中的垃圾回收器,垃圾回收的策略都是建立<strong>代际假说</strong>的基础之上的</p>
-<p>代际假说有以下两个特点：</p>
-<ul>
-<li>第一个是大部分对象在内存中存在的时间很短，简单来说，就是很多对象一经分配内存，很快就变得不可访问；</li>
-<li>第二个是不死的对象，会活得更久。</li>
-</ul>
-<p>需要根据对象变量的不同生命周期长短使用不同的策略:</p>
-<p>在 V8 中会把堆分为<strong>新生代</strong>和<strong>老生代</strong>两个区域，新生代中存放的是生存时间短的对象，老生代中存放的生存时间久的对象。新生区通常只支持 1 ～ 8M 的容量.副垃圾回收器，主要负责新生代的垃圾回收。主垃圾回收器，主要负责老生代的垃圾回收。</p>
-<p>垃圾回收大致都分为一下几个步骤:</p>
-<ul>
-<li>标记活动对象和非活动对象</li>
-<li>清楚非活动对象</li>
-<li>内存整理,并不是所有的回收策略都需要这一步</li>
-</ul>
-<p><strong>副垃圾回收器</strong>主要负责新生区的垃圾回收. 大多数小的对象都会被分配到新生区，这个区域虽然不大，但是垃圾回收还是比较频繁的。用 <strong>Scavenge[ˈskævɪndʒ]</strong> 算法来处理.原理是:</p>
-<p>把新生代空间对半划分为两个区域，一半是对象区域，一半是空闲区.</p>
-<p>新加入的对象都会存放到对象区域，当对象区域快被写满时，就需要执行一次垃圾清理操作。在垃圾回收过程中，首先要对对象区域中的垃圾做标记；标记完成之后，就进入垃圾清理阶段，副垃圾回收器会把这些存活的对象复制到空闲区域中，同时它还会把这些对象有序地排列起来，所以这个复制过程，也就相当于完成了内存整理操作，复制后空闲区域就没有内存碎片了。</p>
-<p>完成复制后，对象区域与空闲区域进行角色翻转，也就是原来的对象区域变成空闲区域，原来的空闲区域变成了对象区域。这样就完成了垃圾对象的回收操作，同时这种角色翻转的操作还能让新生代中的这两块区域无限重复使用下去。</p>
-<p>由于新生代中采用的 Scavenge 算法，所以每次执行清理操作时，都需要将存活的对象从对象区域复制到空闲区域。但复制操作需要时间成本，如果新生区空间设置得太大了，那么每次清理的时间就会过久，所以为了执行效率，一般新生区的空间会被设置得比较小。</p>
-<p>也正是因为新生区的空间不大，所以很容易被存活的对象装满整个区域。为了解决这个问题，JavaScript 引擎采用了对象晋升策略，也就是经过两次垃圾回收依然还存活的对象，会被移动到老生区中。</p>
-<p><strong>主垃圾回收器</strong> 主要负责老生区中的垃圾回收。</p>
-<p>除了新生区中晋升的对象，一些大的对象会直接被分配到老生区。因此老生区中的对象有两个特点，一个是对象占用空间大，另一个是对象存活时间长。</p>
-<p>，若要在老生区中使用 Scavenge 算法进行垃圾回收，复制这些大的对象将会花费比较多的时间，从而导致回收执行效率不高，同时还会浪费一半的空间。因而，主垃圾回收器是采用标记 - 清除（Mark-Sweep）的算法进行垃圾回收的。</p>
-<p>标记阶段就是从一组根元素(调用栈)开始，递归遍历这组根元素，在这个遍历过程中，能到达的元素称为活动对象，没有到达的元素就可以判断为垃圾数据。</p>
-<p>因为清除部分内存会产生碎片,而碎片过多会导致大对象无法分配到足够的连续内存，于是又产生了另外一种算法——<strong>标记 - 整理（Mark-Compact）</strong>,这个标记过程仍然与标记 - 清除算法里的是一样的，但后续步骤不是直接对可回收对象进行清理，而是让所有存活的对象都向一端移动，然后直接清理掉端边界以外的内存。</p>
-<p><strong>全停顿</strong>,内存回收过程过长,又因为 JS 为单线程而阻塞 JS 执行,这个问题叫全停顿.</p>
-<p>对于新生代的内存回收影响不大,因为内存比较小,可以全停顿等待执行完成.对于老生代会将标记过程分为一个个的子标记过程，同时让垃圾回收标记和 JavaScript 应用逻辑交替进行，直到标记阶段完成，我们把这个算法称为<strong>增量标记（Incremental Marking）算法</strong></p>
-<p>使用增量标记算法，可以把一个完整的垃圾回收任务拆分为很多小的任务，这些小的任务执行时间比较短，可以穿插在其他的 JavaScript 任务中间执行，这样当执行上述动画效果时，就不会让用户因为垃圾回收任务而感受到页面的卡顿了。</p>
-<h4 id="JS-如何执行"><a href="#JS-如何执行" class="headerlink" title="JS 如何执行"></a>JS 如何执行</h4><p>由解释型语言编写的程序，在每次运行时都需要通过解释器对程序进行动态解释和执行。</p>
-<p>编译型语言在程序执行之前，需要经过编译器的编译过程，并且编译之后会直接保留机器能读懂的二进制文件，这样每次运行程序时，都可以直接运行该二进制文件，而不需要再次重新编译了</p>
-<p><img src="/posts/142898c1a436/0001.webp"></p>
-<p>字节码就是介于 AST 和机器码之间的一种代码。但是与特定类型的机器码无关，字节码需要通过解释器将其转换为机器码后才能执行。</p>
-<p>如果有一段第一次执行的字节码，解释器 Ignition 会逐条解释执行。解释器 Ignition 除了负责生成字节码之外，它还有另外一个作用，就是解释执行字节码。在 Ignition 执行字节码的过程中，如果发现有热点代码（HotSpot），比如一段代码被重复执行多次，这种就称为热点代码，那么后台的编译器 TurboFan 就会把该段热点的字节码编译为高效的机器码，然后当再次执行这段被优化的代码时，只需要执行编译后的机器码就可以了，这样就大大提升了代码的执行效率。</p>
-<p>字节码配合解释器和编译器是最近一段时间很火的技术，比如 Java 和 Python 的虚拟机也都是基于这种技术实现的，我们把这种技术称为即时编译（JIT）。</p>
- 
-      <!-- reward -->
-      
-    </div>
-    
-
-    <!-- copyright -->
-    
-    <footer class="article-footer">
-       
-  <ul class="article-tag-list" itemprop="keywords"><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/HTTP/" rel="tag">HTTP</a></li><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/%E6%B5%8F%E8%A7%88%E5%99%A8/" rel="tag">浏览器</a></li></ul>
-
-    </footer>
-  </div>
-
-   
-    
-</article>
-
-    
-    <article
-  id="posts-javascript/执行机制"
-  class="article article-type-posts"
-  itemscope
-  itemprop="blogPost"
-  data-scroll-reveal
->
-  <div class="article-inner">
-    
-    <header class="article-header">
-       
-<h2 itemprop="name">
-  <a class="article-title" href="/posts/b672c2864ca4/"
-    >Javascript 执行机制</a> 
-</h2>
- 
-
-      
-    </header>
-     
-    <div class="article-meta">
-      <a href="/posts/b672c2864ca4/" class="article-date">
-  <time datetime="2022-05-24T01:17:59.000Z" itemprop="datePublished">2022-05-24</time>
-</a> 
-  <div class="article-category">
-    <a class="article-category-link" href="/categories/JavaScript/">JavaScript</a> / <a class="article-category-link" href="/categories/JavaScript/%E5%9F%BA%E7%A1%80/">基础</a>
-  </div>
-   
-    </div>
-      
-    <div class="article-entry" itemprop="articleBody">
-       
-  <h4 id="变量提升与执行上下文"><a href="#变量提升与执行上下文" class="headerlink" title="变量提升与执行上下文"></a>变量提升与执行上下文</h4><p>JS 代码运行会分为<strong>编译</strong>和<strong>执行</strong>两个阶段</p>
-<p>所谓的变量提升，是指在 JavaScript 代码编译过程中，JavaScript 引擎把变量的声明部分和函数的声明部分提升到代码开头的“行为”。变量被提升后，会给变量设置默认值并存到内存中，这个默认值就是我们熟悉的 undefined。</p>
-<p>最终在编译阶段会生成两部分内容：<strong>执行上下文（Execution context</strong>）和 <strong>可执行代码</strong>。</p>
-<p>执行上下文是 JavaScript 执行一段代码时的运行环境，比如调用一个函数，就会进入这个函数的执行上下文，确定该函数在执行期间用到的诸如 this、变量、对象以及函数等。</p>
-<p><img src="/posts/b672c2864ca4/0003.webp"></p>
-<ul>
-<li>当 JavaScript 执行全局代码的时候，会编译全局代码并创建全局执行上下文，而且在整个页面的生存周期内，全局执行上下文只有一份。</li>
-<li>当调用一个函数的时候，函数体内的代码会被编译，并创建函数执行上下文，一般情况下，函数执行结束之后，创建的函数执行上下文会被销毁。</li>
-<li>当使用 eval 函数的时候，eval 的代码也会被编译，并创建执行上下文。</li>
-</ul>
-<h4 id="调用栈"><a href="#调用栈" class="headerlink" title="调用栈"></a>调用栈</h4><p>先进先出,执行上下文通过调用栈来管理</p>
-<p>全局执行是上下文最先被压入栈中, 接下来如果有函数执行,当为函数创建好执行上下文后,也会被压入栈中,当函数返回时,执行上下文会从栈顶弹出.</p>
-<p>调用栈是 JavaScript 引擎追踪函数执行的一个机制，当一次有多个函数被调用时，通过调用栈就能够追踪到哪个函数正在被执行以及各函数之间的调用关系。</p>
-<p>使用 <code>console.trace()</code> 可以查看当前的调用栈信息.</p>
-<h4 id="作用域"><a href="#作用域" class="headerlink" title="作用域"></a>作用域</h4><p>作用域是指在程序中定义变量的区域，该位置决定了变量的生命周期。通俗地理解，作用域就是变量与函数的可访问范围，即作用域控制着变量和函数的可见性和生命周期。</p>
-<p>ES6 总共有三种作用于, <strong>全局作用域</strong>,<strong>函数作用域</strong>,<strong>块级作用域</strong>,如果没有块级作用域会存在两个问题</p>
-<ul>
-<li>变量容易在不被察觉的情况下被覆盖掉</li>
-<li>本应销毁的变量没有被销毁</li>
-</ul>
-<p>JS 通过 <code>const</code>, <code>let</code> 实现块级作用域,在创建执行上下文的时候, 这两个关键字会单独存放在<strong>词法环境</strong>中,而 <code>var</code> 声明的变量于函数会存放在变量环境中.</p>
-<figure class="highlight js"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">function</span> <span class="title function_">foo</span>(<span class="params"></span>) &#123;</span><br><span class="line">  <span class="keyword">var</span> a = <span class="number">1</span>;</span><br><span class="line">  <span class="keyword">let</span> b = <span class="number">2</span>;</span><br><span class="line">  &#123;</span><br><span class="line">    <span class="keyword">let</span> b = <span class="number">3</span>;</span><br><span class="line">    <span class="keyword">var</span> c = <span class="number">4</span>;</span><br><span class="line">    <span class="keyword">let</span> d = <span class="number">5</span>;</span><br><span class="line">  &#125;</span><br><span class="line">&#125;</span><br><span class="line"><span class="title function_">foo</span>();</span><br></pre></td></tr></table></figure>
-
-<p>在词法环境内部，维护了一个小型栈结构，栈底是函数最外层的变量，进入一个作用域块后，就会把该作用域块内部的变量压到栈顶；当作用域执行完成之后，该作用域的信息就会从栈顶弹出，这就是词法环境的结构。这里所讲的变量是指通过 let 或者 const 声明的变量。</p>
-<p><img src="/posts/b672c2864ca4/0001.webp"></p>
-<p>查找方式是：沿着词法环境的栈顶向下查询，如果在词法环境中的某个块中查找到了，就直接返回给 JavaScript 引擎，如果没有查找到，那么继续在变量环境中查找。</p>
-<p><img src="/posts/b672c2864ca4/0002.webp"></p>
-<h4 id="作用域链于词法作用域"><a href="#作用域链于词法作用域" class="headerlink" title="作用域链于词法作用域"></a>作用域链于词法作用域</h4><p><strong>作用域链是由词法作用域决定的.</strong></p>
-<p>下面的代码当 <code>bar</code> 在 <code>foo</code> 内部调用的时候, 会先查找自己的词法环境中有没有 <code>name</code>, 然后查找自己的环境变量.</p>
-<p>但是当发现都没有的时候并不会在 <code>foo</code> 的词法环境和变量环境中查找,而是直接查找全局执行上下文中的词法环境和变量环境</p>
-<figure class="highlight js"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">function</span> <span class="title function_">bar</span>(<span class="params"></span>) &#123;</span><br><span class="line">  <span class="variable language_">console</span>.<span class="title function_">log</span>(name);</span><br><span class="line">&#125;</span><br><span class="line"><span class="keyword">function</span> <span class="title function_">foo</span>(<span class="params"></span>) &#123;</span><br><span class="line">  <span class="keyword">var</span> name = <span class="string">&quot;one&quot;</span>;</span><br><span class="line">  <span class="title function_">bar</span>();</span><br><span class="line">&#125;</span><br><span class="line"><span class="keyword">var</span> name = <span class="string">&quot;tow&quot;</span>;</span><br><span class="line"><span class="title function_">foo</span>();</span><br></pre></td></tr></table></figure>
-
-<p>控制变量查找顺序的就是作用域链,其实在每个执行上下文的变量环境中，都包含了一个外部引用，用来指向外 部的执行上下文，这个外部引用称为 <code>outer</code>. 但是<strong>决定作用域链的不是执行上下文,而是词法作用域</strong></p>
-<p><strong>词法作用域就是指作用域是由代码中函数声明的位置来决定的，所以词法作用域是静态的作用域，通过它就能够预测代码在执行过程中如何查找标识符。</strong></p>
-<p><code>foo</code> 和 <code>bar</code> 的上级作用域都是全局作用域，所以如果 foo 或者 bar 函数使用了一个它们没有定义的变量，那么它们会到全局作用域去查找。也就是说，词法作用域是代码编译阶段就决定好的，和函数是怎么调用的没有关系。</p>
-<h4 id="闭包"><a href="#闭包" class="headerlink" title="闭包"></a>闭包</h4><p><strong>根据词法作用域的规则，内部函数 getName 和 setName 总是可以访问它们的外部函数 foo 中的变量</strong></p>
-<figure class="highlight js"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">function</span> <span class="title function_">foo</span>(<span class="params"></span>) &#123;</span><br><span class="line">  <span class="keyword">let</span> name = <span class="string">&quot;one&quot;</span>;</span><br><span class="line">  <span class="keyword">const</span> obj = &#123;</span><br><span class="line">    <span class="title function_">getName</span>(<span class="params"></span>) &#123;</span><br><span class="line">      <span class="keyword">return</span> name;</span><br><span class="line">    &#125;,</span><br><span class="line">    <span class="title function_">setName</span>(<span class="params">_name</span>) &#123;</span><br><span class="line">      name = _name;</span><br><span class="line">    &#125;,</span><br><span class="line">  &#125;;</span><br><span class="line">  <span class="keyword">return</span> obj;</span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line"><span class="keyword">var</span> bar = <span class="title function_">foo</span>();</span><br><span class="line">bar.<span class="title function_">setName</span>(<span class="string">&quot;two&quot;</span>);</span><br><span class="line">bar.<span class="title function_">getName</span>();</span><br></pre></td></tr></table></figure>
-
-<p>当 obj 对象返回给全局变量 bar 时，虽然 foo 函数已经执行结束，但是 getName 和 setName 函数依然可以使用 foo 函数中的变量 name.</p>
-<p>虽然 foo 函数执行结束后执行上下文已经从调用栈中弹出,但是由于 obj 对象的方法使用了内部 name 变量,所以 name 变量还是保存在内存中,而保存 name 变量称作闭包. 无论在那里调用 obj 对象的方法,都可以访问到 name 变量.</p>
-<p><strong>在 JavaScript 中，根据词法作用域的规则，内部函数总是可以访问其外部函数中声明的变量，当通过调用一个外部函数返回一个内部函数后，即使该外部函数已经执行结束了，但是内部函数引用外部函数的变量依然保存在内存中，我们就把这些变量的集合称为闭包。</strong></p>
-<p>而调用 obj 方法的时候,作用域链的顺序就是:当前执行上下文–&gt;foo 函数闭包–&gt; 全局执行上下文</p>
-<h4 id="闭包回收"><a href="#闭包回收" class="headerlink" title="闭包回收"></a>闭包回收</h4><p>如果引用闭包的函数是个局部变量，等函数销毁后，在下次 JavaScript 引擎执行垃圾回收时，判断闭包这块内容如果已经不再被使用了，那么 JavaScript 引擎的垃圾回收器就会回收这块内存。</p>
-<p><strong>如果该闭包会一直使用，那么它可以作为全局变量而存在；但如果使用频率不高，而且占用内存又比较大的话，那就尽量让它成为一个局部变量。</strong></p>
-<h4 id="this"><a href="#this" class="headerlink" title="this"></a>this</h4><p>实现 this 的一个初衷就是 <strong>在对象内部的方法中使用对象内部的属性</strong></p>
-<p>因为作用域链由词法作用域决定,所以调用 getName 并不会获取对象属性而是在全局的执行上下文中查找</p>
-<figure class="highlight js"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">const</span> obj = &#123;</span><br><span class="line">  <span class="attr">name</span>: <span class="string">&quot;one&quot;</span>,</span><br><span class="line">  <span class="title function_">getName</span>(<span class="params"></span>) &#123;</span><br><span class="line">    <span class="variable language_">console</span>.<span class="title function_">log</span>(name);</span><br><span class="line">  &#125;,</span><br><span class="line">&#125;;</span><br></pre></td></tr></table></figure>
-
-<h5 id="全局执行上下文中的-this"><a href="#全局执行上下文中的-this" class="headerlink" title="全局执行上下文中的 this"></a>全局执行上下文中的 this</h5><p>this 和作用域链的唯一交点，作用域链的最底端包含了 window 对象，全局执行上下文中的 this 也是指向 window 对象。</p>
-<p>这种设计很容易误操作,所以严格模式下默认执行一个函数 this 为 undefined</p>
-<h5 id="函数执行上下文中的-this"><a href="#函数执行上下文中的-this" class="headerlink" title="函数执行上下文中的 this"></a>函数执行上下文中的 this</h5><p>直接调用一个函数，其执行上下文中的 this 也是指向 window 对象的. 但是可以通过 <code>call</code> <code>apply</code> <code>bind</code> 修改 this 的指向</p>
-<h5 id="通过对象调用方法-this"><a href="#通过对象调用方法-this" class="headerlink" title="通过对象调用方法 this"></a>通过对象调用方法 this</h5><p>this 是指向对象本身的。 也可以理解为在调用的时候转化为了这样的形式 <code>myObj.showThis.call(myObj)</code></p>
-<h4 id="构造函数中的-this"><a href="#构造函数中的-this" class="headerlink" title="构造函数中的 this"></a>构造函数中的 this</h4><p>this 指向创建的实例. new 操作符实际上做了一下几件事.</p>
-<ul>
-<li>创建一个空的简单 JavaScript 对象（即{}）；</li>
-<li>为步骤 1 新创建的对象添加属性__proto__，将该属性链接至构造函数的原型对象 ；</li>
-<li>将步骤 1 新创建的对象作为 this 的上下文 ；</li>
-<li>如果该函数没有返回对象，则返回 this。</li>
-</ul>
- 
-      <!-- reward -->
-      
-    </div>
-    
-
-    <!-- copyright -->
-    
-    <footer class="article-footer">
-       
-  <ul class="article-tag-list" itemprop="keywords"><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/ES6%E5%9F%BA%E7%A1%80/" rel="tag">ES6基础</a></li><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/JavaScript/" rel="tag">JavaScript</a></li></ul>
-
-    </footer>
-  </div>
-
-   
-    
-</article>
-
-    
-    <article
-  id="posts-http/③浏览器工作原理"
-  class="article article-type-posts"
-  itemscope
-  itemprop="blogPost"
-  data-scroll-reveal
->
-  <div class="article-inner">
-    
-    <header class="article-header">
-       
-<h2 itemprop="name">
-  <a class="article-title" href="/posts/52cc0ef48986/"
-    >浏览器工作原理 ③ 渲染流程</a> 
-</h2>
- 
-
-      
-    </header>
-     
-    <div class="article-meta">
-      <a href="/posts/52cc0ef48986/" class="article-date">
-  <time datetime="2022-05-22T09:31:30.000Z" itemprop="datePublished">2022-05-22</time>
-</a> 
-  <div class="article-category">
-    <a class="article-category-link" href="/categories/HTTP%E4%B8%8E%E6%B5%8F%E8%A7%88%E5%99%A8/">HTTP与浏览器</a>
-  </div>
-   
-    </div>
-      
-    <div class="article-entry" itemprop="articleBody">
-       
-  <h4 id="渲染流程"><a href="#渲染流程" class="headerlink" title="渲染流程"></a>渲染流程</h4><ul>
-<li><p>解析 HTML 生成 DOM 树</p>
-</li>
-<li><p>计算样式</p>
-<p>将 CSS 文本转换为浏览器可以理解的结构——styleSheets。</p>
-<p>CSS 文本中有很多属性值，如 2em、blue、bold，这些类型数值不容易被渲染引擎理解，所以需要将所有值转换为渲染引擎容易理解的、标准化的计算值，这个过程就是属性值标准化。</p>
-<p>计算出 DOM 树中每个节点的具体样式,最终的样式保存在 ComputedStyle 结构内,在浏览器的开发这工具中可以查看.</p>
-</li>
-<li><p>布局阶段</p>
-<p>接下来就需要计算出 DOM 树中可见元素的几何位置，我们把这个计算过程叫做布局。</p>
-<p>DOM 树还含有很多不可见的元素,所以在显示之前，我们还要额外地构建一棵只包含可见元素布局树。DOM 树中所有不可见的节点都没有包含到布局树中。</p>
-<ul>
-<li>遍历 DOM 树中的所有可见节点，并把这些节点加到布局树中；</li>
-<li>不可见的节点会被布局树忽略掉，</li>
-<li>在执行布局操作的时候，会把布局运算的结果重新写回布局树中，所以布局树既是输入内容也是输出内容，这是布局阶段一个不合理的地方，因为在布局阶段并没有清晰地将输入内容和输出内容区分开来。针对这个问题，Chrome 团队正在重构布局代码，下一代布局系统叫 LayoutNG，试图更清晰地分离输入和输出，从而让新设计的布局算法更加简单。</li>
-</ul>
-</li>
-</ul>
-<h4 id="分层"><a href="#分层" class="headerlink" title="分层"></a>分层</h4><p>因为页面中有很多复杂的效果，如一些复杂的 3D 变换、页面滚动，或者使用 z-indexing 做 z 轴排序等，为了更加方便地实现这些效果，渲染引擎还需要为特定的节点生成专用的图层，并生成一棵对应的图层树（LayerTree）。</p>
-<p>打开 Chrome 的“开发者工具”，选择“Layers”标签，就可以可视化页面的分层情况,浏览器的页面实际上被分成了很多图层，这些图层叠加后合成了最终的页面。</p>
-<p>通常情况下，<strong>并不是布局树的每个节点都包含一个图层，如果一个节点没有对应的层，那么这个节点就从属于父节点的图层。</strong></p>
-<ul>
-<li><p>拥有 <a target="_blank" rel="noopener" href="https://developer.mozilla.org/zh-CN/docs/web/css/css_positioning/understanding_z_index/the_stacking_context">层叠上下文</a> 属性的元素会被提升为单独的一层。<br>明确定位属性的元素、定义透明属性的元素、使用 CSS 滤镜的元素等，都拥有层叠上下文属性。</p>
-</li>
-<li><p>需要剪裁（clip）的地方也会被创建为图层。<br>div 的大小限定为 200*200 像素，而 div 里面的文字内容比较多，文字所显示的区域肯定会超出 200*200 的面积，这时候就产生了剪裁，渲染引擎会把裁剪文字内容的一部分用于显示在 div 区域</p>
-<p>出现这种裁剪情况的时候，渲染引擎会为文字部分单独创建一个层，如果出现滚动条，滚动条也会被提升为单独的层。</p>
-</li>
-</ul>
-<h4 id="绘制图层"><a href="#绘制图层" class="headerlink" title="绘制图层"></a>绘制图层</h4><p>图层的绘制拆分成很多小的绘制指令，然后再把这些指令按照顺序组成一个待绘制列表,开发者工具 的 Layers 标签，可以查看绘制过程</p>
-<p><img src="/posts/52cc0ef48986/0001.webp"></p>
-<h4 id="栅格化操作"><a href="#栅格化操作" class="headerlink" title="栅格化操作"></a>栅格化操作</h4><p>实际上绘制操作是由渲染引擎中的合成线程来完成的。</p>
-<p><img src="/posts/52cc0ef48986/0002.webp"></p>
-<p>当图层的绘制列表准备好之后，主线程会把该绘制列表提交（commit）给合成线程.</p>
-<p>合成线程会将图层划分为图块（tile），这些图块的大小通常是 256x256 或者 512x512.</p>
-<p>然后<strong>合成线程会按照视口附近的图块来优先生成位图，实际生成位图的操作是由栅格化来执行的。所谓栅格化，是指将图块转换为位图。而图块是栅格化执行的最小单位</strong>.渲染进程维护了一个栅格化的线程池，所有的图块栅格化都是在线程池内执行的，</p>
-<p>通常，栅格化过程都会使用 GPU 来加速生成，使用 GPU 生成位图的过程叫快速栅格化，或者 GPU 栅格化，生成的位图被保存在 GPU 内存中。</p>
-<p><img src="/posts/52cc0ef48986/0003.webp"></p>
-<h4 id="合成和显示"><a href="#合成和显示" class="headerlink" title="合成和显示"></a>合成和显示</h4><p>当所有图块都被光栅化，合成线程就会生成一个绘制图块的命令——“DrawQuad”，然后将该命令提交给浏览器进程。</p>
-<p>浏览器进程里面有一个叫 viz 的组件，用来接收合成线程发过来的 DrawQuad 命令，然后根据 DrawQuad 命令，将其页面内容绘制到内存中，最后再将内存显示在屏幕上。</p>
-<h4 id="流程总结"><a href="#流程总结" class="headerlink" title="流程总结"></a>流程总结</h4><ul>
-<li>渲染进程将 HTML 内容转换为能够读懂的 DOM 树结构。</li>
-<li>渲染引擎将 CSS 样式表转化为浏览器可以理解的 styleSheets，计算出 DOM 节点的样式。</li>
-<li>创建布局树，并计算元素的布局信息。</li>
-<li>对布局树进行分层，并生成分层树。为每个图层生成绘制列表，并将其提交到合成线程。</li>
-<li>合成线程将图层分成图块，并在光栅化线程池中将图块转换成位图。</li>
-<li>合成线程发送绘制图块命令 DrawQuad 给浏览器进程。</li>
-<li>浏览器进程根据 DrawQuad 消息生成页面，并显示到显示器上。</li>
-</ul>
-<h4 id="重绘与重排"><a href="#重绘与重排" class="headerlink" title="重绘与重排"></a>重绘与重排</h4><p>如果你通过 JavaScript 或者 CSS 修改元素的几何位置属性，例如改变元素的宽度、高度等，那么浏览器会触发重新布局，解析之后的一系列子阶段，这个过程就叫重排。无疑，重排需要更新完整的渲染流水线，所以开销也是最大的。</p>
-<p><img src="/posts/52cc0ef48986/0004.webp"></p>
-<p>如果修改了元素的背景颜色，那么布局阶段将不会被执行，因为并没有引起几何位置的变换，所以就直接进入了绘制阶段，然后执行之后的一系列子阶段，这个过程就叫重绘。相较于重排操作，重绘省去了布局和分层阶段，所以执行效率会比重排操作要高一些。</p>
-<p><img src="/posts/52cc0ef48986/0005.webp"></p>
-<p>如果更改一个既不要布局也不要绘制的属性,把这个过程叫做合成</p>
-<p>使用了 CSS 的 transform 来实现动画效果，这可以避开重排和重绘阶段，直接在非主线程上执行合成动画操作。这样的效率是最高的，因为是在非主线程上合成，并没有占用主线程的资源，另外也避开了布局和绘制两个子阶段，所以相对于重绘和重排，合成能大大提升绘制效率。</p>
-<p><img src="/posts/52cc0ef48986/0006.webp"></p>
- 
-      <!-- reward -->
-      
-    </div>
-    
-
-    <!-- copyright -->
-    
-    <footer class="article-footer">
-       
-  <ul class="article-tag-list" itemprop="keywords"><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/HTTP/" rel="tag">HTTP</a></li><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/%E6%B5%8F%E8%A7%88%E5%99%A8/" rel="tag">浏览器</a></li></ul>
-
-    </footer>
-  </div>
-
-   
-    
-</article>
-
-    
-    <article
-  id="posts-http/②浏览器工作原理"
-  class="article article-type-posts"
-  itemscope
-  itemprop="blogPost"
-  data-scroll-reveal
->
-  <div class="article-inner">
-    
-    <header class="article-header">
-       
-<h2 itemprop="name">
-  <a class="article-title" href="/posts/872ab92252f5/"
-    >浏览器工作原理 ② HTTP</a> 
-</h2>
- 
-
-      
-    </header>
-     
-    <div class="article-meta">
-      <a href="/posts/872ab92252f5/" class="article-date">
-  <time datetime="2022-05-22T07:27:39.000Z" itemprop="datePublished">2022-05-22</time>
-</a> 
-  <div class="article-category">
-    <a class="article-category-link" href="/categories/HTTP%E4%B8%8E%E6%B5%8F%E8%A7%88%E5%99%A8/">HTTP与浏览器</a>
-  </div>
-   
-    </div>
-      
-    <div class="article-entry" itemprop="articleBody">
-       
-  <h4 id="HTTP-与-TCP-关系"><a href="#HTTP-与-TCP-关系" class="headerlink" title="HTTP 与 TCP 关系"></a>HTTP 与 TCP 关系</h4><p>浏览器使用 HTTP 协议作为应用层协议，用来封装请求的文本信息；并使用 TCP&#x2F;IP 作传输层协议将它发到网络上，所以在 HTTP 工作开始之前，浏览器需要通过 TCP 与服务器建立连接。也就是说 HTTP 的内容是通过 TCP 的传输数据阶段来实现的.</p>
-<p><img src="/posts/872ab92252f5/0001.webp"> </p>
-<h4 id="HTTP-请求流程"><a href="#HTTP-请求流程" class="headerlink" title="HTTP 请求流程"></a>HTTP 请求流程</h4><p>HTTP 协议，正是建立在 TCP 连接基础之上的。HTTP 是一种允许浏览器向服务器获取资源的协议，是 Web 的基础，通常由浏览器发起请求，用来获取不同类型的文件，例如 HTML 文件、CSS 文件、JavaScript 文件、图片、视频等。</p>
-<h5 id="构建请求"><a href="#构建请求" class="headerlink" title="构建请求"></a>构建请求</h5><figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">GET /index.html HTTP1.1</span><br></pre></td></tr></table></figure>
-
-<h5 id="查找缓存"><a href="#查找缓存" class="headerlink" title="查找缓存"></a>查找缓存</h5><p><img src="/posts/872ab92252f5/0004.png"></p>
-<h6 id="强制缓存"><a href="#强制缓存" class="headerlink" title="强制缓存"></a>强制缓存</h6><p>HTTP&#x2F;1.1 定义的 Cache-Control 头用来区分对缓存机制的支持情况， 请求头和响应头都支持这个属性。通过它提供的不同的值来定义缓存策略。</p>
-<ul>
-<li><p>没有缓存</p>
-<p>缓存中不得存储任何关于客户端请求和服务端响应的内容。每次由客户端发起的请求都会下载完整的响应内容。</p>
-<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">Cache-Control: no-store</span><br></pre></td></tr></table></figure>
-</li>
-<li><p>有缓存但要重新验证<br>此方式下，每次有请求发出时，缓存会将此请求发到服务器（该请求应该会带有与本地缓存相关的验证字段），服务器端会验证请求中所描述的缓存是否过期，若未过期（注：实际就是返回 304），则缓存才使用本地缓存副本。</p>
-<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">Cache-Control: no-cache</span><br></pre></td></tr></table></figure>
-</li>
-<li><p>过期<br>过期机制中，最重要的指令是 “max-age&#x3D;<seconds>“，表示资源能够被缓存（保持新鲜）的最大时间。max-age 是距离请求发起的时间的秒数。针对应用中那些不会改变的文件，通常可以手动设置一定的时长以保证缓存有效，例如图片、css、js 等静态资源。</p>
-<p>Expires 响应头包含日期&#x2F;时间， 即在此时候之后，响应过期。如果在 Cache-Control 响应头设置了 “max-age” 或者 “s-max-age” 指令，那么 Expires 头会被忽略。</p>
-</li>
-</ul>
-<h6 id="协商缓存"><a href="#协商缓存" class="headerlink" title="协商缓存"></a>协商缓存</h6><p>强制缓存失效后，浏览器携带缓存标识向服务器发起请求，由服务器根据缓存标识决定是否使用缓存</p>
-<ul>
-<li><p>Last-Modified &#x2F; If-Modified-Since</p>
-<p>Last-Modified 是由服务器发送给客户端的 HTTP 响应头标签，时间值是当前资源文件的修改时间</p>
-<p>If-Modified-Since 是由客户端发送给服务器的 HTTP 请求头标签，客户端再次发起该请求时，会携带上次请求返回的 Last-Modified 的时间值，对比 If-Modified-Since 的时间和该资源在服务器端最后被修改的时间，决定是否更新资源</p>
-</li>
-<li><p>Etag &#x2F; If-None-Match</p>
-<p>Etag 是由服务器发送给客户端的 HTTP 响应头标签，是服务器端生成的资源文件的一个唯一标识</p>
-<p>If-None-Match 是由客户端发送给服务器的 HTTP 请求头标签，客户端再次发起该请求时，会携带上次请求返回的 Etag 值，对比服务器端的 Etag 值和 If-None-Match 的值，决定是否更新资源</p>
-</li>
-</ul>
-<p>优先级：Etag &#x2F; If-None-Match &gt; Last-Modified &#x2F; If-Modified-Since</p>
-<h5 id="准备-IP-地址和端口"><a href="#准备-IP-地址和端口" class="headerlink" title="准备 IP 地址和端口"></a>准备 IP 地址和端口</h5><p>因为 IP 并不容易记住,通常使用域名来方法,这就需要获取 IP 和域名的对应关系.这套域名映射为 IP 的系统就叫做“域名系统”，简称 DNS（Domain Name System）。</p>
-<p>现在第一步浏览器会请求 DNS 返回域名对应的 IP。当然浏览器还提供了 DNS 数据缓存服务，如果某个域名已经解析过了，那么浏览器会缓存解析的结果，以供下次查询时直接使用，这样也会减少一次网络请求。</p>
-<p>拿到 IP 之后，接下来就需要获取端口号了。通常情况下，如果 URL 没有特别指明端口号，那么 HTTP 协议默认是 80 端口。</p>
-<h6 id="DNS预解析"><a href="#DNS预解析" class="headerlink" title="DNS预解析"></a>DNS预解析</h6><p>dns-prefetch(DNS预获取)是前端网络性能优化的一种措施。它根据浏览器定义的规则，提前解析之后可能会用到的域名，使解析结果缓存到系统缓存中，缩短DNS解析时间，进而提高网站的访问速度。</p>
-<p>每当在首次DNS解析后会对其IP进行缓存。至于缓存时长，每种浏览器都不一样，比如Chrome的过期时间是1分钟，在这个期限内不会重新请求DNS。</p>
-<p>每当Chrome浏览器启动的时候，就会自动的快速解析浏览器最近一次启动时记录的前10个域名。所以经常访问的网址就不存在DNS解析的延迟，进而打开速度更快。</p>
-<ul>
-<li><p>dns-prefetch 仅对跨域域上的 DNS查找有效，因此请避免使用它来指向相同域。这是因为，到浏览器看到提示时，您站点域背后的IP已经被解析。</p>
-</li>
-<li><p>http页面下所有的a标签的href都会自动去启用DNS Prefetch，也就是说网页的a标签href带的域名，是不需要在head里面加上link手动设置的。<br>可以通过在服务器端发送 X-DNS-Prefetch-Control 报头，或是在文档中使用值为 http-equiv 的 <code>&lt;meta&gt;</code> 标签：</p>
-<figure class="highlight html"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line"><span class="tag">&lt;<span class="name">meta</span> <span class="attr">http-equiv</span>=<span class="string">&quot;x-dns-prefetch-control&quot;</span> <span class="attr">content</span>=<span class="string">&quot;on&quot;</span>&gt;</span></span><br></pre></td></tr></table></figure>
-</li>
-<li><p>强制查询特定主机名,使用 rel 属性值为 link type 中的 dns-prefetch 的 标签来对特定域名进行预读取：</p>
-<figure class="highlight html"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line"><span class="tag">&lt;<span class="name">link</span> <span class="attr">rel</span>=<span class="string">&quot;dns-prefetch&quot;</span> <span class="attr">href</span>=<span class="string">&quot;http://www.baidu.com/&quot;</span>&gt;</span></span><br></pre></td></tr></table></figure></li>
-</ul>
-<h5 id="等待-TCP-队列并建立链接"><a href="#等待-TCP-队列并建立链接" class="headerlink" title="等待 TCP 队列并建立链接"></a>等待 TCP 队列并建立链接</h5><p>Chrome 有个机制，同一个域名同时最多只能建立 6 个 TCP 连接，如果在同一个域名下同时有 10 个请求发生，那么其中 4 个请求会进入排队等待状态，直至进行中的请求完成。当然，如果当前请求数量少于 6，会直接进入下一步，建立 TCP 连接。http2 是可以并行请求资源的，所以如果使用 http2，浏览器只会为每个域名维护一个 tcp 连接.</p>
-<p>接着通过三次握手建立链接</p>
-<h5 id="发送-HTTP-请求"><a href="#发送-HTTP-请求" class="headerlink" title="发送 HTTP 请求"></a>发送 HTTP 请求</h5><p>HTTP 中的数据正是在这个通信过程中传输的。</p>
-<p><img src="/posts/872ab92252f5/0002.webp"></p>
-<h5 id="返回请求"><a href="#返回请求" class="headerlink" title="返回请求"></a>返回请求</h5><p><img src="/posts/872ab92252f5/0003.webp"></p>
-<p>服务器也会随同响应向浏览器发送响应头。响应头包含了服务器自身的一些信息，比如服务器生成返回数据的时间、返回的数据类型（JSON、HTML、流媒体等类型），以及服务器要在客户端保存的 Cookie 等信息。发送完响应头后，服务器就可以继续发送响应体的数据，通常，响应体就包含了 HTML 的实际内容。</p>
-<h5 id="Keep-Alive"><a href="#Keep-Alive" class="headerlink" title="Keep-Alive"></a>Keep-Alive</h5><p>通常情况下，一旦服务器向客户端返回了请求数据，它就要关闭 TCP 连接。不过如果浏览器或者服务器在其头信息中加入了：</p>
-<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">Connection:Keep-Alive</span><br></pre></td></tr></table></figure>
-
-<p>那么 TCP 连接在发送后将仍然保持打开状态，这样浏览器就可以继续通过同一个 TCP 连接发送请求。保持 TCP 连接可以省去下次请求时需要建立连接的时间，提升资源加载速度。比如，一个 Web 页面中内嵌的图片就都来自同一个 Web 站点，如果初始化了一个持久连接，你就可以复用该连接，以请求其他资源，而不需要重新再建立新的 TCP 连接。</p>
-<h5 id="重定向"><a href="#重定向" class="headerlink" title="重定向"></a>重定向</h5><p>响应行返回的状态码是 301，状态 301 就是告诉浏览器，我需要重定向到另外一个网址，而需要重定向的网址正是包含在响应头的 Location 字段中，接下来，浏览器获取 Location 字段中的地址，并使用该地址重新导航</p>
-<h5 id="请求的各个阶段"><a href="#请求的各个阶段" class="headerlink" title="请求的各个阶段"></a>请求的各个阶段</h5><p><img src="/posts/872ab92252f5/0004.webp"></p>
-<h4 id="从输入-URL-到页面展示"><a href="#从输入-URL-到页面展示" class="headerlink" title="从输入 URL 到页面展示"></a>从输入 URL 到页面展示</h4><p>用户发出 URL 请求到页面开始解析的这个过程，就叫做导航。</p>
-<h5 id="用户输入"><a href="#用户输入" class="headerlink" title="用户输入"></a>用户输入</h5><p>当用户在地址栏中输入一个查询关键字时，地址栏会判断输入的关键字是搜索内容，还是请求的 URL。</p>
-<p>如果是搜索内容，地址栏会使用浏览器默认的搜索引擎，来合成新的带搜索关键字的 URL。如果判断输入内容符合 URL 规则，比如输入的是 time.geekbang.org，那么地址栏会根据规则，把这段内容加上协议，合成为完整的 URL.</p>
-<p>当用户输入关键字并键入回车之后，这意味着当前页面即将要被替换成新的页面，不过在这个流程继续之前，浏览器还给了当前页面一次执行 beforeunload 事件的机会，beforeunload 事件允许页面在退出之前执行一些数据清理操作，还可以询问用户是否要离开当前页面，比如当前页面可能有未提交完成的表单等情况，因此用户可以通过 beforeunload 事件来取消导航，让浏览器不再执行任何后续工作。</p>
-<h5 id="URL-请求过程"><a href="#URL-请求过程" class="headerlink" title="URL 请求过程"></a>URL 请求过程</h5><p>浏览器进程会通过进程间通信（IPC）把 URL 请求发送至网络进程，网络进程接收到 URL 请求后，会在这里发起真正的 URL 请求流程。</p>
-<p>首先，网络进程会查找本地缓存是否缓存了该资源。如果有缓存资源，那么直接返回资源给浏览器进程；如果在缓存中没有查找到资源，那么直接进入网络请求流程。这请求前的第一步是要进行 DNS 解析，以获取请求域名的服务器 IP 地址。如果请求协议是 HTTPS，那么还需要建立 TLS 连接。</p>
-<p>接下来就是利用 IP 地址和服务器建立 TCP 连接。连接建立之后，浏览器端会构建请求行、请求头等信息，并把和该域名相关的 Cookie 等数据附加到请求头中，然后向服务器发送构建的请求信息。</p>
-<p>服务器接收到请求信息后，会根据请求信息生成响应数据（包括响应行、响应头和响应体等信息），并发给网络进程。等网络进程接收了响应行和响应头之后，就开始解析响应头的内容了。</p>
-<p>在导航过程中，如果服务器响应行的状态码包含了 301、302 一类的跳转信息，浏览器会跳转到新的地址继续导航；如果响应行是 200，那么表示浏览器可以继续处理该请求。</p>
-<p><strong>Content-Type 是 HTTP 头中一个非常重要的字段， 它告诉浏览器服务器返回的响应体数据是什么类型，然后浏览器会根据 Content-Type 的值来决定如何显示响应体的内容。</strong></p>
-<p>例如 Content-Type 的值是 application&#x2F;octet-stream，显示数据是字节流类型的，通常情况下，浏览器会按照下载类型来处理该请求。</p>
-<p>如果 Content-Type 字段的值被浏览器判断为下载类型，那么该请求会被提交给浏览器的下载管理器，同时该 URL 请求的导航流程就此结束。但如果是 HTML，那么浏览器则会继续进行导航流程。由于 Chrome 的页面渲染是运行在渲染进程中的，所以接下来就需要准备渲染进程了。</p>
-<h5 id="准备渲染进程"><a href="#准备渲染进程" class="headerlink" title="准备渲染进程"></a>准备渲染进程</h5><p>默认情况下，Chrome 会为每个页面分配一个渲染进程，也就是说，每打开一个新页面就会配套创建一个新的渲染进程。但是，也有一些例外，在某些情况下，浏览器会让多个页面直接运行在同一个渲染进程中。</p>
-<p>但如果从一个页面打开了另一个新页面，而新页面和当前页面属于同一站点的话，那么新页面会复用父页面的渲染进程。官方把这个默认策略叫 process-per-site-instance.</p>
-<h5 id="提交文档"><a href="#提交文档" class="headerlink" title="提交文档"></a>提交文档</h5><p>所谓提交文档，就是指浏览器进程将网络进程接收到的 HTML 数据提交给渲染进程，具体流程是这样的：</p>
-<ul>
-<li>首先当浏览器进程接收到网络进程的响应头数据之后，便向渲染进程发起“提交文档”的消息；</li>
-<li>渲染进程接收到“提交文档”的消息后，会和网络进程建立传输数据的“管道”；</li>
-<li>等文档数据传输完成之后，渲染进程会返回“确认提交”的消息给浏览器进程；</li>
-<li>浏览器进程在收到“确认提交”的消息后，会更新浏览器界面状态，包括了安全状态、地址栏的 URL、前进后退的历史状态，并更新 Web 页面。</li>
-</ul>
-<h5 id="渲染阶段"><a href="#渲染阶段" class="headerlink" title="渲染阶段"></a>渲染阶段</h5><p>文档被提交，渲染进程便开始页面解析和子资源加载了.</p>
-<p>一旦页面生成完成，渲染进程会发送一个消息给浏览器进程，浏览器接收到消息后，会停止标签图标上的加载动画。</p>
- 
-      <!-- reward -->
-      
-    </div>
-    
-
-    <!-- copyright -->
-    
-    <footer class="article-footer">
-       
-  <ul class="article-tag-list" itemprop="keywords"><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/HTTP/" rel="tag">HTTP</a></li><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/%E6%B5%8F%E8%A7%88%E5%99%A8/" rel="tag">浏览器</a></li></ul>
-
-    </footer>
-  </div>
-
-   
-    
-</article>
-
-    
-    <article
-  id="posts-http/①浏览器工作原理"
-  class="article article-type-posts"
-  itemscope
-  itemprop="blogPost"
-  data-scroll-reveal
->
-  <div class="article-inner">
-    
-    <header class="article-header">
-       
-<h2 itemprop="name">
-  <a class="article-title" href="/posts/57a0a2abab4c/"
-    >浏览器工作原理 ① 浏览器架构</a> 
-</h2>
- 
-
-      
-    </header>
-     
-    <div class="article-meta">
-      <a href="/posts/57a0a2abab4c/" class="article-date">
-  <time datetime="2022-05-22T05:38:27.000Z" itemprop="datePublished">2022-05-22</time>
-</a> 
-  <div class="article-category">
-    <a class="article-category-link" href="/categories/HTTP%E4%B8%8E%E6%B5%8F%E8%A7%88%E5%99%A8/">HTTP与浏览器</a>
-  </div>
-   
-    </div>
-      
-    <div class="article-entry" itemprop="articleBody">
-       
-  <h4 id="Web-应用趋势"><a href="#Web-应用趋势" class="headerlink" title="Web 应用趋势"></a>Web 应用趋势</h4><ul>
-<li><p><strong>应用程序 Web 化</strong>,视频 , 音频 ,游戏的占比越来越高</p>
-</li>
-<li><p><strong>是 Web 应用移动化</strong>, Google 推出了 PWA 方案来整合 Web 和本地程序各自的优势</p>
-</li>
-<li><p><strong>Web 操作系统化</strong> ,可能以后浏览器会提供更多的模块给上层应用使用,如新支持的 WebAssembly；</p>
-</li>
-</ul>
-<h4 id="进程与线程"><a href="#进程与线程" class="headerlink" title="进程与线程"></a>进程与线程</h4><p><strong>进程</strong>是一个程序的运行实例,启动一个程序的时候，操作系统会为该程序创建一块内存，用来存放代码、运行中的数据和一个执行任务的主线程，我们把这样的一个运行环境叫进程。 <strong>线程是依附于进程的，而进程中使用多线程并行处理能提升运算效率。</strong></p>
-<p><img src="/posts/57a0a2abab4c/0001.webp"></p>
-<p>进程和线程之间的关系有以下特点:</p>
-<ul>
-<li><p>进程中的任意一线程执行出错，都会导致整个进程的崩溃。</p>
-</li>
-<li><p>线程之间可以对进程的公共数据进行读写操作。</p>
-</li>
-<li><p>当一个进程关闭之后，操作系统会回收进程所占用的内存。</p>
-<p>虽然有些程序因为代码原因,或安装了额外的插件,可能导致内存泄漏.但只要关闭进程,内存就会被回收.</p>
-</li>
-<li><p>进程之间的内容相互隔离。</p>
-<p>进程隔离是为保护操作系统中进程互不干扰的技术，每一个进程只能访问自己占有的数据.所以一个进程如果崩溃了，或者挂起了，是不会影响到其他进程的。如果进程之间需要进行数据的通信，这时候，就需要使用用于进程间通信（IPC）的机制了。</p>
-</li>
-</ul>
-<p>目前浏览器主要包含以下几个进程:</p>
-<ul>
-<li><p><strong>1 个浏览器进程</strong>。主要负责界面显示、用户交互、子进程管理，同时提供存储等功能</p>
-</li>
-<li><p><strong>多个渲染进程</strong>。核心任务是将 HTML、CSS 和 JavaScript 转换为用户可以与之交互的网页，排版引擎 Blink 和 JavaScript 引擎 V8 都是运行在该进程中，默认情况下，Chrome 会为每个 Tab 标签创建一个渲染进程。出于安全考虑，渲染进程都是运行在沙箱模式下。</p>
-</li>
-<li><p><strong>1 个 GPU 进程</strong>。其实，Chrome 刚开始发布的时候是没有 GPU 进程的。而 GPU 的使用初衷是为了实现 3D CSS 的效果，只是随后网页、Chrome 的 UI 界面都选择采用 GPU 来绘制，这使得 GPU 成为浏览器普遍的需求。最后，Chrome 在其多进程架构上也引入了 GPU 进程。</p>
-</li>
-<li><p><strong>1 个网络进程</strong>。主要负责页面的网络资源加载，之前是作为一个模块运行在浏览器进程里面的，后面独立出来，成为一个单独的进程。</p>
-</li>
-<li><p><strong>多个插件进程</strong>。主要是负责插件的运行，因插件易崩溃，所以需要通过插件进程来隔离，以保证插件进程崩溃不会对浏览器和页面造成影响。</p>
-</li>
-</ul>
-<h4 id="页面性能指标"><a href="#页面性能指标" class="headerlink" title="页面性能指标"></a>页面性能指标</h4><ul>
-<li><p>FP(First Paint):从开始加载到浏览器首次绘制像素到屏幕上的时间,也就是页面在屏幕上首次发生视觉变化的时间。</p>
-</li>
-<li><p>FCP（First Contentful Paint）:浏览器首次绘制来自 DOM 的内容的时间。这是用户第一次开始看到页面内容，但仅仅有内容，并不意味着它是有用的内容（例如 Header、导航栏等），也不意味着有用户要消费的内容。</p>
-</li>
-<li><p>FMP（First Meaningful Paint）:页面的主要内容绘制到屏幕上的时间。主要内容的定义因页面而异，例如对于博客文章，它的主要内容是标题和摘要，对于搜索页面，它的主要内容是搜索结果，对于电商的页面，图片则是主要内容。</p>
-</li>
-<li><p>FSP（First Screen Paint）:页面从开始加载到首屏内容全部绘制完成的时间，用户可以看到首屏的全部内容。</p>
-</li>
-<li><p>TTI（Time to Interactive）:表示网页第一次完全达到可交互状态的时间点，浏览器已经可以持续性的响应用户的输入。</p>
-</li>
-</ul>
-<h4 id="如何保证页面文件能被完整地送达浏览器？"><a href="#如何保证页面文件能被完整地送达浏览器？" class="headerlink" title="如何保证页面文件能被完整地送达浏览器？"></a>如何保证页面文件能被完整地送达浏览器？</h4><p>在网络中，一个文件通常会被拆分为很多数据包来进行传输，而数据包在传输过程中又有很大概率丢失或者出错。</p>
-<p>联网，实际上是一套理念和协议组成的体系架构。其中，协议是一套众所周知的规则和标准，如果各方都同意使用，那么它们之间的通信将变得毫无障碍。</p>
-<h5 id="IP：把数据包送达目的主机"><a href="#IP：把数据包送达目的主机" class="headerlink" title="IP：把数据包送达目的主机"></a>IP：把数据包送达目的主机</h5><p>数据包要在互联网上进行传输，就要符合网际协议（Internet Protocol，简称 IP）标准, 访问网站就是向另一台有明确地址的计算机请求信息.</p>
-<p>想通信一定要知道双方 IP 地址,用于请求和回复,另外还有 IP 版本,生存时间等,这些信息都会放在 IP 头中,并附加在数据包上. 组成的新数据包就能交给底层传输了.</p>
-<p>当另外的主机接收到数据包,会将数据包拆开,并把数据交给主机上层.</p>
-<h5 id="UDP：把数据包送达应用程序"><a href="#UDP：把数据包送达应用程序" class="headerlink" title="UDP：把数据包送达应用程序"></a>UDP：把数据包送达应用程序</h5><p>到达主机后还需要把数据送给应用,，需要基于 IP 之上开发能和应用打交道的协议，最常见的是“用户数据包协议（User Datagram Protocol）”，简称 UDP。</p>
-<p>UDP 中一个最重要的信息是端口号，端口号其实就是一个数字，每个想访问网络的程序都需要绑定一个端口号。通过端口号 UDP 就能把指定的数据包发送给指定的程序了，所以 IP 通过 IP 地址信息把数据包发送给指定的电脑，而 UDP 通过端口号把数据包分发给正确的程序。和 IP 头一样，端口号会被装进 UDP 头里面，UDP 头再和原始数据包合并组成新的 UDP 数据包。UDP 头中除了目的端口，还有源端口号等信息。</p>
-<p>在使用 UDP 发送数据时，有各种因素会导致数据包出错，虽然 UDP 可以校验数据是否正确，但是对于错误的数据包，UDP 并不提供重发机制，只是丢弃当前的包，而且 UDP 在发送之后也无法知道是否能达到目的地。虽说 UDP 不能保证数据可靠性，但是传输速度却非常快，所以 UDP 会应用在一些关注速度、但不那么严格要求数据完整性的领域，如在线视频、互动游戏等。</p>
-<h5 id="TCP：把数据完整地送达应用程序"><a href="#TCP：把数据完整地送达应用程序" class="headerlink" title="TCP：把数据完整地送达应用程序"></a>TCP：把数据完整地送达应用程序</h5><p>使用 UDP 来传输会存在两个问题：</p>
-<ul>
-<li><p>数据包在传输过程中容易丢失；</p>
-</li>
-<li><p>大文件会被拆分成很多小的数据包来传输，这些小的数据包会经过不同的路由，并在不同的时间到达接收端，而 UDP 协议并不知道如何组装这些数据包，从而把这些数据包还原成完整的文件。</p>
-</li>
-</ul>
-<p>基于这两个问题，我们引入 TCP 了。TCP（Transmission Control Protocol，传输控制协议）是一种面向连接的、可靠的、基于字节流的传输层通信协议。相对于 UDP，TCP 有下面两个特点:</p>
-<ul>
-<li><p>对于数据包丢失的情况，TCP 提供重传机制；</p>
-</li>
-<li><p>TCP 引入了数据包排序机制，用来保证把乱序的数据包组合成一个完整的文件。</p>
-</li>
-</ul>
-<p>既然要实现重传和数据包排序,必然需要一套链接机制,这也就是三次握手,和四次挥手</p>
-<ul>
-<li><p>首先，建立连接阶段。这个阶段是通过“三次握手”来建立客户端和服务器之间的连接。TCP 提供面向连接的通信传输。面向连接是指在数据通信开始之前先做好两端之间的准备工作,通过三次握手建立链接.</p>
-</li>
-<li><p>其次，传输数据阶段。在该阶段，接收端需要对每个数据包进行确认操作，也就是接收端在接收到数据包之后，需要发送确认数据包给发送端。所以当发送端发送了一个数据包之后，在规定时间内没有接收到接收端反馈的确认消息，则判断为数据包丢失，并触发发送端的重发机制。同样，一个大的文件在传输过程中会被拆分成很多小的数据包，这些数据包到达接收端后，接收端会按照 TCP 头中的序号为其排序，从而保证组成完整的数据。</p>
-</li>
-<li><p>最后，断开连接阶段。数据传输完毕之后，就要终止连接了，涉及到最后一个阶段“四次挥手”来保证双方都能断开连接。</p>
-</li>
-</ul>
-<h4 id="FAQ"><a href="#FAQ" class="headerlink" title="FAQ"></a>FAQ</h4><ul>
-<li><p>浏览器可以同时打开多个页签，他们端口一样吗？如果一样，数据怎么知道去哪个页签？</p>
-<p>端口一样的，网络进程知道每个 tcp 链接所对应的标签是那个，所以接收到数据后，会把数据分发给对应的渲染进程。</p>
-</li>
-<li><p>TCP 传送数据时 浏览器端就做渲染处理了么？如果前面数据包丢了 后面数据包先来是要等么？类似的那种实时渲染怎么处理？针对数据包的顺序性？</p>
-<p>接收到 http 响应头中的 content-type 类型时就开始准备渲染进程了，响应体数据一旦接受到便开始做 DOM 解析了！基于 http 不用担心数据包丢失的问题，因为丢包和重传都是在 tcp 层解决的。http 能保证数据按照顺序接收的（也就是说，从 tcp 到 http 的数据就已经是完整的了，即便是实时渲染，如果发生丢包也得在重传后才能开始渲染）</p>
-</li>
-<li><p>http 和 websocket 都是属于应用层的协议吗？</p>
-<p>都是应用层协议，而且 websocket 名字取的比较有迷惑性，其实和 socket 完全不一样，可以把 websocket 看出是 http 的改造版本，增加了服务器向客户端主动发送消息的能力。</p>
-</li>
 </ul>
  
       <!-- reward -->

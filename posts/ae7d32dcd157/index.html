@@ -1,0 +1,644 @@
+<!DOCTYPE html>
+
+
+<html lang="zh-CN">
+  
+
+    <head>
+      <meta charset="utf-8" />
+       
+      <meta name="keywords" content="前端 web react" />
+       
+      <meta name="description" content="前端技术与生活。" />
+      
+      <meta
+        name="viewport"
+        content="width=device-width, initial-scale=1, maximum-scale=1"
+      />
+      <title>微前端 ① systemJs |  四月八日</title>
+  <meta name="generator" content="hexo-theme-ayer">
+      
+      <link rel="shortcut icon" href="/favicon.ico" />
+       
+<link rel="stylesheet" href="/dist/main.css">
+ 
+<link rel="stylesheet" href="/css/fonts/remixicon.css">
+ 
+<link rel="stylesheet" href="/css/custom.css">
+ 
+      <script src="/js/pace.min.js"></script>
+       
+ 
+
+      <link rel="stylesheet" href="/css/bulma.min.css" />
+      <script src="/js/sweetalert2.min.js"></script>
+
+      <!-- mermaid -->
+      
+      <script src="https://cdn.staticfile.org/mermaid/8.14.0/mermaid.min.js"></script>
+      
+      <style>
+        .swal2-styled.swal2-confirm {
+          font-size: 1.6rem;
+        }
+      </style>
+    <!-- hexo injector head_end start -->
+<link rel="stylesheet" href="/css/katex.min.css">
+
+<link rel="stylesheet" href="/css/style.css">
+<!-- hexo injector head_end end --></head>
+  </html>
+</html>
+
+
+<body>
+  <div id="app">
+    
+      
+    <main class="content on">
+      <section class="outer">
+  <article
+  id="posts-javascript/微前端-systemjs"
+  class="article article-type-posts"
+  itemscope
+  itemprop="blogPost"
+  data-scroll-reveal
+>
+  <div class="article-inner">
+    
+    <header class="article-header">
+       
+<h1 class="article-title sea-center" style="border-left:0" itemprop="name">
+  微前端 ① systemJs
+</h1>
+ 
+
+      
+    </header>
+     
+    <div class="article-meta">
+      <a href="/posts/ae7d32dcd157/" class="article-date">
+  <time datetime="2024-01-26T03:55:26.000Z" itemprop="datePublished">2024-01-26</time>
+</a> 
+  <div class="article-category">
+    <a class="article-category-link" href="/categories/JavaScript/">JavaScript</a>
+  </div>
+  
+<div class="word_count">
+    <span class="post-time">
+        <span class="post-meta-item-icon">
+            <i class="ri-quill-pen-line"></i>
+            <span class="post-meta-item-text"> 字数统计:</span>
+            <span class="post-count">3.9k</span>
+        </span>
+    </span>
+
+    <span class="post-time">
+        &nbsp; | &nbsp;
+        <span class="post-meta-item-icon">
+            <i class="ri-book-open-line"></i>
+            <span class="post-meta-item-text"> 阅读时长≈</span>
+            <span class="post-count">18 分钟</span>
+        </span>
+    </span>
+</div>
+ 
+    </div>
+      
+    <div class="tocbot"></div>
+
+
+
+
+  
+    <div class="article-entry" itemprop="articleBody">
+       
+  <h4 id="什么是-systemJs"><a href="#什么是-systemJs" class="headerlink" title="什么是 systemJs"></a>什么是 systemJs</h4><p>它可以加载不同模块格式的代码，包括 ES 模块、CommonJS 和 AMD 模块，提供了一致的模块加载体验。</p>
+<p>SystemJS 支持将现代 ES 模块代码转译为 System.register 格式（通常需要配合 webpack 等编译工具），以便在不支持 ES 模块的旧版浏览器中运行。这意味着开发者可以编写现代的、基于标准的模块代码，并确保它在旧版浏览器（如 IE11）中也能正常运行。</p>
+<p>通过使用接近原生模块加载速度的 System.register 格式，SystemJS 在旧版浏览器中提供了高性能的模块加载能力。</p>
+<p>另外还有一下的高级特性：</p>
+<ul>
+<li>SystemJS 支持顶级 await、动态导入（dynamic import）、循环引用和实时绑定（live bindings），这些都是现代 JavaScript 模块的重要特性。</li>
+<li>它还支持 import.meta.url，这是 ES 模块的一部分，允许模块访问其自身的 URL。</li>
+<li>支持模块类型（module types）和导入映射（import maps），使得开发者可以更灵活地管理模块依赖关系。</li>
+<li>提供对内容安全策略（Content Security Policy, CSP）和完整性检查（integrity）的支持，增强了模块加载的安全性。</li>
+</ul>
+<p>它也是 import 提案的解决方案， 在浏览器中原生的 esModule 不允许通过 <code>import React from &#39;react&#39;</code> 的方式引入依赖，必须使用相对或绝对路径 <code>import React from &#39;https://xxx/cdn/react.js&#39;</code> 或 <code>import React from &#39;./react&#39;</code> ，但配合 webpack, 可以将代码编译成 systemJs 模块化方案的代码，用于加载外部依赖。</p>
+<h4 id="systemJs-加载-react-应用"><a href="#systemJs-加载-react-应用" class="headerlink" title="systemJs 加载 react 应用"></a>systemJs 加载 react 应用</h4><p>创建 index.html 模板, systemJS 会接管有 <code>type=&#39;systemjs-importmap&#39;</code> script 标签中资源的加载。</p>
+<figure class="highlight html"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br></pre></td><td class="code"><pre><span class="line"><span class="tag">&lt;<span class="name">head</span>&gt;</span></span><br><span class="line">  <span class="tag">&lt;<span class="name">script</span> <span class="attr">type</span>=<span class="string">&quot;systemjs-importmap&quot;</span>&gt;</span><span class="language-javascript"></span></span><br><span class="line"><span class="language-javascript">    &#123;</span></span><br><span class="line"><span class="language-javascript">      <span class="string">&quot;imports&quot;</span>: &#123;</span></span><br><span class="line"><span class="language-javascript">        <span class="string">&quot;react&quot;</span>: <span class="string">&quot;https://cdn.jsdelivr.net/npm/react/umd/react.development.js&quot;</span>,</span></span><br><span class="line"><span class="language-javascript">        <span class="string">&quot;react-dom&quot;</span>: <span class="string">&quot;https://cdn.jsdelivr.net/npm/react-dom/umd/react-dom.production.min.js&quot;</span></span></span><br><span class="line"><span class="language-javascript">      &#125;</span></span><br><span class="line"><span class="language-javascript">    &#125;</span></span><br><span class="line"><span class="language-javascript">  </span><span class="tag">&lt;/<span class="name">script</span>&gt;</span></span><br><span class="line">  <span class="tag">&lt;<span class="name">script</span> <span class="attr">src</span>=<span class="string">&quot;https://cdn.staticfile.net/systemjs/6.14.3/system.js&quot;</span>&gt;</span><span class="tag">&lt;/<span class="name">script</span>&gt;</span></span><br><span class="line"><span class="tag">&lt;/<span class="name">head</span>&gt;</span></span><br><span class="line"></span><br><span class="line"><span class="tag">&lt;<span class="name">body</span>&gt;</span></span><br><span class="line">  <span class="tag">&lt;<span class="name">div</span> <span class="attr">id</span>=<span class="string">&quot;root&quot;</span>&gt;</span><span class="tag">&lt;/<span class="name">div</span>&gt;</span></span><br><span class="line"><span class="tag">&lt;/<span class="name">body</span>&gt;</span></span><br></pre></td></tr></table></figure>
+
+<p>配合 webpack 将 scripts 处理成 systemJs 能识别的格式, <code>libraryTarget</code> 配置为 <code>system</code>, 设置 <code>HtmlWebpackPlugin</code> 插件的 <code>scriptLoading: &quot;systemjs-module&quot;</code> 可以为 script 标签自动添加 type 类型。<code>externals</code> 配置是可选的，对于多个子应用有不同版本的相同第三方依赖，可以直接将依赖打包在子应用中，不需要单独在主应用中加载。（对于这个多版本依赖的问题，并没有明确的最佳实践，官方推荐将比较重的第三方依赖变成共享资源， 如果共享资源有依赖关系例如 <code>react</code> <code>react-dom</code>，可以使用 systemJS 的 amd 扩展，或者将依赖放置到 depcache 字段中，推荐使用 amd 扩展能比较好的统一接管)</p>
+<figure class="highlight js"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br></pre></td><td class="code"><pre><span class="line"><span class="variable language_">module</span>.<span class="property">exports</span> = &#123;</span><br><span class="line">  <span class="attr">entry</span>: path.<span class="title function_">resolve</span>(__dirname, <span class="string">&quot;./src/index.js&quot;</span>),</span><br><span class="line">  <span class="attr">output</span>: &#123;</span><br><span class="line">    <span class="attr">path</span>: path.<span class="title function_">resolve</span>(__dirname, <span class="string">&quot;dist&quot;</span>),</span><br><span class="line">    <span class="attr">publicPath</span>: <span class="string">&quot;/&quot;</span>,</span><br><span class="line">    <span class="comment">// 设置打包格式为 system</span></span><br><span class="line">    <span class="attr">libraryTarget</span>: <span class="string">&quot;system&quot;</span>,</span><br><span class="line">  &#125;,</span><br><span class="line">  <span class="comment">// 排除依赖，通过 cdn 加载</span></span><br><span class="line">  <span class="attr">externals</span>: &#123;</span><br><span class="line">    <span class="attr">react</span>: <span class="string">&quot;react&quot;</span>,</span><br><span class="line">    <span class="string">&quot;react-dom&quot;</span>: <span class="string">&quot;react-dom&quot;</span>,</span><br><span class="line">  &#125;,</span><br><span class="line">  <span class="attr">module</span>: &#123;<span class="comment">/** loader 配置 */</span>&#125;</span><br><span class="line">  <span class="attr">plugins</span>: [</span><br><span class="line">    <span class="keyword">new</span> <span class="title class_">HtmlWebpackPlugin</span>(&#123;</span><br><span class="line">      <span class="attr">template</span>: <span class="string">&quot;./public/index.html&quot;</span>,</span><br><span class="line">      <span class="attr">scriptLoading</span>: <span class="string">&quot;systemjs-module&quot;</span>,</span><br><span class="line">    &#125;),</span><br><span class="line">  ],</span><br><span class="line">&#125;;</span><br></pre></td></tr></table></figure>
+
+<p>index.js 文件编译为 <code>System.register</code> 函数调用</p>
+<figure class="highlight js"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br><span class="line">35</span><br><span class="line">36</span><br><span class="line">37</span><br><span class="line">38</span><br><span class="line">39</span><br><span class="line">40</span><br><span class="line">41</span><br><span class="line">42</span><br><span class="line">43</span><br><span class="line">44</span><br><span class="line">45</span><br><span class="line">46</span><br><span class="line">47</span><br><span class="line">48</span><br><span class="line">49</span><br><span class="line">50</span><br><span class="line">51</span><br><span class="line">52</span><br><span class="line">53</span><br><span class="line">54</span><br><span class="line">55</span><br><span class="line">56</span><br><span class="line">57</span><br><span class="line">58</span><br><span class="line">59</span><br><span class="line">60</span><br><span class="line">61</span><br><span class="line">62</span><br><span class="line">63</span><br><span class="line">64</span><br><span class="line">65</span><br><span class="line">66</span><br><span class="line">67</span><br><span class="line">68</span><br><span class="line">69</span><br><span class="line">70</span><br><span class="line">71</span><br><span class="line">72</span><br><span class="line">73</span><br><span class="line">74</span><br><span class="line">75</span><br><span class="line">76</span><br><span class="line">77</span><br><span class="line">78</span><br><span class="line">79</span><br><span class="line">80</span><br><span class="line">81</span><br><span class="line">82</span><br><span class="line">83</span><br><span class="line">84</span><br><span class="line">85</span><br><span class="line">86</span><br><span class="line">87</span><br><span class="line">88</span><br><span class="line">89</span><br><span class="line">90</span><br><span class="line">91</span><br><span class="line">92</span><br><span class="line">93</span><br><span class="line">94</span><br></pre></td><td class="code"><pre><span class="line"><span class="title class_">System</span>.<span class="title function_">register</span>(</span><br><span class="line">  [<span class="string">&quot;react&quot;</span>, <span class="string">&quot;react-dom&quot;</span>],</span><br><span class="line">  <span class="keyword">function</span> (<span class="params">__WEBPACK_DYNAMIC_EXPORT__, __system_context__</span>) &#123;</span><br><span class="line">    <span class="keyword">var</span> __WEBPACK_EXTERNAL_MODULE_react__ = &#123;&#125;;</span><br><span class="line">    <span class="keyword">var</span> __WEBPACK_EXTERNAL_MODULE_react_dom__ = &#123;&#125;;</span><br><span class="line">    <span class="title class_">Object</span>.<span class="title function_">defineProperty</span>(__WEBPACK_EXTERNAL_MODULE_react__, <span class="string">&quot;__esModule&quot;</span>, &#123;</span><br><span class="line">      <span class="attr">value</span>: <span class="literal">true</span>,</span><br><span class="line">    &#125;);</span><br><span class="line">    <span class="title class_">Object</span>.<span class="title function_">defineProperty</span>(__WEBPACK_EXTERNAL_MODULE_react_dom__, <span class="string">&quot;__esModule&quot;</span>, &#123;</span><br><span class="line">      <span class="attr">value</span>: <span class="literal">true</span>,</span><br><span class="line">    &#125;);</span><br><span class="line">    <span class="keyword">return</span> &#123;</span><br><span class="line">      <span class="attr">setters</span>: [</span><br><span class="line">        <span class="keyword">function</span> (<span class="params"><span class="variable language_">module</span></span>) &#123;</span><br><span class="line">          <span class="title class_">Object</span>.<span class="title function_">keys</span>(<span class="variable language_">module</span>).<span class="title function_">forEach</span>(<span class="keyword">function</span> (<span class="params">key</span>) &#123;</span><br><span class="line">            __WEBPACK_EXTERNAL_MODULE_react__[key] = <span class="variable language_">module</span>[key];</span><br><span class="line">          &#125;);</span><br><span class="line">        &#125;,</span><br><span class="line">        <span class="keyword">function</span> (<span class="params"><span class="variable language_">module</span></span>) &#123;</span><br><span class="line">          <span class="title class_">Object</span>.<span class="title function_">keys</span>(<span class="variable language_">module</span>).<span class="title function_">forEach</span>(<span class="keyword">function</span> (<span class="params">key</span>) &#123;</span><br><span class="line">            __WEBPACK_EXTERNAL_MODULE_react_dom__[key] = <span class="variable language_">module</span>[key];</span><br><span class="line">          &#125;);</span><br><span class="line">        &#125;,</span><br><span class="line">      ],</span><br><span class="line">      <span class="attr">execute</span>: <span class="keyword">function</span> (<span class="params"></span>) &#123;</span><br><span class="line">        <span class="title function_">__WEBPACK_DYNAMIC_EXPORT__</span>(</span><br><span class="line">          (<span class="function">() =&gt;</span> &#123;</span><br><span class="line">            <span class="string">&quot;use strict&quot;</span>;</span><br><span class="line">            <span class="keyword">var</span> __webpack_modules__ = &#123;</span><br><span class="line">              <span class="string">&quot;./src/index.js&quot;</span>: <span class="function">(<span class="params"></span></span></span><br><span class="line"><span class="params"><span class="function">                __unused_webpack_module,</span></span></span><br><span class="line"><span class="params"><span class="function">                __webpack_exports__,</span></span></span><br><span class="line"><span class="params"><span class="function">                __webpack_require__</span></span></span><br><span class="line"><span class="params"><span class="function">              </span>) =&gt;</span> &#123;</span><br><span class="line">                <span class="built_in">eval</span>(<span class="comment">/** index.js 编译结果 */</span>);</span><br><span class="line">              &#125;,</span><br><span class="line"></span><br><span class="line">              <span class="string">&quot;./node_modules/react-dom/client.js&quot;</span>: <span class="function">(<span class="params"></span></span></span><br><span class="line"><span class="params"><span class="function">                __unused_webpack_module,</span></span></span><br><span class="line"><span class="params"><span class="function">                <span class="built_in">exports</span>,</span></span></span><br><span class="line"><span class="params"><span class="function">                __webpack_require__</span></span></span><br><span class="line"><span class="params"><span class="function">              </span>) =&gt;</span> &#123;</span><br><span class="line">                <span class="built_in">eval</span>(<span class="comment">/**react-dom/client.js 编译结果 */</span>);</span><br><span class="line">              &#125;,</span><br><span class="line"></span><br><span class="line">              <span class="attr">react</span>: <span class="function">(<span class="params"><span class="variable language_">module</span></span>) =&gt;</span> &#123;</span><br><span class="line">                <span class="variable language_">module</span>.<span class="property">exports</span> = __WEBPACK_EXTERNAL_MODULE_react__;</span><br><span class="line">              &#125;,</span><br><span class="line"></span><br><span class="line">              <span class="string">&quot;react-dom&quot;</span>: <span class="function">(<span class="params"><span class="variable language_">module</span></span>) =&gt;</span> &#123;</span><br><span class="line">                <span class="variable language_">module</span>.<span class="property">exports</span> = __WEBPACK_EXTERNAL_MODULE_react_dom__;</span><br><span class="line">              &#125;,</span><br><span class="line">            &#125;;</span><br><span class="line">            <span class="comment">/************************************************************************/</span></span><br><span class="line">            <span class="comment">// The module cache</span></span><br><span class="line">            <span class="keyword">var</span> __webpack_module_cache__ = &#123;&#125;;</span><br><span class="line"></span><br><span class="line">            <span class="comment">// The require function</span></span><br><span class="line">            <span class="keyword">function</span> <span class="title function_">__webpack_require__</span>(<span class="params">moduleId</span>) &#123;</span><br><span class="line">              <span class="comment">// Check if module is in cache</span></span><br><span class="line">              <span class="keyword">var</span> cachedModule = __webpack_module_cache__[moduleId];</span><br><span class="line">              <span class="keyword">if</span> (cachedModule !== <span class="literal">undefined</span>) &#123;</span><br><span class="line">                <span class="keyword">return</span> cachedModule.<span class="property">exports</span>;</span><br><span class="line">              &#125;</span><br><span class="line">              <span class="comment">// Create a new module (and put it into the cache)</span></span><br><span class="line">              <span class="keyword">var</span> <span class="variable language_">module</span> = (__webpack_module_cache__[moduleId] = &#123;</span><br><span class="line">                <span class="comment">// no module.id needed</span></span><br><span class="line">                <span class="comment">// no module.loaded needed</span></span><br><span class="line">                <span class="attr">exports</span>: &#123;&#125;,</span><br><span class="line">              &#125;);</span><br><span class="line"></span><br><span class="line">              <span class="comment">// Execute the module function</span></span><br><span class="line">              __webpack_modules__[moduleId](</span><br><span class="line">                <span class="variable language_">module</span>,</span><br><span class="line">                <span class="variable language_">module</span>.<span class="property">exports</span>,</span><br><span class="line">                __webpack_require__</span><br><span class="line">              );</span><br><span class="line"></span><br><span class="line">              <span class="comment">// Return the exports of the module</span></span><br><span class="line">              <span class="keyword">return</span> <span class="variable language_">module</span>.<span class="property">exports</span>;</span><br><span class="line">            &#125;</span><br><span class="line"></span><br><span class="line">            <span class="comment">// startup</span></span><br><span class="line">            <span class="comment">// Load entry module and return exports</span></span><br><span class="line">            <span class="comment">// This entry module can&#x27;t be inlined because the eval devtool is used.</span></span><br><span class="line">            <span class="keyword">var</span> __webpack_exports__ = <span class="title function_">__webpack_require__</span>(<span class="string">&quot;./src/index.js&quot;</span>);</span><br><span class="line"></span><br><span class="line">            <span class="keyword">return</span> __webpack_exports__;</span><br><span class="line">          &#125;)()</span><br><span class="line">        );</span><br><span class="line">      &#125;,</span><br><span class="line">    &#125;;</span><br><span class="line">  &#125;</span><br><span class="line">);</span><br></pre></td></tr></table></figure>
+
+<h4 id="systemJs-加载流程"><a href="#systemJs-加载流程" class="headerlink" title="systemJs 加载流程"></a>systemJs 加载流程</h4><ul>
+<li><p>Q: systemjs-importmap 的作用是什么</p>
+<p>A: systemjs-importmap 作用是建立资源依赖的映射关系，由于浏览器不支持裸导入，因此通过一个自定义的 script 标签建立裸导入名称和资源路径的依赖关系</p>
+</li>
+</ul>
+<p><img src="/posts/ae7d32dcd157/001.png"></p>
+<p>以单 React 子应用为例，加载主应用以及子应用的过程。</p>
+<p>index.html 页面配置如下</p>
+<figure class="highlight html"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br></pre></td><td class="code"><pre><span class="line"><span class="meta">&lt;!DOCTYPE <span class="keyword">html</span>&gt;</span></span><br><span class="line"><span class="tag">&lt;<span class="name">html</span> <span class="attr">lang</span>=<span class="string">&quot;en&quot;</span>&gt;</span></span><br><span class="line">  <span class="tag">&lt;<span class="name">head</span>&gt;</span></span><br><span class="line">    <span class="tag">&lt;<span class="name">title</span>&gt;</span>Root Config<span class="tag">&lt;/<span class="name">title</span>&gt;</span></span><br><span class="line">    <span class="tag">&lt;<span class="name">meta</span> <span class="attr">name</span>=<span class="string">&quot;importmap-type&quot;</span> <span class="attr">content</span>=<span class="string">&quot;systemjs-importmap&quot;</span> /&gt;</span></span><br><span class="line">    <span class="tag">&lt;<span class="name">script</span> <span class="attr">type</span>=<span class="string">&quot;systemjs-importmap&quot;</span>&gt;</span><span class="language-javascript"></span></span><br><span class="line"><span class="language-javascript">      &#123;</span></span><br><span class="line"><span class="language-javascript">        <span class="string">&quot;imports&quot;</span>: &#123;</span></span><br><span class="line"><span class="language-javascript">          <span class="string">&quot;single-spa&quot;</span>: <span class="string">&quot;https://cdn.jsdelivr.net/npm/single-spa@5.9.0/lib/system/single-spa.min.js&quot;</span>,</span></span><br><span class="line"><span class="language-javascript">          <span class="string">&quot;react&quot;</span>: <span class="string">&quot;https://cdn.jsdelivr.net/npm/react@16.14.0/umd/react.production.min.js&quot;</span>,</span></span><br><span class="line"><span class="language-javascript">          <span class="string">&quot;react-dom&quot;</span>: <span class="string">&quot;https://cdn.jsdelivr.net/npm/react-dom@16.14.0/umd/react-dom.production.min.js&quot;</span>,</span></span><br><span class="line"><span class="language-javascript">          <span class="string">&quot;@root/root-config&quot;</span>: <span class="string">&quot;//localhost:9000/root-config.js&quot;</span>,</span></span><br><span class="line"><span class="language-javascript">          <span class="string">&quot;@supos/supos-react-1&quot;</span>: <span class="string">&quot;//localhost:3000/supos-supos-react-1.js&quot;</span></span></span><br><span class="line"><span class="language-javascript">        &#125;</span></span><br><span class="line"><span class="language-javascript">      &#125;</span></span><br><span class="line"><span class="language-javascript">    </span><span class="tag">&lt;/<span class="name">script</span>&gt;</span></span><br><span class="line"></span><br><span class="line">    <span class="tag">&lt;<span class="name">script</span> <span class="attr">src</span>=<span class="string">&quot;https://cdn.jsdelivr.net/npm/single-spa@5.9.0/lib/system/single-spa.min.js&quot;</span>&gt;</span><span class="tag">&lt;/<span class="name">script</span>&gt;</span></span><br><span class="line">    <span class="tag">&lt;<span class="name">script</span> <span class="attr">src</span>=<span class="string">&quot;https://cdn.jsdelivr.net/npm/systemjs@6.8.3/dist/system.js&quot;</span>&gt;</span><span class="tag">&lt;/<span class="name">script</span>&gt;</span></span><br><span class="line">    <span class="tag">&lt;<span class="name">script</span> <span class="attr">src</span>=<span class="string">&quot;https://cdn.jsdelivr.net/npm/systemjs@6.8.3/dist/extras/amd.js&quot;</span>&gt;</span><span class="tag">&lt;/<span class="name">script</span>&gt;</span></span><br><span class="line">  <span class="tag">&lt;/<span class="name">head</span>&gt;</span></span><br><span class="line"></span><br><span class="line">  <span class="tag">&lt;<span class="name">body</span>&gt;</span></span><br><span class="line">    <span class="tag">&lt;<span class="name">main</span> <span class="attr">id</span>=<span class="string">&quot;root&quot;</span>&gt;</span><span class="tag">&lt;/<span class="name">main</span>&gt;</span></span><br><span class="line">    <span class="tag">&lt;<span class="name">div</span> <span class="attr">id</span>=<span class="string">&quot;aa&quot;</span>&gt;</span><span class="tag">&lt;/<span class="name">div</span>&gt;</span></span><br><span class="line">    <span class="tag">&lt;<span class="name">script</span>&gt;</span><span class="language-javascript"></span></span><br><span class="line"><span class="language-javascript">      <span class="title class_">System</span>.<span class="title function_">import</span>(<span class="string">&quot;@root/root-config&quot;</span>);</span></span><br><span class="line"><span class="language-javascript">    </span><span class="tag">&lt;/<span class="name">script</span>&gt;</span></span><br><span class="line">  <span class="tag">&lt;/<span class="name">body</span>&gt;</span></span><br><span class="line"><span class="tag">&lt;/<span class="name">html</span>&gt;</span></span><br></pre></td></tr></table></figure>
+
+<ol>
+<li>主应用是一个编译后的 <code>root-config.js</code> 文件，先忽略 single-spa 相关的概念，简单理解为主应用通过 <code>system.import</code> 加载 <code>@root/root-config</code> 也就是通过 systemJS 映射之后的 <code>root-config.js</code>，在文件加载前 <code>systemJS</code> 已经分析了 <code>systemjs-importmap</code> script 标签中的依赖项，并生成了依赖图</li>
+</ol>
+<figure class="highlight js"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br></pre></td><td class="code"><pre><span class="line">&#123;</span><br><span class="line">  <span class="attr">depcache</span>:&#123;&#125;,</span><br><span class="line">  <span class="attr">imports</span>:&#123;</span><br><span class="line">    <span class="string">&quot;single-spa&quot;</span>: <span class="string">&quot;https://cdn.jsdelivr.net/npm/single-spa@5.9.0/lib/system/single-spa.min.js&quot;</span>,</span><br><span class="line">    <span class="string">&quot;react&quot;</span>: <span class="string">&quot;https://cdn.jsdelivr.net/npm/react@16.14.0/umd/react.production.min.js&quot;</span>,</span><br><span class="line">    <span class="string">&quot;react-dom&quot;</span>: <span class="string">&quot;https://cdn.jsdelivr.net/npm/react-dom@16.14.0/umd/react-dom.production.min.js&quot;</span>,</span><br><span class="line">    <span class="string">&quot;@fefw/root-config&quot;</span>: <span class="string">&quot;http://localhost:9000/fefw-root-config.js&quot;</span>,</span><br><span class="line">    <span class="string">&quot;@supos/supos-react-1&quot;</span>: <span class="string">&quot;http://localhost:3000/supos-supos-react-1.js&quot;</span>,</span><br><span class="line">    <span class="string">&quot;@supos/supos-react-2&quot;</span>: <span class="string">&quot;http://localhost:8081/supos-supos-react-2.js&quot;</span></span><br><span class="line">  &#125;,</span><br><span class="line">  <span class="attr">integrity</span>:&#123;&#125;,</span><br><span class="line">  <span class="attr">scope</span>:&#123;&#125;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+<ol start="2">
+<li><p>解析并获取 <code>@root/root-config</code> 的资源路径 <code>http:////localhost:9000/root-config.js</code>， 只要请求的资源与依赖途中匹配，就会解析资源的请求路径，并记录当前环境变量快照后，尝试加载资源。</p>
+</li>
+<li><p>资源加载后</p>
+<p>如果资源是 systemJS 模块会自动执行 <code>system.register</code>, 再执行上下文中保存依赖数组，和声明函数。</p>
+<p>如果不是 systemJS 模块，例如公用的 <code>react</code>, <code>react-dom</code>, 会将资源直接包装成 systemJS 声明函数的执行结果，通常会使用 amd 扩展，如果不使用 amd 扩展，例如 <code>react</code> 等 umd 格式的资源会将导出对象直接挂载在 window 对象上，systemJS 会尝试与上一次的环境变量快照比对找到资源导出的对象。但是这种方式将导致污染全局对象，且不能多版本共存。请查看 <a href="#amd%E6%89%A9%E5%B1%95%E6%BA%90%E7%A0%81%E5%AE%9E%E7%8E%B0">amd 扩展源码实现</a></p>
+<p>紧接着执行声明函数，声明函数接受一个 <code>export</code> 函数，用于接受第三方资源中暴露的对象，同时返回一个包含 <code>setters</code> 数组和 <code>execute</code> 方法的对象，如果加载的资源没有依赖项，那就不会有 <code>setters</code> 数组（例如： 主应用无第三方依赖), 延迟执行声明函数可以有时机处理依赖项。</p>
+</li>
+<li><p>当资源的声明函数检查无额外依赖，则执行 <code>execute</code> 方法，内部执行 <code>webpack</code> 等构建工具打包后的代码，将返回的对象传递给 <code>export</code> 函数</p>
+</li>
+<li><p>此时主应用资源已经执行，会尝试匹配路由，并通过 <code>system.import</code> 加载子应用，再次进入到第 2 步的流程，当子应用加载完成并执行后，获取到了子应用的依赖 <code>[&#39;react&#39;,&#39;react-dom&#39;]</code>, 以及子应用的声明函数，由于此时有依赖项所以需要等待依赖项加载完成，依赖项的加载也会进入到第 2 步的流程，通过 <code>Promise.all</code> 保证所有的依赖加载完成后再，执行声明函数。而第三步的 <code>setter</code> 方法会在子应用加载后调用，依赖中暴露的对象注入到声明函数中。</p>
+</li>
+<li><p><code>react</code> 资源加载后，由于并不是一个 systemJS 模块，会通过 amd 扩展，包装成 systemjs 注册的对象，而且由于 react 没有依赖，会在稍后直接执行 <code>execute</code> 方法, 由于 react-dom 不是 systemjs 模块， 声明函数的执行也会被包装成 systemjs 注册的对象, 因为 react-dom 依赖 react, 所以会在缓存中找到已经加载的 react 包装对象， 需要注意这时的 <code>execute</code> 都还没有执行。在所有资源都准备好之后，<code>topLevelLoad</code> 会统一执行 <code>execute</code> 方法，将资源导出对象暴露给依赖对象，接着执行父级资源的 <code>setter</code> 方法，将暴露出的依赖对象注入到，父级资源中。从而完成整个依赖关系的加载。</p>
+</li>
+</ol>
+<p>总结一下 systemJS 核心方法， <code>import</code> 可以递归的加载资源以及其依赖项， <code>setter</code> 方法将依赖资源暴漏的对象注入到父资源中。</p>
+<h4 id="systemjs-实现原理"><a href="#systemjs-实现原理" class="headerlink" title="systemjs 实现原理"></a>systemjs 实现原理</h4><figure class="highlight js"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br><span class="line">35</span><br><span class="line">36</span><br><span class="line">37</span><br><span class="line">38</span><br><span class="line">39</span><br><span class="line">40</span><br><span class="line">41</span><br><span class="line">42</span><br><span class="line">43</span><br><span class="line">44</span><br><span class="line">45</span><br><span class="line">46</span><br><span class="line">47</span><br><span class="line">48</span><br><span class="line">49</span><br><span class="line">50</span><br><span class="line">51</span><br><span class="line">52</span><br><span class="line">53</span><br><span class="line">54</span><br><span class="line">55</span><br><span class="line">56</span><br><span class="line">57</span><br><span class="line">58</span><br><span class="line">59</span><br><span class="line">60</span><br><span class="line">61</span><br><span class="line">62</span><br><span class="line">63</span><br><span class="line">64</span><br><span class="line">65</span><br><span class="line">66</span><br><span class="line">67</span><br><span class="line">68</span><br><span class="line">69</span><br><span class="line">70</span><br><span class="line">71</span><br><span class="line">72</span><br><span class="line">73</span><br><span class="line">74</span><br><span class="line">75</span><br><span class="line">76</span><br><span class="line">77</span><br><span class="line">78</span><br><span class="line">79</span><br><span class="line">80</span><br><span class="line">81</span><br><span class="line">82</span><br><span class="line">83</span><br><span class="line">84</span><br><span class="line">85</span><br><span class="line">86</span><br><span class="line">87</span><br><span class="line">88</span><br><span class="line">89</span><br><span class="line">90</span><br><span class="line">91</span><br><span class="line">92</span><br><span class="line">93</span><br><span class="line">94</span><br><span class="line">95</span><br><span class="line">96</span><br><span class="line">97</span><br><span class="line">98</span><br><span class="line">99</span><br><span class="line">100</span><br><span class="line">101</span><br><span class="line">102</span><br><span class="line">103</span><br><span class="line">104</span><br><span class="line">105</span><br><span class="line">106</span><br><span class="line">107</span><br><span class="line">108</span><br><span class="line">109</span><br><span class="line">110</span><br><span class="line">111</span><br><span class="line">112</span><br><span class="line">113</span><br><span class="line">114</span><br><span class="line">115</span><br><span class="line">116</span><br><span class="line">117</span><br><span class="line">118</span><br><span class="line">119</span><br><span class="line">120</span><br><span class="line">121</span><br><span class="line">122</span><br><span class="line">123</span><br><span class="line">124</span><br><span class="line">125</span><br><span class="line">126</span><br><span class="line">127</span><br><span class="line">128</span><br><span class="line">129</span><br><span class="line">130</span><br><span class="line">131</span><br><span class="line">132</span><br><span class="line">133</span><br><span class="line">134</span><br><span class="line">135</span><br><span class="line">136</span><br><span class="line">137</span><br><span class="line">138</span><br><span class="line">139</span><br><span class="line">140</span><br><span class="line">141</span><br><span class="line">142</span><br><span class="line">143</span><br><span class="line">144</span><br><span class="line">145</span><br><span class="line">146</span><br><span class="line">147</span><br><span class="line">148</span><br><span class="line">149</span><br><span class="line">150</span><br><span class="line">151</span><br><span class="line">152</span><br><span class="line">153</span><br><span class="line">154</span><br><span class="line">155</span><br><span class="line">156</span><br><span class="line">157</span><br><span class="line">158</span><br><span class="line">159</span><br><span class="line">160</span><br><span class="line">161</span><br><span class="line">162</span><br><span class="line">163</span><br><span class="line">164</span><br><span class="line">165</span><br><span class="line">166</span><br><span class="line">167</span><br><span class="line">168</span><br><span class="line">169</span><br><span class="line">170</span><br><span class="line">171</span><br><span class="line">172</span><br><span class="line">173</span><br><span class="line">174</span><br><span class="line">175</span><br><span class="line">176</span><br><span class="line">177</span><br><span class="line">178</span><br><span class="line">179</span><br><span class="line">180</span><br><span class="line">181</span><br><span class="line">182</span><br><span class="line">183</span><br><span class="line">184</span><br><span class="line">185</span><br><span class="line">186</span><br><span class="line">187</span><br><span class="line">188</span><br><span class="line">189</span><br><span class="line">190</span><br><span class="line">191</span><br><span class="line">192</span><br><span class="line">193</span><br><span class="line">194</span><br><span class="line">195</span><br><span class="line">196</span><br><span class="line">197</span><br><span class="line">198</span><br><span class="line">199</span><br><span class="line">200</span><br><span class="line">201</span><br><span class="line">202</span><br><span class="line">203</span><br><span class="line">204</span><br><span class="line">205</span><br><span class="line">206</span><br><span class="line">207</span><br><span class="line">208</span><br><span class="line">209</span><br><span class="line">210</span><br><span class="line">211</span><br><span class="line">212</span><br><span class="line">213</span><br><span class="line">214</span><br><span class="line">215</span><br><span class="line">216</span><br><span class="line">217</span><br><span class="line">218</span><br><span class="line">219</span><br><span class="line">220</span><br><span class="line">221</span><br><span class="line">222</span><br><span class="line">223</span><br><span class="line">224</span><br><span class="line">225</span><br><span class="line">226</span><br><span class="line">227</span><br><span class="line">228</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment">// 1. 序列化import map</span></span><br><span class="line"><span class="comment">// importMap 只用作描述资源，建立映射关系，不会主动加载资源</span></span><br><span class="line"></span><br><span class="line"><span class="keyword">function</span> <span class="title function_">System</span>(<span class="params"></span>) &#123;&#125;</span><br><span class="line"><span class="keyword">var</span> <span class="variable language_">global</span> = <span class="variable language_">window</span>;</span><br><span class="line"><span class="comment">// 记录加载的资源</span></span><br><span class="line"><span class="title class_">System</span>[<span class="string">&quot;@&quot;</span>] = &#123;&#125;;</span><br><span class="line"></span><br><span class="line"><span class="comment">// 记录import资源隐射</span></span><br><span class="line"><span class="keyword">var</span> importMap = &#123; <span class="attr">imports</span>: &#123;&#125; &#125;;</span><br><span class="line"></span><br><span class="line"><span class="comment">// baseURL 为当前的资源加载路径</span></span><br><span class="line"><span class="keyword">var</span> baseUrl = location.<span class="property">href</span>.<span class="title function_">split</span>(<span class="string">&quot;#&quot;</span>)[<span class="number">0</span>].<span class="title function_">split</span>(<span class="string">&quot;?&quot;</span>)[<span class="number">0</span>];</span><br><span class="line"></span><br><span class="line"><span class="keyword">var</span> importMapPromise = <span class="title class_">Promise</span>.<span class="title function_">resolve</span>();</span><br><span class="line"><span class="keyword">function</span> <span class="title function_">processScripts</span>(<span class="params"></span>) &#123;</span><br><span class="line">  <span class="variable language_">document</span>.<span class="title function_">querySelectorAll</span>(<span class="string">&quot;script&quot;</span>).<span class="title function_">forEach</span>(<span class="function">(<span class="params">script</span>) =&gt;</span> &#123;</span><br><span class="line">    <span class="comment">// 处理 importmap</span></span><br><span class="line">    <span class="keyword">if</span> (script.<span class="property">type</span> === <span class="string">&quot;systemjs-importmap&quot;</span>) &#123;</span><br><span class="line">      <span class="keyword">if</span> (script.<span class="property">src</span>) &#123;</span><br><span class="line">        <span class="comment">/** 如果是远程资源，则发起请求 */</span></span><br><span class="line">      &#125; <span class="keyword">else</span> &#123;</span><br><span class="line">        <span class="comment">// 解析 importmap</span></span><br><span class="line">        importMapPromise = importMapPromise.<span class="title function_">then</span>(<span class="function">() =&gt;</span></span><br><span class="line">          <span class="title function_">extendImportMap</span>(importMap, script.<span class="property">innerHTML</span>, baseUrl)</span><br><span class="line">        );</span><br><span class="line">      &#125;</span><br><span class="line">    &#125;</span><br><span class="line">    <span class="comment">// 处理systemjs 模块</span></span><br><span class="line">    <span class="keyword">else</span> <span class="keyword">if</span> (script.<span class="property">type</span> === <span class="string">&quot;systemjs-module&quot;</span>) &#123;</span><br><span class="line">      <span class="title class_">System</span>.<span class="title function_">import</span>(script.<span class="property">src</span>);</span><br><span class="line">    &#125;</span><br><span class="line">  &#125;);</span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line"><span class="comment">// 尽早执行, 并在 dom 全部加载后重新检测</span></span><br><span class="line"><span class="title function_">processScripts</span>();</span><br><span class="line"></span><br><span class="line"><span class="variable language_">window</span>.<span class="title function_">addEventListener</span>(<span class="string">&quot;DOMContentLoaded&quot;</span>, processScripts);</span><br><span class="line"></span><br><span class="line"><span class="keyword">function</span> <span class="title function_">extendImportMap</span>(<span class="params">importMap, content, baseUrl</span>) &#123;</span><br><span class="line">  <span class="keyword">const</span> packages = <span class="title class_">JSON</span>.<span class="title function_">parse</span>(content);</span><br><span class="line">  <span class="keyword">for</span> (<span class="keyword">let</span> k <span class="keyword">in</span> packages) &#123;</span><br><span class="line">    importMap[k] = packages[k];</span><br><span class="line">  &#125;</span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line"><span class="comment">// 用于加载 system-module 以及依赖项</span></span><br><span class="line"></span><br><span class="line"><span class="keyword">var</span> firstGlobalProp = (secondGlobalProp = <span class="literal">undefined</span>);</span><br><span class="line"></span><br><span class="line"><span class="keyword">function</span> <span class="title function_">shouldSkipProperty</span>(<span class="params">p</span>) &#123;</span><br><span class="line">  <span class="keyword">return</span> !<span class="variable language_">global</span>.<span class="title function_">hasOwnProperty</span>(p) || (!<span class="built_in">isNaN</span>(p) &amp;&amp; p &lt; <span class="variable language_">global</span>.<span class="property">length</span>);</span><br><span class="line">&#125;</span><br><span class="line"><span class="keyword">function</span> <span class="title function_">noteGlobalProps</span>(<span class="params"></span>) &#123;</span><br><span class="line">  firstGlobalProp = secondGlobalProp = <span class="literal">undefined</span>;</span><br><span class="line">  <span class="keyword">for</span> (<span class="keyword">var</span> p <span class="keyword">in</span> <span class="variable language_">global</span>) &#123;</span><br><span class="line">    <span class="keyword">if</span> (<span class="title function_">shouldSkipProperty</span>(p)) <span class="keyword">continue</span>;</span><br><span class="line">    <span class="keyword">if</span> (!firstGlobalProp) firstGlobalProp = p;</span><br><span class="line">    <span class="keyword">else</span> <span class="keyword">if</span> (!secondGlobalProp) secondGlobalProp = p;</span><br><span class="line">    lastGlobalProp = p;</span><br><span class="line">  &#125;</span><br><span class="line">  <span class="keyword">return</span> lastGlobalProp;</span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line"><span class="title class_">System</span>.<span class="property">import</span> = <span class="keyword">function</span> (<span class="params">id</span>) &#123;</span><br><span class="line">  <span class="comment">// 加载前记录下当前环境中的属性，依赖加载后和上次环境中的属性做对比，可以知道在环境中挂载了那些新的属性</span></span><br><span class="line">  <span class="title function_">noteGlobalProps</span>();</span><br><span class="line"></span><br><span class="line">  <span class="keyword">return</span> <span class="title class_">Promise</span>.<span class="title function_">resolve</span>().<span class="title function_">then</span>(<span class="function">() =&gt;</span> &#123;</span><br><span class="line">    <span class="keyword">var</span> load = <span class="title function_">getOrCreateLoad</span>(id);</span><br><span class="line">    <span class="keyword">return</span> load.<span class="property">completion</span> || <span class="title function_">topLevelLoad</span>(load);</span><br><span class="line">  &#125;);</span><br><span class="line">&#125;;</span><br><span class="line"></span><br><span class="line"><span class="keyword">function</span> <span class="title function_">getOrCreateLoad</span>(<span class="params">id</span>) &#123;</span><br><span class="line">  <span class="keyword">var</span> load = <span class="title class_">System</span>[<span class="string">&quot;@&quot;</span>][id];</span><br><span class="line">  <span class="keyword">if</span> (load) <span class="keyword">return</span> load;</span><br><span class="line"></span><br><span class="line">  <span class="keyword">var</span> ns = <span class="title class_">Object</span>.<span class="title function_">create</span>(<span class="literal">null</span>);</span><br><span class="line">  <span class="title class_">Object</span>.<span class="title function_">defineProperty</span>(ns, <span class="title class_">Symbol</span>.<span class="property">toStringTag</span>, &#123; <span class="attr">value</span>: <span class="string">&quot;Module&quot;</span> &#125;);</span><br><span class="line"></span><br><span class="line">  <span class="keyword">var</span> instantiatePromise = <span class="title class_">Promise</span>.<span class="title function_">resolve</span>()</span><br><span class="line">    .<span class="title function_">then</span>(<span class="function">() =&gt;</span> &#123;</span><br><span class="line">      <span class="keyword">return</span> <span class="title class_">System</span>.<span class="title function_">instantiate</span>(id);</span><br><span class="line">    &#125;)</span><br><span class="line">    .<span class="title function_">then</span>(<span class="function">(<span class="params">registration</span>) =&gt;</span> &#123;</span><br><span class="line">      <span class="comment">//依赖项</span></span><br><span class="line">      <span class="keyword">var</span> deps = registration[<span class="number">0</span>];</span><br><span class="line"></span><br><span class="line">      <span class="keyword">var</span> <span class="title function_">_export</span> = (<span class="params">name</span>) =&gt; &#123;</span><br><span class="line">        <span class="keyword">for</span> (<span class="keyword">var</span> p <span class="keyword">in</span> name) &#123;</span><br><span class="line">          ns[p] = name[p];</span><br><span class="line">        &#125;</span><br><span class="line">        load.<span class="property">setter</span>.<span class="title function_">forEach</span>(<span class="function">(<span class="params">setter</span>) =&gt;</span> <span class="title function_">setter</span>(ns));</span><br><span class="line">      &#125;;</span><br><span class="line"></span><br><span class="line">      <span class="comment">// 参数 __WEBPACK_DYNAMIC_EXPORT__ 函数，接受 webpack 模块化对象</span></span><br><span class="line">      <span class="keyword">var</span> declare = registration[<span class="number">1</span>](_export);</span><br><span class="line"></span><br><span class="line">      load.<span class="property">execute</span> = declare.<span class="property">execute</span>;</span><br><span class="line">      <span class="keyword">return</span> [deps, declare.<span class="property">setters</span>];</span><br><span class="line">    &#125;);</span><br><span class="line"></span><br><span class="line">  <span class="keyword">var</span> linkPromise = instantiatePromise.<span class="title function_">then</span>(<span class="function">(<span class="params">res</span>) =&gt;</span> &#123;</span><br><span class="line">    <span class="keyword">return</span> <span class="title class_">Promise</span>.<span class="title function_">all</span>(</span><br><span class="line">      res[<span class="number">0</span>].<span class="title function_">map</span>(<span class="function">(<span class="params">dep, index</span>) =&gt;</span> &#123;</span><br><span class="line">        <span class="keyword">var</span> setter = res[<span class="number">1</span>][index];</span><br><span class="line">        <span class="keyword">var</span> depLoad = <span class="title function_">getOrCreateLoad</span>(importMap.<span class="property">imports</span>[dep]);</span><br><span class="line"></span><br><span class="line">        <span class="keyword">if</span> (setter) &#123;</span><br><span class="line">          depLoad.<span class="property">setter</span>.<span class="title function_">push</span>(setter);</span><br><span class="line">        &#125;</span><br><span class="line"></span><br><span class="line">        <span class="keyword">return</span> depLoad;</span><br><span class="line">      &#125;)</span><br><span class="line">    ).<span class="title function_">then</span>(<span class="function">(<span class="params">deps</span>) =&gt;</span> &#123;</span><br><span class="line">      load.<span class="property">deps</span> = deps;</span><br><span class="line">    &#125;);</span><br><span class="line">  &#125;);</span><br><span class="line"></span><br><span class="line">  <span class="keyword">return</span> (load = <span class="title class_">System</span>[<span class="string">&quot;@&quot;</span>][id] =</span><br><span class="line">    &#123;</span><br><span class="line">      id,</span><br><span class="line">      importMapPromise,</span><br><span class="line">      linkPromise,</span><br><span class="line">      ns,</span><br><span class="line">      <span class="attr">setter</span>: [],</span><br><span class="line">      <span class="attr">deps</span>: [],</span><br><span class="line">      <span class="attr">execute</span>: <span class="function">() =&gt;</span> &#123;&#125;,</span><br><span class="line">      <span class="attr">completion</span>: <span class="keyword">void</span> <span class="number">0</span>,</span><br><span class="line">    &#125;);</span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line"><span class="title class_">System</span>.<span class="property">instantiate</span> = <span class="keyword">function</span> (<span class="params">id</span>) &#123;</span><br><span class="line">  <span class="keyword">var</span> script = <span class="variable language_">document</span>.<span class="title function_">createElement</span>(<span class="string">&quot;script&quot;</span>);</span><br><span class="line">  script.<span class="property">async</span> = <span class="literal">true</span>;</span><br><span class="line">  script.<span class="property">src</span> = id;</span><br><span class="line"></span><br><span class="line">  <span class="comment">// 异步等待 system 模块加载，并执行，执行结束后可以获取到模块注册的依赖信息</span></span><br><span class="line">  <span class="keyword">return</span> <span class="keyword">new</span> <span class="title class_">Promise</span>(<span class="function">(<span class="params">resolve, reject</span>) =&gt;</span> &#123;</span><br><span class="line">    script.<span class="title function_">addEventListener</span>(<span class="string">&quot;load&quot;</span>, <span class="keyword">function</span> (<span class="params"></span>) &#123;</span><br><span class="line">      <span class="variable language_">document</span>.<span class="property">head</span>.<span class="title function_">removeChild</span>(script);</span><br><span class="line">      <span class="keyword">var</span> register = <span class="title class_">System</span>.<span class="title function_">getRegister</span>();</span><br><span class="line">      <span class="title function_">resolve</span>(register);</span><br><span class="line">    &#125;);</span><br><span class="line">    <span class="variable language_">document</span>.<span class="property">head</span>.<span class="title function_">appendChild</span>(script);</span><br><span class="line">  &#125;);</span><br><span class="line">&#125;;</span><br><span class="line"></span><br><span class="line"><span class="comment">// 保存注册依赖以及回调函数</span></span><br><span class="line"></span><br><span class="line"><span class="keyword">var</span> lastRegister;</span><br><span class="line"><span class="title class_">System</span>.<span class="property">register</span> = <span class="keyword">function</span> (<span class="params">deps, declare</span>) &#123;</span><br><span class="line">  lastRegister = [deps, declare];</span><br><span class="line">&#125;;</span><br><span class="line"></span><br><span class="line"><span class="keyword">function</span> <span class="title function_">getGlobalProp</span>(<span class="params"></span>) &#123;</span><br><span class="line">  <span class="keyword">var</span> foundLastProp, result;</span><br><span class="line">  <span class="keyword">var</span> n = <span class="number">0</span>;</span><br><span class="line"></span><br><span class="line">  <span class="comment">// 依赖js引擎的行为</span></span><br><span class="line">  <span class="keyword">for</span> (<span class="keyword">var</span> p <span class="keyword">in</span> <span class="variable language_">global</span>) &#123;</span><br><span class="line">    <span class="keyword">if</span> (<span class="title function_">shouldSkipProperty</span>(p)) <span class="keyword">continue</span>;</span><br><span class="line"></span><br><span class="line">    <span class="keyword">if</span> ((n == <span class="number">0</span> &amp;&amp; p !== firstGlobalProp) || (n == <span class="number">1</span> &amp;&amp; secondGlobalProp !== p))</span><br><span class="line">      <span class="keyword">return</span> p;</span><br><span class="line">    <span class="keyword">if</span> (foundLastProp) &#123;</span><br><span class="line">      <span class="comment">// 下一个属性就是最新被赋值的属性</span></span><br><span class="line">      lastGlobalProp = p;</span><br><span class="line">      result = p;</span><br><span class="line">    &#125; <span class="keyword">else</span> &#123;</span><br><span class="line">      <span class="comment">// 匹配上一次最后一个属性</span></span><br><span class="line">      foundLastProp = p === lastGlobalProp;</span><br><span class="line">    &#125;</span><br><span class="line">    n++;</span><br><span class="line">  &#125;</span><br><span class="line">  <span class="keyword">return</span> result;</span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line"><span class="title class_">System</span>.<span class="property">getRegister</span> = <span class="keyword">function</span> (<span class="params"></span>) &#123;</span><br><span class="line">  <span class="keyword">var</span> _lastRegister = lastRegister;</span><br><span class="line">  lastRegister = <span class="keyword">void</span> <span class="number">0</span>;</span><br><span class="line"></span><br><span class="line">  <span class="keyword">if</span> (_lastRegister) <span class="keyword">return</span> _lastRegister;</span><br><span class="line"></span><br><span class="line">  <span class="comment">// 检查js文件执行之后在环境中添加的属性</span></span><br><span class="line"></span><br><span class="line">  <span class="keyword">var</span> prop = <span class="title function_">getGlobalProp</span>();</span><br><span class="line"></span><br><span class="line">  <span class="keyword">var</span> globalExport = <span class="variable language_">global</span>[prop];</span><br><span class="line"></span><br><span class="line">  <span class="keyword">return</span> [</span><br><span class="line">    [],</span><br><span class="line">    <span class="keyword">function</span> (<span class="params">_exports</span>) &#123;</span><br><span class="line">      <span class="keyword">return</span> &#123;</span><br><span class="line">        <span class="attr">execute</span>: <span class="keyword">function</span> (<span class="params"></span>) &#123;</span><br><span class="line">          <span class="title function_">_exports</span>(globalExport);</span><br><span class="line">          <span class="comment">// 兼容esModule</span></span><br><span class="line">          <span class="title function_">_exports</span>(&#123; <span class="attr">default</span>: globalExport, <span class="attr">__useDefault</span>: <span class="literal">true</span> &#125;);</span><br><span class="line">        &#125;,</span><br><span class="line">      &#125;;</span><br><span class="line">    &#125;,</span><br><span class="line">  ];</span><br><span class="line">&#125;;</span><br><span class="line"></span><br><span class="line"><span class="keyword">function</span> <span class="title function_">topLevelLoad</span>(<span class="params">load</span>) &#123;</span><br><span class="line">  <span class="keyword">return</span> <span class="title class_">Promise</span>.<span class="title function_">resolve</span>(load.<span class="property">linkPromise</span>)</span><br><span class="line">    .<span class="title function_">then</span>(<span class="function">() =&gt;</span> &#123;</span><br><span class="line">      <span class="keyword">return</span> <span class="title class_">Promise</span>.<span class="title function_">all</span>(load.<span class="property">deps</span>.<span class="title function_">map</span>(<span class="function">(<span class="params">dep</span>) =&gt;</span> dep.<span class="property">linkPromise</span>));</span><br><span class="line">    &#125;)</span><br><span class="line">    .<span class="title function_">then</span>(<span class="function">() =&gt;</span> &#123;</span><br><span class="line">      <span class="comment">// 等待所有依赖加载完成执行</span></span><br><span class="line">      <span class="title function_">postOrderExec</span>(load);</span><br><span class="line">    &#125;);</span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line"><span class="keyword">function</span> <span class="title function_">postOrderExec</span>(<span class="params">load</span>) &#123;</span><br><span class="line">  <span class="keyword">var</span> execute = load.<span class="property">execute</span>;</span><br><span class="line"></span><br><span class="line">  <span class="comment">// 首先执行依赖</span></span><br><span class="line"></span><br><span class="line">  load.<span class="property">deps</span>.<span class="title function_">forEach</span>(<span class="function">(<span class="params">dep</span>) =&gt;</span> &#123;</span><br><span class="line">    <span class="title function_">postOrderExec</span>(dep);</span><br><span class="line">  &#125;);</span><br><span class="line"></span><br><span class="line">  <span class="title function_">execute</span>();</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+<h4 id="amd-扩展源码实现"><a href="#amd-扩展源码实现" class="headerlink" title="amd 扩展源码实现"></a>amd 扩展源码实现</h4><p>systemJS amd 扩展用于解决资源加载时对 window 对象的污染，还可以解决资源加载时的依赖问题， 例如 <code>react-dom</code> 依赖 <code>react</code></p>
+<p>以 <code>react</code> 和 <code>react-dom</code> 为例展示资源加载过程, 资源已经被打包为 umd 格式，所以可以兼容 amd 规范。</p>
+<ol>
+<li>首先在全局创建 <code>define</code> 方法，作为 amd 规范定义模块的方法。<code>react</code> 加载后自动执行 <code>define</code> 方法，在执行上下文中保存资源的依赖和执行函数。依赖默认有 <code>exports</code></li>
+</ol>
+<figure class="highlight js"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">function</span> <span class="title function_">getDepsAndExec</span>(<span class="params">arg1, arg2</span>) &#123;</span><br><span class="line">  <span class="comment">// define([], function () &#123;&#125;)</span></span><br><span class="line">  <span class="keyword">if</span> (arg1 <span class="keyword">instanceof</span> <span class="title class_">Array</span>) &#123;</span><br><span class="line">    <span class="keyword">return</span> [arg1, arg2];</span><br><span class="line">  &#125;</span><br><span class="line">&#125;</span><br><span class="line"><span class="keyword">let</span> amdDefineDeps, amdDefineExec;</span><br><span class="line"><span class="variable language_">global</span>.<span class="property">define</span> = <span class="keyword">function</span> (<span class="params">name, deps, execute</span>) &#123;</span><br><span class="line">  <span class="keyword">var</span> depsAndExec;</span><br><span class="line"></span><br><span class="line">  depsAndExec = <span class="title function_">getDepsAndExec</span>(name, deps);</span><br><span class="line">  amdDefineDeps = depsAndExec[<span class="number">0</span>];</span><br><span class="line">  amdDefineExec = depsAndExec[<span class="number">1</span>];</span><br><span class="line">&#125;;</span><br></pre></td></tr></table></figure>
+
+<ol start="2">
+<li>当资源加载成功后，会执行 <code>systemJS.getRegister</code>, amd 扩展会重写此方法</li>
+</ol>
+<figure class="highlight js"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">var</span> getRegister = systemPrototype.<span class="property">getRegister</span>;</span><br><span class="line"><span class="keyword">var</span> lastRegisterDeclare;</span><br><span class="line"><span class="keyword">var</span> systemRegister = systemPrototype.<span class="property">register</span>;</span><br><span class="line">systemPrototype.<span class="property">register</span> = <span class="keyword">function</span> (<span class="params">name, deps, declare</span>) &#123;</span><br><span class="line">  lastRegisterDeclare = <span class="keyword">typeof</span> name === <span class="string">&quot;string&quot;</span> ? declare : deps;</span><br><span class="line">  systemRegister.<span class="title function_">apply</span>(<span class="variable language_">this</span>, <span class="variable language_">arguments</span>);</span><br><span class="line">&#125;;</span><br><span class="line"></span><br><span class="line">systemPrototype.<span class="property">getRegister</span> = <span class="keyword">function</span> (<span class="params"></span>) &#123;</span><br><span class="line">  <span class="keyword">var</span> register = getRegister.<span class="title function_">call</span>(<span class="variable language_">this</span>); <span class="comment">//[[], function () &#123; return &#123;&#125; &#125;];</span></span><br><span class="line">  <span class="comment">// 如果可以获取到 register 注册的依赖，表示此资源是标准的 systemJS 模块，直接返回</span></span><br><span class="line">  <span class="keyword">if</span> (register &amp;&amp; register[<span class="number">1</span>] === lastRegisterDeclare) <span class="keyword">return</span> register;</span><br><span class="line"></span><br><span class="line">  <span class="comment">// 由于 amd 接管了模块的加载过程，所以在 window 上不会挂载 react 对象，getRegister 会返回空的声明函数结果，作为返回值</span></span><br><span class="line">  <span class="comment">// amd 模块默认有 [&quot;exports&quot;] 依赖</span></span><br><span class="line">  <span class="comment">// 此时 react 资源的 依赖对象和执行函数 都已经获取到 amdDefineDeps amdDefineExec</span></span><br><span class="line"></span><br><span class="line">  <span class="title function_">createAMDRegister</span>(amdDefineDeps, amdDefineExec);</span><br><span class="line">&#125;;</span><br></pre></td></tr></table></figure>
+
+<ol start="3">
+<li>将 react 的加载包装成 systemJS register 数据结构， 后面继续执行 systemJS 第 4 步的加载逻辑</li>
+</ol>
+<figure class="highlight js"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br><span class="line">35</span><br><span class="line">36</span><br><span class="line">37</span><br><span class="line">38</span><br><span class="line">39</span><br><span class="line">40</span><br><span class="line">41</span><br><span class="line">42</span><br><span class="line">43</span><br><span class="line">44</span><br><span class="line">45</span><br><span class="line">46</span><br><span class="line">47</span><br><span class="line">48</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">function</span> <span class="title function_">createAMDRegister</span>(<span class="params">amdDefineDeps, amdDefineExec</span>) &#123;</span><br><span class="line">  <span class="keyword">var</span> <span class="built_in">exports</span> = &#123;&#125;;</span><br><span class="line">  <span class="keyword">var</span> <span class="variable language_">module</span> = &#123; <span class="attr">exports</span>: <span class="built_in">exports</span> &#125;;</span><br><span class="line">  <span class="keyword">var</span> depModules = [];</span><br><span class="line">  <span class="keyword">var</span> setters = [];</span><br><span class="line">  <span class="keyword">var</span> splice = <span class="number">0</span>;</span><br><span class="line">  <span class="keyword">for</span> (<span class="keyword">var</span> i = <span class="number">0</span>; i &lt; amdDefineDeps.<span class="property">length</span>; i++) &#123;</span><br><span class="line">    <span class="keyword">var</span> id = amdDefineDeps[i];</span><br><span class="line">    <span class="keyword">var</span> index = setters.<span class="property">length</span>;</span><br><span class="line">    <span class="keyword">if</span> (id === <span class="string">&quot;require&quot;</span>) &#123;</span><br><span class="line">      depModules[i] = unsupportedRequire;</span><br><span class="line">      splice++;</span><br><span class="line">    &#125; <span class="keyword">else</span> <span class="keyword">if</span> (id === <span class="string">&quot;module&quot;</span>) &#123;</span><br><span class="line">      depModules[i] = <span class="variable language_">module</span>;</span><br><span class="line">      splice++;</span><br><span class="line">    &#125; <span class="keyword">else</span> <span class="keyword">if</span> (id === <span class="string">&quot;exports&quot;</span>) &#123;</span><br><span class="line">      depModules[i] = <span class="built_in">exports</span>;</span><br><span class="line">      splice++;</span><br><span class="line">    &#125; <span class="keyword">else</span> &#123;</span><br><span class="line">      <span class="title function_">createSetter</span>(i);</span><br><span class="line">    &#125;</span><br><span class="line">    <span class="keyword">if</span> (splice) amdDefineDeps[index] = id;</span><br><span class="line">  &#125;</span><br><span class="line">  <span class="keyword">if</span> (splice) amdDefineDeps.<span class="property">length</span> -= splice;</span><br><span class="line">  <span class="keyword">var</span> amdExec = amdDefineExec;</span><br><span class="line">  <span class="keyword">return</span> [</span><br><span class="line">    amdDefineDeps,</span><br><span class="line">    <span class="keyword">function</span> (<span class="params">_export</span>) &#123;</span><br><span class="line">      <span class="title function_">_export</span>(&#123; <span class="attr">default</span>: <span class="built_in">exports</span>, <span class="attr">__useDefault</span>: <span class="literal">true</span> &#125;);</span><br><span class="line">      <span class="keyword">return</span> &#123;</span><br><span class="line">        <span class="attr">setters</span>: setters,</span><br><span class="line">        <span class="attr">execute</span>: <span class="keyword">function</span> (<span class="params"></span>) &#123;</span><br><span class="line">          <span class="keyword">var</span> amdResult = amdExec.<span class="title function_">apply</span>(<span class="built_in">exports</span>, depModules);</span><br><span class="line">          <span class="keyword">if</span> (amdResult !== <span class="literal">undefined</span>) <span class="variable language_">module</span>.<span class="property">exports</span> = amdResult;</span><br><span class="line">          <span class="title function_">_export</span>(<span class="variable language_">module</span>.<span class="property">exports</span>);</span><br><span class="line">          <span class="title function_">_export</span>(<span class="string">&quot;default&quot;</span>, <span class="variable language_">module</span>.<span class="property">exports</span>);</span><br><span class="line">        &#125;,</span><br><span class="line">      &#125;;</span><br><span class="line">    &#125;,</span><br><span class="line">  ];</span><br><span class="line"></span><br><span class="line">  <span class="comment">// needed to avoid iteration scope issues</span></span><br><span class="line">  <span class="keyword">function</span> <span class="title function_">createSetter</span>(<span class="params">idx</span>) &#123;</span><br><span class="line">    setters.<span class="title function_">push</span>(<span class="keyword">function</span> (<span class="params">ns</span>) &#123;</span><br><span class="line">      depModules[idx] = ns.<span class="property">__useDefault</span> ? ns.<span class="property">default</span> : ns;</span><br><span class="line">    &#125;);</span><br><span class="line">  &#125;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+ 
+      <!-- reward -->
+      
+      <div id="reword-out">
+        <div id="reward-btn">
+          打赏
+        </div>
+      </div>
+      
+    </div>
+    
+
+    <!-- copyright -->
+    
+    <div class="declare">
+      <ul class="post-copyright">
+        <li>
+          <i class="ri-copyright-line"></i>
+          <strong>版权声明： </strong>
+          
+          本博客所有文章除特别声明外，著作权归作者所有。转载请注明出处！
+          
+        </li>
+      </ul>
+    </div>
+    
+    <footer class="article-footer">
+       
+  <ul class="article-tag-list" itemprop="keywords"><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/systemJs/" rel="tag">systemJs</a></li><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/%E5%BE%AE%E5%89%8D%E7%AB%AF/" rel="tag">微前端</a></li></ul>
+
+    </footer>
+  </div>
+
+   
+  <nav class="article-nav">
+    
+      <a href="/posts/0d953ecd532a/" class="article-nav-link">
+        <strong class="article-nav-caption">上一篇</strong>
+        <div class="article-nav-title">
+          
+            VMWare 配置桥接模式
+          
+        </div>
+      </a>
+    
+    
+      <a href="/posts/69fa30cd49a2/" class="article-nav-link">
+        <strong class="article-nav-caption">下一篇</strong>
+        <div class="article-nav-title">编码思路-能力判断</div>
+      </a>
+    
+  </nav>
+
+  
+   
+<div class="gitalk" id="gitalk-container"></div>
+
+<link rel="stylesheet" href="https://cdn.staticfile.org/gitalk/1.7.2/gitalk.min.css">
+
+
+<script src="https://cdn.staticfile.org/gitalk/1.7.2/gitalk.min.js"></script>
+
+
+<script src="https://cdn.staticfile.org/blueimp-md5/2.19.0/js/md5.min.js"></script>
+
+<script type="text/javascript">
+  var gitalk = new Gitalk({
+    clientID: 'bce2317b25da7c3c18f6',
+    clientSecret: 'e0ab868ca9054234798be82c2b1c0c9dd8632307',
+    repo: 'noopn.github.io',
+    owner: 'noopn',
+    admin: ['noopn'],
+    // id: location.pathname,      // Ensure uniqueness and length less than 50
+    id: md5(location.pathname),
+    distractionFreeMode: false,  // Facebook-like distraction free mode
+    pagerDirection: 'last'
+  })
+
+  gitalk.render('gitalk-container')
+</script>
+
+     
+</article>
+
+</section>
+      <footer class="footer">
+  <div class="outer">
+    <ul>
+      <li>
+        Copyrights &copy;
+        2015-2024
+        <i class="ri-heart-fill heart_icon"></i> SunZhiqi
+      </li>
+    </ul>
+    <ul>
+      <li>
+        
+      </li>
+    </ul>
+    <ul>
+      <li>
+        
+      </li>
+    </ul>
+    <ul>
+      
+    </ul>
+    <ul>
+      
+    </ul>
+    <ul>
+      <li>
+        <!-- cnzz统计 -->
+        
+      </li>
+    </ul>
+  </div>
+</footer>    
+    </main>
+    <div class="float_btns">
+      <div class="totop" id="totop">
+  <i class="ri-arrow-up-line"></i>
+</div>
+
+    </div>
+    <aside class="sidebar on">
+      <button class="navbar-toggle"></button>
+<nav class="navbar">
+  
+  <div class="logo">
+    <a href="/"><img src="/images/ayer-side.png" alt="四月八日"></a>
+  </div>
+  
+  <ul class="nav nav-main">
+    
+    <li class="nav-item">
+      <a class="nav-item-link" href="/">主页</a>
+    </li>
+    
+    <li class="nav-item">
+      <a class="nav-item-link" href="/archives">归档</a>
+    </li>
+    
+    <li class="nav-item">
+      <a class="nav-item-link" href="/categories">分类</a>
+    </li>
+    
+    <li class="nav-item">
+      <a class="nav-item-link" href="/tags">标签</a>
+    </li>
+    
+    <li class="nav-item">
+      <a class="nav-item-link" href="/tags/Essay">随笔</a>
+    </li>
+    
+  </ul>
+</nav>
+<nav class="navbar navbar-bottom">
+  <ul class="nav">
+    <li class="nav-item">
+      
+      <a class="nav-item-link nav-item-search"  title="搜索">
+        <i class="ri-search-line"></i>
+      </a>
+      
+      
+    </li>
+  </ul>
+</nav>
+<div class="search-form-wrap">
+  <div class="local-search local-search-plugin">
+  <input type="search" id="local-search-input" class="local-search-input" placeholder="Search...">
+  <div id="local-search-result" class="local-search-result"></div>
+</div>
+</div>
+    </aside>
+    <div id="mask"></div>
+
+<!-- #reward -->
+<div id="reward">
+  <span class="close"><i class="ri-close-line"></i></span>
+  <p class="reward-p"><i class="ri-cup-line"></i>此时无声胜有声！</p>
+  <div class="reward-box">
+    
+    <div class="reward-item">
+      <img class="reward-img" src="/images/alipay.jpg">
+      <span class="reward-type">支付宝</span>
+    </div>
+    
+    
+    <div class="reward-item">
+      <img class="reward-img" src="/images/wechat.jpg">
+      <span class="reward-type">微信</span>
+    </div>
+    
+  </div>
+</div>
+    
+<script src="/js/jquery-3.6.0.min.js"></script>
+ 
+<script src="/js/lazyload.min.js"></script>
+
+<!-- Tocbot -->
+ 
+<script src="/js/tocbot.min.js"></script>
+
+<script>
+  tocbot.init({
+    tocSelector: ".tocbot",
+    contentSelector: ".article-entry",
+    headingSelector: "h1, h2, h3, h4, h5, h6",
+    hasInnerContainers: true,
+    scrollSmooth: true,
+    scrollContainer: "main",
+    positionFixedSelector: ".tocbot",
+    positionFixedClass: "is-position-fixed",
+    fixedSidebarOffset: "auto",
+  });
+</script>
+
+<script src="/js/jquery.modal.min.js"></script>
+<link rel="stylesheet" href="/css/jquery.modal.min.css" />
+<script src="/js/jquery.justifiedGallery.min.js"></script>
+
+<script src="/dist/main.js"></script>
+
+<!-- ImageViewer -->
+ <!-- Root element of PhotoSwipe. Must have class pswp. -->
+<div class="pswp" tabindex="-1" role="dialog" aria-hidden="true">
+  <!-- Background of PhotoSwipe. 
+         It's a separate element as animating opacity is faster than rgba(). -->
+  <div class="pswp__bg"></div>
+
+  <!-- Slides wrapper with overflow:hidden. -->
+  <div class="pswp__scroll-wrap">
+    <!-- Container that holds slides. 
+            PhotoSwipe keeps only 3 of them in the DOM to save memory.
+            Don't modify these 3 pswp__item elements, data is added later on. -->
+    <div class="pswp__container">
+      <div class="pswp__item"></div>
+      <div class="pswp__item"></div>
+      <div class="pswp__item"></div>
+    </div>
+
+    <!-- Default (PhotoSwipeUI_Default) interface on top of sliding area. Can be changed. -->
+    <div class="pswp__ui pswp__ui--hidden">
+      <div class="pswp__top-bar">
+        <!--  Controls are self-explanatory. Order can be changed. -->
+
+        <div class="pswp__counter"></div>
+
+        <button
+          class="pswp__button pswp__button--close"
+          title="Close (Esc)"
+        ></button>
+
+        <button
+          class="pswp__button pswp__button--share"
+          style="display: none"
+          title="Share"
+        ></button>
+
+        <button
+          class="pswp__button pswp__button--fs"
+          title="Toggle fullscreen"
+        ></button>
+
+        <button
+          class="pswp__button pswp__button--zoom"
+          title="Zoom in/out"
+        ></button>
+
+        <!-- Preloader demo http://codepen.io/dimsemenov/pen/yyBWoR -->
+        <!-- element will get class pswp__preloader--active when preloader is running -->
+        <div class="pswp__preloader">
+          <div class="pswp__preloader__icn">
+            <div class="pswp__preloader__cut">
+              <div class="pswp__preloader__donut"></div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <div class="pswp__share-modal pswp__share-modal--hidden pswp__single-tap">
+        <div class="pswp__share-tooltip"></div>
+      </div>
+
+      <button
+        class="pswp__button pswp__button--arrow--left"
+        title="Previous (arrow left)"
+      ></button>
+
+      <button
+        class="pswp__button pswp__button--arrow--right"
+        title="Next (arrow right)"
+      ></button>
+
+      <div class="pswp__caption">
+        <div class="pswp__caption__center"></div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<link rel="stylesheet" href="/css/photoswipe.min.css" />
+<link rel="stylesheet" href="/css/default-skin.min.css" />
+<script src="/js/photoswipe.min.js"></script>
+<script src="/js/photoswipe-ui-default.min.js"></script>
+
+<script>
+  function viewer_init() {
+    let pswpElement = document.querySelectorAll(".pswp")[0];
+    let $imgArr = document.querySelectorAll(
+      ".article-entry img:not(.reward-img)"
+    );
+
+    $imgArr.forEach(($em, i) => {
+      $em.onclick = () => {
+        // slider展开状态
+        // todo: 这样不好，后面改成状态
+        if (document.querySelector(".left-col.show")) return;
+        let items = [];
+        $imgArr.forEach(($em2, i2) => {
+          let img = $em2.getAttribute("data-idx", i2);
+          let src =
+            $em2.getAttribute("data-target") || $em2.getAttribute("src");
+          let title = $em2.getAttribute("alt");
+          // 获得原图尺寸
+          const image = new Image();
+          image.src = src;
+          items.push({
+            src: src,
+            w: image.width || $em2.width,
+            h: image.height || $em2.height,
+            title: title,
+          });
+        });
+        var gallery = new PhotoSwipe(pswpElement, PhotoSwipeUI_Default, items, {
+          index: parseInt(i),
+        });
+        gallery.init();
+      };
+    });
+  }
+  viewer_init();
+</script>
+ 
+<!-- MathJax -->
+ <script type="text/x-mathjax-config">
+  MathJax.Hub.Config({
+      tex2jax: {
+          inlineMath: [ ['$','$'], ["\\(","\\)"]  ],
+          processEscapes: true,
+          skipTags: ['script', 'noscript', 'style', 'textarea', 'pre', 'code']
+      }
+  });
+
+  MathJax.Hub.Queue(function() {
+      var all = MathJax.Hub.getAllJax(), i;
+      for(i=0; i < all.length; i += 1) {
+          all[i].SourceElement().parentNode.className += ' has-jax';
+      }
+  });
+</script>
+
+<script src="/js/MathJax.js"></script>
+<script src="/js/TeX-AMS-MML_HTMLorMML-full.js"></script>
+
+<script>
+  var ayerConfig = {
+    mathjax: true,
+  };
+</script>
+
+<!-- Katex -->
+
+<!-- busuanzi  -->
+
+<!-- ClickLove -->
+
+<!-- ClickBoom1 -->
+
+<!-- ClickBoom2 -->
+
+<!-- CodeCopy -->
+ 
+<link rel="stylesheet" href="/css/clipboard.css">
+ <script src="/js/clipboard.min.js"></script>
+<script>
+  function wait(callback, seconds) {
+    var timelag = null;
+    timelag = window.setTimeout(callback, seconds);
+  }
+  !(function (e, t, a) {
+    var initCopyCode = function () {
+      var copyHtml = "";
+      copyHtml += '<button class="btn-copy" data-clipboard-snippet="">';
+      copyHtml += '<i class="ri-file-copy-2-line"></i><span>COPY</span>';
+      copyHtml += "</button>";
+      $(".highlight .code pre").before(copyHtml);
+      $(".article pre code").before(copyHtml);
+      var clipboard = new ClipboardJS(".btn-copy", {
+        target: function (trigger) {
+          return trigger.nextElementSibling;
+        },
+      });
+      clipboard.on("success", function (e) {
+        let $btn = $(e.trigger);
+        $btn.addClass("copied");
+        let $icon = $($btn.find("i"));
+        $icon.removeClass("ri-file-copy-2-line");
+        $icon.addClass("ri-checkbox-circle-line");
+        let $span = $($btn.find("span"));
+        $span[0].innerText = "COPIED";
+
+        wait(function () {
+          // 等待两秒钟后恢复
+          $icon.removeClass("ri-checkbox-circle-line");
+          $icon.addClass("ri-file-copy-2-line");
+          $span[0].innerText = "COPY";
+        }, 2000);
+      });
+      clipboard.on("error", function (e) {
+        e.clearSelection();
+        let $btn = $(e.trigger);
+        $btn.addClass("copy-failed");
+        let $icon = $($btn.find("i"));
+        $icon.removeClass("ri-file-copy-2-line");
+        $icon.addClass("ri-time-line");
+        let $span = $($btn.find("span"));
+        $span[0].innerText = "COPY FAILED";
+
+        wait(function () {
+          // 等待两秒钟后恢复
+          $icon.removeClass("ri-time-line");
+          $icon.addClass("ri-file-copy-2-line");
+          $span[0].innerText = "COPY";
+        }, 2000);
+      });
+    };
+    initCopyCode();
+  })(window, document);
+</script>
+ 
+<!-- CanvasBackground -->
+
+<script>
+  if (window.mermaid) {
+    mermaid.initialize({ theme: "default" });
+  }
+</script>
+
+
+    
+    
+
+  </div>
+</body>
+
+</html>
