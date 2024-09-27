@@ -1,0 +1,646 @@
+<!DOCTYPE html>
+
+
+<html lang="zh-CN">
+  
+
+    <head>
+      <meta charset="utf-8" />
+       
+      <meta name="keywords" content="前端 web react" />
+       
+      <meta name="description" content="前端技术与生活。" />
+      
+      <meta
+        name="viewport"
+        content="width=device-width, initial-scale=1, maximum-scale=1"
+      />
+      <title>Three.js 基础 |  四月八日</title>
+  <meta name="generator" content="hexo-theme-ayer">
+      
+      <link rel="shortcut icon" href="/favicon.ico" />
+       
+<link rel="stylesheet" href="/dist/main.css">
+ 
+<link rel="stylesheet" href="/css/fonts/remixicon.css">
+ 
+<link rel="stylesheet" href="/css/custom.css">
+ 
+      <script src="/js/pace.min.js"></script>
+       
+ 
+
+      <link rel="stylesheet" href="/css/bulma.min.css" />
+      <script src="/js/sweetalert2.min.js"></script>
+
+      <!-- mermaid -->
+      
+      <script src="https://cdn.staticfile.org/mermaid/8.14.0/mermaid.min.js"></script>
+      
+      <style>
+        .swal2-styled.swal2-confirm {
+          font-size: 1.6rem;
+        }
+      </style>
+    <!-- hexo injector head_end start -->
+<link rel="stylesheet" href="/css/katex.min.css">
+
+<link rel="stylesheet" href="/css/style.css">
+<!-- hexo injector head_end end --></head>
+  </html>
+</html>
+
+
+<body>
+  <div id="app">
+    
+      
+    <main class="content on">
+      <section class="outer">
+  <article
+  id="posts-javascript/threejs"
+  class="article article-type-posts"
+  itemscope
+  itemprop="blogPost"
+  data-scroll-reveal
+>
+  <div class="article-inner">
+    
+    <header class="article-header">
+       
+<h1 class="article-title sea-center" style="border-left:0" itemprop="name">
+  Three.js 基础
+</h1>
+ 
+
+      
+    </header>
+     
+    <div class="article-meta">
+      <a href="/posts/38aeea3b300c/" class="article-date">
+  <time datetime="2024-08-30T01:13:10.000Z" itemprop="datePublished">2024-08-30</time>
+</a> 
+  <div class="article-category">
+    <a class="article-category-link" href="/categories/Three-js/">Three.js</a>
+  </div>
+  
+<div class="word_count">
+    <span class="post-time">
+        <span class="post-meta-item-icon">
+            <i class="ri-quill-pen-line"></i>
+            <span class="post-meta-item-text"> 字数统计:</span>
+            <span class="post-count">3.7k</span>
+        </span>
+    </span>
+
+    <span class="post-time">
+        &nbsp; | &nbsp;
+        <span class="post-meta-item-icon">
+            <i class="ri-book-open-line"></i>
+            <span class="post-meta-item-text"> 阅读时长≈</span>
+            <span class="post-count">14 分钟</span>
+        </span>
+    </span>
+</div>
+ 
+    </div>
+      
+    <div class="tocbot"></div>
+
+
+
+
+  
+    <div class="article-entry" itemprop="articleBody">
+       
+  <h4 id="模型类型"><a href="#模型类型" class="headerlink" title="模型类型"></a>模型类型</h4><p>.fbx</p>
+<p>FBX 是 FilmBoX 这套软件所使用的格式，后改称 Motionbuilder。因为 Motionbuilder 扮演的是动作制作的平台，所以在前端的 modeling 和后端的 rendering 也都有赖于其它软件的配合，所以 Motionbuilder 在档案的转换上自然下了一番功夫。</p>
+<p>FBX 最大的用途是用在诸如在 Max、Maya、Softimage 等软件间进行模型、材质、动作和摄影机信息的互导，这样就可以发挥 Max 和 Maya 等软件的优势。可以说，FBX 方案是非常好的互导方案。</p>
+<p>.glTF</p>
+<p>glTF 是一种可以减少 3D 格式中与渲染无关的冗余数据并且在更加适合 OpenGL 簇加载的一种 3D 文件格式。glTF 的提出是源自于 3D 工业和媒体发展的过程中，对 3D 格式统一化的急迫需求。如果用一句话来描述：glTF 就是三维文件的 JPEG ，三维格式的 MP3。在没有 glTF 的时候，大家都要花很长的的时间来处理模型的载入。</p>
+<p>很多的游戏引擎或者工控渲染引擎，都使用的是插件的方式来载入各种格式的模型。可是，各种格式的模型都包含了很多无关的信息。就 glTF 格式而言，虽然以前有很多 3D 格式，但是各种 3D 模型渲染程序都要处理很多种的格式。对于那些对载入格式不是那么重要的软件，可以显著减少代码量，所以也有人说，最大的受益者是那些对程序大小敏感的 3D Web 渲染引擎，只需要很少的代码就可以顺利地载入各种模型了。</p>
+<p>此外，glTF 是对近二十年来各种 3D 格式的总结，使用最优的数据结构，来保证最大的兼容性以及可伸缩性。这就好比是本世纪初 xml 的提出。glTF 使用 json 格式进行描述，也可以编译成二进制的内容：bglTF。glTF 可以包括场景、摄像机、动画等，也可以包括网格、材质、纹理，甚至包括了渲染技术（technique）、着色器以及着色器程序。同时由于 json 格式的特点，它支持预留一般以及特定供应商的扩展。</p>
+<p>.obj</p>
+<p>OBJ 文件是 Alias|Wavefront 公司为它的一套基于工作站的 3D 建模和动画软件”Advanced Visualizer”开发的一种标准 3D 模型文件格式，很适合用于 3D 软件模型之间的互导。目前几乎所有知名的 3D 软件都支持 OBJ 文件的读写。OBJ 文件是一种文本文件，可以直接用写字板打开进行查看和编辑修改。</p>
+<h4 id="物体-位移-x2F-缩放-x2F-旋转"><a href="#物体-位移-x2F-缩放-x2F-旋转" class="headerlink" title="物体 位移&#x2F;缩放&#x2F;旋转"></a>物体 位移&#x2F;缩放&#x2F;旋转</h4><figure class="highlight js"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br></pre></td><td class="code"><pre><span class="line">cube.<span class="property">position</span>.<span class="property">x</span> = <span class="number">0</span>;</span><br><span class="line">cube.<span class="property">position</span>.<span class="title function_">set</span>(<span class="number">0</span>, <span class="number">0</span>, <span class="number">0</span>);</span><br><span class="line"></span><br><span class="line">cube.<span class="property">scale</span>.<span class="property">y</span> = <span class="number">1</span>;</span><br><span class="line">cube.<span class="property">scale</span>.<span class="title function_">set</span>(<span class="number">0</span>, <span class="number">1</span>, <span class="number">0</span>);</span><br><span class="line"></span><br><span class="line">cube.<span class="property">rotate</span>.<span class="property">z</span> = <span class="title class_">Math</span>.<span class="property">PI</span> / <span class="number">4</span>;</span><br><span class="line">cube.<span class="property">rotate</span>.<span class="title function_">set</span>(<span class="number">0</span>, <span class="number">0</span>, <span class="title class_">Math</span>.<span class="property">PI</span> / <span class="number">4</span>);</span><br></pre></td></tr></table></figure>
+
+<p>一个物体的 <code>position/scale/rotate</code> 属性描述一个物体的 位置&#x2F;缩放&#x2F;旋转，当这个物体再世界坐标系中，那么他的 位移&#x2F;缩放&#x2F;旋转 相对于世界坐标系。</p>
+<p>如果物体在另一个物体中，那么他的 位移&#x2F;缩放&#x2F;旋转 相对于父元素的位置。</p>
+<figure class="highlight js"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment">// 由于物体位置相对于父元素，因此cube在坐标原点</span></span><br><span class="line">parentCube.<span class="title function_">add</span>(cube);</span><br><span class="line">parentCube.<span class="property">position</span>.<span class="property">x</span> = -<span class="number">3</span>;</span><br><span class="line">cube.<span class="property">position</span>.<span class="property">x</span> = <span class="number">3</span>;</span><br></pre></td></tr></table></figure>
+
+<h4 id="画布适应窗口的变化"><a href="#画布适应窗口的变化" class="headerlink" title="画布适应窗口的变化"></a>画布适应窗口的变化</h4><figure class="highlight js"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br></pre></td><td class="code"><pre><span class="line"><span class="variable language_">window</span>.<span class="title function_">addEventListener</span>(<span class="string">&quot;resize&quot;</span>, <span class="function">() =&gt;</span> &#123;</span><br><span class="line">  <span class="comment">// 更新摄像头宽高比</span></span><br><span class="line">  camera.<span class="property">aspect</span> = <span class="variable language_">window</span>.<span class="property">innerWidth</span> / <span class="variable language_">window</span>.<span class="property">innerHeight</span>;</span><br><span class="line">  <span class="comment">// 更新摄像机的投影矩阵</span></span><br><span class="line">  camera.<span class="title function_">updateProjectionMatrix</span>();</span><br><span class="line">  <span class="comment">// 更新渲染器</span></span><br><span class="line">  renderer.<span class="title function_">setSize</span>(<span class="variable language_">window</span>.<span class="property">innerWidth</span>, <span class="variable language_">window</span>.<span class="property">innerHeight</span>);</span><br><span class="line">&#125;);</span><br></pre></td></tr></table></figure>
+
+<h4 id="通过-GUI-快速调试参数"><a href="#通过-GUI-快速调试参数" class="headerlink" title="通过 GUI 快速调试参数"></a>通过 GUI 快速调试参数</h4><p>通过安装 <code>dat.gui</code> （不推荐）</p>
+<figure class="highlight js"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">import</span> * <span class="keyword">as</span> dat <span class="keyword">from</span> <span class="string">&quot;dat.gui&quot;</span>;</span><br></pre></td></tr></table></figure>
+
+<p>新方法是使用 <code>threejs</code> 自带的 GUI (推荐)</p>
+<figure class="highlight js"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">import</span> &#123; <span class="variable constant_">GUI</span> &#125; <span class="keyword">from</span> <span class="string">&quot;three/examples/jsm/libs/lil-gui.module.min&quot;</span>;</span><br><span class="line"></span><br><span class="line"><span class="keyword">const</span> gui = <span class="keyword">new</span> <span class="title function_">GUI</span>();</span><br><span class="line"><span class="keyword">const</span> handle = &#123;</span><br><span class="line">  <span class="attr">click</span>: <span class="function">() =&gt;</span> <span class="variable language_">console</span>.<span class="title function_">log</span>(<span class="string">&quot;click&quot;</span>),</span><br><span class="line">  <span class="attr">fullscreen</span>: <span class="function">() =&gt;</span> <span class="variable language_">console</span>.<span class="title function_">log</span>(<span class="string">&quot;fullscreen&quot;</span>),</span><br><span class="line">&#125;;</span><br><span class="line"><span class="comment">// 添加两个按钮，点击和全屏</span></span><br><span class="line">gui.<span class="title function_">add</span>(handle, <span class="string">&quot;click&quot;</span>).<span class="title function_">name</span>(<span class="string">&quot;点击&quot;</span>);</span><br><span class="line">gui.<span class="title function_">add</span>(handle, <span class="string">&quot;fullscreen&quot;</span>).<span class="title function_">name</span>(<span class="string">&quot;全屏&quot;</span>);</span><br><span class="line"></span><br><span class="line"><span class="comment">//修改数值,最小值-10，最大值10，步长1</span></span><br><span class="line">gui.<span class="title function_">add</span>(cube.<span class="property">position</span>, <span class="string">&quot;x&quot;</span>).<span class="title function_">name</span>(<span class="string">&quot;x轴位置&quot;</span>).<span class="title function_">min</span>(-<span class="number">10</span>).<span class="title function_">max</span>(<span class="number">10</span>).<span class="title function_">step</span>(<span class="number">1</span>);</span><br><span class="line"></span><br><span class="line"><span class="comment">//使用 folder 分组</span></span><br><span class="line"><span class="keyword">let</span> folder = gui.<span class="title function_">addFolder</span>(<span class="string">&quot;按钮组&quot;</span>);</span><br><span class="line">folder.<span class="title function_">add</span>(handle, <span class="string">&quot;click&quot;</span>).<span class="title function_">name</span>(<span class="string">&quot;点击&quot;</span>);</span><br><span class="line">folder.<span class="title function_">add</span>(handle, <span class="string">&quot;fullscreen&quot;</span>).<span class="title function_">name</span>(<span class="string">&quot;全屏&quot;</span>);</span><br><span class="line"></span><br><span class="line"><span class="comment">//事件</span></span><br><span class="line">gui.<span class="title function_">add</span>(handle, <span class="string">&quot;click&quot;</span>).<span class="title function_">onChange</span>(noop).<span class="title function_">onFinishChange</span>(noop);</span><br><span class="line"></span><br><span class="line"><span class="comment">//颜色</span></span><br><span class="line"><span class="keyword">const</span> colors = &#123;</span><br><span class="line">  <span class="attr">cubeColor</span>: <span class="string">&quot;#ff0000&quot;</span>,</span><br><span class="line">&#125;;</span><br><span class="line">gui</span><br><span class="line">  .<span class="title function_">addColor</span>(colors, <span class="string">&quot;cubeColor&quot;</span>)</span><br><span class="line">  .<span class="title function_">name</span>(<span class="string">&quot;颜色&quot;</span>)</span><br><span class="line">  .<span class="title function_">onChange</span>(<span class="function">() =&gt;</span> cube.<span class="property">material</span>.<span class="property">color</span>.<span class="title function_">set</span>(val));</span><br></pre></td></tr></table></figure>
+
+<h4 id="Geometry-几何体"><a href="#Geometry-几何体" class="headerlink" title="Geometry 几何体"></a>Geometry 几何体</h4><h5 id="顶点-x2F-索引"><a href="#顶点-x2F-索引" class="headerlink" title="顶点&#x2F;索引"></a>顶点&#x2F;索引</h5><p>threejs 中使用 <code>position</code> 中<strong>类型化数组</strong>描述顶点的位置信息。三个为一组，绘制时会将一组顶点绘制为一个三角形，复杂的几何体也是由多个三角形构成。</p>
+<p>顶点的排列顺序(<strong>绕序</strong>)影响绘制的效果，逆时针 (Counter Clockwise, CCW) 排列的面视为正面， 顺时针排列视为反面。模型情况下，背面不会渲染以便提高性能。</p>
+<p>Three.js 使用相机的视角和顶点位置之间的关系来判断一个面是正面还是反面。当从相机位置看时，顶点按照逆时针排列的面会被认为是正面；相反，顺时针排列的面会被认为是背面。顶点顺序的判断依赖于面法向量（normal vector）。法向量是垂直于面的一个矢量，它通过面顶点的排列顺序来决定。如果法向量指向相机方向，面被认为是正面，否则是反面。</p>
+<figure class="highlight js"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">const</span> position = <span class="keyword">new</span> <span class="title class_">Float32Array</span>([</span><br><span class="line">  <span class="number">1</span>, <span class="number">1</span>, <span class="number">0</span>, -<span class="number">1</span>, -<span class="number">1</span>, <span class="number">0</span>, <span class="number">1</span>, -<span class="number">1</span>, <span class="number">0</span>, <span class="number">1</span>, <span class="number">1</span>, <span class="number">0</span>, -<span class="number">1</span>, <span class="number">1</span>, <span class="number">0</span>, -<span class="number">1</span>, -<span class="number">1</span>, <span class="number">0</span>,</span><br><span class="line">]);</span><br><span class="line"><span class="keyword">const</span> geometry = <span class="keyword">new</span> <span class="variable constant_">THREE</span>.<span class="title class_">BufferGeometry</span>();</span><br><span class="line"></span><br><span class="line"><span class="keyword">const</span> indices = <span class="keyword">new</span> <span class="title class_">Uint16Array</span>();</span><br><span class="line">geometry.<span class="title function_">setAttribute</span>(<span class="string">&quot;position&quot;</span>, <span class="keyword">new</span> <span class="variable constant_">THREE</span>.<span class="title class_">BufferAttribute</span>(position, <span class="number">3</span>));</span><br><span class="line"><span class="keyword">const</span> mesh = <span class="keyword">new</span> <span class="variable constant_">THREE</span>.<span class="title class_">Mesh</span>(geometry, material);</span><br></pre></td></tr></table></figure>
+
+<p>但是查看 <code>position</code> 属性会发现有 6 个顶点，这时可以通过建立索引，共用顶点优化顶点数量。</p>
+<figure class="highlight js"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment">// 去除掉可以公用的顶点，</span></span><br><span class="line"><span class="keyword">const</span> position = <span class="keyword">new</span> <span class="title class_">Float32Array</span>([<span class="number">1</span>, <span class="number">1</span>, <span class="number">0</span>, -<span class="number">1</span>, -<span class="number">1</span>, <span class="number">0</span>, <span class="number">1</span>, -<span class="number">1</span>, <span class="number">0</span>, -<span class="number">1</span>, <span class="number">1</span>, <span class="number">0</span>]);</span><br><span class="line"></span><br><span class="line"><span class="comment">// 使用索引来描述</span></span><br><span class="line"><span class="keyword">const</span> indices = <span class="keyword">new</span> <span class="title class_">Uint16Array</span>([<span class="number">0</span>, <span class="number">1</span>, <span class="number">2</span>, <span class="number">0</span>, <span class="number">3</span>, <span class="number">1</span>]);</span><br><span class="line">geometry.<span class="title function_">setIndex</span>(<span class="keyword">new</span> <span class="variable constant_">THREE</span>.<span class="title class_">BufferAttribute</span>(indices, <span class="number">1</span>));</span><br></pre></td></tr></table></figure>
+
+<h5 id="顶点分组"><a href="#顶点分组" class="headerlink" title="顶点分组"></a>顶点分组</h5><p>为几何体的顶点分组，可以为每个组设置单独的材质。</p>
+<figure class="highlight js"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br></pre></td><td class="code"><pre><span class="line">geometry.<span class="title function_">addGroup</span>(<span class="number">0</span>, <span class="number">3</span>, <span class="number">0</span>); <span class="comment">// 开始位置，数量，材质索引</span></span><br><span class="line">geometry.<span class="title function_">addGroup</span>(<span class="number">3</span>, <span class="number">3</span>, <span class="number">1</span>);</span><br><span class="line"></span><br><span class="line"><span class="keyword">const</span> mesh = <span class="keyword">new</span> <span class="variable constant_">THREE</span>.<span class="title class_">Mesh</span>(geometry, [material, material2]);</span><br></pre></td></tr></table></figure>
+
+<h5 id="顶点转换"><a href="#顶点转换" class="headerlink" title="顶点转换"></a>顶点转换</h5><p>对几何体的顶点操作（position, rotate, translate）通常是不推荐的，这会改变几何体原有的顶点信息（attribute.position）, 通常在物体（Mesh）上修改。</p>
+<h5 id="UV"><a href="#UV" class="headerlink" title="UV"></a>UV</h5><p>UV 决定了 2D 纹理如何映射到 3D 空间中，U V 分别代表 2D 纹理的横纵坐标（为了与 3D 中的 X Y Z 坐标区分）。在模型建好之后会将纹理展开到 2D 平面中,这一过程叫做 UV 展开。常用的算法有投影展开法（Projection Mapping）,迭代展开法（Iterative Unwrapping）,Least Squares Conformal Mapping (LSCM) 和 Angle-Based Flattening (ABF) 等。</p>
+<p>如果一个物体缺失 UV 信息，那么纹理将无法映射到物体表面。如果 UV 坐标没有覆盖（1，1）区域，剩余位置颜色会自动按 UV 坐标边缘采集。</p>
+<h5 id="法线"><a href="#法线" class="headerlink" title="法线"></a>法线</h5><p>法线是垂直与平面的向量，决定了光纤如何反射。</p>
+<figure class="highlight js"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment">// 法线辅助器</span></span><br><span class="line"><span class="keyword">import</span> &#123; <span class="title class_">VertexNormalsHelper</span> &#125; <span class="keyword">from</span> <span class="string">&quot;three/examples/jsm/helpers/VertexNormalsHelper.js&quot;</span>;</span><br><span class="line"><span class="keyword">const</span> geometry = <span class="keyword">new</span> <span class="variable constant_">THREE</span>.<span class="title class_">BufferGeometry</span>();</span><br><span class="line"><span class="comment">// ...</span></span><br><span class="line"><span class="comment">// 自动计算法线</span></span><br><span class="line">geometry.<span class="title function_">computeVertexNormals</span>();</span><br><span class="line"><span class="comment">// ...</span></span><br><span class="line"><span class="comment">// 添加法线辅助器</span></span><br><span class="line"><span class="keyword">const</span> helper = <span class="keyword">new</span> <span class="title class_">VertexNormalsHelper</span>(mesh, <span class="number">0.2</span>, <span class="number">0x00ff00</span>);</span><br><span class="line">scene.<span class="title function_">add</span>(helper);</span><br></pre></td></tr></table></figure>
+
+<h5 id="包围盒"><a href="#包围盒" class="headerlink" title="包围盒"></a>包围盒</h5><p>包围盒用于可视化的检视物体，或用于碰撞检测。</p>
+<figure class="highlight js"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br></pre></td><td class="code"><pre><span class="line">fbxLoader.<span class="title function_">load</span>(floorFbx, <span class="keyword">function</span> (<span class="params">group</span>) &#123;</span><br><span class="line">  <span class="comment">// 通过名称或ID查找到模型中指定的物体</span></span><br><span class="line">  <span class="keyword">const</span> mesh = group.<span class="title function_">getObjectById</span>(<span class="number">40</span>);</span><br><span class="line">  <span class="comment">// const mesh =  group.getObjectByName(&#x27;a23&#x27;)</span></span><br><span class="line"></span><br><span class="line">  <span class="comment">// 由于物体的父级可能存在几何变化导致与物体的尺寸不同，因此需要更新物体的世界矩阵</span></span><br><span class="line">  <span class="comment">//                    更新父级， 更新子集</span></span><br><span class="line">  mesh.<span class="title function_">updateWorldMatrix</span>(<span class="literal">true</span>, <span class="literal">true</span>);</span><br><span class="line"></span><br><span class="line">  <span class="comment">// 需要手动调用几何体包围盒计算函数</span></span><br><span class="line">  <span class="keyword">const</span> geometry = mesh.<span class="property">geometry</span>;</span><br><span class="line">  geometry.<span class="title function_">computeBoundingBox</span>();</span><br><span class="line"></span><br><span class="line">  <span class="comment">// 获取包围盒计算结果</span></span><br><span class="line">  <span class="keyword">const</span> box = geometry.<span class="property">boundingBox</span>;</span><br><span class="line"></span><br><span class="line">  <span class="comment">// 使用世界矩阵更新包围盒</span></span><br><span class="line">  box.<span class="title function_">applyMatrix4</span>(mesh.<span class="property">matrixWorld</span>);</span><br><span class="line"></span><br><span class="line">  <span class="comment">// 创建包围盒辅助器显示包围盒</span></span><br><span class="line">  <span class="keyword">const</span> boxHelper = <span class="keyword">new</span> <span class="variable constant_">THREE</span>.<span class="title class_">Box3Helper</span>(box, <span class="number">0xff0000</span>);</span><br><span class="line"></span><br><span class="line">  <span class="comment">// 添加到场景中</span></span><br><span class="line">  scene.<span class="title function_">add</span>(boxHelper);</span><br><span class="line">&#125;);</span><br></pre></td></tr></table></figure>
+
+<p>多个物体包围盒</p>
+<figure class="highlight js"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">const</span> mesh = group.<span class="title function_">getObjectById</span>(<span class="number">40</span>);</span><br><span class="line"><span class="keyword">const</span> mesh1 = group.<span class="title function_">getObjectById</span>(<span class="number">41</span>);</span><br><span class="line"><span class="keyword">const</span> mesh2 = group.<span class="title function_">getObjectById</span>(<span class="number">42</span>);</span><br><span class="line"></span><br><span class="line"><span class="keyword">const</span> boxUnion = <span class="keyword">new</span> <span class="variable constant_">THREE</span>.<span class="title class_">Box3</span>();</span><br><span class="line">[mesh, mesh1, mesh2].<span class="title function_">forEach</span>(<span class="function">(<span class="params">mesh</span>) =&gt;</span> &#123;</span><br><span class="line">  mesh.<span class="title function_">updateWorldMatrix</span>(<span class="literal">true</span>, <span class="literal">true</span>);</span><br><span class="line">  <span class="keyword">const</span> geometry = mesh.<span class="property">geometry</span>;</span><br><span class="line">  geometry.<span class="title function_">computeBoundingBox</span>();</span><br><span class="line">  <span class="keyword">const</span> box = geometry.<span class="property">boundingBox</span>;</span><br><span class="line">  box.<span class="title function_">applyMatrix4</span>(mesh.<span class="property">matrixWorld</span>);</span><br><span class="line">  <span class="keyword">const</span> boxHelper = <span class="keyword">new</span> <span class="variable constant_">THREE</span>.<span class="title class_">Box3Helper</span>(box, <span class="number">0xff0000</span>);</span><br><span class="line">  scene.<span class="title function_">add</span>(boxHelper);</span><br><span class="line"></span><br><span class="line">  boxUnion.<span class="title function_">union</span>(box);</span><br><span class="line">&#125;);</span><br><span class="line"></span><br><span class="line"><span class="keyword">const</span> boxHelper = <span class="keyword">new</span> <span class="variable constant_">THREE</span>.<span class="title class_">Box3Helper</span>(boxUnion, <span class="number">0xff0000</span>);</span><br><span class="line">scene.<span class="title function_">add</span>(boxHelper);</span><br></pre></td></tr></table></figure>
+
+<p>使用 setFromObject，自动计算和世界轴对齐的一个对象 Object3D （含其子对象）的包围盒，计算对象和子对象的世界坐标变换。</p>
+<figure class="highlight js"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">const</span> boxUnion = <span class="keyword">new</span> <span class="variable constant_">THREE</span>.<span class="title class_">Box3</span>();</span><br><span class="line">[mesh, mesh1, mesh2].<span class="title function_">forEach</span>(<span class="function">(<span class="params">mesh</span>) =&gt;</span> &#123;</span><br><span class="line">  <span class="keyword">const</span> box = <span class="keyword">new</span> <span class="variable constant_">THREE</span>.<span class="title class_">Box3</span>().<span class="title function_">setFromObject</span>(mesh);</span><br><span class="line">  <span class="keyword">const</span> boxHelper = <span class="keyword">new</span> <span class="variable constant_">THREE</span>.<span class="title class_">Box3Helper</span>(box, <span class="number">0xff0000</span>);</span><br><span class="line">  scene.<span class="title function_">add</span>(boxHelper);</span><br><span class="line">  boxUnion.<span class="title function_">union</span>(box);</span><br><span class="line">&#125;);</span><br><span class="line"></span><br><span class="line"><span class="keyword">const</span> boxHelper = <span class="keyword">new</span> <span class="variable constant_">THREE</span>.<span class="title class_">Box3Helper</span>(boxUnion, <span class="number">0xff0000</span>);</span><br><span class="line">scene.<span class="title function_">add</span>(boxHelper);</span><br></pre></td></tr></table></figure>
+
+<h5 id="几何体居中-x2F-获取中心"><a href="#几何体居中-x2F-获取中心" class="headerlink" title="几何体居中&#x2F;获取中心"></a>几何体居中&#x2F;获取中心</h5><figure class="highlight js"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment">// 会将几何体的中心放到世界中心</span></span><br><span class="line">geometry.<span class="title function_">center</span>();</span><br><span class="line"></span><br><span class="line"><span class="comment">// 但是Mesh对象可能有几何变换，导致物体看上去仍然偏移</span></span><br><span class="line"><span class="comment">// 需要重置Mesh的几何信息</span></span><br><span class="line">mesh.<span class="property">position</span>.<span class="title function_">set</span>(<span class="number">0</span>, <span class="number">0</span>, <span class="number">0</span>);</span><br><span class="line"></span><br><span class="line"><span class="comment">// 获取包围盒的中心点</span></span><br><span class="line"><span class="keyword">const</span> vec3 = box.<span class="title function_">getCenter</span>(<span class="keyword">new</span> <span class="variable constant_">THREE</span>.<span class="title class_">Vector3</span>());</span><br></pre></td></tr></table></figure>
+
+<h4 id="边缘几何体-x2F-线框几何体"><a href="#边缘几何体-x2F-线框几何体" class="headerlink" title="边缘几何体&#x2F;线框几何体"></a>边缘几何体&#x2F;线框几何体</h4><figure class="highlight js"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br><span class="line">35</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment">// 通过名称或ID查找到模型中指定的物体</span></span><br><span class="line"><span class="keyword">const</span> mesh = group.<span class="title function_">getObjectById</span>(<span class="number">40</span>);</span><br><span class="line"></span><br><span class="line"><span class="keyword">const</span> geometry = mesh.<span class="property">geometry</span>;</span><br><span class="line"></span><br><span class="line"><span class="comment">// 创建边缘几何体</span></span><br><span class="line"><span class="keyword">const</span> edgeGeometry = <span class="keyword">new</span> <span class="variable constant_">THREE</span>.<span class="title class_">EdgesGeometry</span>(geometry);</span><br><span class="line"></span><br><span class="line"><span class="comment">// 创建线框几何体</span></span><br><span class="line"><span class="comment">// const wireGeometry = new THREE.WireframeGeometry(geometry);</span></span><br><span class="line"></span><br><span class="line"><span class="comment">// 创建线段材质</span></span><br><span class="line"><span class="keyword">const</span> lineMaterial = <span class="keyword">new</span> <span class="variable constant_">THREE</span>.<span class="title class_">LineBasicMaterial</span>(&#123;</span><br><span class="line">  <span class="attr">color</span>: <span class="number">0xffffff</span>,</span><br><span class="line">&#125;);</span><br><span class="line"></span><br><span class="line"><span class="comment">// 创建线段物体</span></span><br><span class="line"><span class="keyword">const</span> lineMesh = <span class="keyword">new</span> <span class="variable constant_">THREE</span>.<span class="title class_">LineSegments</span>(edgeGeometry, lineMaterial);</span><br><span class="line"></span><br><span class="line"><span class="comment">// 由于新创建的物体丢失了源物体的世界矩阵信息，因此位置大小可能表现不同</span></span><br><span class="line"><span class="comment">// 需要使用源物体的世界矩阵信息重新赋值</span></span><br><span class="line"></span><br><span class="line"><span class="comment">// 更新源物体的世界矩阵信息</span></span><br><span class="line"><span class="comment">// mesh.updateWorldMatrix();</span></span><br><span class="line"></span><br><span class="line"><span class="comment">// 应用源物体的世界矩阵</span></span><br><span class="line">lineMesh.<span class="property">matrix</span>.<span class="title function_">copy</span>(mesh.<span class="property">matrixWorld</span>);</span><br><span class="line"></span><br><span class="line"><span class="comment">//将矩阵信息解构到物体的变换信息上</span></span><br><span class="line">lineMesh.<span class="property">matrix</span>.<span class="title function_">decompose</span>(</span><br><span class="line">  lineMesh.<span class="property">position</span>,</span><br><span class="line">  lineMesh.<span class="property">quaternion</span>,</span><br><span class="line">  lineMesh.<span class="property">scale</span></span><br><span class="line">);</span><br><span class="line">scene.<span class="title function_">add</span>(lineMesh);</span><br></pre></td></tr></table></figure>
+
+<h4 id="材质与纹理"><a href="#材质与纹理" class="headerlink" title="材质与纹理"></a>材质与纹理</h4><p>three.js 中的材质就是几何体表面的材料。所有材质均继承自 Material。ThreeJS 的材质分为：基础材质、深度材质、法向量材质、琥珀材质、冯氏材质、标准材质、着色器材质、基础线材质以及虚线材质。材质就像物体的皮肤，让几何体看起来像金属还是木板，是否透明，什么颜色。</p>
+<p>纹理的基类是 Texture，通过给其属性 Image 传入一个图片从而构造出一个纹理。纹理是材质的属性，材质和几何体 Gemotry 构成 Mesh</p>
+<h5 id="材质基类-Material"><a href="#材质基类-Material" class="headerlink" title="材质基类 Material"></a>材质基类 Material</h5><ul>
+<li>transparent: 定义此材质是否透明,可以配合 opacity 使用，控制透明程度。</li>
+</ul>
+<h5 id="纹理基类（Texture）"><a href="#纹理基类（Texture）" class="headerlink" title="纹理基类（Texture）"></a>纹理基类（Texture）</h5><ul>
+<li><p>colorSpace</p>
+<p>1.THREE.NoColorSpace: 这意味着没有应用任何特定的颜色空间，纹理的颜色数据会被原样使用。这个选项通常用于已经处于需要的颜色空间中的纹理，或者那些不依赖于颜色空间的特定用途。</p>
+<p>2.THREE.SRGBColorSpace:在此颜色空间中，颜色数据以 SRGB 格式存储。SRGB 是一个 RGB 标准，它试图将色彩的表现和人眼感知到的颜色更好地匹配。相对于线性颜色空间，SRGB 颜色空间在暗区提供了更多的颜色级别。使用此颜色空间时，需要注意图像的颜色可能会被转换为非线性的 SRGB 格式。</p>
+<p>3.THREE.LinearSRGBColorSpace 这也是一个以 SRGB 格式存储颜色数据的颜色空间，但颜色数据被当作线线性性数据处理。在进行计算和处理时，这种颜色空间可以提供更精确的结果。但是由于人眼对光线的感知，50%感觉的亮度只需要 18%的发光强度，这可能导致物体颜色过浅。</p>
+</li>
+<li><p>needsUpdate 指定需要重新编译材质。如果动态设置纹理需要将此属性设置为<code>true</code>。</p>
+</li>
+</ul>
+<h5 id="基础材质-MeshBasicMaterial"><a href="#基础材质-MeshBasicMaterial" class="headerlink" title="基础材质 MeshBasicMaterial"></a>基础材质 MeshBasicMaterial</h5><ul>
+<li>map: 颜色贴图。默认会随几何体的大小拉伸。 <strong>开启 transparent 属性，会影响有透明通道图片的效果</strong>。</li>
+</ul>
+<h5 id="MeshMatcapMaterial"><a href="#MeshMatcapMaterial" class="headerlink" title="MeshMatcapMaterial"></a>MeshMatcapMaterial</h5><p>由一个材质捕捉（MatCap，或光照球（Lit Sphere））纹理定义。mapcap 编码了光照，颜色等信息，因此不对光照做出反应。可以投射阴影，但是不会接受阴影。<br>是一个低成本实现光照效果得材质，缺点是固定了光照信息，不能对光照反应。</p>
+<h5 id="MeshLambertMaterial"><a href="#MeshLambertMaterial" class="headerlink" title="MeshLambertMaterial"></a>MeshLambertMaterial</h5><p>该材质使用基于非物理的 Lambertian 模型来计算反射率。 这可以很好地模拟一些表面（例如未经处理的木材或石材），但不能模拟具有镜面高光的光泽表面（例如涂漆木材）</p>
+<h5 id="MeshPhongMaterial"><a href="#MeshPhongMaterial" class="headerlink" title="MeshPhongMaterial"></a>MeshPhongMaterial</h5><p>该材质使用非物理的 Blinn-Phong 模型来计算反射率。可以模拟高光的或玻璃效果，但是由于不是物理模型，因此玻璃效果不能与场景中其他物体作用，只能通过透明度设置。</p>
+<figure class="highlight js"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment">// 实现玻璃效果，只限于与环境光线相互作用</span></span><br><span class="line"><span class="comment">// 加载环境贴图是必须的，映射模式需要修改为折射</span></span><br><span class="line">envMap.<span class="property">mapping</span> = <span class="variable constant_">THREE</span>.<span class="property">EquirectangularRefractionMapping</span>;</span><br><span class="line"><span class="comment">// scene.environment = envMap;</span></span><br><span class="line"><span class="comment">// scene.background = envMap;</span></span><br><span class="line"></span><br><span class="line"><span class="keyword">const</span> box = <span class="keyword">new</span> <span class="variable constant_">THREE</span>.<span class="title class_">BoxGeometry</span>(<span class="number">1</span>, <span class="number">1</span>, <span class="number">1</span>);</span><br><span class="line"><span class="keyword">const</span> bujianMatertal = <span class="keyword">new</span> <span class="variable constant_">THREE</span>.<span class="title class_">MeshPhongMaterial</span>(&#123;</span><br><span class="line">  <span class="attr">refractionRatio</span>: <span class="number">0.7</span>, <span class="comment">// 空气的折射|反射率</span></span><br><span class="line">  <span class="comment">// 当设置为 THREE.EquirectangularRefractionMapping 值为折射系数</span></span><br><span class="line">  <span class="comment">// 越高越像玻璃</span></span><br><span class="line">  <span class="attr">reflectivity</span>: <span class="number">0.99</span>,</span><br><span class="line">  <span class="attr">envMap</span>: envMap,</span><br><span class="line">&#125;);</span><br><span class="line"></span><br><span class="line"><span class="keyword">const</span> boxMesh = <span class="keyword">new</span> <span class="variable constant_">THREE</span>.<span class="title class_">Mesh</span>(box, bujianMatertal);</span><br><span class="line"></span><br><span class="line"><span class="comment">// 必须要有环境光，与环境光相互作用</span></span><br><span class="line"><span class="keyword">const</span> light = <span class="keyword">new</span> <span class="variable constant_">THREE</span>.<span class="title class_">AmbientLight</span>(<span class="number">0xffffff</span>, <span class="number">1</span>);</span><br><span class="line">scene.<span class="title function_">add</span>(light);</span><br></pre></td></tr></table></figure>
+
+<h4 id="FOG-雾"><a href="#FOG-雾" class="headerlink" title="FOG 雾"></a>FOG 雾</h4><p>通常会把背景颜色和雾的颜色设置成相同颜色，可以让雾融入到场景中</p>
+<h4 id="镭射光纤，选择物体"><a href="#镭射光纤，选择物体" class="headerlink" title="镭射光纤，选择物体"></a>镭射光纤，选择物体</h4><figure class="highlight js"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">const</span> raycaster = <span class="keyword">new</span> <span class="variable constant_">THREE</span>.<span class="title class_">Raycaster</span>();</span><br><span class="line"><span class="keyword">const</span> pointer = <span class="keyword">new</span> <span class="variable constant_">THREE</span>.<span class="title class_">Vector2</span>();</span><br><span class="line"><span class="variable language_">window</span>.<span class="title function_">addEventListener</span>(<span class="string">&quot;pointermove&quot;</span>, onPointerMove);</span><br><span class="line"><span class="keyword">function</span> <span class="title function_">onPointerMove</span>(<span class="params">event</span>) &#123;</span><br><span class="line">  <span class="comment">// 将鼠标位置归一化为设备坐标。x 和 y 方向的取值范围是 (-1 to +1)</span></span><br><span class="line">  pointer.<span class="property">x</span> = (event.<span class="property">clientX</span> / <span class="variable language_">window</span>.<span class="property">innerWidth</span>) * <span class="number">2</span> - <span class="number">1</span>;</span><br><span class="line">  pointer.<span class="property">y</span> = -(event.<span class="property">clientY</span> / <span class="variable language_">window</span>.<span class="property">innerHeight</span>) * <span class="number">2</span> + <span class="number">1</span>;</span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line"><span class="keyword">function</span> <span class="title function_">rayTest</span>(<span class="params"></span>) &#123;</span><br><span class="line">  raycaster.<span class="title function_">setFromCamera</span>(pointer, camera);</span><br><span class="line"></span><br><span class="line">  <span class="keyword">const</span> intersects = raycaster.<span class="title function_">intersectObjects</span>(mesharr);</span><br><span class="line">  <span class="keyword">if</span> (intersects.<span class="property">length</span> === mesharr.<span class="property">length</span>) <span class="keyword">return</span>;</span><br><span class="line"></span><br><span class="line">  <span class="comment">// intersects 是一个按深度排序的数组</span></span><br><span class="line">  <span class="keyword">for</span> (<span class="keyword">let</span> i = <span class="number">0</span>; i &lt; intersects.<span class="property">length</span>; i++) &#123;&#125;</span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line"><span class="keyword">function</span> <span class="title function_">animate</span>(<span class="params"></span>) &#123;</span><br><span class="line">  <span class="title function_">rayTest</span>();</span><br><span class="line">  <span class="comment">//...</span></span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+<h4 id="补间动画"><a href="#补间动画" class="headerlink" title="补间动画"></a>补间动画</h4><p>THREE.js 集成了 <a target="_blank" rel="noopener" href="https://github.com/tweenjs/tween.js/blob/main/docs/user_guide_zh-CN.md">Tween</a> 动画库</p>
+<figure class="highlight js"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">import</span> &#123; <span class="title class_">Tween</span>, <span class="title class_">Easing</span> &#125; <span class="keyword">from</span> <span class="string">&quot;three/examples/jsm/libs/tween.module.js&quot;</span>;</span><br><span class="line"></span><br><span class="line"><span class="keyword">const</span> tween = <span class="keyword">new</span> <span class="title class_">Tween</span>(mesh.<span class="property">position</span>);</span><br><span class="line"><span class="comment">// 移动到某个位置</span></span><br><span class="line">tween.<span class="title function_">to</span>(&#123; <span class="attr">x</span>: <span class="number">2</span> &#125;, <span class="number">1000</span>);</span><br><span class="line"><span class="comment">// 位置更新时回调</span></span><br><span class="line">tween.<span class="title function_">onUpdate</span>(<span class="function">() =&gt;</span> &#123;</span><br><span class="line">  <span class="comment">// console.log(mesh.position.x);</span></span><br><span class="line">&#125;);</span><br><span class="line"><span class="comment">//重复次数</span></span><br><span class="line">tween.<span class="title function_">repeat</span>(<span class="number">10</span>);</span><br><span class="line"><span class="comment">// 是否往返</span></span><br><span class="line">tween.<span class="title function_">yoyo</span>(<span class="literal">true</span>);</span><br><span class="line"><span class="comment">// 是否延迟</span></span><br><span class="line">tween.<span class="title function_">delay</span>(<span class="number">1000</span>);</span><br><span class="line"></span><br><span class="line"><span class="comment">// 设置缓动</span></span><br><span class="line">tween.<span class="title function_">easing</span>(<span class="title class_">Easing</span>.<span class="property">Bounce</span>.<span class="property">In</span>);</span><br><span class="line">tween.<span class="title function_">start</span>();</span><br><span class="line"></span><br><span class="line"><span class="comment">// 动画链</span></span><br><span class="line"><span class="comment">// tween.chain(tween2);</span></span><br><span class="line"><span class="comment">// tween2.chain(tween);</span></span><br><span class="line"></span><br><span class="line"><span class="comment">// 更新动画</span></span><br><span class="line"><span class="keyword">function</span> <span class="title function_">animate</span>(<span class="params"></span>) &#123;</span><br><span class="line">  tween.<span class="title function_">update</span>();</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+ 
+      <!-- reward -->
+      
+      <div id="reword-out">
+        <div id="reward-btn">
+          打赏
+        </div>
+      </div>
+      
+    </div>
+    
+
+    <!-- copyright -->
+    
+    <div class="declare">
+      <ul class="post-copyright">
+        <li>
+          <i class="ri-copyright-line"></i>
+          <strong>版权声明： </strong>
+          
+          本博客所有文章除特别声明外，著作权归作者所有。转载请注明出处！
+          
+        </li>
+      </ul>
+    </div>
+    
+    <footer class="article-footer">
+       
+  <ul class="article-tag-list" itemprop="keywords"><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/Three-js/" rel="tag">Three.js</a></li><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/webGL/" rel="tag">webGL</a></li></ul>
+
+    </footer>
+  </div>
+
+   
+  <nav class="article-nav">
+    
+    
+      <a href="/posts/e59f62c24dc2/" class="article-nav-link">
+        <strong class="article-nav-caption">下一篇</strong>
+        <div class="article-nav-title">Git 命令/配置</div>
+      </a>
+    
+  </nav>
+
+  
+   
+<div class="gitalk" id="gitalk-container"></div>
+
+<link rel="stylesheet" href="https://cdn.staticfile.org/gitalk/1.7.2/gitalk.min.css">
+
+
+<script src="https://cdn.staticfile.org/gitalk/1.7.2/gitalk.min.js"></script>
+
+
+<script src="https://cdn.staticfile.org/blueimp-md5/2.19.0/js/md5.min.js"></script>
+
+<script type="text/javascript">
+  var gitalk = new Gitalk({
+    clientID: 'bce2317b25da7c3c18f6',
+    clientSecret: 'e0ab868ca9054234798be82c2b1c0c9dd8632307',
+    repo: 'noopn.github.io',
+    owner: 'noopn',
+    admin: ['noopn'],
+    // id: location.pathname,      // Ensure uniqueness and length less than 50
+    id: md5(location.pathname),
+    distractionFreeMode: false,  // Facebook-like distraction free mode
+    pagerDirection: 'last'
+  })
+
+  gitalk.render('gitalk-container')
+</script>
+
+     
+</article>
+
+</section>
+      <footer class="footer">
+  <div class="outer">
+    <ul>
+      <li>
+        Copyrights &copy;
+        2015-2024
+        <i class="ri-heart-fill heart_icon"></i> SunZhiqi
+      </li>
+    </ul>
+    <ul>
+      <li>
+        
+      </li>
+    </ul>
+    <ul>
+      <li>
+        
+      </li>
+    </ul>
+    <ul>
+      
+    </ul>
+    <ul>
+      
+    </ul>
+    <ul>
+      <li>
+        <!-- cnzz统计 -->
+        
+      </li>
+    </ul>
+  </div>
+</footer>    
+    </main>
+    <div class="float_btns">
+      <div class="totop" id="totop">
+  <i class="ri-arrow-up-line"></i>
+</div>
+
+    </div>
+    <aside class="sidebar on">
+      <button class="navbar-toggle"></button>
+<nav class="navbar">
+  
+  <div class="logo">
+    <a href="/"><img src="/images/ayer-side.png" alt="四月八日"></a>
+  </div>
+  
+  <ul class="nav nav-main">
+    
+    <li class="nav-item">
+      <a class="nav-item-link" href="/">主页</a>
+    </li>
+    
+    <li class="nav-item">
+      <a class="nav-item-link" href="/archives">归档</a>
+    </li>
+    
+    <li class="nav-item">
+      <a class="nav-item-link" href="/categories">分类</a>
+    </li>
+    
+    <li class="nav-item">
+      <a class="nav-item-link" href="/tags">标签</a>
+    </li>
+    
+    <li class="nav-item">
+      <a class="nav-item-link" href="/tags/Essay">随笔</a>
+    </li>
+    
+  </ul>
+</nav>
+<nav class="navbar navbar-bottom">
+  <ul class="nav">
+    <li class="nav-item">
+      
+      <a class="nav-item-link nav-item-search"  title="搜索">
+        <i class="ri-search-line"></i>
+      </a>
+      
+      
+    </li>
+  </ul>
+</nav>
+<div class="search-form-wrap">
+  <div class="local-search local-search-plugin">
+  <input type="search" id="local-search-input" class="local-search-input" placeholder="Search...">
+  <div id="local-search-result" class="local-search-result"></div>
+</div>
+</div>
+    </aside>
+    <div id="mask"></div>
+
+<!-- #reward -->
+<div id="reward">
+  <span class="close"><i class="ri-close-line"></i></span>
+  <p class="reward-p"><i class="ri-cup-line"></i>此时无声胜有声！</p>
+  <div class="reward-box">
+    
+    <div class="reward-item">
+      <img class="reward-img" src="/images/alipay.jpg">
+      <span class="reward-type">支付宝</span>
+    </div>
+    
+    
+    <div class="reward-item">
+      <img class="reward-img" src="/images/wechat.jpg">
+      <span class="reward-type">微信</span>
+    </div>
+    
+  </div>
+</div>
+    
+<script src="/js/jquery-3.6.0.min.js"></script>
+ 
+<script src="/js/lazyload.min.js"></script>
+
+<!-- Tocbot -->
+ 
+<script src="/js/tocbot.min.js"></script>
+
+<script>
+  tocbot.init({
+    tocSelector: ".tocbot",
+    contentSelector: ".article-entry",
+    headingSelector: "h1, h2, h3, h4, h5, h6",
+    hasInnerContainers: true,
+    scrollSmooth: true,
+    scrollContainer: "main",
+    positionFixedSelector: ".tocbot",
+    positionFixedClass: "is-position-fixed",
+    fixedSidebarOffset: "auto",
+  });
+</script>
+
+<script src="/js/jquery.modal.min.js"></script>
+<link rel="stylesheet" href="/css/jquery.modal.min.css" />
+<script src="/js/jquery.justifiedGallery.min.js"></script>
+
+<script src="/dist/main.js"></script>
+
+<!-- ImageViewer -->
+ <!-- Root element of PhotoSwipe. Must have class pswp. -->
+<div class="pswp" tabindex="-1" role="dialog" aria-hidden="true">
+  <!-- Background of PhotoSwipe. 
+         It's a separate element as animating opacity is faster than rgba(). -->
+  <div class="pswp__bg"></div>
+
+  <!-- Slides wrapper with overflow:hidden. -->
+  <div class="pswp__scroll-wrap">
+    <!-- Container that holds slides. 
+            PhotoSwipe keeps only 3 of them in the DOM to save memory.
+            Don't modify these 3 pswp__item elements, data is added later on. -->
+    <div class="pswp__container">
+      <div class="pswp__item"></div>
+      <div class="pswp__item"></div>
+      <div class="pswp__item"></div>
+    </div>
+
+    <!-- Default (PhotoSwipeUI_Default) interface on top of sliding area. Can be changed. -->
+    <div class="pswp__ui pswp__ui--hidden">
+      <div class="pswp__top-bar">
+        <!--  Controls are self-explanatory. Order can be changed. -->
+
+        <div class="pswp__counter"></div>
+
+        <button
+          class="pswp__button pswp__button--close"
+          title="Close (Esc)"
+        ></button>
+
+        <button
+          class="pswp__button pswp__button--share"
+          style="display: none"
+          title="Share"
+        ></button>
+
+        <button
+          class="pswp__button pswp__button--fs"
+          title="Toggle fullscreen"
+        ></button>
+
+        <button
+          class="pswp__button pswp__button--zoom"
+          title="Zoom in/out"
+        ></button>
+
+        <!-- Preloader demo http://codepen.io/dimsemenov/pen/yyBWoR -->
+        <!-- element will get class pswp__preloader--active when preloader is running -->
+        <div class="pswp__preloader">
+          <div class="pswp__preloader__icn">
+            <div class="pswp__preloader__cut">
+              <div class="pswp__preloader__donut"></div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <div class="pswp__share-modal pswp__share-modal--hidden pswp__single-tap">
+        <div class="pswp__share-tooltip"></div>
+      </div>
+
+      <button
+        class="pswp__button pswp__button--arrow--left"
+        title="Previous (arrow left)"
+      ></button>
+
+      <button
+        class="pswp__button pswp__button--arrow--right"
+        title="Next (arrow right)"
+      ></button>
+
+      <div class="pswp__caption">
+        <div class="pswp__caption__center"></div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<link rel="stylesheet" href="/css/photoswipe.min.css" />
+<link rel="stylesheet" href="/css/default-skin.min.css" />
+<script src="/js/photoswipe.min.js"></script>
+<script src="/js/photoswipe-ui-default.min.js"></script>
+
+<script>
+  function viewer_init() {
+    let pswpElement = document.querySelectorAll(".pswp")[0];
+    let $imgArr = document.querySelectorAll(
+      ".article-entry img:not(.reward-img)"
+    );
+
+    $imgArr.forEach(($em, i) => {
+      $em.onclick = () => {
+        // slider展开状态
+        // todo: 这样不好，后面改成状态
+        if (document.querySelector(".left-col.show")) return;
+        let items = [];
+        $imgArr.forEach(($em2, i2) => {
+          let img = $em2.getAttribute("data-idx", i2);
+          let src =
+            $em2.getAttribute("data-target") || $em2.getAttribute("src");
+          let title = $em2.getAttribute("alt");
+          // 获得原图尺寸
+          const image = new Image();
+          image.src = src;
+          items.push({
+            src: src,
+            w: image.width || $em2.width,
+            h: image.height || $em2.height,
+            title: title,
+          });
+        });
+        var gallery = new PhotoSwipe(pswpElement, PhotoSwipeUI_Default, items, {
+          index: parseInt(i),
+        });
+        gallery.init();
+      };
+    });
+  }
+  viewer_init();
+</script>
+ 
+<!-- MathJax -->
+ <script type="text/x-mathjax-config">
+  MathJax.Hub.Config({
+      tex2jax: {
+          inlineMath: [ ['$','$'], ["\\(","\\)"]  ],
+          processEscapes: true,
+          skipTags: ['script', 'noscript', 'style', 'textarea', 'pre', 'code']
+      }
+  });
+
+  MathJax.Hub.Queue(function() {
+      var all = MathJax.Hub.getAllJax(), i;
+      for(i=0; i < all.length; i += 1) {
+          all[i].SourceElement().parentNode.className += ' has-jax';
+      }
+  });
+</script>
+
+<script src="/js/MathJax.js"></script>
+<script src="/js/TeX-AMS-MML_HTMLorMML-full.js"></script>
+
+<script>
+  var ayerConfig = {
+    mathjax: true,
+  };
+</script>
+
+<!-- Katex -->
+
+<!-- busuanzi  -->
+
+<!-- ClickLove -->
+
+<!-- ClickBoom1 -->
+
+<!-- ClickBoom2 -->
+
+<!-- CodeCopy -->
+ 
+<link rel="stylesheet" href="/css/clipboard.css">
+ <script src="/js/clipboard.min.js"></script>
+<script>
+  function wait(callback, seconds) {
+    var timelag = null;
+    timelag = window.setTimeout(callback, seconds);
+  }
+  !(function (e, t, a) {
+    var initCopyCode = function () {
+      var copyHtml = "";
+      copyHtml += '<button class="btn-copy" data-clipboard-snippet="">';
+      copyHtml += '<i class="ri-file-copy-2-line"></i><span>COPY</span>';
+      copyHtml += "</button>";
+      $(".highlight .code pre").before(copyHtml);
+      $(".article pre code").before(copyHtml);
+      var clipboard = new ClipboardJS(".btn-copy", {
+        target: function (trigger) {
+          return trigger.nextElementSibling;
+        },
+      });
+      clipboard.on("success", function (e) {
+        let $btn = $(e.trigger);
+        $btn.addClass("copied");
+        let $icon = $($btn.find("i"));
+        $icon.removeClass("ri-file-copy-2-line");
+        $icon.addClass("ri-checkbox-circle-line");
+        let $span = $($btn.find("span"));
+        $span[0].innerText = "COPIED";
+
+        wait(function () {
+          // 等待两秒钟后恢复
+          $icon.removeClass("ri-checkbox-circle-line");
+          $icon.addClass("ri-file-copy-2-line");
+          $span[0].innerText = "COPY";
+        }, 2000);
+      });
+      clipboard.on("error", function (e) {
+        e.clearSelection();
+        let $btn = $(e.trigger);
+        $btn.addClass("copy-failed");
+        let $icon = $($btn.find("i"));
+        $icon.removeClass("ri-file-copy-2-line");
+        $icon.addClass("ri-time-line");
+        let $span = $($btn.find("span"));
+        $span[0].innerText = "COPY FAILED";
+
+        wait(function () {
+          // 等待两秒钟后恢复
+          $icon.removeClass("ri-time-line");
+          $icon.addClass("ri-file-copy-2-line");
+          $span[0].innerText = "COPY";
+        }, 2000);
+      });
+    };
+    initCopyCode();
+  })(window, document);
+</script>
+ 
+<!-- CanvasBackground -->
+
+<script>
+  if (window.mermaid) {
+    mermaid.initialize({ theme: "default" });
+  }
+</script>
+
+
+    
+    
+
+  </div>
+</body>
+
+</html>

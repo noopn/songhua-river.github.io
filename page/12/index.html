@@ -112,6 +112,59 @@
     
     
     <article
+  id="post-webpack/complation"
+  class="article article-type-post"
+  itemscope
+  itemprop="blogPost"
+  data-scroll-reveal
+>
+  <div class="article-inner">
+    
+    <header class="article-header">
+       
+<h2 itemprop="name">
+  <a class="article-title" href="/posts/b2fa485a999e/"
+    >webpack中complation用法</a> 
+</h2>
+ 
+
+      
+    </header>
+     
+    <div class="article-meta">
+      <a href="/posts/b2fa485a999e/" class="article-date">
+  <time datetime="2021-08-26T07:04:17.000Z" itemprop="datePublished">2021-08-26</time>
+</a> 
+  <div class="article-category">
+    <a class="article-category-link" href="/categories/webpack/">webpack</a>
+  </div>
+   
+    </div>
+      
+    <div class="article-entry" itemprop="articleBody">
+       
+  <h4 id="Compilation"><a href="#Compilation" class="headerlink" title="Compilation"></a>Compilation</h4><p><a target="_blank" rel="noopener" href="https://webpack.docschina.org/api/compilation-hooks/">Compilation</a> 模块会被 Compiler 用来创建新的 compilation 对象（或新的 build 对象）。 compilation 实例能够访问所有的模块和它们的依赖（大部分是循环依赖）。 它会对应用程序的依赖图中所有模块， 进行字面上的编译(literal compilation)。 在编译阶段，模块会被加载(load)、封存(seal)、优化(optimize)、 分块(chunk)、哈希(hash)和重新创建(restore)。</p>
+<figure class="highlight javascript"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">const</span> &#123;<span class="title class_">RawSource</span>&#125;  = <span class="built_in">require</span>(<span class="string">&#x27;webpack&#x27;</span>).<span class="property">sources</span>;</span><br><span class="line"><span class="keyword">const</span> fs = <span class="built_in">require</span>(<span class="string">&#x27;fs&#x27;</span>);</span><br><span class="line"><span class="keyword">const</span> &#123;promisify&#125; = <span class="built_in">require</span>(<span class="string">&#x27;util&#x27;</span>);</span><br><span class="line"><span class="keyword">const</span> readFile = <span class="title function_">promisify</span>(fs.<span class="property">readFile</span>);</span><br><span class="line"><span class="keyword">const</span> path = <span class="built_in">require</span>(<span class="string">&#x27;path&#x27;</span>);</span><br><span class="line"></span><br><span class="line"><span class="keyword">class</span> <span class="title class_">Plugin1</span> &#123;</span><br><span class="line">  <span class="title function_">apply</span>(<span class="params">compiler</span>) &#123;</span><br><span class="line">    compiler.<span class="property">hooks</span>.<span class="property">thisCompilation</span>.<span class="title function_">tap</span>(<span class="string">&#x27;Plugin2&#x27;</span>,<span class="function">(<span class="params">compilation</span>)=&gt;</span>&#123;</span><br><span class="line">      <span class="comment">// compilation也有自己的生命周期</span></span><br><span class="line">      <span class="comment">// 可以对compilation对象上的资源进行操作</span></span><br><span class="line">      compilation.<span class="property">hooks</span>.<span class="property">additionalAssets</span>.<span class="title function_">tapAsync</span>(<span class="string">&#x27;Plugin2&#x27;</span>, <span class="keyword">async</span> (callback) =&gt; &#123;</span><br><span class="line">        </span><br><span class="line">        <span class="keyword">const</span> file = <span class="keyword">await</span> <span class="title function_">readFile</span>(path.<span class="title function_">resolve</span>(__dirname,<span class="string">&#x27;../src/b.txt&#x27;</span>));</span><br><span class="line"></span><br><span class="line">        <span class="comment">// 添加额外的打包资源</span></span><br><span class="line">        compilation.<span class="property">assets</span>[<span class="string">&#x27;b.txt&#x27;</span>] = <span class="keyword">new</span> <span class="title class_">RawSource</span>(file);</span><br><span class="line">        <span class="title function_">callback</span>()</span><br><span class="line">      &#125;);</span><br><span class="line">    &#125;)</span><br><span class="line">  &#125;</span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line"><span class="variable language_">module</span>.<span class="property">exports</span> = <span class="title class_">Plugin1</span>;</span><br></pre></td></tr></table></figure> 
+      <!-- reward -->
+      
+    </div>
+    
+
+    <!-- copyright -->
+    
+    <footer class="article-footer">
+       
+  <ul class="article-tag-list" itemprop="keywords"><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/webpack/" rel="tag">webpack</a></li><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/%E5%B7%A5%E7%A8%8B%E5%8C%96/" rel="tag">工程化</a></li></ul>
+
+    </footer>
+  </div>
+
+   
+    
+</article>
+
+    
+    <article
   id="post-webpack/complier"
   class="article article-type-post"
   itemscope
@@ -902,70 +955,6 @@
     <footer class="article-footer">
        
   <ul class="article-tag-list" itemprop="keywords"><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/Ubuntu/" rel="tag">Ubuntu</a></li></ul>
-
-    </footer>
-  </div>
-
-   
-    
-</article>
-
-    
-    <article
-  id="post-algorithm/leetcode/(133)克隆图"
-  class="article article-type-post"
-  itemscope
-  itemprop="blogPost"
-  data-scroll-reveal
->
-  <div class="article-inner">
-    
-    <header class="article-header">
-       
-<h2 itemprop="name">
-  <a class="article-title" href="/posts/91c819c2446f/"
-    >133. 克隆图</a> 
-</h2>
- 
-
-      
-    </header>
-     
-    <div class="article-meta">
-      <a href="/posts/91c819c2446f/" class="article-date">
-  <time datetime="2021-07-02T13:33:23.000Z" itemprop="datePublished">2021-07-02</time>
-</a> 
-  <div class="article-category">
-    <a class="article-category-link" href="/categories/%E7%AE%97%E6%B3%95/">算法</a> / <a class="article-category-link" href="/categories/%E7%AE%97%E6%B3%95/LeetCode/">LeetCode</a> / <a class="article-category-link" href="/categories/%E7%AE%97%E6%B3%95/LeetCode/Medium/">Medium</a>
-  </div>
-   
-    </div>
-      
-    <div class="article-entry" itemprop="articleBody">
-       
-  <h5 id="LeetCode"><a href="#LeetCode" class="headerlink" title="LeetCode"></a><a target="_blank" rel="noopener" href="https://leetcode-cn.com/problems/clone-graph/">LeetCode</a></h5><p><strong>注意：</strong> 执行测试用例的时候，不会每次都在一个新的全局作用域中执行，需要注意变量的声明位置，防止污染代码执行</p>
-<h3 id="第一步-实现图的深度遍历-DFS"><a href="#第一步-实现图的深度遍历-DFS" class="headerlink" title="第一步 实现图的深度遍历 DFS"></a>第一步 实现图的深度遍历 DFS</h3><figure class="highlight javascript"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">const</span> <span class="title function_">cloneGraph</span> = (<span class="params">node</span>)=&gt;&#123;</span><br><span class="line">  <span class="keyword">if</span>(!node) <span class="keyword">return</span> node;</span><br><span class="line">  <span class="keyword">const</span> <span class="title function_">dfs</span> = (<span class="params">node</span>) =&gt; &#123;</span><br><span class="line">    <span class="variable language_">console</span>.<span class="title function_">log</span>(node.<span class="property">val</span>);</span><br><span class="line">    node.<span class="property">isVisit</span> = <span class="literal">true</span>;</span><br><span class="line">    node.<span class="property">neighbors</span>.<span class="title function_">forEach</span>(<span class="function"><span class="params">n</span> =&gt;</span> &#123;</span><br><span class="line">        <span class="keyword">if</span>(!n.<span class="property">isVisit</span>) <span class="title function_">dfs</span>(n);</span><br><span class="line">    &#125;);</span><br><span class="line">  &#125;</span><br><span class="line">  <span class="title function_">dfs</span>(node);</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
-
-<h3 id="第二步-克隆节点并保存"><a href="#第二步-克隆节点并保存" class="headerlink" title="第二步 克隆节点并保存"></a>第二步 克隆节点并保存</h3><figure class="highlight javascript"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">const</span> <span class="title function_">cloneGraph</span> = (<span class="params">node</span>)=&gt;&#123;</span><br><span class="line">  <span class="keyword">if</span>(!node) <span class="keyword">return</span> node;</span><br><span class="line">  <span class="keyword">const</span> map = <span class="keyword">new</span> <span class="title class_">Map</span>();</span><br><span class="line">  <span class="keyword">const</span> <span class="title function_">dfs</span> = (<span class="params">node</span>) =&gt; &#123;</span><br><span class="line">    map.<span class="title function_">set</span>(node,<span class="keyword">new</span> <span class="title class_">Node</span>(node.<span class="property">val</span>))</span><br><span class="line">    node.<span class="property">neighbors</span>.<span class="title function_">forEach</span>(<span class="function"><span class="params">n</span> =&gt;</span> &#123;</span><br><span class="line">      <span class="keyword">if</span>(!map.<span class="title function_">get</span>(n)) <span class="title function_">dfs</span>(n);</span><br><span class="line">    &#125;);</span><br><span class="line">  &#125;</span><br><span class="line">  <span class="title function_">dfs</span>(node);</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
-
-<h3 id="第三步-添加节点间关系"><a href="#第三步-添加节点间关系" class="headerlink" title="第三步 添加节点间关系"></a>第三步 添加节点间关系</h3><figure class="highlight javascript"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">const</span> <span class="title function_">cloneGraph</span> = (<span class="params">node</span>)=&gt;&#123;</span><br><span class="line">  <span class="keyword">if</span>(!node) <span class="keyword">return</span> node;</span><br><span class="line">  <span class="keyword">const</span> map = <span class="keyword">new</span> <span class="title class_">Map</span>();</span><br><span class="line">  <span class="keyword">const</span> <span class="title function_">dfs</span> = (<span class="params">node</span>) =&gt; &#123;</span><br><span class="line">    map.<span class="title function_">set</span>(node,<span class="keyword">new</span> <span class="title class_">Node</span>(node.<span class="property">val</span>))</span><br><span class="line">    node.<span class="property">neighbors</span>.<span class="title function_">forEach</span>(<span class="function"><span class="params">n</span> =&gt;</span> &#123;</span><br><span class="line">      <span class="keyword">if</span>(!map.<span class="title function_">get</span>(n)) <span class="title function_">dfs</span>(n);</span><br><span class="line">      map.<span class="title function_">get</span>(node).<span class="property">neighbors</span>.<span class="title function_">push</span>(map.<span class="title function_">get</span>(n));</span><br><span class="line">    &#125;);</span><br><span class="line">  &#125;</span><br><span class="line">  <span class="title function_">dfs</span>(node);</span><br><span class="line">  <span class="keyword">return</span> map.<span class="title function_">get</span>(node)</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
-
-<h3 id="变形写法"><a href="#变形写法" class="headerlink" title="变形写法"></a>变形写法</h3><p>在传参的过程中添加更多的信息</p>
-<figure class="highlight javascript"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">var</span> cloneGraph = <span class="keyword">function</span> (<span class="params">node</span>) &#123;</span><br><span class="line">  <span class="keyword">const</span> map = <span class="keyword">new</span> <span class="title class_">Map</span>();</span><br><span class="line">  <span class="keyword">const</span> cloneNode = <span class="keyword">new</span> <span class="title class_">Node</span>(node.<span class="property">val</span>);</span><br><span class="line">  map.<span class="title function_">set</span>(node.<span class="property">val</span>, cloneNode)</span><br><span class="line">  <span class="keyword">const</span> <span class="title function_">dfs</span> = (<span class="params">cloneNode, node, neighbors</span>) =&gt; &#123;</span><br><span class="line">    <span class="keyword">for</span> (<span class="keyword">let</span> n <span class="keyword">of</span> node.<span class="property">neighbors</span>) &#123;</span><br><span class="line">      <span class="keyword">if</span> (map.<span class="title function_">has</span>(n.<span class="property">val</span>)) &#123;</span><br><span class="line">        neighbors.<span class="title function_">push</span>(map.<span class="title function_">get</span>(n.<span class="property">val</span>))</span><br><span class="line">      &#125; <span class="keyword">else</span> &#123;</span><br><span class="line">        <span class="keyword">const</span> cloneNode = <span class="keyword">new</span> <span class="title class_">Node</span>(n.<span class="property">val</span>)</span><br><span class="line">        neighbors.<span class="title function_">push</span>(cloneNode)</span><br><span class="line">        map.<span class="title function_">set</span>(n.<span class="property">val</span>, cloneNode)</span><br><span class="line">        <span class="title function_">dfs</span>(cloneNode, n, cloneNode.<span class="property">neighbors</span>)</span><br><span class="line">      &#125;</span><br><span class="line">    &#125;</span><br><span class="line">  &#125;</span><br><span class="line">  <span class="title function_">dfs</span>(cloneNode, node, cloneNode.<span class="property">neighbors</span>)</span><br><span class="line">  <span class="keyword">return</span> cloneNode;</span><br><span class="line">&#125;;</span><br></pre></td></tr></table></figure>
-
-<h3 id="广度优先遍历BFS"><a href="#广度优先遍历BFS" class="headerlink" title="广度优先遍历BFS"></a>广度优先遍历BFS</h3><figure class="highlight javascript"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">const</span> <span class="title function_">cloneGraph</span> = (<span class="params">node</span>) =&gt; &#123;</span><br><span class="line">  <span class="keyword">if</span> (!node) <span class="keyword">return</span> node;</span><br><span class="line">  <span class="keyword">const</span> map = <span class="keyword">new</span> <span class="title class_">Map</span>();</span><br><span class="line">  <span class="keyword">const</span> stack = [node];</span><br><span class="line">  <span class="keyword">let</span> clone = <span class="literal">null</span>;</span><br><span class="line">  <span class="keyword">while</span> (stack.<span class="property">length</span>) &#123;</span><br><span class="line">    <span class="keyword">const</span> last = stack.<span class="title function_">pop</span>();</span><br><span class="line">    <span class="keyword">if</span> (!map.<span class="title function_">get</span>(last)) &#123;</span><br><span class="line">      clone = <span class="keyword">new</span> <span class="title class_">Node</span>(last.<span class="property">val</span>);</span><br><span class="line">      map.<span class="title function_">set</span>(last, clone);</span><br><span class="line">    &#125; <span class="keyword">else</span> &#123;</span><br><span class="line">      clone = map.<span class="title function_">get</span>(last)</span><br><span class="line">    &#125;</span><br><span class="line">    last.<span class="property">neighbors</span>.<span class="title function_">forEach</span>(<span class="function"><span class="params">n</span> =&gt;</span> &#123;</span><br><span class="line">      <span class="keyword">if</span> (!map.<span class="title function_">get</span>(n)) &#123;</span><br><span class="line">        <span class="keyword">const</span> temp = <span class="keyword">new</span> <span class="title class_">Node</span>(n.<span class="property">val</span>);</span><br><span class="line">        clone.<span class="property">neighbors</span>.<span class="title function_">push</span>(temp);</span><br><span class="line">        map.<span class="title function_">set</span>(n, temp);</span><br><span class="line">        stack.<span class="title function_">unshift</span>(n);</span><br><span class="line">      &#125; <span class="keyword">else</span> &#123;</span><br><span class="line">        clone.<span class="property">neighbors</span>.<span class="title function_">push</span>(map.<span class="title function_">get</span>(n));</span><br><span class="line">      &#125;</span><br><span class="line">    &#125;)</span><br><span class="line">  &#125;</span><br><span class="line">  <span class="keyword">return</span> map.<span class="title function_">get</span>(node);</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
-
-<h3 id="广度优先遍历优化"><a href="#广度优先遍历优化" class="headerlink" title="广度优先遍历优化"></a>广度优先遍历优化</h3><figure class="highlight javascript"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">const</span> <span class="title function_">cloneGraph</span> = (<span class="params">node</span>) =&gt; &#123;</span><br><span class="line">  <span class="keyword">if</span> (!node) <span class="keyword">return</span> node;</span><br><span class="line">  <span class="keyword">const</span> map = <span class="keyword">new</span> <span class="title class_">Map</span>();</span><br><span class="line">  <span class="keyword">const</span> stack = [node];</span><br><span class="line">  <span class="comment">// 默认克隆第一个节点</span></span><br><span class="line">  map.<span class="title function_">set</span>(node, <span class="keyword">new</span> <span class="title class_">Node</span>(node.<span class="property">val</span>));</span><br><span class="line">  </span><br><span class="line">  <span class="keyword">while</span> (stack.<span class="property">length</span>) &#123;</span><br><span class="line">    <span class="keyword">const</span> next = stack.<span class="title function_">pop</span>();</span><br><span class="line">    next.<span class="property">neighbors</span>.<span class="title function_">forEach</span>(<span class="function"><span class="params">n</span> =&gt;</span> &#123;</span><br><span class="line">      <span class="keyword">if</span> (!map.<span class="title function_">get</span>(n)) &#123;</span><br><span class="line">        map.<span class="title function_">set</span>(n, <span class="keyword">new</span> <span class="title class_">Node</span>(n.<span class="property">val</span>));</span><br><span class="line">        stack.<span class="title function_">unshift</span>(n);</span><br><span class="line">      &#125; </span><br><span class="line">      <span class="comment">//上一步已经在map中保存了节点，可以直接使用</span></span><br><span class="line">      map.<span class="title function_">get</span>(next).<span class="property">neighbors</span>.<span class="title function_">push</span>(map.<span class="title function_">get</span>(n));</span><br><span class="line">    &#125;)</span><br><span class="line">  &#125;</span><br><span class="line">  <span class="keyword">return</span> map.<span class="title function_">get</span>(node);</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure> 
-      <!-- reward -->
-      
-    </div>
-    
-
-    <!-- copyright -->
-    
-    <footer class="article-footer">
-       
-  <ul class="article-tag-list" itemprop="keywords"><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/LeetCode/" rel="tag">LeetCode</a></li><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/%E7%AE%97%E6%B3%95/" rel="tag">算法</a></li></ul>
 
     </footer>
   </div>

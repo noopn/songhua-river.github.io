@@ -112,6 +112,60 @@
     
     
     <article
+  id="post-engg/文件自动同步服务器"
+  class="article article-type-post"
+  itemscope
+  itemprop="blogPost"
+  data-scroll-reveal
+>
+  <div class="article-inner">
+    
+    <header class="article-header">
+       
+<h2 itemprop="name">
+  <a class="article-title" href="/posts/521c28385b2b/"
+    >文件自动同步服务器</a> 
+</h2>
+ 
+
+      
+    </header>
+     
+    <div class="article-meta">
+      <a href="/posts/521c28385b2b/" class="article-date">
+  <time datetime="2020-12-26T13:20:25.000Z" itemprop="datePublished">2020-12-26</time>
+</a> 
+  <div class="article-category">
+    <a class="article-category-link" href="/categories/DevOps/">DevOps</a>
+  </div>
+   
+    </div>
+      
+    <div class="article-entry" itemprop="articleBody">
+       
+  <h4 id="index-js"><a href="#index-js" class="headerlink" title="index.js"></a>index.js</h4><figure class="highlight javascript"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br></pre></td><td class="code"><pre><span class="line"><span class="meta">#!/usr/bin/env node</span></span><br><span class="line"></span><br><span class="line"><span class="keyword">const</span> shell = <span class="built_in">require</span>(<span class="string">&#x27;shelljs&#x27;</span>)</span><br><span class="line"><span class="keyword">const</span> chokidar = <span class="built_in">require</span>(<span class="string">&#x27;chokidar&#x27;</span>)</span><br><span class="line"><span class="keyword">const</span> home = <span class="built_in">require</span>(<span class="string">&#x27;user-home&#x27;</span>)</span><br><span class="line"><span class="keyword">const</span> path = <span class="built_in">require</span>(<span class="string">&#x27;path&#x27;</span>)</span><br><span class="line"></span><br><span class="line"><span class="keyword">const</span> <span class="variable constant_">WORKSPACE_PATH</span> = path.<span class="title function_">resolve</span>(home, <span class="string">&#x27;Workspace&#x27;</span>);</span><br><span class="line"></span><br><span class="line"><span class="keyword">const</span> expectPath = path.<span class="title function_">join</span>(__dirname, <span class="string">&#x27;./expect.exp&#x27;</span>)</span><br><span class="line"><span class="keyword">const</span> to = <span class="string">&#x27;root@144.xxx.xxx.92:/home/backup&#x27;</span></span><br><span class="line"></span><br><span class="line">chokidar</span><br><span class="line">  .<span class="title function_">watch</span>(<span class="string">&#x27;./index.js&#x27;</span>, &#123;</span><br><span class="line">    <span class="attr">ignored</span>: <span class="function">(<span class="params">path</span>) =&gt;</span> path.<span class="title function_">includes</span>(<span class="string">&#x27;node_modules&#x27;</span>) || path.<span class="title function_">includes</span>(<span class="string">&#x27;.git&#x27;</span>)</span><br><span class="line">  &#125;)</span><br><span class="line">  .<span class="title function_">on</span>(<span class="string">&#x27;all&#x27;</span>, <span class="function">(<span class="params">event, path</span>) =&gt;</span> &#123;</span><br><span class="line">    <span class="variable language_">console</span>.<span class="title function_">log</span>(event, path);</span><br><span class="line">    shell.<span class="title function_">exec</span>(<span class="string">`expect <span class="subst">$&#123;expectPath&#125;</span> <span class="subst">$&#123;path&#125;</span> <span class="subst">$&#123;to&#125;</span>`</span>)</span><br><span class="line">  &#125;); </span><br><span class="line"></span><br></pre></td></tr></table></figure>
+
+<h4 id="expect-exp"><a href="#expect-exp" class="headerlink" title="expect.exp"></a>expect.exp</h4><figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment">#expect 不能写错</span></span><br><span class="line"><span class="comment">#!/usr/bin/expect</span></span><br><span class="line"></span><br><span class="line"><span class="built_in">set</span> from [lindex <span class="variable">$argv</span> 0]</span><br><span class="line"><span class="built_in">set</span> to [lindex <span class="variable">$argv</span> 1]</span><br><span class="line"></span><br><span class="line"><span class="built_in">set</span> <span class="built_in">timeout</span> 30</span><br><span class="line"></span><br><span class="line">spawn bash -c <span class="string">&quot;scp <span class="variable">$from</span> <span class="variable">$to</span>&quot;</span></span><br><span class="line"></span><br><span class="line"><span class="comment"># 特殊符号需要转移 回车符号不需要</span></span><br><span class="line"><span class="comment"># \ 需转义为 \\\</span></span><br><span class="line"><span class="comment"># &#125; 需转义为 \&#125;</span></span><br><span class="line"><span class="comment"># [ 需转义为 \[</span></span><br><span class="line"><span class="comment"># $ 需转义为 \\\$</span></span><br><span class="line"><span class="comment"># ` 需转义为 \`</span></span><br><span class="line"><span class="comment"># &quot; 需转义为 \\\&quot;</span></span><br><span class="line"><span class="comment"># ( 需转义为 \(</span></span><br><span class="line"></span><br><span class="line"></span><br><span class="line">expect &#123;</span><br><span class="line">  <span class="string">&quot;*password:&quot;</span> &#123; send -- <span class="string">&quot;j\(S7?xx#ky6\[0n=R\r&quot;</span> &#125;</span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line"><span class="comment"># 必须要加这一句，在执行完毕后把持交互状态，把控制台，这时候就可以进行你想要进行的操作了。如果没有这一句，在登陆完成之后就会退出，而不是留在远程终端上。</span></span><br><span class="line">interact</span><br></pre></td></tr></table></figure> 
+      <!-- reward -->
+      
+    </div>
+    
+
+    <!-- copyright -->
+    
+    <footer class="article-footer">
+       
+  <ul class="article-tag-list" itemprop="keywords"><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/DevOps/" rel="tag">DevOps</a></li><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/%E5%B7%A5%E7%A8%8B%E5%8C%96/" rel="tag">工程化</a></li></ul>
+
+    </footer>
+  </div>
+
+   
+    
+</article>
+
+    
+    <article
   id="post-javascript/性能优化"
   class="article article-type-post"
   itemscope
@@ -178,7 +232,7 @@
 
     
     <article
-  id="post-dev/CLI"
+  id="post-engg/CLI"
   class="article article-type-post"
   itemscope
   itemprop="blogPost"
@@ -189,7 +243,7 @@
     <header class="article-header">
        
 <h2 itemprop="name">
-  <a class="article-title" href="/posts/62f3119e465a/"
+  <a class="article-title" href="/posts/d9acef9110c5/"
     >CLI</a> 
 </h2>
  
@@ -198,7 +252,7 @@
     </header>
      
     <div class="article-meta">
-      <a href="/posts/62f3119e465a/" class="article-date">
+      <a href="/posts/d9acef9110c5/" class="article-date">
   <time datetime="2020-12-20T06:51:27.000Z" itemprop="datePublished">2020-12-20</time>
 </a> 
   <div class="article-category">
@@ -372,7 +426,7 @@ $ vue init username/repo my-project
 
     
     <article
-  id="post-dev/BFF_A"
+  id="post-engg/BFF_A"
   class="article article-type-post"
   itemscope
   itemprop="blogPost"
@@ -383,7 +437,7 @@ $ vue init username/repo my-project
     <header class="article-header">
        
 <h2 itemprop="name">
-  <a class="article-title" href="/posts/8abc4917b3ed/"
+  <a class="article-title" href="/posts/285cc9e9f461/"
     >BFF 实践</a> 
 </h2>
  
@@ -392,7 +446,7 @@ $ vue init username/repo my-project
     </header>
      
     <div class="article-meta">
-      <a href="/posts/8abc4917b3ed/" class="article-date">
+      <a href="/posts/285cc9e9f461/" class="article-date">
   <time datetime="2020-12-10T06:56:09.000Z" itemprop="datePublished">2020-12-10</time>
 </a> 
   <div class="article-category">
@@ -404,12 +458,12 @@ $ vue init username/repo my-project
     <div class="article-entry" itemprop="articleBody">
        
   <h4 id="BFF"><a href="#BFF" class="headerlink" title="BFF"></a>BFF</h4><p>BFF，即 Backend For Frontend（服务于前端的后端），也就是服务器设计 API 时会考虑前端的使用，并在服务端直接进行业务逻辑的处理，又称为用户体验适配器。BFF 只是一种逻辑分层，而非一种技术，虽然 BFF 是一个新名词，但它的理念由来已久。</p>
-<p><img src="/posts/8abc4917b3ed/0001.webp"></p>
+<p><img src="/posts/285cc9e9f461/0001.webp"></p>
 <p>通常一个页面的请求包含了多个不同的请求，用于页面组件的渲染</p>
 <p>同时为了保障 Android，iOS，以及 Web 端的不同需求，需要为不同的平台写不同的 API 接口，而每当值发生一些变化时，需要 Android，iOS，Web 做出修改。</p>
-<p><img src="/posts/8abc4917b3ed/0002.webp"></p>
+<p><img src="/posts/285cc9e9f461/0002.webp"></p>
 <p>有了 BFF 这一层时，我们就不需要考虑系统后端的迁移。后端发生的变化都可以在 BFF 层做一些响应的修改</p>
-<p><img src="/posts/8abc4917b3ed/0003.webp"></p>
+<p><img src="/posts/285cc9e9f461/0003.webp"></p>
 <h5 id="BFF-场景"><a href="#BFF-场景" class="headerlink" title="BFF 场景"></a>BFF 场景</h5><p><strong>多端应用</strong></p>
 <p>我们在设计 API 时会考虑到不同设备的需求，也就是为不同的设备提供不同的 API，虽然它们可能是实现相同的功能，但因为不同设备的特殊性，它们对服务端的 API 访问也各有其特点，需要区别处理。</p>
 <p><strong>服务聚合</strong></p>
@@ -420,7 +474,7 @@ $ vue init username/repo my-project
 <p>项目中时常存在一些需要缓存的临时数据，此时 BFF 作为业务的汇聚点，距离用户请求最近，遂将该缓存操作放在 BFF 层。</p>
 <p><strong>第三方入口</strong></p>
 <p>在业务中需要与第三交互时，将该交互放在 BFF 层，这样可以只暴露必要信息给第三方，从而便于控制第三方的访问。</p>
-<h4 id="初始化项目"><a href="#初始化项目" class="headerlink" title="初始化项目"></a>初始化项目</h4><h5 id="项目目录结构划分"><a href="#项目目录结构划分" class="headerlink" title="项目目录结构划分"></a>项目目录结构划分</h5><p><img src="/posts/8abc4917b3ed/0001.png"></p>
+<h4 id="初始化项目"><a href="#初始化项目" class="headerlink" title="初始化项目"></a>初始化项目</h4><h5 id="项目目录结构划分"><a href="#项目目录结构划分" class="headerlink" title="项目目录结构划分"></a>项目目录结构划分</h5><p><img src="/posts/285cc9e9f461/0001.png"></p>
 <h5 id="package-json-生命周期-并行执行"><a href="#package-json-生命周期-并行执行" class="headerlink" title="package.json 生命周期 并行执行"></a>package.json 生命周期 并行执行</h5><p>安装webpack</p>
 <figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">yarn add -D webpack-cli webpack</span><br></pre></td></tr></table></figure>
 
@@ -443,7 +497,7 @@ $ vue init username/repo my-project
 <figure class="highlight json"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br></pre></td><td class="code"><pre><span class="line"><span class="attr">&quot;scripts&quot;</span><span class="punctuation">:</span> <span class="punctuation">&#123;</span></span><br><span class="line">  <span class="attr">&quot;test:one&quot;</span><span class="punctuation">:</span> <span class="string">&quot;scripty&quot;</span><span class="punctuation">,</span></span><br><span class="line">  <span class="attr">&quot;test:two&quot;</span><span class="punctuation">:</span> <span class="string">&quot;scripty&quot;</span><span class="punctuation">,</span></span><br><span class="line">  <span class="attr">&quot;test&quot;</span><span class="punctuation">:</span> <span class="string">&quot;scripty&quot;</span></span><br><span class="line"><span class="punctuation">&#125;</span></span><br></pre></td></tr></table></figure>
 
 <p>按照命令建立文件夹</p>
-<p><img src="/posts/8abc4917b3ed/0002.png"></p>
+<p><img src="/posts/285cc9e9f461/0002.png"></p>
 <p>执行 <code>yarn test</code> test文件夹下面的所有命令</p>
 <h5 id="package-json-定义公共参数"><a href="#package-json-定义公共参数" class="headerlink" title="package.json 定义公共参数"></a>package.json 定义公共参数</h5><p>package.json</p>
 <figure class="highlight json"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><span class="line"><span class="attr">&quot;config&quot;</span><span class="punctuation">:</span><span class="punctuation">&#123;</span></span><br><span class="line">  <span class="attr">&quot;port&quot;</span><span class="punctuation">:</span><span class="number">9999</span></span><br><span class="line"><span class="punctuation">&#125;</span></span><br></pre></td></tr></table></figure>
@@ -506,7 +560,7 @@ $ vue init username/repo my-project
 
     
     <article
-  id="post-dev/sonarQube"
+  id="post-engg/sonarQube"
   class="article article-type-post"
   itemscope
   itemprop="blogPost"
@@ -517,7 +571,7 @@ $ vue init username/repo my-project
     <header class="article-header">
        
 <h2 itemprop="name">
-  <a class="article-title" href="/posts/952bc1348404/"
+  <a class="article-title" href="/posts/3cb0fdb2065e/"
     >sonarQube</a> 
 </h2>
  
@@ -526,7 +580,7 @@ $ vue init username/repo my-project
     </header>
      
     <div class="article-meta">
-      <a href="/posts/952bc1348404/" class="article-date">
+      <a href="/posts/3cb0fdb2065e/" class="article-date">
   <time datetime="2020-12-04T08:40:25.000Z" itemprop="datePublished">2020-12-04</time>
 </a> 
   <div class="article-category">
@@ -538,8 +592,8 @@ $ vue init username/repo my-project
     <div class="article-entry" itemprop="articleBody">
        
   <h4 id="Java-环境"><a href="#Java-环境" class="headerlink" title="Java 环境"></a>Java 环境</h4><p>ubuntu 版本</p>
-<p><img src="/posts/952bc1348404/0002.png"></p>
-<p><img src="/posts/952bc1348404/0003.png"></p>
+<p><img src="/posts/3cb0fdb2065e/0002.png"></p>
+<p><img src="/posts/3cb0fdb2065e/0003.png"></p>
 <figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">sudo dpkg -i jdk-11.0.9_linux-x64_bin.deb</span><br></pre></td></tr></table></figure>
 
 <p>查看安装路径</p>
@@ -552,7 +606,7 @@ $ vue init username/repo my-project
 
 <p>服务端： 规则放在服务端，提供一些web hook 和 Jenkins 集成</p>
 <p>客户端：在客户端执行，首先去服务端拉取规则 ☝ ，根据规则扫描代码，在本地生成报表， 把报表上传到服务器 ☝ 。</p>
-<h4 id="下载-sonarQube"><a href="#下载-sonarQube" class="headerlink" title="下载 sonarQube"></a>下载 sonarQube</h4><p><img src="/posts/952bc1348404/0001.png"></p>
+<h4 id="下载-sonarQube"><a href="#下载-sonarQube" class="headerlink" title="下载 sonarQube"></a>下载 sonarQube</h4><p><img src="/posts/3cb0fdb2065e/0001.png"></p>
 <p>把下在好的安装包放到opt文件夹下</p>
 <figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">sudo <span class="built_in">mv</span> sonarqube-8.5.1.38104.zip  /opt/</span><br></pre></td></tr></table></figure>
 
@@ -605,7 +659,7 @@ $ vue init username/repo my-project
 
     
     <article
-  id="post-dev/CI-CD"
+  id="post-engg/CI-CD"
   class="article article-type-post"
   itemscope
   itemprop="blogPost"
@@ -616,7 +670,7 @@ $ vue init username/repo my-project
     <header class="article-header">
        
 <h2 itemprop="name">
-  <a class="article-title" href="/posts/d352b443425a/"
+  <a class="article-title" href="/posts/115f693e216e/"
     >CI CD</a> 
 </h2>
  
@@ -625,7 +679,7 @@ $ vue init username/repo my-project
     </header>
      
     <div class="article-meta">
-      <a href="/posts/d352b443425a/" class="article-date">
+      <a href="/posts/115f693e216e/" class="article-date">
   <time datetime="2020-12-04T06:18:09.000Z" itemprop="datePublished">2020-12-04</time>
 </a> 
   <div class="article-category">
@@ -636,12 +690,12 @@ $ vue init username/repo my-project
       
     <div class="article-entry" itemprop="articleBody">
        
-  <p><img src="/posts/d352b443425a/0001.png"></p>
+  <p><img src="/posts/115f693e216e/0001.png"></p>
 <p>代码 -&gt; 构建 -&gt; 集成 -&gt; 测试 -&gt; 发布 -&gt; 部署</p>
 <p>|———持续集成——| CI</p>
 <p>|———–持续发布————| CD</p>
 <p>|—————持续部署—————| CD</p>
-<h4 id="CI-CD"><a href="#CI-CD" class="headerlink" title="CI CD"></a>CI CD</h4><p><img src="/posts/d352b443425a/0002.png"></p>
+<h4 id="CI-CD"><a href="#CI-CD" class="headerlink" title="CI CD"></a>CI CD</h4><p><img src="/posts/115f693e216e/0002.png"></p>
 <ul>
 <li><p>持续集成(CI)</p>
 </li>
@@ -653,7 +707,7 @@ $ vue init username/repo my-project
 </li>
 </ul>
 <p>流程</p>
-<p><img src="/posts/d352b443425a/0003.png"></p>
+<p><img src="/posts/115f693e216e/0003.png"></p>
 <h4 id="自动构建"><a href="#自动构建" class="headerlink" title="自动构建"></a>自动构建</h4><p>在软件开发过程中,构建流程会将开发人员生成的代码转换为可执行的可用软件。</p>
 <p>对于Go或者C语言等编译语言,此阶段需要通过编译器运行源代码以生成独立的二进制文件。</p>
 <p>对于JavaScript或PHP等解释性语言,没有编译的步骤,但是代码依旧需要在特定的时间内冻结、绑定依赖项、打包以便于分发。这些过程通常称为“构建”或“发布”的工件。</p>
@@ -818,7 +872,7 @@ $ vue init username/repo my-project
 
     
     <article
-  id="post-dev/工程化中的linux"
+  id="post-engg/工程化中的linux"
   class="article article-type-post"
   itemscope
   itemprop="blogPost"
@@ -829,7 +883,7 @@ $ vue init username/repo my-project
     <header class="article-header">
        
 <h2 itemprop="name">
-  <a class="article-title" href="/posts/304ae342300f/"
+  <a class="article-title" href="/posts/7d59fc7a85e0/"
     >工程化中的linux</a> 
 </h2>
  
@@ -838,7 +892,7 @@ $ vue init username/repo my-project
     </header>
      
     <div class="article-meta">
-      <a href="/posts/304ae342300f/" class="article-date">
+      <a href="/posts/7d59fc7a85e0/" class="article-date">
   <time datetime="2020-12-02T08:52:11.000Z" itemprop="datePublished">2020-12-02</time>
 </a> 
   <div class="article-category">
@@ -932,92 +986,6 @@ $ vue init username/repo my-project
     <footer class="article-footer">
        
   <ul class="article-tag-list" itemprop="keywords"><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/DevOps/" rel="tag">DevOps</a></li><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/%E5%B7%A5%E7%A8%8B%E5%8C%96/" rel="tag">工程化</a></li></ul>
-
-    </footer>
-  </div>
-
-   
-    
-</article>
-
-    
-    <article
-  id="post-javascript/underscore设计"
-  class="article article-type-post"
-  itemscope
-  itemprop="blogPost"
-  data-scroll-reveal
->
-  <div class="article-inner">
-    
-    <header class="article-header">
-       
-<h2 itemprop="name">
-  <a class="article-title" href="/posts/a2a41d69ba3d/"
-    >underscore框架设计</a> 
-</h2>
- 
-
-      
-    </header>
-     
-    <div class="article-meta">
-      <a href="/posts/a2a41d69ba3d/" class="article-date">
-  <time datetime="2020-12-02T05:44:27.000Z" itemprop="datePublished">2020-12-02</time>
-</a> 
-  <div class="article-category">
-    <a class="article-category-link" href="/categories/JavaScript/">JavaScript</a>
-  </div>
-   
-    </div>
-      
-    <div class="article-entry" itemprop="articleBody">
-       
-  <h4 id="立即执行函数"><a href="#立即执行函数" class="headerlink" title="立即执行函数"></a>立即执行函数</h4><p>使用立即执行函数，创建局部作用域，隔离环境并初始化代码</p>
-<figure class="highlight javascript"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><span class="line">(<span class="keyword">function</span> (<span class="params"><span class="variable language_">global</span>, factory</span>) &#123;</span><br><span class="line"></span><br><span class="line">&#125;(<span class="variable language_">this</span>, <span class="keyword">function</span> (<span class="params"></span>) &#123;&#125;))</span><br></pre></td></tr></table></figure>
-
-<h4 id="判断采用那种模块化规范导出"><a href="#判断采用那种模块化规范导出" class="headerlink" title="判断采用那种模块化规范导出"></a>判断采用那种模块化规范导出</h4><figure class="highlight javascript"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment">// commomjs 规范</span></span><br><span class="line"><span class="keyword">typeof</span> <span class="built_in">exports</span> === <span class="string">&#x27;object&#x27;</span> &amp;&amp; <span class="keyword">typeof</span> <span class="variable language_">module</span> !== <span class="string">&#x27;undefined&#x27;</span> ? <span class="variable language_">module</span>.<span class="property">exports</span> = <span class="title function_">factory</span>() :</span><br><span class="line"><span class="comment">// amd 规范</span></span><br><span class="line"><span class="keyword">typeof</span> define === <span class="string">&#x27;function&#x27;</span> &amp;&amp; define.<span class="property">amd</span> ? <span class="title function_">define</span>(<span class="string">&#x27;underscore&#x27;</span>, factory) :</span><br><span class="line"><span class="comment">// 如果都不是则 直接挂在this上</span></span><br><span class="line">(<span class="variable language_">global</span> = <span class="variable language_">global</span> || self, (<span class="keyword">function</span> (<span class="params"></span>) &#123;</span><br><span class="line">  <span class="keyword">var</span> current = <span class="variable language_">global</span>.<span class="property">_</span>;</span><br><span class="line">  <span class="keyword">var</span> <span class="built_in">exports</span> = <span class="variable language_">global</span>.<span class="property">_</span> = <span class="title function_">factory</span>();</span><br><span class="line">  <span class="comment">//防止多次引入冲突</span></span><br><span class="line">  <span class="built_in">exports</span>.<span class="property">noConflict</span> = <span class="keyword">function</span> (<span class="params"></span>) &#123;</span><br><span class="line">    <span class="variable language_">global</span>.<span class="property">_</span> = current;</span><br><span class="line">    <span class="keyword">return</span> <span class="built_in">exports</span>;</span><br><span class="line">  &#125;;</span><br><span class="line">&#125;()));</span><br></pre></td></tr></table></figure>
-
-<h4 id="创建根节点"><a href="#创建根节点" class="headerlink" title="创建根节点"></a>创建根节点</h4><figure class="highlight javascript"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment">// 建立根节点对象，self 在浏览器端， global 在服务端， this 在一些虚拟机中，使用self 代替 window 提供对 Webworker 的支持</span></span><br><span class="line"><span class="keyword">var</span> root = <span class="keyword">typeof</span> self == <span class="string">&#x27;object&#x27;</span> &amp;&amp; self.<span class="property">self</span> === self &amp;&amp; self ||</span><br><span class="line">          <span class="keyword">typeof</span> <span class="variable language_">global</span> == <span class="string">&#x27;object&#x27;</span> &amp;&amp; <span class="variable language_">global</span>.<span class="property">global</span> === <span class="variable language_">global</span> &amp;&amp; <span class="variable language_">global</span> ||</span><br><span class="line">          <span class="title class_">Function</span>(<span class="string">&#x27;return this&#x27;</span>)() ||</span><br><span class="line">          &#123;&#125;;</span><br></pre></td></tr></table></figure>
-
-<h4 id="each方法"><a href="#each方法" class="headerlink" title="each方法"></a>each方法</h4><p><strong>each 依赖的函数</strong></p>
-<p>一个内部函数，根据参数返回不同的回调函数的封装，一个复用的方法</p>
-<figure class="highlight javascript"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">function</span> <span class="title function_">optimizeCb</span>(<span class="params">func, context, argCount</span>) &#123;</span><br><span class="line"></span><br><span class="line">  <span class="comment">// 没有传入执行上下文， 直接返回函数</span></span><br><span class="line">  <span class="keyword">if</span> (context === <span class="keyword">void</span> <span class="number">0</span>) <span class="keyword">return</span> func;</span><br><span class="line">  <span class="keyword">switch</span> (argCount == <span class="literal">null</span> ? <span class="number">3</span> : argCount) &#123;</span><br><span class="line">    <span class="keyword">case</span> <span class="number">1</span>:</span><br><span class="line">      <span class="keyword">return</span> <span class="keyword">function</span> (<span class="params">value</span>) &#123;</span><br><span class="line">        <span class="keyword">return</span> func.<span class="title function_">call</span>(context, value);</span><br><span class="line">      &#125;;</span><br><span class="line">      <span class="comment">// The 2-argument case is omitted because we’re not using it.</span></span><br><span class="line">    <span class="keyword">case</span> <span class="number">3</span>:</span><br><span class="line">      <span class="keyword">return</span> <span class="keyword">function</span> (<span class="params">value, index, collection</span>) &#123;</span><br><span class="line">        <span class="keyword">return</span> func.<span class="title function_">call</span>(context, value, index, collection);</span><br><span class="line">      &#125;;</span><br><span class="line">    <span class="keyword">case</span> <span class="number">4</span>:</span><br><span class="line">      <span class="keyword">return</span> <span class="keyword">function</span> (<span class="params">accumulator, value, index, collection</span>) &#123;</span><br><span class="line">        <span class="keyword">return</span> func.<span class="title function_">call</span>(context, accumulator, value, index, collection);</span><br><span class="line">      &#125;;</span><br><span class="line">  &#125;</span><br><span class="line">  <span class="keyword">return</span> <span class="keyword">function</span> (<span class="params"></span>) &#123;</span><br><span class="line">    <span class="keyword">return</span> func.<span class="title function_">apply</span>(context, <span class="variable language_">arguments</span>);</span><br><span class="line">  &#125;;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
-
-<p><strong>isArrayLike</strong></p>
-<figure class="highlight javascript"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">var</span> <span class="variable constant_">MAX_ARRAY_INDEX</span> = <span class="title class_">Math</span>.<span class="title function_">pow</span>(<span class="number">2</span>, <span class="number">53</span>) - <span class="number">1</span>;</span><br><span class="line"></span><br><span class="line"></span><br><span class="line"><span class="comment">// 简单获取属性值</span></span><br><span class="line"><span class="keyword">function</span> <span class="title function_">shallowProperty</span>(<span class="params">key</span>) &#123;</span><br><span class="line">  <span class="keyword">return</span> <span class="keyword">function</span> (<span class="params">obj</span>) &#123;</span><br><span class="line">    <span class="keyword">return</span> obj == <span class="literal">null</span> ? <span class="keyword">void</span> <span class="number">0</span> : obj[key];</span><br><span class="line">  &#125;;</span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line"><span class="keyword">var</span> getLength = <span class="title function_">shallowProperty</span>(<span class="string">&#x27;length&#x27;</span>);</span><br><span class="line"></span><br><span class="line"><span class="comment">// 属性检查 数字格式，且不能超过数组最大值</span></span><br><span class="line"><span class="keyword">function</span> <span class="title function_">createSizePropertyCheck</span>(<span class="params">getSizeProperty</span>) &#123;</span><br><span class="line">  <span class="keyword">return</span> <span class="keyword">function</span> (<span class="params">collection</span>) &#123;</span><br><span class="line">    <span class="keyword">var</span> sizeProperty = <span class="title function_">getSizeProperty</span>(collection);</span><br><span class="line">    <span class="keyword">return</span> <span class="keyword">typeof</span> sizeProperty == <span class="string">&#x27;number&#x27;</span> &amp;&amp; sizeProperty &gt;= <span class="number">0</span> &amp;&amp; sizeProperty &lt;= <span class="variable constant_">MAX_ARRAY_INDEX</span>;</span><br><span class="line">  &#125;</span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line"><span class="keyword">var</span> isArrayLike = <span class="title function_">createSizePropertyCheck</span>(getLength);</span><br></pre></td></tr></table></figure>
-
-<figure class="highlight javascript"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">function</span> <span class="title function_">each</span>(<span class="params">obj, iteratee, context</span>) &#123;</span><br><span class="line">  iteratee = <span class="title function_">optimizeCb</span>(iteratee, context);</span><br><span class="line">  <span class="keyword">var</span> i, length;</span><br><span class="line">  <span class="keyword">if</span> (<span class="title function_">isArrayLike</span>(obj)) &#123;</span><br><span class="line">    <span class="keyword">for</span> (i = <span class="number">0</span>, length = obj.<span class="property">length</span>; i &lt; length; i++) &#123;</span><br><span class="line">      <span class="title function_">iteratee</span>(obj[i], i, obj);</span><br><span class="line">    &#125;</span><br><span class="line">  &#125; <span class="keyword">else</span> &#123;</span><br><span class="line">    <span class="keyword">var</span> _keys = <span class="title function_">keys</span>(obj);</span><br><span class="line">    <span class="keyword">for</span> (i = <span class="number">0</span>, length = _keys.<span class="property">length</span>; i &lt; length; i++) &#123;</span><br><span class="line">      <span class="title function_">iteratee</span>(obj[_keys[i]], _keys[i], obj);</span><br><span class="line">    &#125;</span><br><span class="line">  &#125;</span><br><span class="line">  <span class="keyword">return</span> obj;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
-
-<h4 id="挂载方法-混合模式"><a href="#挂载方法-混合模式" class="headerlink" title="挂载方法 混合模式"></a>挂载方法 混合模式</h4><p>依赖的函数</p>
-<figure class="highlight javascript"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment">//内部方法，创建一个toString 基础测试器</span></span><br><span class="line">  <span class="keyword">function</span> <span class="title function_">tagTester</span>(<span class="params">name</span>) &#123;</span><br><span class="line">    <span class="keyword">var</span> tag = <span class="string">&#x27;[object &#x27;</span> + name + <span class="string">&#x27;]&#x27;</span>;</span><br><span class="line">    <span class="keyword">return</span> <span class="keyword">function</span> (<span class="params">obj</span>) &#123;</span><br><span class="line">      <span class="keyword">return</span> toString.<span class="title function_">call</span>(obj) === tag;</span><br><span class="line">    &#125;;</span><br><span class="line">  &#125;</span><br><span class="line">  <span class="keyword">var</span> isFunction = <span class="title function_">tagTester</span>(<span class="string">&#x27;Function&#x27;</span>);</span><br><span class="line">  <span class="keyword">var</span> isFunction$<span class="number">1</span> = isFunction;</span><br><span class="line"></span><br><span class="line">  <span class="comment">//返回一个排序的 所有工具函数名的数组</span></span><br><span class="line">  <span class="keyword">function</span> <span class="title function_">functions</span>(<span class="params">obj</span>) &#123;</span><br><span class="line">    <span class="keyword">var</span> names = [];</span><br><span class="line">    <span class="keyword">for</span> (<span class="keyword">var</span> key <span class="keyword">in</span> obj) &#123;</span><br><span class="line">      <span class="keyword">if</span> (<span class="title function_">isFunction$1</span>(obj[key])) names.<span class="title function_">push</span>(key);</span><br><span class="line">    &#125;</span><br><span class="line">    <span class="keyword">return</span> names.<span class="title function_">sort</span>();</span><br><span class="line">  &#125;</span><br></pre></td></tr></table></figure>
-
-<p><strong>定义underscore方法</strong></p>
-<ul>
-<li>如果是underscore实例直接返回</li>
-<li>如果不是通过new操作符执行函数</li>
-<li>再次进入第二行的判断，这时已经是underscore的实例会继续往下执行</li>
-<li>在实例上挂在一个变量指向传入的对象</li>
-</ul>
-<figure class="highlight javascript"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">function</span> <span class="title function_">_</span>(<span class="params">obj</span>) &#123;</span><br><span class="line">  <span class="keyword">if</span> (obj <span class="keyword">instanceof</span> _) <span class="keyword">return</span> obj;</span><br><span class="line">  <span class="keyword">if</span> (!(<span class="variable language_">this</span> <span class="keyword">instanceof</span> _)) <span class="keyword">return</span> <span class="keyword">new</span> <span class="title function_">_</span>(obj);</span><br><span class="line">  <span class="variable language_">this</span>.<span class="property">_wrapped</span> = obj;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
-
-<p><strong>核心mixin 方法</strong></p>
-<figure class="highlight javascript"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">function</span> <span class="title function_">mixin</span>(<span class="params">obj</span>) &#123;</span><br><span class="line"></span><br><span class="line">  <span class="comment">// 循环所有导出方法的名称</span></span><br><span class="line">  <span class="title function_">each</span>(<span class="title function_">functions</span>(obj), <span class="keyword">function</span> (<span class="params">name</span>) &#123;</span><br><span class="line">    <span class="comment">// 每个名称对应的方法</span></span><br><span class="line">    <span class="keyword">var</span> func = _[name] = obj[name];</span><br><span class="line">    <span class="comment">//  在原型上挂载同样的方法</span></span><br><span class="line">    _.<span class="property"><span class="keyword">prototype</span></span>[name] = <span class="keyword">function</span> (<span class="params"></span>) &#123;</span><br><span class="line">      <span class="comment">//拿到上面挂载的 传入的对象</span></span><br><span class="line">      <span class="keyword">var</span> args = [<span class="variable language_">this</span>.<span class="property">_wrapped</span>];</span><br><span class="line">      <span class="comment">// 拼接为整个数组 </span></span><br><span class="line">      <span class="title class_">Array</span>.<span class="property"><span class="keyword">prototype</span></span>.<span class="property">push</span>.<span class="title function_">apply</span>(args, <span class="variable language_">arguments</span>);</span><br><span class="line">      <span class="comment">//直接用定义的内置方法执行</span></span><br><span class="line">      <span class="keyword">return</span> <span class="title function_">chainResult</span>(<span class="variable language_">this</span>, func.<span class="title function_">apply</span>(_, args));</span><br><span class="line">    &#125;;</span><br><span class="line">  &#125;);</span><br><span class="line">  <span class="keyword">return</span> _;</span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line"><span class="keyword">var</span> allExports = &#123;</span><br><span class="line">  <span class="attr">each</span>:each</span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line"><span class="keyword">var</span> _$<span class="number">1</span> = <span class="title function_">mixin</span>(allExports);</span><br><span class="line"><span class="comment">// Legacy Node.js API.</span></span><br><span class="line">_$<span class="number">1.</span>_ = _$<span class="number">1</span>;</span><br><span class="line"></span><br><span class="line"><span class="keyword">return</span> _$<span class="number">1</span>;</span><br></pre></td></tr></table></figure>
-
-<p>所以可以用下面的方法执行方法</p>
-<figure class="highlight javascript"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line"><span class="title function_">_</span>([<span class="number">1</span>,<span class="number">2</span>,<span class="number">3</span>]).<span class="title function_">each</span>(<span class="keyword">function</span>(<span class="params">item</span>)&#123;<span class="variable language_">console</span>.<span class="title function_">log</span>(item)&#125;);</span><br></pre></td></tr></table></figure>
-
- 
-      <!-- reward -->
-      
-    </div>
-    
-
-    <!-- copyright -->
-    
-    <footer class="article-footer">
-       
-  <ul class="article-tag-list" itemprop="keywords"><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/underscore/" rel="tag">underscore</a></li><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/%E5%87%BD%E6%95%B0%E5%BC%8F%E7%BC%96%E7%A8%8B/" rel="tag">函数式编程</a></li></ul>
 
     </footer>
   </div>

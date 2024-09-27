@@ -1,0 +1,627 @@
+<!DOCTYPE html>
+
+
+<html lang="zh-CN">
+  
+
+    <head>
+      <meta charset="utf-8" />
+       
+      <meta name="keywords" content="前端 web react" />
+       
+      <meta name="description" content="前端技术与生活。" />
+      
+      <meta
+        name="viewport"
+        content="width=device-width, initial-scale=1, maximum-scale=1"
+      />
+      <title>微前端 ② single-spa |  四月八日</title>
+  <meta name="generator" content="hexo-theme-ayer">
+      
+      <link rel="shortcut icon" href="/favicon.ico" />
+       
+<link rel="stylesheet" href="/dist/main.css">
+ 
+<link rel="stylesheet" href="/css/fonts/remixicon.css">
+ 
+<link rel="stylesheet" href="/css/custom.css">
+ 
+      <script src="/js/pace.min.js"></script>
+       
+ 
+
+      <link rel="stylesheet" href="/css/bulma.min.css" />
+      <script src="/js/sweetalert2.min.js"></script>
+
+      <!-- mermaid -->
+      
+      <script src="https://cdn.staticfile.org/mermaid/8.14.0/mermaid.min.js"></script>
+      
+      <style>
+        .swal2-styled.swal2-confirm {
+          font-size: 1.6rem;
+        }
+      </style>
+    <!-- hexo injector head_end start -->
+<link rel="stylesheet" href="/css/katex.min.css">
+
+<link rel="stylesheet" href="/css/style.css">
+<!-- hexo injector head_end end --></head>
+  </html>
+</html>
+
+
+<body>
+  <div id="app">
+    
+      
+    <main class="content on">
+      <section class="outer">
+  <article
+  id="posts-javascript/微前端-singleSpa"
+  class="article article-type-posts"
+  itemscope
+  itemprop="blogPost"
+  data-scroll-reveal
+>
+  <div class="article-inner">
+    
+    <header class="article-header">
+       
+<h1 class="article-title sea-center" style="border-left:0" itemprop="name">
+  微前端 ② single-spa
+</h1>
+ 
+
+      
+    </header>
+     
+    <div class="article-meta">
+      <a href="/posts/54288ac5bfdb/" class="article-date">
+  <time datetime="2024-08-01T07:30:59.000Z" itemprop="datePublished">2024-08-01</time>
+</a> 
+  <div class="article-category">
+    <a class="article-category-link" href="/categories/JavaScript/">JavaScript</a>
+  </div>
+  
+<div class="word_count">
+    <span class="post-time">
+        <span class="post-meta-item-icon">
+            <i class="ri-quill-pen-line"></i>
+            <span class="post-meta-item-text"> 字数统计:</span>
+            <span class="post-count">2k</span>
+        </span>
+    </span>
+
+    <span class="post-time">
+        &nbsp; | &nbsp;
+        <span class="post-meta-item-icon">
+            <i class="ri-book-open-line"></i>
+            <span class="post-meta-item-text"> 阅读时长≈</span>
+            <span class="post-count">10 分钟</span>
+        </span>
+    </span>
+</div>
+ 
+    </div>
+      
+    <div class="tocbot"></div>
+
+
+
+
+  
+    <div class="article-entry" itemprop="articleBody">
+       
+  <p>single-spa 是一个将多个 JavaScript 微前端整合到一个前端应用程序中的框架。下面是一些优点:</p>
+<ul>
+<li>在同一个页面上使用多个框架而不刷新页面</li>
+<li>独立部署微前端</li>
+<li>使用新框架编写代码，而无需重写现有的应用程序</li>
+</ul>
+<p>single-spa 比较好的解决了以下问题：</p>
+<ul>
+<li>应用加载顺序和依赖管理</li>
+<li>路由管理</li>
+<li>版本管理和升级</li>
+<li>调试和监控</li>
+</ul>
+<h4 id="依赖管理"><a href="#依赖管理" class="headerlink" title="依赖管理"></a>依赖管理</h4><p>single-spa 通过 <a href="/posts/ae7d32dcd157/">systemjs</a> 实现了应用资源的依赖管理</p>
+<h4 id="webpack-配置"><a href="#webpack-配置" class="headerlink" title="webpack 配置"></a>webpack 配置</h4><p>微前端应用需要适当改造，将输出的模式更改为 systemjs， 并且实现 single-spa 指定的接口。single-spa 官方提供了配置工具，用来降低配置的成本。</p>
+<p>webpack-config-single-spa 用于输出 webpack 打包文件</p>
+<figure class="highlight js"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br></pre></td><td class="code"><pre><span class="line">&#123;</span><br><span class="line">  <span class="attr">output</span>: &#123;</span><br><span class="line">    <span class="comment">// 输出格式改为 systemjs</span></span><br><span class="line">    <span class="attr">libraryTarget</span>: <span class="string">&quot;system&quot;</span>,</span><br><span class="line">  &#125;,</span><br><span class="line">   <span class="attr">devServer</span>: &#123;</span><br><span class="line">      <span class="comment">// 任意路径下都返回 spa 应用入口文件</span></span><br><span class="line">      <span class="attr">historyApiFallback</span>: <span class="literal">true</span>，</span><br><span class="line">      <span class="comment">// 允许对子应用的跨域调用</span></span><br><span class="line">      <span class="attr">headers</span>: &#123;</span><br><span class="line">        <span class="string">&quot;Access-Control-Allow-Origin&quot;</span>: <span class="string">&quot;*&quot;</span>,</span><br><span class="line">      &#125;,</span><br><span class="line">    &#125;,</span><br><span class="line">    <span class="comment">// 会增加一个入口文件，动态指定 __webpack_public_path__</span></span><br><span class="line">    <span class="comment">// 避免子应用中异步加载的资源请求了主应用的路径</span></span><br><span class="line">    <span class="keyword">new</span> <span class="title class_">SystemJSPublicPathPlugin</span>(</span><br><span class="line">        <span class="comment">//...</span></span><br><span class="line">    ),</span><br><span class="line">    <span class="comment">// 处理开发模式下独立启动子应用显示页面</span></span><br><span class="line">    !isProduction &amp;&amp;</span><br><span class="line">    <span class="keyword">new</span> <span class="title class_">StandaloneSingleSpaPlugin</span>(&#123;</span><br><span class="line">        <span class="comment">//...</span></span><br><span class="line">    &#125;),</span><br><span class="line">&#125;;</span><br></pre></td></tr></table></figure>
+
+<h4 id="前端项目配置"><a href="#前端项目配置" class="headerlink" title="前端项目配置"></a>前端项目配置</h4><p>项目的入口需要使用 <a target="_blank" rel="noopener" href="https://single-spa.js.org/docs/ecosystem-react/"><code>single-spa-react</code></a> 改造， 帮助实现 <code>single-spa</code> 要求的生命周期函数。</p>
+<figure class="highlight js"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">const</span> lifecycles = <span class="title function_">singleSpaReact</span>(&#123;</span><br><span class="line">  <span class="title class_">React</span>,</span><br><span class="line">  <span class="title class_">ReactDOM</span>,</span><br><span class="line">  <span class="attr">rootComponent</span>: <span class="title class_">Root</span>,</span><br><span class="line">  <span class="attr">domElementGetter</span>: <span class="function">() =&gt;</span> <span class="variable language_">document</span>.<span class="title function_">querySelector</span>(<span class="string">&quot;#aa&quot;</span>),</span><br><span class="line">  <span class="title function_">errorBoundary</span>(<span class="params">err, info, props</span>) &#123;</span><br><span class="line">    <span class="comment">// Customize the root error boundary for your microfrontend here.</span></span><br><span class="line">    <span class="keyword">return</span> <span class="literal">null</span>;</span><br><span class="line">  &#125;,</span><br><span class="line">&#125;);</span><br></pre></td></tr></table></figure>
+
+<p>下面是 singleSpaReact 的实现</p>
+<figure class="highlight js"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br><span class="line">35</span><br><span class="line">36</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">const</span> opts = &#123;</span><br><span class="line">  <span class="comment">/** 接收到的参数*/</span></span><br><span class="line">&#125;;</span><br><span class="line"><span class="keyword">const</span> <span class="title class_">SingleSpaContext</span> = opts.<span class="property">React</span>.<span class="title function_">createContext</span>();</span><br><span class="line"></span><br><span class="line">opts.<span class="property">SingleSpaRoot</span> = <span class="title function_">createSingleSpaRoot</span>(opts);</span><br><span class="line"></span><br><span class="line"><span class="comment">// 将传入的新组件包装成新的 Root 组件</span></span><br><span class="line"></span><br><span class="line"><span class="keyword">function</span> <span class="title function_">createSingleSpaRoot</span>(<span class="params"></span>) &#123;</span><br><span class="line">  <span class="comment">// 为了支持 React 15 所以 single-spa 并没有使用 useEffect</span></span><br><span class="line">  <span class="comment">// 并且使用 函数 模拟 ES6 class 实现</span></span><br><span class="line">  <span class="keyword">function</span> <span class="title function_">SingleSpaRoot</span>(<span class="params"></span>) &#123;&#125;</span><br><span class="line">  <span class="title class_">SingleSpaRoot</span>.<span class="property"><span class="keyword">prototype</span></span> = <span class="title class_">Object</span>.<span class="title function_">create</span>(opts.<span class="property">React</span>.<span class="property">Component</span>.<span class="property"><span class="keyword">prototype</span></span>);</span><br><span class="line"></span><br><span class="line">  <span class="comment">// 绑定自定义钩子函数</span></span><br><span class="line">  <span class="title class_">SingleSpaRoot</span>.<span class="property"><span class="keyword">prototype</span></span>.<span class="property">componentDidMount</span> = <span class="keyword">function</span> (<span class="params"></span>) &#123;</span><br><span class="line">    <span class="built_in">setTimeout</span>(<span class="variable language_">this</span>.<span class="property">props</span>.<span class="property">mountFinished</span>);</span><br><span class="line">  &#125;;</span><br><span class="line"></span><br><span class="line">  <span class="comment">// 绑定自定义钩子函数</span></span><br><span class="line">  <span class="title class_">SingleSpaRoot</span>.<span class="property"><span class="keyword">prototype</span></span>.<span class="property">render</span> = <span class="keyword">function</span> (<span class="params"></span>) &#123;</span><br><span class="line">    <span class="keyword">return</span> <span class="variable language_">this</span>.<span class="property">props</span>.<span class="property">children</span>;</span><br><span class="line">  &#125;;</span><br><span class="line"></span><br><span class="line">  opts.<span class="property">SingleSpaRoot</span> = <span class="title function_">createSingleSpaRoot</span>(opts);</span><br><span class="line"></span><br><span class="line">  <span class="keyword">const</span> lifecycles = &#123;</span><br><span class="line">    <span class="attr">bootstrap</span>: bootstrap.<span class="title function_">bind</span>(<span class="literal">null</span>, opts),</span><br><span class="line">    <span class="attr">mount</span>: mount.<span class="title function_">bind</span>(<span class="literal">null</span>, opts),</span><br><span class="line">    <span class="attr">unmount</span>: unmount.<span class="title function_">bind</span>(<span class="literal">null</span>, opts),</span><br><span class="line">  &#125;;</span><br><span class="line"></span><br><span class="line">  <span class="comment">// 暴露接口方法</span></span><br><span class="line">  <span class="keyword">return</span> lifecycles;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+<p>实现 <code>bootstrap</code> 接口方法</p>
+<figure class="highlight js"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br><span class="line">35</span><br><span class="line">36</span><br><span class="line">37</span><br><span class="line">38</span><br><span class="line">39</span><br><span class="line">40</span><br><span class="line">41</span><br><span class="line">42</span><br><span class="line">43</span><br><span class="line">44</span><br><span class="line">45</span><br><span class="line">46</span><br><span class="line">47</span><br><span class="line">48</span><br><span class="line">49</span><br><span class="line">50</span><br><span class="line">51</span><br><span class="line">52</span><br><span class="line">53</span><br><span class="line">54</span><br><span class="line">55</span><br><span class="line">56</span><br><span class="line">57</span><br><span class="line">58</span><br><span class="line">59</span><br><span class="line">60</span><br><span class="line">61</span><br><span class="line">62</span><br><span class="line">63</span><br><span class="line">64</span><br><span class="line">65</span><br><span class="line">66</span><br><span class="line">67</span><br><span class="line">68</span><br><span class="line">69</span><br><span class="line">70</span><br><span class="line">71</span><br><span class="line">72</span><br><span class="line">73</span><br><span class="line">74</span><br><span class="line">75</span><br><span class="line">76</span><br><span class="line">77</span><br><span class="line">78</span><br><span class="line">79</span><br><span class="line">80</span><br><span class="line">81</span><br><span class="line">82</span><br><span class="line">83</span><br><span class="line">84</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">function</span> <span class="title function_">mount</span>(<span class="params">opts, props</span>) &#123;</span><br><span class="line">  <span class="keyword">const</span> whenMounted = <span class="keyword">function</span> (<span class="params"></span>) &#123;</span><br><span class="line">    <span class="title function_">resolve</span>(<span class="variable language_">this</span>);</span><br><span class="line">  &#125;;</span><br><span class="line"></span><br><span class="line">  <span class="keyword">const</span> elementToRender = <span class="title function_">getElementToRender</span>(opts, props, whenMounted);</span><br><span class="line"></span><br><span class="line">  <span class="comment">// 包装 rootComponent  传入额外的 props</span></span><br><span class="line">  <span class="keyword">function</span> <span class="title function_">getElementToRender</span>(<span class="params">opts, props, mountFinished</span>) &#123;</span><br><span class="line">    <span class="keyword">const</span> elementToRender = opts.<span class="property">React</span>.<span class="title function_">createElement</span>(opts.<span class="property">rootComponent</span>, props);</span><br><span class="line"></span><br><span class="line">    <span class="comment">// 绑定 context</span></span><br><span class="line">    <span class="comment">// ...</span></span><br><span class="line"></span><br><span class="line">    <span class="comment">// 绑定 errorBoundary</span></span><br><span class="line">    <span class="comment">// ...</span></span><br><span class="line"></span><br><span class="line">    elementToRender = opts.<span class="property">React</span>.<span class="title function_">createElement</span>(</span><br><span class="line">      opts.<span class="property">SingleSpaRoot</span>,</span><br><span class="line">      &#123;</span><br><span class="line">        ...props,</span><br><span class="line">        mountFinished,</span><br><span class="line">        <span class="title function_">updateFinished</span>(<span class="params"></span>) &#123;</span><br><span class="line">          <span class="comment">//...</span></span><br><span class="line">        &#125;,</span><br><span class="line">        <span class="title function_">unmountFinished</span>(<span class="params"></span>) &#123;</span><br><span class="line">          <span class="comment">//...</span></span><br><span class="line">        &#125;,</span><br><span class="line">      &#125;,</span><br><span class="line">      elementToRender</span><br><span class="line">    );</span><br><span class="line"></span><br><span class="line">    <span class="keyword">return</span> elementToRender;</span><br><span class="line">  &#125;</span><br><span class="line">  <span class="keyword">const</span> domElement = opts.<span class="title function_">domElementGetter</span>();</span><br><span class="line"></span><br><span class="line">  <span class="keyword">if</span> (opts.<span class="property">ReactDOMClient</span>?.<span class="property">createRoot</span>) &#123;</span><br><span class="line">    opts.<span class="property">renderType</span> = <span class="string">&quot;createRoot&quot;</span>;</span><br><span class="line">  &#125; <span class="keyword">else</span> &#123;</span><br><span class="line">    opts.<span class="property">renderType</span> = <span class="string">&quot;render&quot;</span>;</span><br><span class="line">  &#125;</span><br><span class="line">  <span class="keyword">const</span> renderResult = <span class="title function_">reactDomRender</span>(&#123;</span><br><span class="line">    elementToRender,</span><br><span class="line">    <span class="attr">domElement</span>: opts.<span class="title function_">domElementGetter</span>(),</span><br><span class="line">    <span class="attr">reactDom</span>: opts.<span class="property">ReactDOMClient</span> || opts.<span class="property">ReactDOM</span>,</span><br><span class="line">    <span class="attr">renderType</span>: opts.<span class="property">renderType</span>,</span><br><span class="line">  &#125;);</span><br><span class="line"></span><br><span class="line">  <span class="comment">// 挂载组件</span></span><br><span class="line">  <span class="keyword">function</span> <span class="title function_">reactDomRender</span>(<span class="params">&#123;</span></span><br><span class="line"><span class="params">    reactDom,</span></span><br><span class="line"><span class="params">    renderType,</span></span><br><span class="line"><span class="params">    elementToRender,</span></span><br><span class="line"><span class="params">    domElement,</span></span><br><span class="line"><span class="params">  &#125;</span>) &#123;</span><br><span class="line">    <span class="keyword">const</span> renderFn = reactDom[renderType];</span><br><span class="line"></span><br><span class="line">    <span class="keyword">switch</span> (renderType) &#123;</span><br><span class="line">      <span class="keyword">case</span> <span class="string">&quot;createRoot&quot;</span>:</span><br><span class="line">      <span class="keyword">case</span> <span class="string">&quot;unstable_createRoot&quot;</span>:</span><br><span class="line">      <span class="keyword">case</span> <span class="string">&quot;createBlockingRoot&quot;</span>:</span><br><span class="line">      <span class="keyword">case</span> <span class="string">&quot;unstable_createBlockingRoot&quot;</span>: &#123;</span><br><span class="line">        <span class="keyword">const</span> root = <span class="title function_">renderFn</span>(domElement);</span><br><span class="line">        root.<span class="title function_">render</span>(elementToRender);</span><br><span class="line">        <span class="keyword">return</span> root;</span><br><span class="line">      &#125;</span><br><span class="line">      <span class="keyword">case</span> <span class="string">&quot;hydrateRoot&quot;</span>: &#123;</span><br><span class="line">        <span class="keyword">const</span> root = <span class="title function_">renderFn</span>(domElement, elementToRender);</span><br><span class="line">        <span class="keyword">return</span> root;</span><br><span class="line">      &#125;</span><br><span class="line">      <span class="keyword">case</span> <span class="string">&quot;hydrate&quot;</span>:</span><br><span class="line">      <span class="attr">default</span>: &#123;</span><br><span class="line">        <span class="title function_">renderFn</span>(elementToRender, domElement);</span><br><span class="line">        <span class="comment">// The renderRoot function should return a react root, but ReactDOM.hydrate() and ReactDOM.render()</span></span><br><span class="line">        <span class="comment">// do not return a react root. So instead, we return null which indicates that there is no react root</span></span><br><span class="line">        <span class="comment">// that can be used for updates or unmounting</span></span><br><span class="line">        <span class="keyword">return</span> <span class="literal">null</span>;</span><br><span class="line">      &#125;</span><br><span class="line">    &#125;</span><br><span class="line">  &#125;</span><br><span class="line"></span><br><span class="line">  opts.<span class="property">domElements</span>[props.<span class="property">name</span>] = domElement;</span><br><span class="line">  opts.<span class="property">renderResults</span>[props.<span class="property">name</span>] = renderResult;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+<p>实现 <code>unmount</code> 接口方法</p>
+<figure class="highlight js"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">function</span> <span class="title function_">unmount</span>(<span class="params">opts, props</span>) &#123;</span><br><span class="line">  <span class="keyword">return</span> <span class="keyword">new</span> <span class="title class_">Promise</span>(<span class="function">(<span class="params">resolve</span>) =&gt;</span> &#123;</span><br><span class="line">    opts.<span class="property">unmountResolves</span>[props.<span class="property">name</span>] = resolve;</span><br><span class="line"></span><br><span class="line">    <span class="keyword">const</span> root = opts.<span class="property">renderResults</span>[props.<span class="property">name</span>];</span><br><span class="line"></span><br><span class="line">    <span class="keyword">if</span> (root &amp;&amp; root.<span class="property">unmount</span>) &#123;</span><br><span class="line">      <span class="comment">// React &gt;= 18</span></span><br><span class="line">      <span class="keyword">const</span> unmountResult = root.<span class="title function_">unmount</span>();</span><br><span class="line">    &#125; <span class="keyword">else</span> &#123;</span><br><span class="line">      <span class="comment">// React &lt; 18</span></span><br><span class="line">      (opts.<span class="property">ReactDOMClient</span> || opts.<span class="property">ReactDOM</span>).<span class="title function_">unmountComponentAtNode</span>(</span><br><span class="line">        opts.<span class="property">domElements</span>[props.<span class="property">name</span>]</span><br><span class="line">      );</span><br><span class="line">    &#125;</span><br><span class="line">    <span class="keyword">delete</span> opts.<span class="property">domElements</span>[props.<span class="property">name</span>];</span><br><span class="line">    <span class="keyword">delete</span> opts.<span class="property">renderResults</span>[props.<span class="property">name</span>];</span><br><span class="line">  &#125;);</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+<p>实现 <code>update</code> 接口方法</p>
+<figure class="highlight js"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">function</span> <span class="title function_">update</span>(<span class="params">opts, props</span>) &#123;</span><br><span class="line">  <span class="keyword">return</span> <span class="keyword">new</span> <span class="title class_">Promise</span>(<span class="function">(<span class="params">resolve</span>) =&gt;</span> &#123;</span><br><span class="line">    <span class="keyword">if</span> (!opts.<span class="property">updateResolves</span>[props.<span class="property">name</span>]) &#123;</span><br><span class="line">      opts.<span class="property">updateResolves</span>[props.<span class="property">name</span>] = [];</span><br><span class="line">    &#125;</span><br><span class="line"></span><br><span class="line">    opts.<span class="property">updateResolves</span>[props.<span class="property">name</span>].<span class="title function_">push</span>(resolve);</span><br><span class="line"></span><br><span class="line">    <span class="keyword">const</span> elementToRender = <span class="title function_">getElementToRender</span>(opts, props, <span class="literal">null</span>);</span><br><span class="line">    <span class="keyword">const</span> renderRoot = opts.<span class="property">renderResults</span>[props.<span class="property">name</span>];</span><br><span class="line">    <span class="keyword">if</span> (renderRoot &amp;&amp; renderRoot.<span class="property">render</span>) &#123;</span><br><span class="line">      <span class="comment">// React 18 with ReactDOM.createRoot()</span></span><br><span class="line">      renderRoot.<span class="title function_">render</span>(elementToRender);</span><br><span class="line">    &#125; <span class="keyword">else</span> &#123;</span><br><span class="line">      <span class="comment">// React 16 / 17 with ReactDOM.render()</span></span><br><span class="line">      <span class="keyword">const</span> domElement = <span class="title function_">chooseDomElementGetter</span>(opts, props)();</span><br><span class="line">      <span class="comment">// This is the old way to update a react application - just call render() again</span></span><br><span class="line">      <span class="title function_">getReactDom</span>(opts).<span class="title function_">render</span>(elementToRender, domElement);</span><br><span class="line">    &#125;</span><br><span class="line">  &#125;);</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+<h4 id="singleSpa-源码"><a href="#singleSpa-源码" class="headerlink" title="singleSpa 源码"></a>singleSpa 源码</h4><ul>
+<li>首先定义子应用加载数组，以及各个阶段的状态</li>
+</ul>
+<figure class="highlight js"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">const</span> apps = [];</span><br><span class="line"></span><br><span class="line"><span class="keyword">const</span> <span class="variable constant_">NOT_LOADED</span> = <span class="string">&quot;NOT_LOADED&quot;</span>;</span><br><span class="line"><span class="keyword">const</span> <span class="variable constant_">LOADING_SOURCE_CODE</span> = <span class="string">&quot;LOADING_SOURCE_CODE&quot;</span>;</span><br><span class="line"><span class="keyword">const</span> <span class="variable constant_">NOT_BOOTSTRAPPED</span> = <span class="string">&quot;NOT_BOOTSTRAPPED&quot;</span>;</span><br><span class="line"><span class="keyword">const</span> <span class="variable constant_">BOOTSTRAPPING</span> = <span class="string">&quot;BOOTSTRAPPING&quot;</span>;</span><br><span class="line"><span class="keyword">const</span> <span class="variable constant_">NOT_MOUNTED</span> = <span class="string">&quot;NOT_MOUNTED&quot;</span>;</span><br><span class="line"><span class="keyword">const</span> <span class="variable constant_">MOUNTING</span> = <span class="string">&quot;MOUNTING&quot;</span>;</span><br><span class="line"><span class="keyword">const</span> <span class="variable constant_">MOUNTED</span> = <span class="string">&quot;MOUNTED&quot;</span>;</span><br><span class="line"><span class="keyword">const</span> <span class="variable constant_">LOAD_ERROR</span> = <span class="string">&quot;LOAD_ERROR&quot;</span>;</span><br><span class="line"><span class="keyword">const</span> <span class="variable constant_">SKIP_BECAUSE_BROKEN</span> = <span class="string">&quot;SKIP_BECAUSE_BROKEN&quot;</span>;</span><br><span class="line"></span><br><span class="line"><span class="comment">// 主应用启动状态</span></span><br><span class="line"><span class="keyword">let</span> isStart = <span class="literal">false</span>;</span><br></pre></td></tr></table></figure>
+
+<ul>
+<li>singleSpa 提供 <code>registerApplication</code> 方法用于注册子应用，记录子应用必要信息， 同时会执行 <code>reroute</code> 方法，如何路径匹配，会加载子应用， 但是不会渲染子应用，子应用渲染需要等待 <code>start</code> 方法执行 <code>isStart</code> 标记为 <code>true</code> 后才会挂载子应用。</li>
+</ul>
+<figure class="highlight js"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">function</span> <span class="title function_">registerApplication</span>(<span class="params">appNameOrConfig</span>) &#123;</span><br><span class="line">  <span class="comment">// app 必须是返回 promise 的函数</span></span><br><span class="line">  <span class="comment">// customProps 必须是对象</span></span><br><span class="line">  appNameOrConfig.<span class="property">customProps</span> = appNameOrConfig.<span class="property">customProps</span> || &#123;&#125;;</span><br><span class="line">  <span class="comment">// activeWhen 是一个路径匹配函数的数组</span></span><br><span class="line"></span><br><span class="line">  appNameOrConfig.<span class="property">activeWhen</span> = <span class="title class_">Array</span>.<span class="title function_">isArray</span>(appNameOrConfig.<span class="property">activeWhen</span>)</span><br><span class="line">    ? appNameOrConfig.<span class="property">activeWhen</span></span><br><span class="line">    : [appNameOrConfig.<span class="property">activeWhen</span>];</span><br><span class="line">  appNameOrConfig.<span class="property">activeWhen</span> = appNameOrConfig.<span class="property">activeWhen</span>.<span class="title function_">map</span>(<span class="function">(<span class="params">path</span>) =&gt;</span></span><br><span class="line">    <span class="keyword">typeof</span> path === <span class="string">&quot;function&quot;</span> ? path : <span class="title function_">pathToActiveWhen</span>(path)</span><br><span class="line">  );</span><br><span class="line"></span><br><span class="line">  apps.<span class="title function_">push</span>(&#123;</span><br><span class="line">    <span class="attr">loadErrorTime</span>: <span class="literal">null</span>,</span><br><span class="line">    <span class="attr">status</span>: <span class="variable constant_">NOT_LOADED</span>,</span><br><span class="line">    ...appNameOrConfig,</span><br><span class="line">  &#125;);</span><br><span class="line"></span><br><span class="line">  <span class="title function_">reroute</span>();</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+<ul>
+<li>singleSpa 提供 <code>start</code> 方法用于在注册后启动主应用, 在 <code>start</code> 方法中重写路由监听事件，可以让 singleSpa 响应路由的变化。</li>
+</ul>
+<figure class="highlight js"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br><span class="line">35</span><br><span class="line">36</span><br><span class="line">37</span><br><span class="line">38</span><br><span class="line">39</span><br><span class="line">40</span><br><span class="line">41</span><br><span class="line">42</span><br><span class="line">43</span><br><span class="line">44</span><br><span class="line">45</span><br><span class="line">46</span><br><span class="line">47</span><br><span class="line">48</span><br><span class="line">49</span><br><span class="line">50</span><br><span class="line">51</span><br><span class="line">52</span><br><span class="line">53</span><br><span class="line">54</span><br><span class="line">55</span><br><span class="line">56</span><br><span class="line">57</span><br><span class="line">58</span><br><span class="line">59</span><br><span class="line">60</span><br><span class="line">61</span><br><span class="line">62</span><br><span class="line">63</span><br><span class="line">64</span><br><span class="line">65</span><br><span class="line">66</span><br><span class="line">67</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">function</span> <span class="title function_">start</span>(<span class="params"></span>) &#123;</span><br><span class="line">  isStart = <span class="literal">true</span>;</span><br><span class="line">  <span class="title function_">patchHistoryApi</span>(opts);</span><br><span class="line">  <span class="title function_">reroute</span>();</span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line"><span class="keyword">let</span> urlRerouteOnly;</span><br><span class="line"><span class="keyword">let</span> originalReplaceState;</span><br><span class="line"><span class="keyword">function</span> <span class="title function_">createPopStateEvent</span>(<span class="params">state, originalMethodName</span>) &#123;</span><br><span class="line">  <span class="comment">// https://github.com/single-spa/single-spa/issues/224 and https://github.com/single-spa/single-spa-angular/issues/49</span></span><br><span class="line">  <span class="comment">// We need a popstate event even though the browser doesn&#x27;t do one by default when you call replaceState, so that</span></span><br><span class="line">  <span class="comment">// all the applications can reroute. We explicitly identify this extraneous event by setting singleSpa=true and</span></span><br><span class="line">  <span class="comment">// singleSpaTrigger=&lt;pushState|replaceState&gt; on the event instance.</span></span><br><span class="line">  <span class="keyword">let</span> evt;</span><br><span class="line">  <span class="keyword">try</span> &#123;</span><br><span class="line">    evt = <span class="keyword">new</span> <span class="title class_">PopStateEvent</span>(<span class="string">&quot;popstate&quot;</span>, &#123; state &#125;);</span><br><span class="line">  &#125; <span class="keyword">catch</span> (err) &#123;</span><br><span class="line">    <span class="comment">// IE 11 compatibility https://github.com/single-spa/single-spa/issues/299</span></span><br><span class="line">    <span class="comment">// https://docs.microsoft.com/en-us/openspecs/ie_standards/ms-html5e/bd560f47-b349-4d2c-baa8-f1560fb489dd</span></span><br><span class="line">    evt = <span class="variable language_">document</span>.<span class="title function_">createEvent</span>(<span class="string">&quot;PopStateEvent&quot;</span>);</span><br><span class="line">    evt.<span class="title function_">initPopStateEvent</span>(<span class="string">&quot;popstate&quot;</span>, <span class="literal">false</span>, <span class="literal">false</span>, state);</span><br><span class="line">  &#125;</span><br><span class="line">  evt.<span class="property">singleSpa</span> = <span class="literal">true</span>;</span><br><span class="line">  evt.<span class="property">singleSpaTrigger</span> = originalMethodName;</span><br><span class="line">  <span class="keyword">return</span> evt;</span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line"><span class="keyword">function</span> <span class="title function_">patchedUpdateState</span>(<span class="params">updateState, methodName</span>) &#123;</span><br><span class="line">  <span class="keyword">return</span> <span class="keyword">function</span> (<span class="params"></span>) &#123;</span><br><span class="line">    <span class="keyword">const</span> urlBefore = <span class="variable language_">window</span>.<span class="property">location</span>.<span class="property">href</span>;</span><br><span class="line">    <span class="keyword">const</span> result = updateState.<span class="title function_">apply</span>(<span class="variable language_">this</span>, <span class="variable language_">arguments</span>);</span><br><span class="line">    <span class="keyword">const</span> urlAfter = <span class="variable language_">window</span>.<span class="property">location</span>.<span class="property">href</span>;</span><br><span class="line"></span><br><span class="line">    <span class="keyword">if</span> (urlBefore !== urlAfter) &#123;</span><br><span class="line">      <span class="comment">// 手动触发 popstate 事件，让不同的子应用可以响应路由的变化。</span></span><br><span class="line">      <span class="variable language_">window</span>.<span class="title function_">dispatchEvent</span>(</span><br><span class="line">        <span class="title function_">createPopStateEvent</span>(<span class="variable language_">window</span>.<span class="property">history</span>.<span class="property">state</span>, methodName)</span><br><span class="line">      );</span><br><span class="line">    &#125;</span><br><span class="line">    <span class="keyword">return</span> result;</span><br><span class="line">  &#125;;</span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line"><span class="keyword">function</span> <span class="title function_">patchHistoryApi</span>(<span class="params"></span>) &#123;</span><br><span class="line">  urlRerouteOnly = <span class="literal">true</span>;</span><br><span class="line">  originalReplaceState = <span class="variable language_">window</span>.<span class="property">history</span>.<span class="property">replaceState</span>;</span><br><span class="line">  <span class="keyword">function</span> <span class="title function_">urlReroute</span>(<span class="params"></span>) &#123;</span><br><span class="line">    <span class="title function_">reroute</span>([], <span class="variable language_">arguments</span>);</span><br><span class="line">  &#125;</span><br><span class="line">  <span class="variable language_">window</span>.<span class="title function_">addEventListener</span>(<span class="string">&quot;hashchange&quot;</span>, urlReroute);</span><br><span class="line">  <span class="comment">//调用 history.pushState() 或者 history.replaceState() 不会触发 popstate 事件。popstate 事件只会在浏览器某些行为下触发</span></span><br><span class="line">  <span class="comment">//比如点击后退按钮（或者在 JavaScript 中调用 history.back()  go()方法）。即，在同一文档的两个历史记录条目之间导航会触发该事件。</span></span><br><span class="line">  <span class="variable language_">window</span>.<span class="title function_">addEventListener</span>(<span class="string">&quot;popstate&quot;</span>, urlReroute);</span><br><span class="line"></span><br><span class="line">  <span class="keyword">const</span> originalAddEventListener = <span class="variable language_">window</span>.<span class="property">addEventListener</span>;</span><br><span class="line">  <span class="keyword">const</span> originalRemoveEventListener = <span class="variable language_">window</span>.<span class="property">removeEventListener</span>;</span><br><span class="line"></span><br><span class="line">  <span class="comment">// history 改变的时候需要主动触发事件</span></span><br><span class="line">  <span class="variable language_">window</span>.<span class="property">history</span>.<span class="property">pushState</span> = <span class="title function_">patchedUpdateState</span>(</span><br><span class="line">    <span class="variable language_">window</span>.<span class="property">history</span>.<span class="property">pushState</span>,</span><br><span class="line">    <span class="string">&quot;pushState&quot;</span></span><br><span class="line">  );</span><br><span class="line">  <span class="variable language_">window</span>.<span class="property">history</span>.<span class="property">replaceState</span> = <span class="title function_">patchedUpdateState</span>(</span><br><span class="line">    originalReplaceState,</span><br><span class="line">    <span class="string">&quot;replaceState&quot;</span></span><br><span class="line">  );</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+<ul>
+<li><code>reroute</code> 方法控制了子应用生命周期的执行。</li>
+</ul>
+<figure class="highlight js"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br><span class="line">35</span><br><span class="line">36</span><br><span class="line">37</span><br><span class="line">38</span><br><span class="line">39</span><br><span class="line">40</span><br><span class="line">41</span><br><span class="line">42</span><br><span class="line">43</span><br><span class="line">44</span><br><span class="line">45</span><br><span class="line">46</span><br><span class="line">47</span><br><span class="line">48</span><br><span class="line">49</span><br><span class="line">50</span><br><span class="line">51</span><br><span class="line">52</span><br><span class="line">53</span><br><span class="line">54</span><br><span class="line">55</span><br><span class="line">56</span><br><span class="line">57</span><br><span class="line">58</span><br><span class="line">59</span><br><span class="line">60</span><br><span class="line">61</span><br><span class="line">62</span><br><span class="line">63</span><br><span class="line">64</span><br><span class="line">65</span><br><span class="line">66</span><br><span class="line">67</span><br><span class="line">68</span><br><span class="line">69</span><br><span class="line">70</span><br><span class="line">71</span><br><span class="line">72</span><br><span class="line">73</span><br><span class="line">74</span><br><span class="line">75</span><br><span class="line">76</span><br><span class="line">77</span><br><span class="line">78</span><br><span class="line">79</span><br><span class="line">80</span><br><span class="line">81</span><br><span class="line">82</span><br><span class="line">83</span><br><span class="line">84</span><br><span class="line">85</span><br><span class="line">86</span><br><span class="line">87</span><br><span class="line">88</span><br><span class="line">89</span><br><span class="line">90</span><br><span class="line">91</span><br><span class="line">92</span><br><span class="line">93</span><br><span class="line">94</span><br><span class="line">95</span><br><span class="line">96</span><br><span class="line">97</span><br><span class="line">98</span><br><span class="line">99</span><br><span class="line">100</span><br><span class="line">101</span><br><span class="line">102</span><br><span class="line">103</span><br><span class="line">104</span><br><span class="line">105</span><br><span class="line">106</span><br><span class="line">107</span><br><span class="line">108</span><br><span class="line">109</span><br><span class="line">110</span><br><span class="line">111</span><br><span class="line">112</span><br><span class="line">113</span><br><span class="line">114</span><br><span class="line">115</span><br><span class="line">116</span><br><span class="line">117</span><br><span class="line">118</span><br><span class="line">119</span><br><span class="line">120</span><br><span class="line">121</span><br><span class="line">122</span><br><span class="line">123</span><br><span class="line">124</span><br><span class="line">125</span><br><span class="line">126</span><br><span class="line">127</span><br><span class="line">128</span><br><span class="line">129</span><br><span class="line">130</span><br><span class="line">131</span><br><span class="line">132</span><br><span class="line">133</span><br><span class="line">134</span><br><span class="line">135</span><br><span class="line">136</span><br><span class="line">137</span><br><span class="line">138</span><br><span class="line">139</span><br><span class="line">140</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">function</span> <span class="title function_">reroute</span>(<span class="params"></span></span><br><span class="line"><span class="params">  pendingPromises = [],</span></span><br><span class="line"><span class="params">  eventArguments,</span></span><br><span class="line"><span class="params">  silentNavigation = <span class="literal">false</span></span></span><br><span class="line"><span class="params"></span>) &#123;</span><br><span class="line">  <span class="keyword">const</span> &#123; appsToUnload, appsToUnmount, appsToLoad, appsToMount &#125; =</span><br><span class="line">    <span class="title function_">getAppChanges</span>();</span><br><span class="line"></span><br><span class="line">  <span class="keyword">let</span> appsThatChanged,</span><br><span class="line">    cancelPromises = [];</span><br><span class="line"></span><br><span class="line">  <span class="keyword">if</span> (start) &#123;</span><br><span class="line">    appsThatChanged = appsToUnload.<span class="title function_">concat</span>(</span><br><span class="line">      appsToLoad,</span><br><span class="line">      appsToUnmount,</span><br><span class="line">      appsToMount</span><br><span class="line">    );</span><br><span class="line">    <span class="keyword">return</span> <span class="title function_">performAppChanges</span>();</span><br><span class="line">  &#125;</span><br><span class="line">  <span class="keyword">if</span> (!start) &#123;</span><br><span class="line">    appsThatChanged = appsToLoad;</span><br><span class="line">    <span class="keyword">return</span> <span class="title function_">loadApps</span>();</span><br><span class="line">  &#125;</span><br><span class="line"></span><br><span class="line">  <span class="keyword">function</span> <span class="title function_">loadApps</span>(<span class="params"></span>) &#123;</span><br><span class="line">    <span class="keyword">return</span> <span class="title class_">Promise</span>.<span class="title function_">resolve</span>().<span class="title function_">then</span>(<span class="function">() =&gt;</span> &#123;</span><br><span class="line">      <span class="keyword">const</span> loadPromises = appsToLoad.<span class="title function_">map</span>(<span class="function">(<span class="params">app</span>) =&gt;</span> &#123;</span><br><span class="line">        <span class="keyword">if</span> (app.<span class="property">loadPromise</span>) <span class="keyword">return</span> app.<span class="property">loadPromise</span>;</span><br><span class="line">        <span class="keyword">if</span> (app.<span class="property">status</span> !== <span class="variable constant_">NOT_LOADED</span> &amp;&amp; app.<span class="property">status</span> !== <span class="variable constant_">LOAD_ERROR</span>) &#123;</span><br><span class="line">          <span class="keyword">return</span> app;</span><br><span class="line">        &#125;</span><br><span class="line"></span><br><span class="line">        app.<span class="property">status</span> = <span class="variable constant_">LOADING_SOURCE_CODE</span>;</span><br><span class="line"></span><br><span class="line">        <span class="keyword">return</span> (app.<span class="property">loadPromise</span> = <span class="title class_">Promise</span>.<span class="title function_">resolve</span>()</span><br><span class="line">          .<span class="title function_">then</span>(<span class="function">(<span class="params">val</span>) =&gt;</span> &#123;</span><br><span class="line">            <span class="comment">// val 获取到子项目暴露的接口</span></span><br><span class="line">            <span class="keyword">return</span> (loadPromise = app.<span class="title function_">app</span>(app));</span><br><span class="line">          &#125;)</span><br><span class="line">          .<span class="title function_">then</span>(<span class="function">(<span class="params">val</span>) =&gt;</span> &#123;</span><br><span class="line">            app.<span class="property">status</span> = <span class="variable constant_">NOT_BOOTSTRAPPED</span>;</span><br><span class="line">            app.<span class="property">bootstrap</span> = val.<span class="property">bootstrap</span>;</span><br><span class="line">            app.<span class="property">mount</span> = val.<span class="property">mount</span>;</span><br><span class="line">            app.<span class="property">unmount</span> = val.<span class="property">unmount</span>;</span><br><span class="line">            app.<span class="property">unload</span> = val.<span class="property">unload</span>;</span><br><span class="line">            <span class="keyword">delete</span> app.<span class="property">loadPromise</span>;</span><br><span class="line">          &#125;));</span><br><span class="line">      &#125;);</span><br><span class="line">      <span class="keyword">let</span> succeeded;</span><br><span class="line"></span><br><span class="line">      <span class="keyword">return</span> <span class="title class_">Promise</span>.<span class="title function_">all</span>(loadPromises);</span><br><span class="line">    &#125;);</span><br><span class="line">  &#125;</span><br><span class="line"></span><br><span class="line">  <span class="keyword">function</span> <span class="title function_">performAppChanges</span>(<span class="params"></span>) &#123;</span><br><span class="line">    <span class="keyword">return</span> <span class="title class_">Promise</span>.<span class="title function_">resolve</span>().<span class="title function_">then</span>(<span class="function">() =&gt;</span> &#123;</span><br><span class="line">      <span class="keyword">return</span> <span class="title class_">Promise</span>.<span class="title function_">all</span>(cancelPromises).<span class="title function_">then</span>(<span class="function">() =&gt;</span> &#123;</span><br><span class="line">        appsToUnmount.<span class="title function_">map</span>(<span class="function">(<span class="params">app</span>) =&gt;</span></span><br><span class="line">          app.<span class="title function_">unmount</span>(&#123; <span class="attr">name</span>: app.<span class="property">name</span> &#125;).<span class="title function_">then</span>(<span class="function">() =&gt;</span> (app.<span class="property">status</span> = <span class="variable constant_">NOT_MOUNTED</span>))</span><br><span class="line">        );</span><br><span class="line"></span><br><span class="line">        <span class="title function_">loadApps</span>().<span class="title function_">then</span>(<span class="function">(<span class="params">res</span>) =&gt;</span> &#123;</span><br><span class="line">          <span class="keyword">const</span> loadThenMountPromises = appsToLoad.<span class="title function_">map</span>(<span class="function">(<span class="params">app</span>) =&gt;</span> &#123;</span><br><span class="line">            <span class="variable language_">console</span>.<span class="title function_">log</span>(app);</span><br><span class="line">            app.<span class="property">status</span> = <span class="variable constant_">BOOTSTRAPPING</span>;</span><br><span class="line"></span><br><span class="line">            <span class="keyword">return</span> <span class="title class_">Promise</span>.<span class="title function_">resolve</span>(app.<span class="property">loadPromise</span>)</span><br><span class="line">              .<span class="title function_">then</span>(<span class="function">(<span class="params">res</span>) =&gt;</span> &#123;</span><br><span class="line">                <span class="keyword">return</span> app.<span class="title function_">bootstrap</span>();</span><br><span class="line">              &#125;)</span><br><span class="line">              .<span class="title function_">then</span>(<span class="function">() =&gt;</span> &#123;</span><br><span class="line">                <span class="keyword">return</span> <span class="title class_">Promise</span>.<span class="title function_">resolve</span>().<span class="title function_">then</span>(<span class="function">() =&gt;</span> &#123;</span><br><span class="line">                  app.<span class="property">status</span> = <span class="variable constant_">MOUNTING</span>;</span><br><span class="line">                  <span class="keyword">return</span> app</span><br><span class="line">                    .<span class="title function_">mount</span>(&#123;</span><br><span class="line">                      <span class="attr">name</span>: app.<span class="property">name</span>,</span><br><span class="line">                    &#125;)</span><br><span class="line">                    .<span class="title function_">then</span>(<span class="function">() =&gt;</span> &#123;</span><br><span class="line">                      app.<span class="property">status</span> = <span class="variable constant_">MOUNTED</span>;</span><br><span class="line">                    &#125;);</span><br><span class="line">                &#125;);</span><br><span class="line">              &#125;);</span><br><span class="line">          &#125;);</span><br><span class="line">        &#125;);</span><br><span class="line"></span><br><span class="line">        appsToMount.<span class="title function_">map</span>(<span class="function">(<span class="params">app</span>) =&gt;</span> &#123;</span><br><span class="line">          app.<span class="title function_">mount</span>(&#123; <span class="attr">name</span>: app.<span class="property">name</span> &#125;).<span class="title function_">then</span>(<span class="function">() =&gt;</span> (app.<span class="property">status</span> = <span class="variable constant_">MOUNTED</span>));</span><br><span class="line">        &#125;);</span><br><span class="line">      &#125;);</span><br><span class="line">    &#125;);</span><br><span class="line">  &#125;</span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line"><span class="keyword">function</span> <span class="title function_">getAppChanges</span>(<span class="params"></span>) &#123;</span><br><span class="line">  <span class="keyword">const</span> appsToUnload = [],</span><br><span class="line">    appsToUnmount = [],</span><br><span class="line">    appsToLoad = [],</span><br><span class="line">    appsToMount = [];</span><br><span class="line"></span><br><span class="line">  <span class="keyword">let</span> appsThatChanged,</span><br><span class="line">    cancelPromises = [];</span><br><span class="line">  <span class="comment">// We re-attempt to download applications in LOAD_ERROR after a timeout of 200 milliseconds</span></span><br><span class="line">  <span class="keyword">const</span> currentTime = <span class="keyword">new</span> <span class="title class_">Date</span>().<span class="title function_">getTime</span>();</span><br><span class="line"></span><br><span class="line">  <span class="variable language_">console</span>.<span class="title function_">log</span>(apps);</span><br><span class="line">  apps.<span class="title function_">forEach</span>(<span class="function">(<span class="params">app</span>) =&gt;</span> &#123;</span><br><span class="line">    <span class="keyword">const</span> appShouldBeActive =</span><br><span class="line">      app.<span class="property">status</span> !== <span class="variable constant_">SKIP_BECAUSE_BROKEN</span> &amp;&amp; app.<span class="property">activeWhen</span>[<span class="number">0</span>](<span class="variable language_">window</span>.<span class="property">location</span>);</span><br><span class="line"></span><br><span class="line">    <span class="keyword">switch</span> (app.<span class="property">status</span>) &#123;</span><br><span class="line">      <span class="keyword">case</span> <span class="attr">LOAD_ERROR</span>:</span><br><span class="line">        <span class="keyword">if</span> (appShouldBeActive &amp;&amp; currentTime - app.<span class="property">loadErrorTime</span> &gt;= <span class="number">200</span>) &#123;</span><br><span class="line">          appsToLoad.<span class="title function_">push</span>(app);</span><br><span class="line">        &#125;</span><br><span class="line">        <span class="keyword">break</span>;</span><br><span class="line">      <span class="keyword">case</span> <span class="attr">NOT_LOADED</span>:</span><br><span class="line">      <span class="keyword">case</span> <span class="attr">LOADING_SOURCE_CODE</span>:</span><br><span class="line">        <span class="keyword">if</span> (appShouldBeActive) &#123;</span><br><span class="line">          appsToLoad.<span class="title function_">push</span>(app);</span><br><span class="line">        &#125;</span><br><span class="line">        <span class="keyword">break</span>;</span><br><span class="line">      <span class="keyword">case</span> <span class="attr">NOT_BOOTSTRAPPED</span>:</span><br><span class="line">      <span class="keyword">case</span> <span class="attr">NOT_MOUNTED</span>:</span><br><span class="line">        <span class="keyword">if</span> (!appShouldBeActive) &#123;</span><br><span class="line">          appsToUnload.<span class="title function_">push</span>(app);</span><br><span class="line">        &#125; <span class="keyword">else</span> <span class="keyword">if</span> (appShouldBeActive) &#123;</span><br><span class="line">          appsToMount.<span class="title function_">push</span>(app);</span><br><span class="line">        &#125;</span><br><span class="line">        <span class="keyword">break</span>;</span><br><span class="line">      <span class="keyword">case</span> <span class="attr">MOUNTED</span>:</span><br><span class="line">        <span class="keyword">if</span> (!appShouldBeActive) &#123;</span><br><span class="line">          appsToUnmount.<span class="title function_">push</span>(app);</span><br><span class="line">        &#125;</span><br><span class="line">        <span class="keyword">break</span>;</span><br><span class="line">      <span class="comment">// all other statuses are ignored</span></span><br><span class="line">    &#125;</span><br><span class="line">  &#125;);</span><br><span class="line"></span><br><span class="line">  <span class="keyword">return</span> &#123; appsToUnload, appsToUnmount, appsToLoad, appsToMount &#125;;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+ 
+      <!-- reward -->
+      
+      <div id="reword-out">
+        <div id="reward-btn">
+          打赏
+        </div>
+      </div>
+      
+    </div>
+    
+
+    <!-- copyright -->
+    
+    <div class="declare">
+      <ul class="post-copyright">
+        <li>
+          <i class="ri-copyright-line"></i>
+          <strong>版权声明： </strong>
+          
+          本博客所有文章除特别声明外，著作权归作者所有。转载请注明出处！
+          
+        </li>
+      </ul>
+    </div>
+    
+    <footer class="article-footer">
+       
+  <ul class="article-tag-list" itemprop="keywords"><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/single-spa/" rel="tag">single-spa</a></li><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/%E5%BE%AE%E5%89%8D%E7%AB%AF/" rel="tag">微前端</a></li></ul>
+
+    </footer>
+  </div>
+
+   
+  <nav class="article-nav">
+    
+      <a href="/posts/09fa145bf28a/" class="article-nav-link">
+        <strong class="article-nav-caption">上一篇</strong>
+        <div class="article-nav-title">
+          
+            nginx 证书自动续期
+          
+        </div>
+      </a>
+    
+    
+      <a href="/posts/f88cc857f1db/" class="article-nav-link">
+        <strong class="article-nav-caption">下一篇</strong>
+        <div class="article-nav-title">SVG角向渐变进度条</div>
+      </a>
+    
+  </nav>
+
+  
+   
+<div class="gitalk" id="gitalk-container"></div>
+
+<link rel="stylesheet" href="https://cdn.staticfile.org/gitalk/1.7.2/gitalk.min.css">
+
+
+<script src="https://cdn.staticfile.org/gitalk/1.7.2/gitalk.min.js"></script>
+
+
+<script src="https://cdn.staticfile.org/blueimp-md5/2.19.0/js/md5.min.js"></script>
+
+<script type="text/javascript">
+  var gitalk = new Gitalk({
+    clientID: 'bce2317b25da7c3c18f6',
+    clientSecret: 'e0ab868ca9054234798be82c2b1c0c9dd8632307',
+    repo: 'noopn.github.io',
+    owner: 'noopn',
+    admin: ['noopn'],
+    // id: location.pathname,      // Ensure uniqueness and length less than 50
+    id: md5(location.pathname),
+    distractionFreeMode: false,  // Facebook-like distraction free mode
+    pagerDirection: 'last'
+  })
+
+  gitalk.render('gitalk-container')
+</script>
+
+     
+</article>
+
+</section>
+      <footer class="footer">
+  <div class="outer">
+    <ul>
+      <li>
+        Copyrights &copy;
+        2015-2024
+        <i class="ri-heart-fill heart_icon"></i> SunZhiqi
+      </li>
+    </ul>
+    <ul>
+      <li>
+        
+      </li>
+    </ul>
+    <ul>
+      <li>
+        
+      </li>
+    </ul>
+    <ul>
+      
+    </ul>
+    <ul>
+      
+    </ul>
+    <ul>
+      <li>
+        <!-- cnzz统计 -->
+        
+      </li>
+    </ul>
+  </div>
+</footer>    
+    </main>
+    <div class="float_btns">
+      <div class="totop" id="totop">
+  <i class="ri-arrow-up-line"></i>
+</div>
+
+    </div>
+    <aside class="sidebar on">
+      <button class="navbar-toggle"></button>
+<nav class="navbar">
+  
+  <div class="logo">
+    <a href="/"><img src="/images/ayer-side.png" alt="四月八日"></a>
+  </div>
+  
+  <ul class="nav nav-main">
+    
+    <li class="nav-item">
+      <a class="nav-item-link" href="/">主页</a>
+    </li>
+    
+    <li class="nav-item">
+      <a class="nav-item-link" href="/archives">归档</a>
+    </li>
+    
+    <li class="nav-item">
+      <a class="nav-item-link" href="/categories">分类</a>
+    </li>
+    
+    <li class="nav-item">
+      <a class="nav-item-link" href="/tags">标签</a>
+    </li>
+    
+    <li class="nav-item">
+      <a class="nav-item-link" href="/tags/Essay">随笔</a>
+    </li>
+    
+  </ul>
+</nav>
+<nav class="navbar navbar-bottom">
+  <ul class="nav">
+    <li class="nav-item">
+      
+      <a class="nav-item-link nav-item-search"  title="搜索">
+        <i class="ri-search-line"></i>
+      </a>
+      
+      
+    </li>
+  </ul>
+</nav>
+<div class="search-form-wrap">
+  <div class="local-search local-search-plugin">
+  <input type="search" id="local-search-input" class="local-search-input" placeholder="Search...">
+  <div id="local-search-result" class="local-search-result"></div>
+</div>
+</div>
+    </aside>
+    <div id="mask"></div>
+
+<!-- #reward -->
+<div id="reward">
+  <span class="close"><i class="ri-close-line"></i></span>
+  <p class="reward-p"><i class="ri-cup-line"></i>此时无声胜有声！</p>
+  <div class="reward-box">
+    
+    <div class="reward-item">
+      <img class="reward-img" src="/images/alipay.jpg">
+      <span class="reward-type">支付宝</span>
+    </div>
+    
+    
+    <div class="reward-item">
+      <img class="reward-img" src="/images/wechat.jpg">
+      <span class="reward-type">微信</span>
+    </div>
+    
+  </div>
+</div>
+    
+<script src="/js/jquery-3.6.0.min.js"></script>
+ 
+<script src="/js/lazyload.min.js"></script>
+
+<!-- Tocbot -->
+ 
+<script src="/js/tocbot.min.js"></script>
+
+<script>
+  tocbot.init({
+    tocSelector: ".tocbot",
+    contentSelector: ".article-entry",
+    headingSelector: "h1, h2, h3, h4, h5, h6",
+    hasInnerContainers: true,
+    scrollSmooth: true,
+    scrollContainer: "main",
+    positionFixedSelector: ".tocbot",
+    positionFixedClass: "is-position-fixed",
+    fixedSidebarOffset: "auto",
+  });
+</script>
+
+<script src="/js/jquery.modal.min.js"></script>
+<link rel="stylesheet" href="/css/jquery.modal.min.css" />
+<script src="/js/jquery.justifiedGallery.min.js"></script>
+
+<script src="/dist/main.js"></script>
+
+<!-- ImageViewer -->
+ <!-- Root element of PhotoSwipe. Must have class pswp. -->
+<div class="pswp" tabindex="-1" role="dialog" aria-hidden="true">
+  <!-- Background of PhotoSwipe. 
+         It's a separate element as animating opacity is faster than rgba(). -->
+  <div class="pswp__bg"></div>
+
+  <!-- Slides wrapper with overflow:hidden. -->
+  <div class="pswp__scroll-wrap">
+    <!-- Container that holds slides. 
+            PhotoSwipe keeps only 3 of them in the DOM to save memory.
+            Don't modify these 3 pswp__item elements, data is added later on. -->
+    <div class="pswp__container">
+      <div class="pswp__item"></div>
+      <div class="pswp__item"></div>
+      <div class="pswp__item"></div>
+    </div>
+
+    <!-- Default (PhotoSwipeUI_Default) interface on top of sliding area. Can be changed. -->
+    <div class="pswp__ui pswp__ui--hidden">
+      <div class="pswp__top-bar">
+        <!--  Controls are self-explanatory. Order can be changed. -->
+
+        <div class="pswp__counter"></div>
+
+        <button
+          class="pswp__button pswp__button--close"
+          title="Close (Esc)"
+        ></button>
+
+        <button
+          class="pswp__button pswp__button--share"
+          style="display: none"
+          title="Share"
+        ></button>
+
+        <button
+          class="pswp__button pswp__button--fs"
+          title="Toggle fullscreen"
+        ></button>
+
+        <button
+          class="pswp__button pswp__button--zoom"
+          title="Zoom in/out"
+        ></button>
+
+        <!-- Preloader demo http://codepen.io/dimsemenov/pen/yyBWoR -->
+        <!-- element will get class pswp__preloader--active when preloader is running -->
+        <div class="pswp__preloader">
+          <div class="pswp__preloader__icn">
+            <div class="pswp__preloader__cut">
+              <div class="pswp__preloader__donut"></div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <div class="pswp__share-modal pswp__share-modal--hidden pswp__single-tap">
+        <div class="pswp__share-tooltip"></div>
+      </div>
+
+      <button
+        class="pswp__button pswp__button--arrow--left"
+        title="Previous (arrow left)"
+      ></button>
+
+      <button
+        class="pswp__button pswp__button--arrow--right"
+        title="Next (arrow right)"
+      ></button>
+
+      <div class="pswp__caption">
+        <div class="pswp__caption__center"></div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<link rel="stylesheet" href="/css/photoswipe.min.css" />
+<link rel="stylesheet" href="/css/default-skin.min.css" />
+<script src="/js/photoswipe.min.js"></script>
+<script src="/js/photoswipe-ui-default.min.js"></script>
+
+<script>
+  function viewer_init() {
+    let pswpElement = document.querySelectorAll(".pswp")[0];
+    let $imgArr = document.querySelectorAll(
+      ".article-entry img:not(.reward-img)"
+    );
+
+    $imgArr.forEach(($em, i) => {
+      $em.onclick = () => {
+        // slider展开状态
+        // todo: 这样不好，后面改成状态
+        if (document.querySelector(".left-col.show")) return;
+        let items = [];
+        $imgArr.forEach(($em2, i2) => {
+          let img = $em2.getAttribute("data-idx", i2);
+          let src =
+            $em2.getAttribute("data-target") || $em2.getAttribute("src");
+          let title = $em2.getAttribute("alt");
+          // 获得原图尺寸
+          const image = new Image();
+          image.src = src;
+          items.push({
+            src: src,
+            w: image.width || $em2.width,
+            h: image.height || $em2.height,
+            title: title,
+          });
+        });
+        var gallery = new PhotoSwipe(pswpElement, PhotoSwipeUI_Default, items, {
+          index: parseInt(i),
+        });
+        gallery.init();
+      };
+    });
+  }
+  viewer_init();
+</script>
+ 
+<!-- MathJax -->
+ <script type="text/x-mathjax-config">
+  MathJax.Hub.Config({
+      tex2jax: {
+          inlineMath: [ ['$','$'], ["\\(","\\)"]  ],
+          processEscapes: true,
+          skipTags: ['script', 'noscript', 'style', 'textarea', 'pre', 'code']
+      }
+  });
+
+  MathJax.Hub.Queue(function() {
+      var all = MathJax.Hub.getAllJax(), i;
+      for(i=0; i < all.length; i += 1) {
+          all[i].SourceElement().parentNode.className += ' has-jax';
+      }
+  });
+</script>
+
+<script src="/js/MathJax.js"></script>
+<script src="/js/TeX-AMS-MML_HTMLorMML-full.js"></script>
+
+<script>
+  var ayerConfig = {
+    mathjax: true,
+  };
+</script>
+
+<!-- Katex -->
+
+<!-- busuanzi  -->
+
+<!-- ClickLove -->
+
+<!-- ClickBoom1 -->
+
+<!-- ClickBoom2 -->
+
+<!-- CodeCopy -->
+ 
+<link rel="stylesheet" href="/css/clipboard.css">
+ <script src="/js/clipboard.min.js"></script>
+<script>
+  function wait(callback, seconds) {
+    var timelag = null;
+    timelag = window.setTimeout(callback, seconds);
+  }
+  !(function (e, t, a) {
+    var initCopyCode = function () {
+      var copyHtml = "";
+      copyHtml += '<button class="btn-copy" data-clipboard-snippet="">';
+      copyHtml += '<i class="ri-file-copy-2-line"></i><span>COPY</span>';
+      copyHtml += "</button>";
+      $(".highlight .code pre").before(copyHtml);
+      $(".article pre code").before(copyHtml);
+      var clipboard = new ClipboardJS(".btn-copy", {
+        target: function (trigger) {
+          return trigger.nextElementSibling;
+        },
+      });
+      clipboard.on("success", function (e) {
+        let $btn = $(e.trigger);
+        $btn.addClass("copied");
+        let $icon = $($btn.find("i"));
+        $icon.removeClass("ri-file-copy-2-line");
+        $icon.addClass("ri-checkbox-circle-line");
+        let $span = $($btn.find("span"));
+        $span[0].innerText = "COPIED";
+
+        wait(function () {
+          // 等待两秒钟后恢复
+          $icon.removeClass("ri-checkbox-circle-line");
+          $icon.addClass("ri-file-copy-2-line");
+          $span[0].innerText = "COPY";
+        }, 2000);
+      });
+      clipboard.on("error", function (e) {
+        e.clearSelection();
+        let $btn = $(e.trigger);
+        $btn.addClass("copy-failed");
+        let $icon = $($btn.find("i"));
+        $icon.removeClass("ri-file-copy-2-line");
+        $icon.addClass("ri-time-line");
+        let $span = $($btn.find("span"));
+        $span[0].innerText = "COPY FAILED";
+
+        wait(function () {
+          // 等待两秒钟后恢复
+          $icon.removeClass("ri-time-line");
+          $icon.addClass("ri-file-copy-2-line");
+          $span[0].innerText = "COPY";
+        }, 2000);
+      });
+    };
+    initCopyCode();
+  })(window, document);
+</script>
+ 
+<!-- CanvasBackground -->
+
+<script>
+  if (window.mermaid) {
+    mermaid.initialize({ theme: "default" });
+  }
+</script>
+
+
+    
+    
+
+  </div>
+</body>
+
+</html>

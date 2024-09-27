@@ -112,7 +112,7 @@
     
     
     <article
-  id="posts-javascript/微前端-singleSpa"
+  id="posts-javascript/微前端-简介"
   class="article article-type-posts"
   itemscope
   itemprop="blogPost"
@@ -123,8 +123,8 @@
     <header class="article-header">
        
 <h2 itemprop="name">
-  <a class="article-title" href="/posts/60d3fa605b86/"
-    >微前端 ② single-spa</a> 
+  <a class="article-title" href="/posts/0c443d994e0b/"
+    >微前端 ① 什么是微前端</a> 
 </h2>
  
 
@@ -132,8 +132,8 @@
     </header>
      
     <div class="article-meta">
-      <a href="/posts/60d3fa605b86/" class="article-date">
-  <time datetime="2023-08-01T07:30:59.000Z" itemprop="datePublished">2023-08-01</time>
+      <a href="/posts/0c443d994e0b/" class="article-date">
+  <time datetime="2024-01-26T03:55:26.000Z" itemprop="datePublished">2024-01-26</time>
 </a> 
   <div class="article-category">
     <a class="article-category-link" href="/categories/JavaScript/">JavaScript</a>
@@ -143,24 +143,41 @@
       
     <div class="article-entry" itemprop="articleBody">
        
-  <p>single-spa 是一个将多个 JavaScript 微前端整合到一个前端应用程序中的框架。下面是一些优点:</p>
-<ul>
-<li>在同一个页面上使用多个框架而不刷新页面</li>
-<li>独立部署微前端</li>
-<li>使用新框架编写代码，而无需重写现有的应用程序</li>
+  <h4 id="什么是微前端"><a href="#什么是微前端" class="headerlink" title="什么是微前端"></a>什么是微前端</h4><p>可以多团队，多框架共同构建 web 应用程序的技术。</p>
+<h4 id="微前端的价值"><a href="#微前端的价值" class="headerlink" title="微前端的价值"></a>微前端的价值</h4><ul>
+<li>技术栈无关 主框架不限制接入应用的技术栈，子应用具备完全自主权</li>
+<li>独立开发、独立部署 子应用仓库独立，前后端可独立开发，部署完成后主框架自动完成同步更新</li>
+<li>独立运行时 每个子应用之间状态隔离，运行时状态不共享</li>
 </ul>
-<p>single-spa 比较好的解决了以下问题：</p>
-<ul>
-<li>应用加载顺序和依赖管理</li>
-<li>路由管理</li>
-<li>版本管理和升级</li>
-<li>调试和监控</li>
+<h4 id="微前端场景解决方案"><a href="#微前端场景解决方案" class="headerlink" title="微前端场景解决方案"></a>微前端场景解决方案</h4><ul>
+<li><p>单实例：即同一时刻，只有一个子应用被展示，子应用具备一个完整的应用生命周期。通常基于 url 的变化来做子应用的切换。</p>
+</li>
+<li><p>多实例：同一时刻可展示多个子应用。通常使用 Web Components 方案来做子应用封装，子应用更像是一个业务组件而不是应用。</p>
+</li>
 </ul>
-<h4 id="依赖管理"><a href="#依赖管理" class="headerlink" title="依赖管理"></a>依赖管理</h4><p>single-sap 通过 <a href="/posts/ae7d32dcd157/">systemjs</a> 实现了应用资源的依赖管理</p>
-<h4 id="应用加载"><a href="#应用加载" class="headerlink" title="应用加载"></a>应用加载</h4><p>微前端应用需要适当改造，将输出的模式更改为 systemjs， 并且实现 single-spa 指定的接口。single-spa 官方提供了配置工具，用来降低配置的成本。</p>
-<p>webpack-config-single-spa 用于输出 webpack 打包文件</p>
-<figure class="highlight js"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br></pre></td><td class="code"><pre><span class="line">&#123;</span><br><span class="line">  <span class="attr">output</span>: &#123;</span><br><span class="line">    <span class="comment">// 输出格式改为 systemjs</span></span><br><span class="line">    <span class="attr">libraryTarget</span>: <span class="string">&quot;system&quot;</span>,</span><br><span class="line">  &#125;,</span><br><span class="line">   <span class="attr">devServer</span>: &#123;</span><br><span class="line">      <span class="comment">// 任意路径下都返回 spa 应用入口文件</span></span><br><span class="line">      <span class="attr">historyApiFallback</span>: <span class="literal">true</span>，</span><br><span class="line">      <span class="comment">// 允许对子应用的跨域调用</span></span><br><span class="line">      <span class="attr">headers</span>: &#123;</span><br><span class="line">        <span class="string">&quot;Access-Control-Allow-Origin&quot;</span>: <span class="string">&quot;*&quot;</span>,</span><br><span class="line">      &#125;,</span><br><span class="line">    &#125;,</span><br><span class="line">    <span class="comment">// 会增加一个入口文件，动态指定 __webpack_public_path__</span></span><br><span class="line">    <span class="comment">// 避免子应用中异步加载的资源请求了主应用的路径</span></span><br><span class="line">    <span class="keyword">new</span> <span class="title class_">SystemJSPublicPathPlugin</span>(</span><br><span class="line">        <span class="comment">//...</span></span><br><span class="line">    ),</span><br><span class="line">    <span class="comment">// 处理开发模式下独立启动子应用显示页面</span></span><br><span class="line">    !isProduction &amp;&amp;</span><br><span class="line">    <span class="keyword">new</span> <span class="title class_">StandaloneSingleSpaPlugin</span>(&#123;</span><br><span class="line">        <span class="comment">//...</span></span><br><span class="line">    &#125;),</span><br><span class="line">&#125;;</span><br></pre></td></tr></table></figure>
-
+<p>最终目的是将不同框架，不同项目的中的页面或组件整合在指定的路由下同时展示，并能实现数据的隔离和消息的传递等。</p>
+<h4 id="架构实践"><a href="#架构实践" class="headerlink" title="架构实践"></a>架构实践</h4><p>微前端正是将不同的框架和不同的项目整合在一个路由中，因此微前端框架的定位仅仅是 <strong>导航路由 + 资源加载框架</strong>。</p>
+<p><a target="_blank" rel="noopener" href="https://ui-router.github.io/guide/lazyloading#future-states"><strong>Future State</strong></a>，一个基于前端路由的应用，整个应用可以看作是一个状态树，每一个分支都可以 lazy load, 在程序启动时，描述 lazy load 状态数分支的对象，就可以叫做 Future State。</p>
+<p>当主应用导航到 <code>https://a.com/subApp1</code> 的时候子应用加载， 点击子应用的某个链接可能被导航到 <code>https://a.com/subApp1/project</code>，一个微前端框架应该能在路由匹配的时候加载子应用，路由不匹配的时候卸载子应用， 这就是 <code>single-spa</code> 做的工作。</p>
+<p><strong>应该用什么集成方式，主应用应该用何种资源形式加载子应用?</strong>, 一种方式是 JS Entry， 将子应用的资源打包为 js 资源，例如 single-spa 将要求将子应用打包为 systemJs 格式当作子应用入口, qiankun 要求将子应用打包为 umd 格式（考虑到应用需要独立部署）。另一种是 HTML Entry 直接使用子应用打包出的 html 文件当作入口，本质是解析 html 中引用的资源，因此也可以优化为直接使用资源描述的对象，以减少一次请求。</p>
+<h4 id="模块导入"><a href="#模块导入" class="headerlink" title="模块导入"></a>模块导入</h4><p>singleSpa 采用 systemJs 的模块化方案，使用 singleSpa 提供的工具，默认只会编译出 js 文件，独立部署需要其他工具支持，通过 systemJs amd 扩展，可以避免将资源加载后添加的对象挂载到 windows 上。</p>
+<p>qiankun 采用 umd 的模块化方案。需要使用 windows 快照的方式，获取到哪些对象被注入到 windows 中。</p>
+<h4 id="样式隔离方案"><a href="#样式隔离方案" class="headerlink" title="样式隔离方案"></a>样式隔离方案</h4><p>css-module，BEM 通过对 class 添加唯一标识保证唯一性。</p>
+<p>css-in-js 代表库 emotion ，本质还是将样式转换为唯一的 class 类名，通过 style 标签插入。</p>
+<p>shadowDom 浏览器严格隔离</p>
+<p>singleSpa 并没有提供样式隔离方案，需要子应用单独处理。</p>
+<p>qiankun 提供 <code>experimentalStyleIsolation</code> 配置， 本质上是给最外层元素样式添加唯一标识，相当于 css-module 实现方案，缺点是子应用中的元素如果挂载到了根节点外面会导致样式不生效。如果使用 <code>strictStyleIsolation</code> 配置，会使用 shadowDom 方案，缺点是主应用访问不到子应用的元素。另外，还实现了 Dynamic Stylesheet，原理是应用切出&#x2F;卸载后，同时卸载掉其样式表，浏览器会对样式表的插入、移除做整个 CSSOM 的重构，因此保证只有一个应用的样式表是生效的，但是这种方式对于多实例的微前端场景无法处理。</p>
+<h4 id="js-隔离"><a href="#js-隔离" class="headerlink" title="js 隔离"></a>js 隔离</h4><p>singleSpa 并没有提供沙箱的实现， qiankun 实现了基于 Proxy 的多实例沙箱。</p>
+<p>一个简单沙箱就是对 windows 快照， 当子应用卸载时，将 windows 对象回滚到之前的状态。</p>
+<p>基于 Proxy 的单实例沙箱，创建 Proxy 对象，将对象的操作反映到 windows 的属性改变， 但是当多个子应用实例的时候，对同一属性的修改会导致 windows 属性混乱。</p>
+<p>基于 Proxy 的多实例沙箱，不在对 windows 对象操作，直接</p>
+<h4 id="框架比较"><a href="#框架比较" class="headerlink" title="框架比较"></a>框架比较</h4><ul>
+<li><p>singleSpa 实现了最基本的路由功能，子应用加载功能。</p>
+</li>
+<li><p>qiankuan 基于 singleSpa 的封装，实现了 css 隔离，以及 js 沙箱，保证应用状态隔离， 还提供了更多的特性：</p>
+<p>子应用并行，多个微前端同时存在<br>子应用嵌套，微前端嵌套其他的微前端<br>父子应用通讯<br>预加载，空闲时加载子应用的资源<br>公共依赖加载<br>按需加载，切换到相应页面的时候才去加载资源</p>
+</li>
+</ul>
  
       <!-- reward -->
       
@@ -171,7 +188,405 @@
     
     <footer class="article-footer">
        
-  <ul class="article-tag-list" itemprop="keywords"><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/single-spa/" rel="tag">single-spa</a></li><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/%E5%BE%AE%E5%89%8D%E7%AB%AF/" rel="tag">微前端</a></li></ul>
+  <ul class="article-tag-list" itemprop="keywords"><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/systemJs/" rel="tag">systemJs</a></li><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/%E5%BE%AE%E5%89%8D%E7%AB%AF/" rel="tag">微前端</a></li></ul>
+
+    </footer>
+  </div>
+
+   
+    
+</article>
+
+    
+    <article
+  id="posts-engg/编码思路-能力判断"
+  class="article article-type-posts"
+  itemscope
+  itemprop="blogPost"
+  data-scroll-reveal
+>
+  <div class="article-inner">
+    
+    <header class="article-header">
+       
+<h2 itemprop="name">
+  <a class="article-title" href="/posts/d1e92cc3918e/"
+    >编码思路-能力判断</a> 
+</h2>
+ 
+
+      
+    </header>
+     
+    <div class="article-meta">
+      <a href="/posts/d1e92cc3918e/" class="article-date">
+  <time datetime="2023-10-30T01:20:20.000Z" itemprop="datePublished">2023-10-30</time>
+</a> 
+  <div class="article-category">
+    <a class="article-category-link" href="/categories/DevOps/">DevOps</a>
+  </div>
+   
+    </div>
+      
+    <div class="article-entry" itemprop="articleBody">
+       
+  <h4 id="是否是浏览器环境"><a href="#是否是浏览器环境" class="headerlink" title="是否是浏览器环境"></a>是否是浏览器环境</h4><figure class="highlight js"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment">// 使用 typeof, 对于不存在的变量会返回 undefined</span></span><br><span class="line"><span class="keyword">const</span> hasDocument = <span class="keyword">typeof</span> <span class="variable language_">document</span> !== <span class="string">&quot;undefined&quot;</span>;</span><br></pre></td></tr></table></figure>
+
+<h4 id="检查-IE-浏览器"><a href="#检查-IE-浏览器" class="headerlink" title="检查 IE 浏览器"></a>检查 IE 浏览器</h4><figure class="highlight js"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">var</span> isIE11 =</span><br><span class="line">  <span class="keyword">typeof</span> navigator !== <span class="string">&quot;undefined&quot;</span> &amp;&amp;</span><br><span class="line">  navigator.<span class="property">userAgent</span>.<span class="title function_">indexOf</span>(<span class="string">&quot;Trident&quot;</span>) !== -<span class="number">1</span>;</span><br></pre></td></tr></table></figure>
+ 
+      <!-- reward -->
+      
+    </div>
+    
+
+    <!-- copyright -->
+    
+    <footer class="article-footer">
+       
+  <ul class="article-tag-list" itemprop="keywords"><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/DevOps/" rel="tag">DevOps</a></li></ul>
+
+    </footer>
+  </div>
+
+   
+    
+</article>
+
+    
+    <article
+  id="posts-javascript/web中的拦截技巧"
+  class="article article-type-posts"
+  itemscope
+  itemprop="blogPost"
+  data-scroll-reveal
+>
+  <div class="article-inner">
+    
+    <header class="article-header">
+       
+<h2 itemprop="name">
+  <a class="article-title" href="/posts/042375f2ced5/"
+    >web中的拦截技巧</a> 
+</h2>
+ 
+
+      
+    </header>
+     
+    <div class="article-meta">
+      <a href="/posts/042375f2ced5/" class="article-date">
+  <time datetime="2023-10-17T07:10:59.000Z" itemprop="datePublished">2023-10-17</time>
+</a> 
+  <div class="article-category">
+    <a class="article-category-link" href="/categories/JavaScript/">JavaScript</a>
+  </div>
+   
+    </div>
+      
+    <div class="article-entry" itemprop="articleBody">
+       
+  <h4 id="代码注入时机"><a href="#代码注入时机" class="headerlink" title="代码注入时机"></a>代码注入时机</h4><ul>
+<li>源码注入</li>
+<li>构建，推送服务注入</li>
+<li>网关注入，nginx 等修改响应文件</li>
+<li>浏览器插件注入</li>
+</ul>
+<h4 id="重写-api"><a href="#重写-api" class="headerlink" title="重写 api"></a>重写 api</h4><p>通过 重写 fetch xhr 原型链，添加额外的功能</p>
+<figure class="highlight js"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">const</span> _console = <span class="variable language_">window</span>.<span class="property">console</span>;</span><br><span class="line"><span class="variable language_">window</span>.<span class="property">console</span> = <span class="keyword">new</span> <span class="title class_">Proxy</span>(_console, &#123;</span><br><span class="line">  <span class="title function_">get</span>(<span class="params">target, props</span>) &#123;</span><br><span class="line">    <span class="keyword">const</span> fn = target[props];</span><br><span class="line">    <span class="keyword">return</span> <span class="function">(<span class="params">...args</span>) =&gt;</span> &#123;</span><br><span class="line">      fn.<span class="title function_">apply</span>(<span class="literal">null</span>, args);</span><br><span class="line">      _console.<span class="title function_">info</span>(<span class="string">&quot;other info&quot;</span>);</span><br><span class="line">    &#125;;</span><br><span class="line">  &#125;,</span><br><span class="line">&#125;);</span><br></pre></td></tr></table></figure>
+
+<h4 id="拦截事件"><a href="#拦截事件" class="headerlink" title="拦截事件"></a>拦截事件</h4><figure class="highlight js"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br></pre></td><td class="code"><pre><span class="line"><span class="variable language_">document</span>.<span class="title function_">addEventListener</span>(</span><br><span class="line">  <span class="string">&quot;click&quot;</span>,</span><br><span class="line">  <span class="function">(<span class="params">e</span>) =&gt;</span> &#123;</span><br><span class="line">    e.<span class="title function_">stopPropagation</span>();</span><br><span class="line">    e.<span class="title function_">preventDefault</span>();</span><br><span class="line">  &#125;,</span><br><span class="line">  &#123;</span><br><span class="line">    <span class="comment">// 捕获阶段执行</span></span><br><span class="line">    <span class="attr">capture</span>: <span class="literal">true</span>,</span><br><span class="line">    <span class="comment">// 一个布尔值，设置为 true 时，表示 listener 永远不会调用 preventDefault()</span></span><br><span class="line">    <span class="attr">passive</span>: <span class="literal">false</span>,</span><br><span class="line">  &#125;</span><br><span class="line">);</span><br></pre></td></tr></table></figure>
+
+<h4 id="监听-DOM-变化"><a href="#监听-DOM-变化" class="headerlink" title="监听 DOM 变化"></a>监听 DOM 变化</h4><figure class="highlight js"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment">// 选择需要观察变动的节点</span></span><br><span class="line"><span class="keyword">const</span> targetNode = <span class="variable language_">document</span>.<span class="title function_">getElementById</span>(<span class="string">&quot;some-id&quot;</span>);</span><br><span class="line"></span><br><span class="line"><span class="comment">// 当观察到变动时执行的回调函数</span></span><br><span class="line"><span class="keyword">const</span> callback = <span class="keyword">function</span> (<span class="params">mutationsList, observer</span>) &#123;</span><br><span class="line">  <span class="comment">// Use traditional &#x27;for loops&#x27; for IE 11</span></span><br><span class="line">  <span class="keyword">for</span> (<span class="keyword">let</span> mutation <span class="keyword">of</span> mutationsList) &#123;</span><br><span class="line">    <span class="keyword">if</span> (mutation.<span class="property">type</span> === <span class="string">&quot;childList&quot;</span>) &#123;</span><br><span class="line">      <span class="variable language_">console</span>.<span class="title function_">log</span>(<span class="string">&quot;A child node has been added or removed.&quot;</span>);</span><br><span class="line">    &#125; <span class="keyword">else</span> <span class="keyword">if</span> (mutation.<span class="property">type</span> === <span class="string">&quot;attributes&quot;</span>) &#123;</span><br><span class="line">      <span class="variable language_">console</span>.<span class="title function_">log</span>(<span class="string">&quot;The &quot;</span> + mutation.<span class="property">attributeName</span> + <span class="string">&quot; attribute was modified.&quot;</span>);</span><br><span class="line">    &#125;</span><br><span class="line">  &#125;</span><br><span class="line">&#125;;</span><br><span class="line"></span><br><span class="line"><span class="comment">// 创建一个观察器实例并传入回调函数</span></span><br><span class="line"><span class="keyword">const</span> observer = <span class="keyword">new</span> <span class="title class_">MutationObserver</span>(callback);</span><br><span class="line"><span class="comment">// 观察器的配置（需要观察什么变动）</span></span><br><span class="line"><span class="keyword">const</span> config = &#123; <span class="attr">attributes</span>: <span class="literal">true</span>, <span class="attr">childList</span>: <span class="literal">true</span>, <span class="attr">subtree</span>: <span class="literal">true</span> &#125;;</span><br><span class="line"><span class="comment">// 以上述配置开始观察目标节点</span></span><br><span class="line">observer.<span class="title function_">observe</span>(targetNode, config);</span><br><span class="line"></span><br><span class="line"><span class="comment">// 之后，可停止观察</span></span><br><span class="line">observer.<span class="title function_">disconnect</span>();</span><br></pre></td></tr></table></figure>
+
+<h4 id="监听对象属性变化"><a href="#监听对象属性变化" class="headerlink" title="监听对象属性变化"></a>监听对象属性变化</h4><figure class="highlight js"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">const</span> obj = &#123; <span class="attr">a</span>: <span class="number">1</span> &#125;;</span><br><span class="line"></span><br><span class="line"><span class="title class_">Object</span>.<span class="title function_">defineProperty</span>(obj, <span class="string">&quot;a&quot;</span>, &#123;</span><br><span class="line">  <span class="title function_">get</span>(<span class="params"></span>) &#123;&#125;,</span><br><span class="line">  <span class="title function_">set</span>(<span class="params">v</span>) &#123;&#125;,</span><br><span class="line">&#125;);</span><br><span class="line"></span><br><span class="line"><span class="keyword">const</span> newObj = <span class="keyword">new</span> <span class="title class_">Proxy</span>(obj, &#123;</span><br><span class="line">  <span class="title function_">get</span>(<span class="params">target, props</span>) &#123;&#125;,</span><br><span class="line">  <span class="title function_">set</span>(<span class="params">target, props, value</span>) &#123;&#125;,</span><br><span class="line">&#125;);</span><br></pre></td></tr></table></figure>
+
+<h4 id="service-worker"><a href="#service-worker" class="headerlink" title="service worker"></a>service worker</h4><p><a href="/posts/e38739fa7213/">service worker</a></p>
+<figure class="highlight js"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line"><span class="variable language_">this</span>.<span class="title function_">addEventListener</span>(<span class="string">&quot;fetch&quot;</span>, <span class="keyword">function</span> (<span class="params">event</span>) &#123;&#125;);</span><br></pre></td></tr></table></figure>
+
+<h4 id="web-container"><a href="#web-container" class="headerlink" title="web container"></a>web container</h4><p><a target="_blank" rel="noopener" href="https://webcontainers.io/guides/quickstart">webcontainers</a></p>
+<h4 id="整合远程调试方案"><a href="#整合远程调试方案" class="headerlink" title="整合远程调试方案"></a>整合远程调试方案</h4><p>根据以上的拦截技巧可以整个一个远程调试的方案，可以实现以下的功能:</p>
+<ul>
+<li>实现共享域名的登录态 cookie</li>
+<li>在远程设备（手机、测试设备）调试本地开发中服务无需配置 Web 服务的 https 直接使用 https 协议访问开发服务，避免 http 协议导致许多 Web API 不可用仅限于安全上下文的特性 (opens new window)</li>
+<li>该服务是一个天然的中间层，可无感注入代码实现效率工具，比如：远程网络抓包、Mock 移动端控制台（eruda）远程代码调试（chii）切换后端接口环境、接口染色</li>
+</ul>
+<p>思路：</p>
+<ul>
+<li><p>客户端发起 https 请求,并在请求路径中添加 ip port</p>
+</li>
+<li></li>
+<li><p>nginx 拦截指定域名的所有请求<br>如果请求的是 html 文件，则 注入客户端的 sdk.js</p>
+<figure class="highlight yaml"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br></pre></td><td class="code"><pre><span class="line"><span class="string">location</span> <span class="string">/</span> &#123;</span><br><span class="line"><span class="string">sub_filter</span> <span class="string">&#x27;&lt;/body&gt;&#x27;</span> <span class="string">&#x27;&lt;script src=&quot;/sdk.js&quot;/&gt;&lt;/body&gt;&#x27;</span><span class="string">;</span></span><br><span class="line"><span class="string">root</span> <span class="string">html;</span></span><br><span class="line"><span class="string">index</span> <span class="string">index.html;</span></span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+<p>同时把 ip port 写入 cookie</p>
+</li>
+<li><p>如果是资源请求，直接从 cookie 中读取 ip port</p>
+</li>
+<li><p>sdk 中拦截所有的 a 标签的默认事件，在跳转路径上添加 ip port</p>
+</li>
+<li><p>socket 请求需要重写 socket api，让其携带域名和端口访问</p>
+</li>
+</ul>
+ 
+      <!-- reward -->
+      
+    </div>
+    
+
+    <!-- copyright -->
+    
+    <footer class="article-footer">
+       
+    </footer>
+  </div>
+
+   
+    
+</article>
+
+    
+    <article
+  id="posts-engg/编码思路-工程化"
+  class="article article-type-posts"
+  itemscope
+  itemprop="blogPost"
+  data-scroll-reveal
+>
+  <div class="article-inner">
+    
+    <header class="article-header">
+       
+<h2 itemprop="name">
+  <a class="article-title" href="/posts/cef00143019f/"
+    >编码思路-工程化</a> 
+</h2>
+ 
+
+      
+    </header>
+     
+    <div class="article-meta">
+      <a href="/posts/cef00143019f/" class="article-date">
+  <time datetime="2023-10-15T01:06:07.000Z" itemprop="datePublished">2023-10-15</time>
+</a> 
+  <div class="article-category">
+    <a class="article-category-link" href="/categories/DevOps/">DevOps</a>
+  </div>
+   
+    </div>
+      
+    <div class="article-entry" itemprop="articleBody">
+       
+  <h4 id="检查包是否安装"><a href="#检查包是否安装" class="headerlink" title="检查包是否安装"></a>检查包是否安装</h4><figure class="highlight js"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">let</span> dir = __dirname;</span><br><span class="line"></span><br><span class="line"><span class="keyword">do</span> &#123;</span><br><span class="line">  <span class="keyword">if</span> (fs.<span class="title function_">statSync</span>(path.<span class="title function_">join</span>(dir, <span class="string">&quot;node_modules&quot;</span>, packageName)).<span class="title function_">isDirectory</span>()) &#123;</span><br><span class="line">    <span class="keyword">return</span> <span class="literal">true</span>;</span><br><span class="line">  &#125;</span><br><span class="line">&#125; <span class="keyword">while</span> (dir !== (dir = path.<span class="title function_">dirname</span>(dir)));</span><br><span class="line"></span><br><span class="line"><span class="comment">//require(&quot;module&quot;) 用于管理模块的接口</span></span><br><span class="line"><span class="keyword">for</span> (<span class="keyword">const</span> internalPath <span class="keyword">of</span> <span class="built_in">require</span>(<span class="string">&quot;module&quot;</span>).<span class="property">globalPaths</span>) &#123;</span><br><span class="line">  <span class="keyword">if</span> (fs.<span class="title function_">statSync</span>(path.<span class="title function_">join</span>(internalPath, packageName)).<span class="title function_">isDirectory</span>()) &#123;</span><br><span class="line">    <span class="keyword">return</span> <span class="literal">true</span>;</span><br><span class="line">  &#125;</span><br><span class="line">&#125;</span><br><span class="line"><span class="keyword">return</span> <span class="literal">false</span>;</span><br></pre></td></tr></table></figure>
+
+<h4 id="区分使用的是那种包管理器"><a href="#区分使用的是那种包管理器" class="headerlink" title="区分使用的是那种包管理器"></a>区分使用的是那种包管理器</h4><figure class="highlight js"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">if</span> (fs.<span class="title function_">existsSync</span>(path.<span class="title function_">resolve</span>(process.<span class="title function_">cwd</span>(), <span class="string">&quot;yarn.lock&quot;</span>))) &#123;</span><br><span class="line">  packageManager = <span class="string">&quot;yarn&quot;</span>;</span><br><span class="line">&#125; <span class="keyword">else</span> <span class="keyword">if</span> (fs.<span class="title function_">existsSync</span>(path.<span class="title function_">resolve</span>(process.<span class="title function_">cwd</span>(), <span class="string">&quot;pnpm-lock.yaml&quot;</span>))) &#123;</span><br><span class="line">  packageManager = <span class="string">&quot;pnpm&quot;</span>;</span><br><span class="line">&#125; <span class="keyword">else</span> &#123;</span><br><span class="line">  packageManager = <span class="string">&quot;npm&quot;</span>;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+<h4 id="原生的命令行交互-readLine"><a href="#原生的命令行交互-readLine" class="headerlink" title="原生的命令行交互 readLine"></a>原生的命令行交互 readLine</h4><figure class="highlight js"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">const</span> readLine = <span class="built_in">require</span>(<span class="string">&quot;readline&quot;</span>);</span><br><span class="line"></span><br><span class="line"><span class="keyword">const</span> questionInterface = readLine.<span class="title function_">createInterface</span>(&#123;</span><br><span class="line">  <span class="attr">input</span>: process.<span class="property">stdin</span>,</span><br><span class="line">  <span class="attr">output</span>: process.<span class="property">stderr</span>,</span><br><span class="line">&#125;);</span><br><span class="line"></span><br><span class="line">questionInterface.<span class="title function_">question</span>(<span class="string">&quot;question one (yes/no):&quot;</span>, <span class="function">(<span class="params">answer</span>) =&gt;</span> &#123;</span><br><span class="line">  <span class="keyword">if</span> (answer.<span class="title function_">startsWith</span>(<span class="string">&quot;y&quot;</span>)) &#123;</span><br><span class="line">  &#125;</span><br><span class="line">&#125;);</span><br></pre></td></tr></table></figure>
+
+<h2 id="子进程的-spawn-和-exec-函数之间的区别"><a href="#子进程的-spawn-和-exec-函数之间的区别" class="headerlink" title="子进程的 spawn 和 exec 函数之间的区别"></a>子进程的 spawn 和 exec 函数之间的区别</h2><p>Node.js 的子进程模块（child_process）有两个函数 spawn 和 exec，使用这两个函数，我们可以启动一个子进程来执行系统中的其他程序。刚接触 child_process 的人可能会问，为什么做同一件事会有两个函数，以及应该使用哪个函数。我将解释 spawn 和 exec 之间的区别，以帮助你决定何时使用哪个函数。</p>
+<p>child_process.spawn 和 child_process.exec 的最大区别在于它们的返回值–spawn 返回一个流，而 exec 返回一个缓冲区。</p>
+<p>child_process.spawn 返回一个包含 stdout 和 stderr 流的对象。您可以点击 stdout 流来读取子进程发回 Node 的数据。作为一个流，stdout 具有流所具有的 “data”（数据）、”end”（结束）和其他事件。当您希望子进程向 Node 返回大量数据（如图像处理、读取二进制数据等）时，最好使用 spawn。</p>
+<p>child_process.spawn 是 “异步 asynchronous”（异步不同步）的，这意味着一旦子进程开始执行，它就会以流的形式从子进程发回数据。</p>
+<p>这里有一个例子，我用 spawn 读取了 Node 的 curl 请求结果。</p>
+<p>child_process.exec 返回子进程输出的整个缓冲区。默认情况下，缓冲区大小为 200k。如果子进程返回的数据超过该值，程序就会崩溃，并显示错误信息 “Error: maxBuffer exceeded”（错误：超过最大缓冲区）。你可以在执行选项中设置更大的缓冲区大小来解决这个问题。但你不应该这样做，因为 exec 并不适合向 Node 返回巨大缓冲区的进程。你应该使用 spawn 来解决这个问题。那么，exec 用来做什么呢？用它来运行返回结果状态而不是数据的程序。</p>
+<p>child_process.exec 是 “同步异步 “的，也就是说，虽然 exec 是异步的，但它会等待子进程结束，并尝试一次性返回所有缓冲数据。如果 exec 的缓冲区大小设置得不够大，就会出现 “maxBuffer exceeded”（超过最大缓冲区）错误，导致执行失败。</p>
+<p>请看这里的一个示例，我使用 exec 执行 wget 下载文件，并向 Node 更新执行状态。</p>
+<p>这就是 Node 的子进程 span 和 exec 之间的区别。当你希望子进程向 Node 返回大量二进制数据时，请使用 spawn；当你希望子进程返回简单的状态信息时，请使用 exec。</p>
+<figure class="highlight js"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">const</span> cp = <span class="built_in">require</span>(<span class="string">&quot;child_process&quot;</span>);</span><br><span class="line"><span class="keyword">new</span> <span class="title class_">Promise</span>(<span class="function">(<span class="params">resolve, reject</span>) =&gt;</span> &#123;</span><br><span class="line">  <span class="keyword">const</span> executedCommand = cp.<span class="title function_">spawn</span>(<span class="string">&quot;echo 1&quot;</span>, [], &#123;</span><br><span class="line">    <span class="attr">stdio</span>: <span class="string">&quot;inherit&quot;</span>,</span><br><span class="line">    <span class="attr">shell</span>: <span class="literal">true</span>,</span><br><span class="line">  &#125;);</span><br><span class="line"></span><br><span class="line">  executedCommand.<span class="title function_">on</span>(<span class="string">&quot;error&quot;</span>, reject);</span><br><span class="line"></span><br><span class="line">  executedCommand.<span class="title function_">on</span>(<span class="string">&quot;exit&quot;</span>, <span class="function">(<span class="params">code</span>) =&gt;</span> &#123;</span><br><span class="line">    <span class="keyword">if</span> (code === <span class="number">0</span>) <span class="title function_">resolve</span>();</span><br><span class="line">  &#125;);</span><br><span class="line">&#125;).<span class="title function_">then</span>(<span class="function">() =&gt;</span> &#123;&#125;);</span><br></pre></td></tr></table></figure>
+
+<h4 id="区分包的模块化方案"><a href="#区分包的模块化方案" class="headerlink" title="区分包的模块化方案"></a>区分包的模块化方案</h4><figure class="highlight js"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">const</span> pkgPath = <span class="built_in">require</span>.<span class="title function_">resolve</span>(<span class="string">`<span class="subst">$&#123;packageName&#125;</span>/package.json`</span>);</span><br><span class="line"><span class="keyword">const</span> pkg = <span class="built_in">require</span>(pkgPath);</span><br><span class="line"><span class="keyword">if</span> (pkg.<span class="property">type</span> === <span class="string">&quot;module&quot;</span> || <span class="regexp">/\.mjs/i</span>.<span class="title function_">test</span>(pkg.<span class="property">bin</span>[name])) &#123;</span><br><span class="line">  <span class="title function_">import</span>(path.<span class="title function_">resolve</span>(path.<span class="title function_">dirname</span>(pkgPath), pkg.<span class="property">bin</span>[name])).<span class="title function_">catch</span>();</span><br><span class="line">&#125; <span class="keyword">else</span> &#123;</span><br><span class="line">  <span class="built_in">require</span>(path.<span class="title function_">resolve</span>(path.<span class="title function_">dirname</span>(pkgPath), pkg.<span class="property">bin</span>[name]));</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+<h4 id="检查两个命令是否相似"><a href="#检查两个命令是否相似" class="headerlink" title="检查两个命令是否相似"></a>检查两个命令是否相似</h4><p>(莱文斯坦距离)[<a target="_blank" rel="noopener" href="https://zh.wikipedia.org/wiki/%E8%90%8A%E6%96%87%E6%96%AF%E5%9D%A6%E8%B7%9D%E9%9B%A2]">https://zh.wikipedia.org/wiki/%E8%90%8A%E6%96%87%E6%96%AF%E5%9D%A6%E8%B7%9D%E9%9B%A2]</a> (fastest-levenshtein)[<a target="_blank" rel="noopener" href="https://github.com/ka-weihe/fastest-levenshtein]">https://github.com/ka-weihe/fastest-levenshtein]</a></p>
+<h4 id="获取某个包的最新版本"><a href="#获取某个包的最新版本" class="headerlink" title="获取某个包的最新版本"></a>获取某个包的最新版本</h4><p>推荐使用 cross-spawn</p>
+<figure class="highlight js"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">const</span> cp = <span class="built_in">require</span>(<span class="string">&quot;child_process&quot;</span>);</span><br><span class="line"></span><br><span class="line"><span class="keyword">const</span> &#123; output &#125; = cp.<span class="title function_">spawnSync</span>(</span><br><span class="line">  <span class="string">&quot;npm.cmd&quot;</span>,</span><br><span class="line">  [<span class="string">&quot;view&quot;</span>, <span class="string">&quot;react@latest&quot;</span>, <span class="string">&quot;version&quot;</span>],</span><br><span class="line">  &#123;</span><br><span class="line">    <span class="attr">stdio</span>: <span class="string">&quot;pipe&quot;</span>,</span><br><span class="line">  &#125;</span><br><span class="line">);</span><br><span class="line"><span class="variable language_">console</span>.<span class="title function_">log</span>(output.<span class="title function_">toString</span>());</span><br></pre></td></tr></table></figure>
+ 
+      <!-- reward -->
+      
+    </div>
+    
+
+    <!-- copyright -->
+    
+    <footer class="article-footer">
+       
+  <ul class="article-tag-list" itemprop="keywords"><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/DevOps/" rel="tag">DevOps</a></li></ul>
+
+    </footer>
+  </div>
+
+   
+    
+</article>
+
+    
+    <article
+  id="posts-design/pattern/代码美学"
+  class="article article-type-posts"
+  itemscope
+  itemprop="blogPost"
+  data-scroll-reveal
+>
+  <div class="article-inner">
+    
+    <header class="article-header">
+       
+<h2 itemprop="name">
+  <a class="article-title" href="/posts/c8a84e84a221/"
+    >代码美学（摘要）</a> 
+</h2>
+ 
+
+      
+    </header>
+     
+    <div class="article-meta">
+      <a href="/posts/c8a84e84a221/" class="article-date">
+  <time datetime="2023-09-04T02:33:58.000Z" itemprop="datePublished">2023-09-04</time>
+</a> 
+  <div class="article-category">
+    <a class="article-category-link" href="/categories/%E8%AE%BE%E8%AE%A1%E6%A8%A1%E5%BC%8F/">设计模式</a>
+  </div>
+   
+    </div>
+      
+    <div class="article-entry" itemprop="articleBody">
+       
+  <h2 id="如何给变量或类型起名字"><a href="#如何给变量或类型起名字" class="headerlink" title="如何给变量或类型起名字"></a>如何给变量或类型起名字</h2><p>不要使用以下的命名方式</p>
+<ul>
+<li><p>不要使用单字母：简洁的变量命名是来自数学中的命名习惯，数学家喜欢公式的精简和优美，但是会丢失大量的上下文信息，让你读代码的时间比写代码的时间还要长</p>
+</li>
+<li><p>不要使用缩写：与单字母的方式一样，无法理解上下文的信息，让代码很难阅读</p>
+</li>
+<li><p>不要在命名中添加类型说明： 新生的程序工作者可能不会接触到这个命名方式，它来自于匈牙利命名法在类型提示不完善的年代，增加对变量类型的说明 <code>intTotal</code>,<code>strName</code></p>
+</li>
+<li><p>不要再类型中添加类型描述： 最典型的就是对interface的定义使用 <code>IBoxProps</code></p>
+</li>
+<li><p>不要再类或类型中添加 <code>Base</code> 或 <code>Abstract</code>: 可能你会习惯性的把基础类命名中添加 <code>Base</code>, 但是这并不能说明他应该被继承或是被实现，只需要直接命名即可，例如 <code>Box</code><br>另外你的命名对子类如何使用并不会有影响，例如 <code>(box:Box)=&gt;void</code>, 并不关心 <code>Box</code> 是不是抽象类<br>当你不知道如何给基础类命名的时候，可以考虑是否需要对子类修改命名方式，添加更多信息， 例如子类实现了不同颜色的盒子 <code>YellowBox</code></p>
+</li>
+</ul>
+<p>推荐的命名方式</p>
+<ul>
+<li>在命名中增加单位描述： <code>delaySeconds</code> , 对于一些强类型语言可以使用类型标注，例如 C# TimeSpan, 而对于弱类型语言可以在命名中添加单位描述</li>
+</ul>
+<h2 id="你可能不需要Utils文件"><a href="#你可能不需要Utils文件" class="headerlink" title="你可能不需要Utils文件"></a>你可能不需要Utils文件</h2><p>可能你正在用一个Utils方法过滤电影列表</p>
+<figure class="highlight ts"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">class</span> <span class="title class_">Utils</span> &#123;</span><br><span class="line">    <span class="title function_">filterMove</span>(<span class="params"></span>)&#123;&#125;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+<p>但事实上这应该是电影类中的一部分</p>
+<figure class="highlight ts"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">class</span> <span class="title class_">Movie</span> &#123;</span><br><span class="line">    <span class="title function_">filterMove</span>(<span class="params"></span>)&#123;&#125;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+<p>当你准备写一个utils方法的使用请考虑它是否足够抽象， 亦或者考虑将他放到更明确的类或功能模块中去。</p>
+<h2 id="使用组合而不是继承"><a href="#使用组合而不是继承" class="headerlink" title="使用组合而不是继承"></a>使用组合而不是继承</h2><p>继承最大的问题在于，无法找到一个完美的抽象，随着业务和需求的发展，总是需要调整被继承的类，这将会影响全局。</p>
+<p>如果需要使用类，遵循以下的原则:</p>
+<ul>
+<li>需要实现的类中有大量重复的接口</li>
+<li>避免直接访问受保护的成员变量</li>
+<li>显式的为子类创建需要重写的API</li>
+<li>每个方法都需要标注行为 final&#x2F;sealed&#x2F;private, 避免修改时导致错误</li>
+</ul>
+<p>如是使用继承，需要注意以下几点：</p>
+<ul>
+<li>组合会导致功能定义时产生大量的重复初始化代码</li>
+<li>如果想从类中暴露方法，需要写大量的包装函数<figure class="highlight ts"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">class</span> <span class="title class_">Box</span>&#123;</span><br><span class="line">  <span class="title function_">getName</span>(<span class="params"></span>)&#123;</span><br><span class="line">      <span class="keyword">return</span> <span class="variable language_">this</span>.<span class="property">type</span>.<span class="title function_">getName</span>()</span><br><span class="line">  &#125;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure></li>
+<li>虽然会导致少量冗余，但是好处远远大于坏处，它可以让你的代码耦合程度更低。</li>
+</ul>
+ 
+      <!-- reward -->
+      
+    </div>
+    
+
+    <!-- copyright -->
+    
+    <footer class="article-footer">
+       
+  <ul class="article-tag-list" itemprop="keywords"><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/%E8%AE%BE%E8%AE%A1%E6%A8%A1%E5%BC%8F/" rel="tag">设计模式</a></li></ul>
+
+    </footer>
+  </div>
+
+   
+    
+</article>
+
+    
+    <article
+  id="posts-source/vue-dev-server"
+  class="article article-type-posts"
+  itemscope
+  itemprop="blogPost"
+  data-scroll-reveal
+>
+  <div class="article-inner">
+    
+    <header class="article-header">
+       
+<h2 itemprop="name">
+  <a class="article-title" href="/posts/37a20cedb635/"
+    >vue/dev-server</a> 
+</h2>
+ 
+
+      
+    </header>
+     
+    <div class="article-meta">
+      <a href="/posts/37a20cedb635/" class="article-date">
+  <time datetime="2023-08-05T06:42:41.000Z" itemprop="datePublished">2023-08-05</time>
+</a> 
+  <div class="article-category">
+    <a class="article-category-link" href="/categories/%E6%BA%90%E7%A0%81%E5%88%86%E6%9E%90/">源码分析</a> / <a class="article-category-link" href="/categories/%E6%BA%90%E7%A0%81%E5%88%86%E6%9E%90/vue/">vue</a>
+  </div>
+   
+    </div>
+      
+    <div class="article-entry" itemprop="articleBody">
+       
+  <h2 id="demo-介绍"><a href="#demo-介绍" class="headerlink" title="demo 介绍"></a>demo 介绍</h2><p>此 <a target="_blank" rel="noopener" href="https://github.com/vuejs/vue-dev-server">demo</a> 展示在页面中直接引入 esModule 文件，并在文件中引入 vue 组件的渲染流程</p>
+<h2 id="渲染流程"><a href="#渲染流程" class="headerlink" title="渲染流程"></a>渲染流程</h2><div class='mermaid'>
+sequenceDiagram
+    autonumber
+    participant Client
+    participant Server
+    Client->>Server: /main.js
+    Note left of Server: 返回资源的时候处理node_modules中依赖的路径
+    Server->>Client: main.js文件内容
+    Note left of Server: __module/vue 和 test.vue
+    Client->>Server: 浏览器分析分析并请求import资源
+    Server->>Client: 返回依赖资源或是打包后的js文件
+</div>
+
+<ul>
+<li><p>浏览器向服务器请求入口文件 <code>main.js</code>, 请求路径为 import 路径 <code>.main.js</code></p>
+</li>
+<li><p>服务端接收到请求，交给 middleware 处理，首先检查缓存，如果缓存存在直接返回缓存结果，如果不存在，通过请求路径读取本地资源文件，处理后加入缓存并返回</p>
+</li>
+<li><p>如果文件是 js 结尾, 这里表示的是入口文件</p>
+<ul>
+<li>将文件内容转为 ast 语法树， 分析依赖模块包括 vue 和 text.vue，将 node_module 中的依赖路径转换为自定义路径用于资源请求时区分资源并可以加入缓存优化，例如<code>__module/vue</code>，将 ast 生成的代码返回给浏览器</li>
+<li>浏览器会自动请求 esMoudle 中 import 的文件 <br/><code>http://localhost:3000/\_\_modules/vue</code> <br/><code>http://localhost:3000/test.vue</code></li>
+</ul>
+</li>
+<li><p>如果文件路径中包含 <code>\_\_moudles</code>, 则尝试加载 node_modules 中的文件<br>通过 <code>require.resolve(&quot;vue&quot;)</code> 可以获取某个包在 <code>node_modules</code> 中的绝对路径</p>
+</li>
+<li><p>如果文件路径是以 <code>.vue</code> 结尾， 需要使用 vue 提供的编译模块将文件编译成单个 js 文件</p>
+<ul>
+<li>首先通过 vueComplier compileToDescriptor 将 vue 文件处理 template, styles，scripts 的描述对象</li>
+<li>在使用 vueCompiler.assemble 将描述文件中的各部分组装成代码，返回给浏览器</li>
+</ul>
+</li>
+</ul>
+<h2 id="middleware-js"><a href="#middleware-js" class="headerlink" title="middleware.js"></a>middleware.js</h2><figure class="highlight js"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br><span class="line">35</span><br><span class="line">36</span><br><span class="line">37</span><br><span class="line">38</span><br><span class="line">39</span><br><span class="line">40</span><br><span class="line">41</span><br><span class="line">42</span><br><span class="line">43</span><br><span class="line">44</span><br><span class="line">45</span><br><span class="line">46</span><br><span class="line">47</span><br><span class="line">48</span><br><span class="line">49</span><br><span class="line">50</span><br><span class="line">51</span><br><span class="line">52</span><br><span class="line">53</span><br><span class="line">54</span><br><span class="line">55</span><br><span class="line">56</span><br><span class="line">57</span><br><span class="line">58</span><br><span class="line">59</span><br><span class="line">60</span><br><span class="line">61</span><br><span class="line">62</span><br><span class="line">63</span><br><span class="line">64</span><br><span class="line">65</span><br><span class="line">66</span><br><span class="line">67</span><br><span class="line">68</span><br><span class="line">69</span><br><span class="line">70</span><br><span class="line">71</span><br><span class="line">72</span><br><span class="line">73</span><br><span class="line">74</span><br><span class="line">75</span><br><span class="line">76</span><br><span class="line">77</span><br><span class="line">78</span><br><span class="line">79</span><br><span class="line">80</span><br><span class="line">81</span><br><span class="line">82</span><br><span class="line">83</span><br><span class="line">84</span><br><span class="line">85</span><br><span class="line">86</span><br><span class="line">87</span><br><span class="line">88</span><br><span class="line">89</span><br><span class="line">90</span><br><span class="line">91</span><br><span class="line">92</span><br><span class="line">93</span><br><span class="line">94</span><br><span class="line">95</span><br><span class="line">96</span><br><span class="line">97</span><br><span class="line">98</span><br><span class="line">99</span><br><span class="line">100</span><br><span class="line">101</span><br><span class="line">102</span><br><span class="line">103</span><br><span class="line">104</span><br><span class="line">105</span><br><span class="line">106</span><br><span class="line">107</span><br><span class="line">108</span><br><span class="line">109</span><br><span class="line">110</span><br><span class="line">111</span><br><span class="line">112</span><br><span class="line">113</span><br><span class="line">114</span><br><span class="line">115</span><br><span class="line">116</span><br><span class="line">117</span><br><span class="line">118</span><br><span class="line">119</span><br><span class="line">120</span><br><span class="line">121</span><br><span class="line">122</span><br><span class="line">123</span><br><span class="line">124</span><br><span class="line">125</span><br><span class="line">126</span><br><span class="line">127</span><br><span class="line">128</span><br><span class="line">129</span><br><span class="line">130</span><br><span class="line">131</span><br><span class="line">132</span><br><span class="line">133</span><br><span class="line">134</span><br><span class="line">135</span><br><span class="line">136</span><br><span class="line">137</span><br><span class="line">138</span><br><span class="line">139</span><br><span class="line">140</span><br><span class="line">141</span><br><span class="line">142</span><br><span class="line">143</span><br><span class="line">144</span><br><span class="line">145</span><br><span class="line">146</span><br><span class="line">147</span><br><span class="line">148</span><br><span class="line">149</span><br><span class="line">150</span><br><span class="line">151</span><br><span class="line">152</span><br><span class="line">153</span><br><span class="line">154</span><br><span class="line">155</span><br><span class="line">156</span><br><span class="line">157</span><br><span class="line">158</span><br><span class="line">159</span><br><span class="line">160</span><br><span class="line">161</span><br><span class="line">162</span><br><span class="line">163</span><br><span class="line">164</span><br><span class="line">165</span><br><span class="line">166</span><br><span class="line">167</span><br><span class="line">168</span><br><span class="line">169</span><br><span class="line">170</span><br><span class="line">171</span><br><span class="line">172</span><br><span class="line">173</span><br><span class="line">174</span><br><span class="line">175</span><br><span class="line">176</span><br><span class="line">177</span><br><span class="line">178</span><br><span class="line">179</span><br><span class="line">180</span><br><span class="line">181</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">const</span> vueCompiler = <span class="built_in">require</span>(<span class="string">&quot;@vue/component-compiler&quot;</span>);</span><br><span class="line"><span class="keyword">const</span> fs = <span class="built_in">require</span>(<span class="string">&quot;fs&quot;</span>);</span><br><span class="line"><span class="keyword">const</span> stat = <span class="built_in">require</span>(<span class="string">&quot;util&quot;</span>).<span class="title function_">promisify</span>(fs.<span class="property">stat</span>);</span><br><span class="line"><span class="keyword">const</span> root = process.<span class="title function_">cwd</span>();</span><br><span class="line"><span class="keyword">const</span> path = <span class="built_in">require</span>(<span class="string">&quot;path&quot;</span>);</span><br><span class="line"><span class="keyword">const</span> parseUrl = <span class="built_in">require</span>(<span class="string">&quot;parseurl&quot;</span>);</span><br><span class="line"><span class="keyword">const</span> &#123; transformModuleImports &#125; = <span class="built_in">require</span>(<span class="string">&quot;./transformModuleImports&quot;</span>);</span><br><span class="line"><span class="keyword">const</span> readFile = <span class="built_in">require</span>(<span class="string">&quot;util&quot;</span>).<span class="title function_">promisify</span>(fs.<span class="property">readFile</span>);</span><br><span class="line"><span class="keyword">const</span> parseUrl = <span class="built_in">require</span>(<span class="string">&quot;parseurl&quot;</span>);</span><br><span class="line"><span class="keyword">const</span> defaultOptions = &#123;</span><br><span class="line">  <span class="attr">cache</span>: <span class="literal">true</span>,</span><br><span class="line">&#125;;</span><br><span class="line"></span><br><span class="line"><span class="keyword">async</span> <span class="keyword">function</span> <span class="title function_">loadPkg</span>(<span class="params">pkg</span>) &#123;</span><br><span class="line">  <span class="keyword">if</span> (pkg === <span class="string">&quot;vue&quot;</span>) &#123;</span><br><span class="line">    <span class="keyword">const</span> dir = path.<span class="title function_">dirname</span>(<span class="built_in">require</span>.<span class="title function_">resolve</span>(<span class="string">&quot;vue&quot;</span>));</span><br><span class="line">    <span class="keyword">const</span> filepath = path.<span class="title function_">join</span>(dir, <span class="string">&quot;vue.esm.browser.js&quot;</span>);</span><br><span class="line">    <span class="keyword">return</span> <span class="title function_">readFile</span>(filepath);</span><br><span class="line">  &#125; <span class="keyword">else</span> &#123;</span><br><span class="line">    <span class="comment">// TODO</span></span><br><span class="line">    <span class="comment">// check if the package has a browser es module that can be used</span></span><br><span class="line">    <span class="comment">// otherwise bundle it with rollup on the fly?</span></span><br><span class="line">    <span class="keyword">throw</span> <span class="keyword">new</span> <span class="title class_">Error</span>(<span class="string">&quot;npm imports support are not ready yet.&quot;</span>);</span><br><span class="line">  &#125;</span><br><span class="line">&#125;</span><br><span class="line"><span class="keyword">async</span> <span class="keyword">function</span> <span class="title function_">readSource</span>(<span class="params">req</span>) &#123;</span><br><span class="line">  <span class="keyword">const</span> &#123; pathname &#125; = <span class="title function_">parseUrl</span>(req);</span><br><span class="line">  <span class="keyword">const</span> filepath = path.<span class="title function_">resolve</span>(root, pathname.<span class="title function_">replace</span>(<span class="regexp">/^\//</span>, <span class="string">&quot;&quot;</span>));</span><br><span class="line">  <span class="keyword">return</span> &#123;</span><br><span class="line">    filepath,</span><br><span class="line">    <span class="attr">source</span>: <span class="keyword">await</span> <span class="title function_">readFile</span>(filepath, <span class="string">&quot;utf-8&quot;</span>),</span><br><span class="line">    <span class="attr">updateTime</span>: (<span class="keyword">await</span> <span class="title function_">stat</span>(filepath)).<span class="property">mtime</span>.<span class="title function_">getTime</span>(),</span><br><span class="line">  &#125;;</span><br><span class="line">&#125;</span><br><span class="line"><span class="keyword">function</span> <span class="title function_">transformModuleImports</span>(<span class="params">code</span>) &#123;</span><br><span class="line">  <span class="keyword">const</span> ast = recast.<span class="title function_">parse</span>(code);</span><br><span class="line">  recast.<span class="property">types</span>.<span class="title function_">visit</span>(ast, &#123;</span><br><span class="line">    <span class="title function_">visitImportDeclaration</span>(<span class="params">path</span>) &#123;</span><br><span class="line">      <span class="keyword">const</span> source = path.<span class="property">node</span>.<span class="property">source</span>.<span class="property">value</span>;</span><br><span class="line">      <span class="keyword">if</span> (!<span class="regexp">/^\.\/?/</span>.<span class="title function_">test</span>(source) &amp;&amp; <span class="title function_">isPkg</span>(source)) &#123;</span><br><span class="line">        path.<span class="property">node</span>.<span class="property">source</span> = recast.<span class="property">types</span>.<span class="property">builders</span>.<span class="title function_">literal</span>(</span><br><span class="line">          <span class="string">`/__modules/<span class="subst">$&#123;source&#125;</span>`</span></span><br><span class="line">        );</span><br><span class="line">      &#125;</span><br><span class="line">      <span class="variable language_">this</span>.<span class="title function_">traverse</span>(path);</span><br><span class="line">    &#125;,</span><br><span class="line">  &#125;);</span><br><span class="line">  <span class="keyword">return</span> recast.<span class="title function_">print</span>(ast).<span class="property">code</span>;</span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line"><span class="keyword">const</span> <span class="title function_">vueMiddleware</span> = (<span class="params">options = defaultOptions</span>) =&gt; &#123;</span><br><span class="line">  <span class="keyword">let</span> cache;</span><br><span class="line">  <span class="keyword">let</span> time = &#123;&#125;;</span><br><span class="line">  <span class="keyword">if</span> (options.<span class="property">cache</span>) &#123;</span><br><span class="line">    <span class="keyword">const</span> <span class="variable constant_">LRU</span> = <span class="built_in">require</span>(<span class="string">&quot;lru-cache&quot;</span>);</span><br><span class="line"></span><br><span class="line">    cache = <span class="keyword">new</span> <span class="title function_">LRU</span>(&#123;</span><br><span class="line">      <span class="attr">max</span>: <span class="number">500</span>,</span><br><span class="line">      <span class="attr">length</span>: <span class="keyword">function</span> (<span class="params">n, key</span>) &#123;</span><br><span class="line">        <span class="keyword">return</span> n * <span class="number">2</span> + key.<span class="property">length</span>;</span><br><span class="line">      &#125;,</span><br><span class="line">    &#125;);</span><br><span class="line">  &#125;</span><br><span class="line"></span><br><span class="line">  <span class="keyword">const</span> compiler = vueCompiler.<span class="title function_">createDefaultCompiler</span>();</span><br><span class="line"></span><br><span class="line">  <span class="keyword">function</span> <span class="title function_">send</span>(<span class="params">res, source, mime</span>) &#123;</span><br><span class="line">    res.<span class="title function_">setHeader</span>(<span class="string">&quot;Content-Type&quot;</span>, mime);</span><br><span class="line">    res.<span class="title function_">end</span>(source);</span><br><span class="line">  &#125;</span><br><span class="line"></span><br><span class="line">  <span class="keyword">function</span> <span class="title function_">injectSourceMapToBlock</span>(<span class="params">block, lang</span>) &#123;</span><br><span class="line">    <span class="keyword">const</span> map = <span class="title class_">Base64</span>.<span class="title function_">toBase64</span>(<span class="title class_">JSON</span>.<span class="title function_">stringify</span>(block.<span class="property">map</span>));</span><br><span class="line">    <span class="keyword">let</span> mapInject;</span><br><span class="line"></span><br><span class="line">    <span class="keyword">switch</span> (lang) &#123;</span><br><span class="line">      <span class="keyword">case</span> <span class="string">&quot;js&quot;</span>:</span><br><span class="line">        mapInject = <span class="string">`//# sourceMappingURL=data:application/json;base64,<span class="subst">$&#123;map&#125;</span>\n`</span>;</span><br><span class="line">        <span class="keyword">break</span>;</span><br><span class="line">      <span class="keyword">case</span> <span class="string">&quot;css&quot;</span>:</span><br><span class="line">        mapInject = <span class="string">`/*# sourceMappingURL=data:application/json;base64,<span class="subst">$&#123;map&#125;</span>*/\n`</span>;</span><br><span class="line">        <span class="keyword">break</span>;</span><br><span class="line">      <span class="attr">default</span>:</span><br><span class="line">        <span class="keyword">break</span>;</span><br><span class="line">    &#125;</span><br><span class="line"></span><br><span class="line">    <span class="keyword">return</span> &#123;</span><br><span class="line">      ...block,</span><br><span class="line">      <span class="attr">code</span>: mapInject + block.<span class="property">code</span>,</span><br><span class="line">    &#125;;</span><br><span class="line">  &#125;</span><br><span class="line"></span><br><span class="line">  <span class="keyword">function</span> <span class="title function_">injectSourceMapToScript</span>(<span class="params">script</span>) &#123;</span><br><span class="line">    <span class="keyword">return</span> <span class="title function_">injectSourceMapToBlock</span>(script, <span class="string">&quot;js&quot;</span>);</span><br><span class="line">  &#125;</span><br><span class="line"></span><br><span class="line">  <span class="keyword">function</span> <span class="title function_">injectSourceMapsToStyles</span>(<span class="params">styles</span>) &#123;</span><br><span class="line">    <span class="keyword">return</span> styles.<span class="title function_">map</span>(<span class="function">(<span class="params">style</span>) =&gt;</span> <span class="title function_">injectSourceMapToBlock</span>(style, <span class="string">&quot;css&quot;</span>));</span><br><span class="line">  &#125;</span><br><span class="line"></span><br><span class="line">  <span class="keyword">async</span> <span class="keyword">function</span> <span class="title function_">tryCache</span>(<span class="params">key, checkUpdateTime = <span class="literal">true</span></span>) &#123;</span><br><span class="line">    <span class="keyword">const</span> data = cache.<span class="title function_">get</span>(key);</span><br><span class="line"></span><br><span class="line">    <span class="keyword">if</span> (checkUpdateTime) &#123;</span><br><span class="line">      <span class="keyword">const</span> cacheUpdateTime = time[key];</span><br><span class="line">      <span class="keyword">const</span> fileUpdateTime = (</span><br><span class="line">        <span class="keyword">await</span> <span class="title function_">stat</span>(path.<span class="title function_">resolve</span>(root, key.<span class="title function_">replace</span>(<span class="regexp">/^\//</span>, <span class="string">&quot;&quot;</span>)))</span><br><span class="line">      ).<span class="property">mtime</span>.<span class="title function_">getTime</span>();</span><br><span class="line">      <span class="keyword">if</span> (cacheUpdateTime &lt; fileUpdateTime) <span class="keyword">return</span> <span class="literal">null</span>;</span><br><span class="line">    &#125;</span><br><span class="line"></span><br><span class="line">    <span class="keyword">return</span> data;</span><br><span class="line">  &#125;</span><br><span class="line"></span><br><span class="line">  <span class="keyword">function</span> <span class="title function_">cacheData</span>(<span class="params">key, data, updateTime</span>) &#123;</span><br><span class="line">    <span class="keyword">const</span> old = cache.<span class="title function_">peek</span>(key);</span><br><span class="line"></span><br><span class="line">    <span class="keyword">if</span> (old != data) &#123;</span><br><span class="line">      cache.<span class="title function_">set</span>(key, data);</span><br><span class="line">      <span class="keyword">if</span> (updateTime) time[key] = updateTime;</span><br><span class="line">      <span class="keyword">return</span> <span class="literal">true</span>;</span><br><span class="line">    &#125; <span class="keyword">else</span> <span class="keyword">return</span> <span class="literal">false</span>;</span><br><span class="line">  &#125;</span><br><span class="line"></span><br><span class="line">  <span class="keyword">async</span> <span class="keyword">function</span> <span class="title function_">bundleSFC</span>(<span class="params">req</span>) &#123;</span><br><span class="line">    <span class="keyword">const</span> &#123; filepath, source, updateTime &#125; = <span class="keyword">await</span> <span class="title function_">readSource</span>(req);</span><br><span class="line">    <span class="keyword">const</span> descriptorResult = compiler.<span class="title function_">compileToDescriptor</span>(filepath, source);</span><br><span class="line">    <span class="variable language_">console</span>.<span class="title function_">log</span>(descriptorResult);</span><br><span class="line">    <span class="keyword">const</span> assembledResult = vueCompiler.<span class="title function_">assemble</span>(compiler, filepath, &#123;</span><br><span class="line">      ...descriptorResult,</span><br><span class="line">      <span class="attr">script</span>: <span class="title function_">injectSourceMapToScript</span>(descriptorResult.<span class="property">script</span>),</span><br><span class="line">      <span class="attr">styles</span>: <span class="title function_">injectSourceMapsToStyles</span>(descriptorResult.<span class="property">styles</span>),</span><br><span class="line">    &#125;);</span><br><span class="line">    <span class="keyword">return</span> &#123; ...assembledResult, updateTime &#125;;</span><br><span class="line">  &#125;</span><br><span class="line"></span><br><span class="line">  <span class="keyword">return</span> <span class="keyword">async</span> (req, res, next) =&gt; &#123;</span><br><span class="line">    <span class="keyword">if</span> (req.<span class="property">path</span>.<span class="title function_">endsWith</span>(<span class="string">&quot;.vue&quot;</span>)) &#123;</span><br><span class="line">      <span class="keyword">const</span> key = <span class="title function_">parseUrl</span>(req).<span class="property">pathname</span>;</span><br><span class="line">      <span class="keyword">let</span> out = <span class="keyword">await</span> <span class="title function_">tryCache</span>(key);</span><br><span class="line"></span><br><span class="line">      <span class="keyword">if</span> (!out) &#123;</span><br><span class="line">        <span class="comment">// Bundle Single-File Component</span></span><br><span class="line">        <span class="keyword">const</span> result = <span class="keyword">await</span> <span class="title function_">bundleSFC</span>(req);</span><br><span class="line">        <span class="variable language_">console</span>.<span class="title function_">log</span>(result);</span><br><span class="line">        out = result;</span><br><span class="line">        <span class="title function_">cacheData</span>(key, out, result.<span class="property">updateTime</span>);</span><br><span class="line">      &#125;</span><br><span class="line"></span><br><span class="line">      <span class="title function_">send</span>(res, out.<span class="property">code</span>, <span class="string">&quot;application/javascript&quot;</span>);</span><br><span class="line">    &#125; <span class="keyword">else</span> <span class="keyword">if</span> (req.<span class="property">path</span>.<span class="title function_">endsWith</span>(<span class="string">&quot;.js&quot;</span>)) &#123;</span><br><span class="line">      <span class="keyword">const</span> key = <span class="title function_">parseUrl</span>(req).<span class="property">pathname</span>;</span><br><span class="line">      <span class="keyword">let</span> out = <span class="keyword">await</span> <span class="title function_">tryCache</span>(key);</span><br><span class="line"></span><br><span class="line">      <span class="keyword">if</span> (!out) &#123;</span><br><span class="line">        <span class="comment">// transform import statements</span></span><br><span class="line">        <span class="keyword">const</span> result = <span class="keyword">await</span> <span class="title function_">readSource</span>(req);</span><br><span class="line">        out = <span class="title function_">transformModuleImports</span>(result.<span class="property">source</span>);</span><br><span class="line">        <span class="variable language_">console</span>.<span class="title function_">log</span>(out);</span><br><span class="line">        <span class="title function_">cacheData</span>(key, out, result.<span class="property">updateTime</span>);</span><br><span class="line">      &#125;</span><br><span class="line"></span><br><span class="line">      <span class="title function_">send</span>(res, out, <span class="string">&quot;application/javascript&quot;</span>);</span><br><span class="line">    &#125; <span class="keyword">else</span> <span class="keyword">if</span> (req.<span class="property">path</span>.<span class="title function_">startsWith</span>(<span class="string">&quot;/__modules/&quot;</span>)) &#123;</span><br><span class="line">      <span class="keyword">const</span> key = <span class="title function_">parseUrl</span>(req).<span class="property">pathname</span>;</span><br><span class="line">      <span class="keyword">const</span> pkg = req.<span class="property">path</span>.<span class="title function_">replace</span>(<span class="regexp">/^\/__modules\//</span>, <span class="string">&quot;&quot;</span>);</span><br><span class="line"></span><br><span class="line">      <span class="keyword">let</span> out = <span class="keyword">await</span> <span class="title function_">tryCache</span>(key, <span class="literal">false</span>); <span class="comment">// Do not outdate modules</span></span><br><span class="line">      <span class="keyword">if</span> (!out) &#123;</span><br><span class="line">        out = (<span class="keyword">await</span> <span class="title function_">loadPkg</span>(pkg)).<span class="title function_">toString</span>();</span><br><span class="line">        <span class="title function_">cacheData</span>(key, out, <span class="literal">false</span>); <span class="comment">// Do not outdate modules</span></span><br><span class="line">      &#125;</span><br><span class="line"></span><br><span class="line">      <span class="title function_">send</span>(res, out, <span class="string">&quot;application/javascript&quot;</span>);</span><br><span class="line">    &#125; <span class="keyword">else</span> &#123;</span><br><span class="line">      <span class="title function_">next</span>();</span><br><span class="line">    &#125;</span><br><span class="line">  &#125;;</span><br><span class="line">&#125;;</span><br><span class="line"></span><br><span class="line"><span class="built_in">exports</span>.<span class="property">vueMiddleware</span> = vueMiddleware;</span><br></pre></td></tr></table></figure>
+ 
+      <!-- reward -->
+      
+    </div>
+    
+
+    <!-- copyright -->
+    
+    <footer class="article-footer">
+       
+  <ul class="article-tag-list" itemprop="keywords"><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/vue/" rel="tag">vue</a></li></ul>
 
     </footer>
   </div>
@@ -522,529 +937,6 @@
     <footer class="article-footer">
        
   <ul class="article-tag-list" itemprop="keywords"><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/%E8%AE%BE%E8%AE%A1%E6%A8%A1%E5%BC%8F/" rel="tag">设计模式</a></li></ul>
-
-    </footer>
-  </div>
-
-   
-    
-</article>
-
-    
-    <article
-  id="posts-css/位置与布局"
-  class="article article-type-posts"
-  itemscope
-  itemprop="blogPost"
-  data-scroll-reveal
->
-  <div class="article-inner">
-    
-    <header class="article-header">
-       
-<h2 itemprop="name">
-  <a class="article-title" href="/posts/3c545ad624c6/"
-    >CSS 尺寸/位置/布局/元素</a> 
-</h2>
- 
-
-      
-    </header>
-     
-    <div class="article-meta">
-      <a href="/posts/3c545ad624c6/" class="article-date">
-  <time datetime="2023-03-01T08:42:28.000Z" itemprop="datePublished">2023-03-01</time>
-</a> 
-  <div class="article-category">
-    <a class="article-category-link" href="/categories/CSS/">CSS</a>
-  </div>
-   
-    </div>
-      
-    <div class="article-entry" itemprop="articleBody">
-       
-  <h4 id="复选框与文本对齐"><a href="#复选框与文本对齐" class="headerlink" title="复选框与文本对齐"></a>复选框与文本对齐</h4><figure class="highlight html"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line"><span class="tag">&lt;<span class="name">p</span>&gt;</span><span class="tag">&lt;<span class="name">input</span> <span class="attr">type</span>=<span class="string">&quot;checkbox&quot;</span> /&gt;</span><span class="tag">&lt;<span class="name">span</span>&gt;</span>文本<span class="tag">&lt;/<span class="name">span</span>&gt;</span><span class="tag">&lt;/<span class="name">p</span>&gt;</span></span><br><span class="line"><span class="tag">&lt;<span class="name">p</span>&gt;</span><span class="tag">&lt;<span class="name">input</span> <span class="attr">type</span>=<span class="string">&quot;radio&quot;</span> /&gt;</span> <span class="tag">&lt;<span class="name">span</span>&gt;</span>文本<span class="tag">&lt;/<span class="name">span</span>&gt;</span><span class="tag">&lt;/<span class="name">p</span>&gt;</span></span><br></pre></td></tr></table></figure>
-
-<p>当字号大于 input 尺寸时， input 会与文字中间对其</p>
-<p>但是字号过小的时候，input 与文字底部并不能对其</p>
-<figure class="highlight css"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment">/* 方案1 */</span></span><br><span class="line"><span class="selector-tag">input</span> &#123;</span><br><span class="line">  <span class="attribute">vertical-align</span>: -<span class="number">3px</span>;</span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line"><span class="comment">/* 方案2 */</span></span><br><span class="line"><span class="selector-tag">input</span> &#123;</span><br><span class="line">  <span class="attribute">vertical-align</span>: top;</span><br><span class="line">  <span class="attribute">margin-top</span>: <span class="number">4px</span>;</span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line"><span class="comment">/* 方案3 */</span></span><br><span class="line"><span class="selector-tag">input</span> &#123;</span><br><span class="line">  <span class="attribute">vertical-align</span>: middle;</span><br><span class="line">  <span class="attribute">margin-top</span>: -<span class="number">2px</span>;</span><br><span class="line">  <span class="attribute">margin-bottom</span>: <span class="number">1px</span>;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
-
-<h4 id="多行文字垂直居中"><a href="#多行文字垂直居中" class="headerlink" title="多行文字垂直居中"></a>多行文字垂直居中</h4><figure class="highlight html"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br></pre></td><td class="code"><pre><span class="line"><span class="tag">&lt;<span class="name">div</span> <span class="attr">class</span>=<span class="string">&quot;box&quot;</span>&gt;</span></span><br><span class="line">  <span class="tag">&lt;<span class="name">div</span> <span class="attr">class</span>=<span class="string">&quot;child&quot;</span></span></span><br><span class="line"><span class="tag">    &gt;</span>这里显示多行文字。这里显示多行文字。这里显示多行文字。这里显示多行文字。这里显示多行文字。这里显示多行文字。这里显示多行文字。这里显示多行文字。&lt;/span</span><br><span class="line">  &gt;</span><br><span class="line"><span class="tag">&lt;/<span class="name">div</span>&gt;</span></span><br></pre></td></tr></table></figure>
-
-<figure class="highlight css"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br><span class="line">35</span><br><span class="line">36</span><br><span class="line">37</span><br><span class="line">38</span><br><span class="line">39</span><br><span class="line">40</span><br><span class="line">41</span><br><span class="line">42</span><br><span class="line">43</span><br><span class="line">44</span><br><span class="line">45</span><br><span class="line">46</span><br><span class="line">47</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment">/* 方案1 */</span></span><br><span class="line"></span><br><span class="line"><span class="selector-class">.box</span> &#123;</span><br><span class="line">  <span class="attribute">width</span>: <span class="number">500px</span>;</span><br><span class="line">  <span class="attribute">height</span>: <span class="number">500px</span>;</span><br><span class="line">  <span class="attribute">display</span>: flex;</span><br><span class="line">  <span class="attribute">align-items</span>: center;</span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line"><span class="comment">/* 方案2 */</span></span><br><span class="line"></span><br><span class="line"><span class="selector-class">.box</span> &#123;</span><br><span class="line">  <span class="attribute">width</span>: <span class="number">500px</span>;</span><br><span class="line">  <span class="attribute">height</span>: <span class="number">500px</span>;</span><br><span class="line">  <span class="attribute">display</span>: flex;</span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line"><span class="selector-class">.child</span> &#123;</span><br><span class="line">  <span class="attribute">margin</span>: auto <span class="number">0</span>;</span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line"><span class="comment">/* 方案3 */</span></span><br><span class="line"></span><br><span class="line"><span class="selector-class">.box</span> &#123;</span><br><span class="line">  <span class="attribute">width</span>: <span class="number">500px</span>;</span><br><span class="line">  <span class="attribute">height</span>: <span class="number">500px</span>;</span><br><span class="line">  <span class="attribute">line-height</span>: <span class="number">500px</span>;</span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line"><span class="selector-class">.child</span> &#123;</span><br><span class="line">  <span class="attribute">vertical-align</span>: middle;</span><br><span class="line">  <span class="attribute">line-height</span>: normal;</span><br><span class="line">  <span class="attribute">display</span>: inline-block;</span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line"><span class="comment">/* 方案4 */</span></span><br><span class="line"></span><br><span class="line"><span class="selector-class">.box</span> &#123;</span><br><span class="line">  <span class="attribute">width</span>: <span class="number">500px</span>;</span><br><span class="line">  <span class="attribute">height</span>: <span class="number">500px</span>;</span><br><span class="line">  <span class="attribute">display</span>: table;</span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line"><span class="selector-class">.child</span> &#123;</span><br><span class="line">  <span class="attribute">display</span>: table-cell;</span><br><span class="line">  <span class="attribute">vertical-align</span>: middle;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
-
-<h4 id="多行文本超出隐藏"><a href="#多行文本超出隐藏" class="headerlink" title="多行文本超出隐藏"></a>多行文本超出隐藏</h4><figure class="highlight css"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br></pre></td><td class="code"><pre><span class="line"><span class="selector-class">.box</span> &#123;</span><br><span class="line">  <span class="attribute">display</span>: -webkit-box;</span><br><span class="line">  -webkit-line-clamp: <span class="number">3</span>;</span><br><span class="line">  -webkit-box-orient: vertical;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
-
-<h4 id="三列布局"><a href="#三列布局" class="headerlink" title="三列布局"></a>三列布局</h4><ul>
-<li>绝对定位 1</li>
-</ul>
-<figure class="highlight html"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br></pre></td><td class="code"><pre><span class="line"><span class="tag">&lt;<span class="name">div</span> <span class="attr">class</span>=<span class="string">&quot;box&quot;</span>&gt;</span></span><br><span class="line">  <span class="tag">&lt;<span class="name">div</span> <span class="attr">class</span>=<span class="string">&quot;left&quot;</span>&gt;</span><span class="tag">&lt;/<span class="name">div</span>&gt;</span></span><br><span class="line">  <span class="tag">&lt;<span class="name">div</span> <span class="attr">class</span>=<span class="string">&quot;center&quot;</span>&gt;</span><span class="tag">&lt;/<span class="name">div</span>&gt;</span></span><br><span class="line">  <span class="tag">&lt;<span class="name">div</span> <span class="attr">class</span>=<span class="string">&quot;right&quot;</span>&gt;</span><span class="tag">&lt;/<span class="name">div</span>&gt;</span></span><br><span class="line"><span class="tag">&lt;/<span class="name">div</span>&gt;</span></span><br></pre></td></tr></table></figure>
-
-<figure class="highlight css"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br><span class="line">35</span><br><span class="line">36</span><br><span class="line">37</span><br><span class="line">38</span><br><span class="line">39</span><br><span class="line">40</span><br><span class="line">41</span><br><span class="line">42</span><br><span class="line">43</span><br><span class="line">44</span><br><span class="line">45</span><br><span class="line">46</span><br><span class="line">47</span><br><span class="line">48</span><br><span class="line">49</span><br><span class="line">50</span><br><span class="line">51</span><br><span class="line">52</span><br><span class="line">53</span><br><span class="line">54</span><br><span class="line">55</span><br><span class="line">56</span><br><span class="line">57</span><br><span class="line">58</span><br><span class="line">59</span><br><span class="line">60</span><br><span class="line">61</span><br><span class="line">62</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment">/* 绝对定位1 */</span></span><br><span class="line"></span><br><span class="line"><span class="selector-class">.left</span> &#123;</span><br><span class="line">  <span class="attribute">position</span>: absolute;</span><br><span class="line">  <span class="attribute">width</span>: <span class="number">200px</span>;</span><br><span class="line">  <span class="attribute">left</span>: <span class="number">0</span>;</span><br><span class="line">  <span class="attribute">top</span>: <span class="number">0</span>;</span><br><span class="line">  <span class="attribute">height</span>: <span class="number">100%</span>;</span><br><span class="line">  <span class="attribute">background</span>: goldenrod;</span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line"><span class="selector-class">.right</span> &#123;</span><br><span class="line">  <span class="attribute">position</span>: absolute;</span><br><span class="line">  <span class="attribute">width</span>: <span class="number">200px</span>;</span><br><span class="line">  <span class="attribute">right</span>: <span class="number">0</span>;</span><br><span class="line">  <span class="attribute">height</span>: <span class="number">100%</span>;</span><br><span class="line">  <span class="attribute">background</span>: thistle;</span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line"><span class="selector-class">.center</span> &#123;</span><br><span class="line">  <span class="attribute">position</span>: absolute;</span><br><span class="line">  <span class="attribute">right</span>: <span class="number">200px</span>;</span><br><span class="line">  <span class="attribute">left</span>: <span class="number">200px</span>;</span><br><span class="line">  <span class="attribute">height</span>: <span class="number">100%</span>;</span><br><span class="line">  <span class="attribute">background</span>: palegreen;</span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line"><span class="selector-class">.box</span> &#123;</span><br><span class="line">  <span class="attribute">position</span>: relative;</span><br><span class="line">  <span class="attribute">height</span>: <span class="number">100%</span>;</span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line"><span class="comment">/* 绝对定位2 */</span></span><br><span class="line"></span><br><span class="line"><span class="selector-class">.left</span> &#123;</span><br><span class="line">  <span class="attribute">position</span>: absolute;</span><br><span class="line">  <span class="attribute">width</span>: <span class="number">200px</span>;</span><br><span class="line">  <span class="attribute">left</span>: <span class="number">0</span>;</span><br><span class="line">  <span class="attribute">top</span>: <span class="number">0</span>;</span><br><span class="line">  <span class="attribute">height</span>: <span class="number">100%</span>;</span><br><span class="line">  <span class="attribute">background</span>: goldenrod;</span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line"><span class="selector-class">.right</span> &#123;</span><br><span class="line">  <span class="attribute">position</span>: absolute;</span><br><span class="line">  <span class="attribute">width</span>: <span class="number">200px</span>;</span><br><span class="line">  <span class="attribute">right</span>: <span class="number">0</span>;</span><br><span class="line">  <span class="attribute">top</span>: <span class="number">0</span>;</span><br><span class="line">  <span class="attribute">height</span>: <span class="number">100%</span>;</span><br><span class="line">  <span class="attribute">background</span>: thistle;</span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line"><span class="selector-class">.center</span> &#123;</span><br><span class="line">  <span class="attribute">margin</span>: <span class="number">0</span> <span class="number">200px</span>;</span><br><span class="line">  <span class="attribute">height</span>: <span class="number">100%</span>;</span><br><span class="line">  <span class="attribute">background</span>: palegreen;</span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line"><span class="selector-class">.box</span> &#123;</span><br><span class="line">  <span class="attribute">position</span>: relative;</span><br><span class="line">  <span class="attribute">height</span>: <span class="number">100%</span>;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
-
-<ul>
-<li>浮动 + 负 margin</li>
-</ul>
-<figure class="highlight html"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br></pre></td><td class="code"><pre><span class="line"><span class="tag">&lt;<span class="name">div</span> <span class="attr">class</span>=<span class="string">&quot;box&quot;</span>&gt;</span></span><br><span class="line">  <span class="tag">&lt;<span class="name">div</span> <span class="attr">class</span>=<span class="string">&quot;wrapper&quot;</span>&gt;</span></span><br><span class="line">    <span class="tag">&lt;<span class="name">div</span> <span class="attr">class</span>=<span class="string">&quot;center&quot;</span>&gt;</span><span class="tag">&lt;/<span class="name">div</span>&gt;</span></span><br><span class="line">  <span class="tag">&lt;/<span class="name">div</span>&gt;</span></span><br><span class="line">  <span class="tag">&lt;<span class="name">div</span> <span class="attr">class</span>=<span class="string">&quot;left&quot;</span>&gt;</span><span class="tag">&lt;/<span class="name">div</span>&gt;</span></span><br><span class="line">  <span class="tag">&lt;<span class="name">div</span> <span class="attr">class</span>=<span class="string">&quot;right&quot;</span>&gt;</span><span class="tag">&lt;/<span class="name">div</span>&gt;</span></span><br><span class="line"><span class="tag">&lt;/<span class="name">div</span>&gt;</span></span><br></pre></td></tr></table></figure>
-
-<figure class="highlight css"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br></pre></td><td class="code"><pre><span class="line"><span class="selector-class">.left</span> &#123;</span><br><span class="line">  <span class="attribute">float</span>: left;</span><br><span class="line">  <span class="attribute">width</span>: <span class="number">200px</span>;</span><br><span class="line">  <span class="attribute">margin-left</span>: -<span class="number">100%</span>;</span><br><span class="line">  <span class="attribute">height</span>: <span class="number">100%</span>;</span><br><span class="line">  <span class="attribute">background</span>: goldenrod;</span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line"><span class="selector-class">.center</span> &#123;</span><br><span class="line">  <span class="attribute">margin</span>: <span class="number">0</span> <span class="number">200px</span>;</span><br><span class="line">  <span class="attribute">height</span>: <span class="number">100%</span>;</span><br><span class="line">  <span class="attribute">background</span>: palegreen;</span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line"><span class="selector-class">.wrapper</span> &#123;</span><br><span class="line">  <span class="attribute">float</span>: left;</span><br><span class="line">  <span class="attribute">height</span>: <span class="number">100%</span>;</span><br><span class="line">  <span class="attribute">width</span>: <span class="number">100%</span>;</span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line"><span class="selector-class">.right</span> &#123;</span><br><span class="line">  <span class="attribute">float</span>: left;</span><br><span class="line">  <span class="attribute">width</span>: <span class="number">200px</span>;</span><br><span class="line">  <span class="attribute">height</span>: <span class="number">100%</span>;</span><br><span class="line">  <span class="attribute">margin-left</span>: -<span class="number">200px</span>;</span><br><span class="line">  <span class="attribute">background</span>: thistle;</span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line"><span class="selector-class">.box</span> &#123;</span><br><span class="line">  <span class="attribute">position</span>: relative;</span><br><span class="line">  <span class="attribute">height</span>: <span class="number">100%</span>;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
-
-<figure class="highlight html"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment">&lt;!-- 推荐，元素与视觉保持一致 --&gt;</span></span><br><span class="line"><span class="tag">&lt;<span class="name">div</span> <span class="attr">class</span>=<span class="string">&quot;box&quot;</span>&gt;</span></span><br><span class="line">  <span class="tag">&lt;<span class="name">div</span> <span class="attr">class</span>=<span class="string">&quot;left&quot;</span>&gt;</span><span class="tag">&lt;/<span class="name">div</span>&gt;</span></span><br><span class="line">  <span class="tag">&lt;<span class="name">div</span> <span class="attr">class</span>=<span class="string">&quot;wrapper&quot;</span>&gt;</span></span><br><span class="line">    <span class="tag">&lt;<span class="name">div</span> <span class="attr">class</span>=<span class="string">&quot;center&quot;</span>&gt;</span><span class="tag">&lt;/<span class="name">div</span>&gt;</span></span><br><span class="line">  <span class="tag">&lt;/<span class="name">div</span>&gt;</span></span><br><span class="line">  <span class="tag">&lt;<span class="name">div</span> <span class="attr">class</span>=<span class="string">&quot;right&quot;</span>&gt;</span><span class="tag">&lt;/<span class="name">div</span>&gt;</span></span><br><span class="line"><span class="tag">&lt;/<span class="name">div</span>&gt;</span></span><br></pre></td></tr></table></figure>
-
-<figure class="highlight css"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br></pre></td><td class="code"><pre><span class="line"><span class="selector-class">.left</span> &#123;</span><br><span class="line">  <span class="attribute">float</span>: left;</span><br><span class="line">  <span class="attribute">width</span>: <span class="number">200px</span>;</span><br><span class="line">  <span class="attribute">margin-left</span>: -<span class="number">100%</span>;</span><br><span class="line">  <span class="attribute">height</span>: <span class="number">100%</span>;</span><br><span class="line">  <span class="attribute">background</span>: goldenrod;</span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line"><span class="selector-class">.center</span> &#123;</span><br><span class="line">  <span class="attribute">margin</span>: <span class="number">0</span> <span class="number">200px</span>;</span><br><span class="line">  <span class="attribute">height</span>: <span class="number">100%</span>;</span><br><span class="line">  <span class="attribute">background</span>: palegreen;</span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line"><span class="selector-class">.wrapper</span> &#123;</span><br><span class="line">  <span class="attribute">float</span>: left;</span><br><span class="line">  <span class="attribute">height</span>: <span class="number">100%</span>;</span><br><span class="line">  <span class="attribute">width</span>: <span class="number">100%</span>;</span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line"><span class="selector-class">.right</span> &#123;</span><br><span class="line">  <span class="attribute">float</span>: left;</span><br><span class="line">  <span class="attribute">width</span>: <span class="number">200px</span>;</span><br><span class="line">  <span class="attribute">height</span>: <span class="number">100%</span>;</span><br><span class="line">  <span class="attribute">margin-left</span>: -<span class="number">200px</span>;</span><br><span class="line">  <span class="attribute">background</span>: thistle;</span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line"><span class="selector-class">.box</span> &#123;</span><br><span class="line">  <span class="attribute">position</span>: relative;</span><br><span class="line">  <span class="attribute">height</span>: <span class="number">100%</span>;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
-
-<ul>
-<li>flex</li>
-</ul>
-<figure class="highlight html"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br></pre></td><td class="code"><pre><span class="line"><span class="tag">&lt;<span class="name">div</span> <span class="attr">class</span>=<span class="string">&quot;box&quot;</span>&gt;</span></span><br><span class="line">  <span class="tag">&lt;<span class="name">div</span> <span class="attr">class</span>=<span class="string">&quot;left&quot;</span>&gt;</span><span class="tag">&lt;/<span class="name">div</span>&gt;</span></span><br><span class="line">  <span class="tag">&lt;<span class="name">div</span> <span class="attr">class</span>=<span class="string">&quot;center&quot;</span>&gt;</span><span class="tag">&lt;/<span class="name">div</span>&gt;</span></span><br><span class="line">  <span class="tag">&lt;<span class="name">div</span> <span class="attr">class</span>=<span class="string">&quot;right&quot;</span>&gt;</span><span class="tag">&lt;/<span class="name">div</span>&gt;</span></span><br><span class="line"><span class="tag">&lt;/<span class="name">div</span>&gt;</span></span><br></pre></td></tr></table></figure>
-
-<figure class="highlight css"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br></pre></td><td class="code"><pre><span class="line"><span class="selector-class">.left</span> &#123;</span><br><span class="line">  <span class="attribute">width</span>: <span class="number">200px</span>;</span><br><span class="line">  <span class="attribute">height</span>: <span class="number">100%</span>;</span><br><span class="line">  <span class="attribute">background</span>: goldenrod;</span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line"><span class="selector-class">.center</span> &#123;</span><br><span class="line">  <span class="attribute">flex</span>: <span class="number">1</span>;</span><br><span class="line">  <span class="attribute">height</span>: <span class="number">100%</span>;</span><br><span class="line">  <span class="attribute">background</span>: palegreen;</span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line"><span class="selector-class">.wrapper</span> &#123;</span><br><span class="line">  <span class="attribute">float</span>: left;</span><br><span class="line">  <span class="attribute">height</span>: <span class="number">100%</span>;</span><br><span class="line">  <span class="attribute">width</span>: <span class="number">100%</span>;</span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line"><span class="selector-class">.right</span> &#123;</span><br><span class="line">  <span class="attribute">width</span>: <span class="number">200px</span>;</span><br><span class="line">  <span class="attribute">height</span>: <span class="number">100%</span>;</span><br><span class="line">  <span class="attribute">background</span>: thistle;</span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line"><span class="selector-class">.box</span> &#123;</span><br><span class="line">  <span class="attribute">display</span>: flex;</span><br><span class="line">  <span class="attribute">height</span>: <span class="number">100%</span>;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
-
-<h4 id="尺寸百分比"><a href="#尺寸百分比" class="headerlink" title="尺寸百分比"></a>尺寸百分比</h4><ul>
-<li>无定位元素： 相对于外层元素的内容(容纳)区域</li>
-<li>定位元素： 相对于最近的定位元素的 padding 区域</li>
-</ul>
-<table>
-<thead>
-<tr>
-<th>属性</th>
-<th>百分比相对与</th>
-</tr>
-</thead>
-<tbody><tr>
-<td>width</td>
-<td>参考元素宽度</td>
-</tr>
-<tr>
-<td>height</td>
-<td>参考元素高度，需要指定参考元素高度</td>
-</tr>
-<tr>
-<td>padding</td>
-<td>参考元素宽度</td>
-</tr>
-<tr>
-<td>border</td>
-<td>参考元素宽度</td>
-</tr>
-<tr>
-<td>margin</td>
-<td>参考元素宽度</td>
-</tr>
-</tbody></table>
-<h4 id="最大-x2F-最小-尺寸"><a href="#最大-x2F-最小-尺寸" class="headerlink" title="最大&#x2F;最小 尺寸"></a>最大&#x2F;最小 尺寸</h4><p>可用于防止内部元素，超出容器尺寸</p>
-<figure class="highlight css"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br></pre></td><td class="code"><pre><span class="line"><span class="selector-class">.box</span> &#123;</span><br><span class="line">  <span class="attribute">width</span>: <span class="number">300px</span>;</span><br><span class="line">&#125;</span><br><span class="line"><span class="selector-tag">img</span> &#123;</span><br><span class="line">  <span class="attribute">max-width</span>: <span class="number">100%</span>;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
-
-<h4 id="表单"><a href="#表单" class="headerlink" title="表单"></a>表单</h4><ul>
-<li><p>form 可以原生支持回车键提交表单， 会自动查找 form 中第一个有 <code>type=&#39;submit&#39;</code> 的按钮， 并触发这个按钮的点击事件</p>
-</li>
-<li><p>放在 label 中的 input 元素，即使没有使用 for 关联在一起，点击 label 中的任意元素，也会选中 input</p>
-<figure class="highlight html"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br></pre></td><td class="code"><pre><span class="line"><span class="tag">&lt;<span class="name">label</span>&gt;</span></span><br><span class="line">  <span class="tag">&lt;<span class="name">input</span> <span class="attr">type</span>=<span class="string">&quot;radio&quot;</span> /&gt;</span></span><br><span class="line">  <span class="tag">&lt;<span class="name">p</span>&gt;</span>name<span class="tag">&lt;/<span class="name">p</span>&gt;</span></span><br><span class="line">  &gt;&lt;/label</span><br><span class="line">&gt;</span><br></pre></td></tr></table></figure></li>
-</ul>
-<h4 id="精灵图"><a href="#精灵图" class="headerlink" title="精灵图"></a>精灵图</h4><p><a target="_blank" rel="noopener" href="https://github.com/twolfson/spritesmith">spritesmith</a> 用于合并图片，并生成生成样式</p>
-<h4 id="属性值计算过程"><a href="#属性值计算过程" class="headerlink" title="属性值计算过程"></a>属性值计算过程</h4><p>每一个元素的每一个属性都必须有值，属性值变为最终计算样式的过程就是属性值计算过程。</p>
-<ul>
-<li><p>确定声明值: 样式表中没有冲突的声明，作为最终样式</p>
-</li>
-<li><p>层叠冲突: 对有冲突的声明使用层叠规则，确定 css 属性值</p>
-<ul>
-<li>比较重要性,<strong>作者样式表会覆盖浏览器默认样式</strong></li>
-<li>比较特殊性,<strong>比较权重</strong></li>
-<li>比较源次序，<strong>权重相同时，后写的样式覆盖先写的样式</strong></li>
-</ul>
-</li>
-<li><p>使用继承，对仍然没有值的属性，若可以继承，则继承父元素的值</p>
-</li>
-<li><p>使用默认值，对仍然没有值的属性，使用默认值</p>
-</li>
-</ul>
- 
-      <!-- reward -->
-      
-    </div>
-    
-
-    <!-- copyright -->
-    
-    <footer class="article-footer">
-       
-  <ul class="article-tag-list" itemprop="keywords"><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/CSS/" rel="tag">CSS</a></li></ul>
-
-    </footer>
-  </div>
-
-   
-    
-</article>
-
-    
-    <article
-  id="posts-design/pattern/⑩状态模式"
-  class="article article-type-posts"
-  itemscope
-  itemprop="blogPost"
-  data-scroll-reveal
->
-  <div class="article-inner">
-    
-    <header class="article-header">
-       
-<h2 itemprop="name">
-  <a class="article-title" href="/posts/9185b58a2b8d/"
-    >⑩状态模式</a> 
-</h2>
- 
-
-      
-    </header>
-     
-    <div class="article-meta">
-      <a href="/posts/9185b58a2b8d/" class="article-date">
-  <time datetime="2023-02-21T01:33:42.000Z" itemprop="datePublished">2023-02-21</time>
-</a> 
-  <div class="article-category">
-    <a class="article-category-link" href="/categories/%E8%AE%BE%E8%AE%A1%E6%A8%A1%E5%BC%8F/">设计模式</a>
-  </div>
-   
-    </div>
-      
-    <div class="article-entry" itemprop="articleBody">
-       
-  <h4 id="避免陷入在-if-x2F-else-之中"><a href="#避免陷入在-if-x2F-else-之中" class="headerlink" title="避免陷入在 if&#x2F;else 之中"></a>避免陷入在 if&#x2F;else 之中</h4><p>考虑以下两种场景，哪种更容易让你深陷在 if&#x2F;else 的逻辑之中。</p>
-<p><strong>订单配送</strong>，订单可能处于下面的几种状态</p>
-<ul>
-<li>下单状态</li>
-<li>打包状态</li>
-<li>配送状态</li>
-<li>签收状态</li>
-</ul>
-<p><strong>自动售卖机</strong></p>
-<ul>
-<li>无货状态</li>
-<li>有货状态</li>
-<li>已投币状态</li>
-<li>未投币状态</li>
-<li>出货状态</li>
-</ul>
-<p>显然订单配送的状态处理起来更容易一些</p>
-<ul>
-<li>下单状态需要备货</li>
-<li>打包状态需要检查时候安全，是否要放入小礼物</li>
-<li>配送状态要同步配送信息</li>
-<li>签收状态要回访客户</li>
-</ul>
-<p>虽然这些状态环环相扣，但是一旦状态完成转移就不需要在考虑原有状态中的行为是否还需要关注。</p>
-<p>而自动售售货机可能让你陷入 if&#x2F;else 的深渊，因为不同的状态可能伴随相同的操作，无论处于哪种状态，用户都可能按下取货按钮，但只有投币并且有货，按下取货才有意义。</p>
-<h4 id="状态模式"><a href="#状态模式" class="headerlink" title="状态模式"></a>状态模式</h4><p><strong>状态模式：允许对象在内部状态改变的时候改变他的行为，对象看起来好像修改了它的类。</strong></p>
-<p>状态模式和策略模式中的组合对象很像，但是状态模式更专注与状态的迁移，和不同状态中的行为。</p>
-<ul>
-<li>状态模式允许一个对象基于内部状态而拥有不同的行为。</li>
-<li><strong>和程序状态机（PSM）不同,状态模式用类代表状态</strong></li>
-<li>Context 会将行为委托给当前对象</li>
-<li>通过将每个状态封装进一个类，我们把以后需要做的任何变化都局部化了</li>
-<li>状态模式允许 Context 随着状态改变而改变行为</li>
-<li>状态转移可以由 State 类或 Context 类控制</li>
-<li>使用状态模式通常会导致设计中类的数目大量增加</li>
-<li>状态类可以被多个 Context 实例共享</li>
-</ul>
-<figure class="highlight ts"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br><span class="line">35</span><br><span class="line">36</span><br><span class="line">37</span><br><span class="line">38</span><br><span class="line">39</span><br><span class="line">40</span><br><span class="line">41</span><br><span class="line">42</span><br><span class="line">43</span><br><span class="line">44</span><br><span class="line">45</span><br><span class="line">46</span><br><span class="line">47</span><br><span class="line">48</span><br><span class="line">49</span><br><span class="line">50</span><br><span class="line">51</span><br><span class="line">52</span><br><span class="line">53</span><br><span class="line">54</span><br><span class="line">55</span><br><span class="line">56</span><br><span class="line">57</span><br><span class="line">58</span><br><span class="line">59</span><br><span class="line">60</span><br><span class="line">61</span><br><span class="line">62</span><br><span class="line">63</span><br><span class="line">64</span><br><span class="line">65</span><br><span class="line">66</span><br><span class="line">67</span><br><span class="line">68</span><br><span class="line">69</span><br><span class="line">70</span><br><span class="line">71</span><br><span class="line">72</span><br><span class="line">73</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment">// 投币</span></span><br><span class="line"><span class="comment">// 点击出货</span></span><br><span class="line"></span><br><span class="line"><span class="keyword">abstract</span> <span class="keyword">class</span> <span class="title class_">State</span> &#123;</span><br><span class="line">  <span class="attr">machine</span>: <span class="title class_">VendingMachine</span>;</span><br><span class="line">  <span class="title function_">constructor</span>(<span class="params">machine: VendingMachine</span>) &#123;</span><br><span class="line">    <span class="variable language_">this</span>.<span class="property">machine</span> = machine;</span><br><span class="line">  &#125;</span><br><span class="line">  <span class="title function_">addCoin</span>(<span class="params">coin?: <span class="built_in">Number</span></span>) &#123;</span><br><span class="line">    <span class="variable language_">console</span>.<span class="title function_">log</span>(<span class="string">&quot;必须实现 addCoin&quot;</span>);</span><br><span class="line">  &#125;</span><br><span class="line">  <span class="title function_">getProduct</span>(<span class="params"></span>) &#123;</span><br><span class="line">    <span class="variable language_">console</span>.<span class="title function_">log</span>(<span class="string">&quot;必须实现 getProduct&quot;</span>);</span><br><span class="line">  &#125;</span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line"><span class="comment">// 无商品</span></span><br><span class="line"></span><br><span class="line"><span class="keyword">class</span> <span class="title class_">NoProduct</span> <span class="keyword">extends</span> <span class="title class_ inherited__">State</span> &#123;</span><br><span class="line">  <span class="title function_">addCoin</span>(<span class="params"></span>) &#123;</span><br><span class="line">    <span class="variable language_">console</span>.<span class="title function_">log</span>(<span class="string">&quot;机器里无商品，你不能购买&quot;</span>);</span><br><span class="line">  &#125;</span><br><span class="line">  <span class="title function_">getProduct</span>(<span class="params"></span>) &#123;</span><br><span class="line">    <span class="variable language_">console</span>.<span class="title function_">log</span>(<span class="string">&quot;机器里无商品，你不能购买&quot;</span>);</span><br><span class="line">  &#125;</span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line"><span class="keyword">class</span> <span class="title class_">HasProduct</span> <span class="keyword">extends</span> <span class="title class_ inherited__">State</span> &#123;</span><br><span class="line">  <span class="title function_">addCoin</span>(<span class="params">coin: <span class="built_in">number</span></span>) &#123;</span><br><span class="line">    <span class="variable language_">this</span>.<span class="property">machine</span>.<span class="property">coin</span> += coin;</span><br><span class="line">  &#125;</span><br><span class="line">  <span class="title function_">getProduct</span>(<span class="params"></span>) &#123;</span><br><span class="line">    <span class="variable language_">console</span>.<span class="title function_">log</span>(<span class="string">&quot;你已经获取了商品&quot;</span>);</span><br><span class="line">    <span class="variable language_">this</span>.<span class="property">machine</span>.<span class="property">count</span> -= <span class="number">1</span>;</span><br><span class="line">    <span class="variable language_">this</span>.<span class="property">machine</span>.<span class="property">coin</span> -= <span class="number">1</span>;</span><br><span class="line">    <span class="variable language_">this</span>.<span class="title function_">stateTransform</span>();</span><br><span class="line">  &#125;</span><br><span class="line">  <span class="title function_">stateTransform</span>(<span class="params"></span>) &#123;</span><br><span class="line">    <span class="keyword">const</span> &#123; count, coin &#125; = <span class="variable language_">this</span>.<span class="property">machine</span>;</span><br><span class="line">    <span class="keyword">if</span> (coin === <span class="number">0</span>) &#123;</span><br><span class="line">      <span class="variable language_">this</span>.<span class="property">machine</span>.<span class="title function_">setState</span>(<span class="variable language_">this</span>.<span class="property">machine</span>.<span class="property">stateNoCoin</span>);</span><br><span class="line">    &#125; <span class="keyword">else</span> <span class="keyword">if</span> (count === <span class="number">0</span>) &#123;</span><br><span class="line">      <span class="variable language_">this</span>.<span class="property">machine</span>.<span class="title function_">setState</span>(<span class="variable language_">this</span>.<span class="property">machine</span>.<span class="property">stateNoProduct</span>);</span><br><span class="line">    &#125;</span><br><span class="line">  &#125;</span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line"><span class="keyword">class</span> <span class="title class_">NoCoin</span> <span class="keyword">extends</span> <span class="title class_ inherited__">State</span> &#123;&#125;</span><br><span class="line"></span><br><span class="line"><span class="keyword">class</span> <span class="title class_">VendingMachine</span> &#123;</span><br><span class="line">  <span class="attr">stateNoProduct</span>: <span class="title class_">NoProduct</span>;</span><br><span class="line">  <span class="attr">stateHasProduct</span>: <span class="title class_">HasProduct</span>;</span><br><span class="line">  <span class="attr">stateNoCoin</span>: <span class="title class_">NoCoin</span>;</span><br><span class="line">  <span class="attr">count</span>: <span class="built_in">number</span>;</span><br><span class="line">  <span class="attr">coin</span>: <span class="built_in">number</span> = <span class="number">0</span>;</span><br><span class="line">  <span class="attr">state</span>: <span class="title class_">NoProduct</span> | <span class="title class_">HasProduct</span>;</span><br><span class="line">  <span class="title function_">constructor</span>(<span class="params">count: <span class="built_in">number</span></span>) &#123;</span><br><span class="line">    <span class="variable language_">this</span>.<span class="property">count</span> = count || <span class="number">2</span>;</span><br><span class="line">    <span class="variable language_">this</span>.<span class="property">stateNoProduct</span> = <span class="keyword">new</span> <span class="title class_">NoProduct</span>(<span class="variable language_">this</span>);</span><br><span class="line">    <span class="variable language_">this</span>.<span class="property">stateHasProduct</span> = <span class="keyword">new</span> <span class="title class_">HasProduct</span>(<span class="variable language_">this</span>);</span><br><span class="line">    <span class="variable language_">this</span>.<span class="property">stateNoCoin</span> = <span class="keyword">new</span> <span class="title class_">NoCoin</span>(<span class="variable language_">this</span>);</span><br><span class="line">    <span class="variable language_">this</span>.<span class="property">state</span> = <span class="variable language_">this</span>.<span class="property">stateHasProduct</span>;</span><br><span class="line">  &#125;</span><br><span class="line">  <span class="title function_">setState</span>(<span class="params">state: NoProduct | HasProduct</span>) &#123;</span><br><span class="line">    <span class="variable language_">this</span>.<span class="property">state</span> = state;</span><br><span class="line">  &#125;</span><br><span class="line">  <span class="title function_">addCoin</span>(<span class="params">coin = <span class="number">0</span></span>) &#123;</span><br><span class="line">    <span class="variable language_">this</span>.<span class="property">state</span>.<span class="title function_">addCoin</span>(coin);</span><br><span class="line">  &#125;</span><br><span class="line">  <span class="title function_">getProduct</span>(<span class="params"></span>) &#123;</span><br><span class="line">    <span class="variable language_">this</span>.<span class="property">state</span>.<span class="title function_">getProduct</span>();</span><br><span class="line">  &#125;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
- 
-      <!-- reward -->
-      
-    </div>
-    
-
-    <!-- copyright -->
-    
-    <footer class="article-footer">
-       
-  <ul class="article-tag-list" itemprop="keywords"><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/%E8%AE%BE%E8%AE%A1%E6%A8%A1%E5%BC%8F/" rel="tag">设计模式</a></li></ul>
-
-    </footer>
-  </div>
-
-   
-    
-</article>
-
-    
-    <article
-  id="posts-javascript/canvas画板"
-  class="article article-type-posts"
-  itemscope
-  itemprop="blogPost"
-  data-scroll-reveal
->
-  <div class="article-inner">
-    
-    <header class="article-header">
-       
-<h2 itemprop="name">
-  <a class="article-title" href="/posts/35b9815417e8/"
-    >canvas 画板</a> 
-</h2>
- 
-
-      
-    </header>
-     
-    <div class="article-meta">
-      <a href="/posts/35b9815417e8/" class="article-date">
-  <time datetime="2023-01-31T13:51:37.000Z" itemprop="datePublished">2023-01-31</time>
-</a> 
-  <div class="article-category">
-    <a class="article-category-link" href="/categories/JavaScript/">JavaScript</a>
-  </div>
-   
-    </div>
-      
-    <div class="article-entry" itemprop="articleBody">
-       
-  <h4 id="橡皮擦"><a href="#橡皮擦" class="headerlink" title="橡皮擦"></a>橡皮擦</h4><p>依赖于 ctx.globalCompositeOperation 配置，有以下可选项</p>
-<p>source-over（默认值）：新图形绘制在现有图形上方。<br>source-in：新图形仅在与现有图形重叠的区域内绘制。<br>source-out：新图形仅在与现有图形不重叠的区域内绘制。<br>source-atop：新图形绘制在现有图形上方，但只在它们重叠的区域内可见。<br>destination-over：新图形绘制在现有图形下方。<br>destination-in：现有图形仅保留与新图形重叠的部分。<br>destination-out：现有图形中与新图形不重叠的部分保留。<br>destination-atop：现有图形绘制在新图形上方，但只在它们重叠的区域内可见。<br>lighter：重叠区域的颜色通过加法混合。<br>copy：只有新图形可见，现有内容被清除。<br>xor：重叠区域变透明。</p>
-<figure class="highlight js"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br></pre></td><td class="code"><pre><span class="line">ctx.<span class="property">globalCompositeOperation</span> = <span class="string">&quot;destination-out&quot;</span>;</span><br><span class="line"><span class="comment">// 线宽影响橡皮擦大小</span></span><br><span class="line">ctx.<span class="property">lineWidth</span> = <span class="number">10</span>;</span><br><span class="line">ctx.<span class="property">strokeStyle</span> = <span class="string">&quot;red&quot;</span>;</span><br><span class="line">ctx.<span class="title function_">lineTo</span>(x, y);</span><br><span class="line">ctx.<span class="title function_">stroke</span>();</span><br></pre></td></tr></table></figure>
-
-<h4 id="使用-rfa-逐帧绘制"><a href="#使用-rfa-逐帧绘制" class="headerlink" title="使用 rfa 逐帧绘制"></a>使用 rfa 逐帧绘制</h4><figure class="highlight ts"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">const</span> queue = [];</span><br><span class="line"><span class="keyword">const</span> <span class="title function_">draw</span> = (<span class="params"></span>) =&gt; &#123;</span><br><span class="line">  <span class="title function_">requestAnimationFrame</span>(<span class="function">() =&gt;</span> &#123;</span><br><span class="line">    <span class="keyword">let</span> len = queue.<span class="property">length</span>;</span><br><span class="line">    <span class="keyword">for</span> (<span class="keyword">var</span> i = <span class="number">0</span>; i &lt; len; i++) &#123;</span><br><span class="line">      <span class="keyword">const</span> a = queue[i];</span><br><span class="line">      ctx.<span class="title function_">lineTo</span>(a[<span class="number">0</span>], a[<span class="number">1</span>]);</span><br><span class="line">    &#125;</span><br><span class="line">    <span class="keyword">if</span> (len) &#123;</span><br><span class="line">      ctx.<span class="title function_">stroke</span>();</span><br><span class="line">    &#125;</span><br><span class="line">    queue = [];</span><br><span class="line">    <span class="keyword">if</span> (mark) <span class="title function_">draw</span>();</span><br><span class="line">  &#125;);</span><br><span class="line">&#125;;</span><br><span class="line"></span><br><span class="line">canvas?.<span class="title function_">addEventListener</span>(<span class="string">&quot;pointerdown&quot;</span>, <span class="function">() =&gt;</span> &#123;</span><br><span class="line">  mark = <span class="literal">true</span>;</span><br><span class="line">  <span class="comment">// 取整数减少浮点运算</span></span><br><span class="line">  queue.<span class="title function_">push</span>([</span><br><span class="line">    <span class="title class_">Math</span>.<span class="title function_">floor</span>(e.<span class="property">clientX</span> * <span class="variable language_">window</span>.<span class="property">devicePixelRatio</span>),</span><br><span class="line">    <span class="title class_">Math</span>.<span class="title function_">floor</span>(e.<span class="property">clientY</span> * <span class="variable language_">window</span>.<span class="property">devicePixelRatio</span>),</span><br><span class="line">  ]);</span><br><span class="line">  ctx.<span class="title function_">beginPath</span>();</span><br><span class="line">  <span class="title function_">draw</span>();</span><br><span class="line">&#125;);</span><br></pre></td></tr></table></figure>
-
-<h4 id="平滑曲线"><a href="#平滑曲线" class="headerlink" title="平滑曲线"></a>平滑曲线</h4><p>使用贝塞尔曲线拟合</p>
-<ul>
-<li>取 B C 中点 B1, A 为起点，B 为控制点，B1 为终点</li>
-<li>取 C D 中点 C1, B1 为起点，C 为控制点，C1 为终点</li>
-</ul>
-<p><img src="/posts/35b9815417e8/001.png"></p>
-<figure class="highlight js"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">let</span> rfa = <span class="number">0</span>;</span><br><span class="line"><span class="keyword">const</span> <span class="title function_">draw</span> = (<span class="params">index = <span class="number">0</span></span>) =&gt; &#123;</span><br><span class="line">  <span class="keyword">if</span> (!index &amp;&amp; rfa) <span class="keyword">return</span>;</span><br><span class="line">  rfa = <span class="title function_">requestAnimationFrame</span>(<span class="function">() =&gt;</span> &#123;</span><br><span class="line">    <span class="keyword">let</span> len = queue.<span class="property">length</span>;</span><br><span class="line">    <span class="keyword">if</span> (len &amp;&amp; !index) &#123;</span><br><span class="line">      <span class="keyword">const</span> a = queue[index];</span><br><span class="line">      ctx.<span class="title function_">lineTo</span>(a[<span class="number">0</span>], a[<span class="number">1</span>]);</span><br><span class="line">      index++;</span><br><span class="line">    &#125;</span><br><span class="line">    <span class="keyword">while</span> (len &gt;= <span class="number">3</span> &amp;&amp; index &lt; len - <span class="number">1</span>) &#123;</span><br><span class="line">      <span class="keyword">const</span> cur = queue[index];</span><br><span class="line">      <span class="keyword">const</span> next = queue[index + <span class="number">1</span>];</span><br><span class="line">      <span class="keyword">const</span> cx = (cur[<span class="number">0</span>] + next[<span class="number">0</span>]) &gt;&gt; <span class="number">1</span>;</span><br><span class="line">      <span class="keyword">const</span> cy = (cur[<span class="number">1</span>] + next[<span class="number">1</span>]) &gt;&gt; <span class="number">1</span>;</span><br><span class="line">      ctx.<span class="title function_">quadraticCurveTo</span>(cur[<span class="number">0</span>], cur[<span class="number">1</span>], cx, cy);</span><br><span class="line">      index += <span class="number">1</span>;</span><br><span class="line">    &#125;</span><br><span class="line"></span><br><span class="line">    <span class="keyword">if</span> (len) &#123;</span><br><span class="line">      ctx.<span class="title function_">stroke</span>();</span><br><span class="line">    &#125;</span><br><span class="line">    <span class="keyword">if</span> (mark) &#123;</span><br><span class="line">      <span class="title function_">draw</span>(index);</span><br><span class="line">    &#125; <span class="keyword">else</span> &#123;</span><br><span class="line">      rfa = <span class="number">0</span>;</span><br><span class="line">    &#125;</span><br><span class="line">  &#125;);</span><br><span class="line">&#125;;</span><br></pre></td></tr></table></figure>
-
-<h4 id="离屏-canvas-模拟粉笔效果"><a href="#离屏-canvas-模拟粉笔效果" class="headerlink" title="离屏 canvas 模拟粉笔效果"></a>离屏 canvas 模拟粉笔效果</h4><figure class="highlight ts"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br><span class="line">35</span><br><span class="line">36</span><br><span class="line">37</span><br><span class="line">38</span><br><span class="line">39</span><br><span class="line">40</span><br><span class="line">41</span><br><span class="line">42</span><br><span class="line">43</span><br><span class="line">44</span><br><span class="line">45</span><br><span class="line">46</span><br><span class="line">47</span><br><span class="line">48</span><br><span class="line">49</span><br><span class="line">50</span><br><span class="line">51</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">let</span> <span class="attr">queue</span>: <span class="built_in">any</span>[] = [];</span><br><span class="line"><span class="keyword">const</span> offScreen = <span class="keyword">new</span> <span class="title class_">OffscreenCanvas</span>(dimension.<span class="property">width</span>, dimension.<span class="property">height</span>);</span><br><span class="line"><span class="keyword">const</span> offCtx = offScreen.<span class="title function_">getContext</span>(<span class="string">&quot;2d&quot;</span>) <span class="keyword">as</span> <span class="title class_">OffscreenCanvasRenderingContext2D</span>;</span><br><span class="line">offCtx.<span class="title function_">scale</span>(width / dimension.<span class="property">width</span>, height / dimension.<span class="property">height</span>);</span><br><span class="line">offCtx.<span class="property">strokeStyle</span> = <span class="string">&quot;red&quot;</span>;</span><br><span class="line">offCtx.<span class="property">lineWidth</span> = <span class="number">6</span>;</span><br><span class="line">offCtx.<span class="property">lineCap</span> = <span class="string">&quot;round&quot;</span>;</span><br><span class="line"></span><br><span class="line"><span class="keyword">const</span> <span class="title function_">draw</span> = (<span class="params"></span>) =&gt; &#123;</span><br><span class="line">  <span class="title function_">requestAnimationFrame</span>(<span class="function">() =&gt;</span> &#123;</span><br><span class="line">    <span class="keyword">let</span> len = queue.<span class="property">length</span>;</span><br><span class="line">    offCtx.<span class="title function_">clearRect</span>(<span class="number">0</span>, <span class="number">0</span>, dimension.<span class="property">width</span>, dimension.<span class="property">height</span>);</span><br><span class="line">    <span class="comment">// 在清除画布之后必须使用 beginPath</span></span><br><span class="line">    offCtx.<span class="title function_">beginPath</span>();</span><br><span class="line">    <span class="keyword">for</span> (<span class="keyword">var</span> i = <span class="number">0</span>; i &lt; len; i++) &#123;</span><br><span class="line">      <span class="keyword">const</span> a = queue[i];</span><br><span class="line">      offCtx.<span class="title function_">lineTo</span>(a[<span class="number">0</span>], a[<span class="number">1</span>]);</span><br><span class="line">    &#125;</span><br><span class="line">    <span class="keyword">if</span> (len) &#123;</span><br><span class="line">      offCtx.<span class="title function_">stroke</span>();</span><br><span class="line">    &#125;</span><br><span class="line"></span><br><span class="line">    <span class="keyword">for</span> (<span class="keyword">let</span> i = <span class="number">1</span>; i &lt; len; i++) &#123;</span><br><span class="line">      <span class="keyword">const</span> pre = queue[i - <span class="number">1</span>];</span><br><span class="line">      <span class="keyword">const</span> cur = queue[i];</span><br><span class="line">      <span class="keyword">const</span> length = <span class="title class_">Math</span>.<span class="title function_">round</span>(</span><br><span class="line">        <span class="title class_">Math</span>.<span class="title function_">sqrt</span>(<span class="title class_">Math</span>.<span class="title function_">pow</span>(pre[<span class="number">0</span>] - cur[<span class="number">0</span>], <span class="number">2</span>) + <span class="title class_">Math</span>.<span class="title function_">pow</span>(pre[<span class="number">1</span>] - cur[<span class="number">1</span>], <span class="number">2</span>))</span><br><span class="line">      );</span><br><span class="line">      <span class="keyword">const</span> xUnit = (cur[<span class="number">0</span>] - pre[<span class="number">0</span>]) / length;</span><br><span class="line">      <span class="keyword">const</span> yUnit = (cur[<span class="number">1</span>] - pre[<span class="number">1</span>]) / length;</span><br><span class="line">      <span class="keyword">for</span> (<span class="keyword">let</span> i = <span class="number">0</span>; i &lt; length; i++) &#123;</span><br><span class="line">        <span class="keyword">const</span> xCurrent = pre[<span class="number">0</span>] + i * xUnit;</span><br><span class="line">        <span class="keyword">const</span> yCurrent = pre[<span class="number">1</span>] + i * yUnit;</span><br><span class="line">        <span class="keyword">const</span> xRandom = xCurrent + (<span class="title class_">Math</span>.<span class="title function_">random</span>() - <span class="number">0.5</span>) * <span class="number">6</span> * <span class="number">1.2</span>;</span><br><span class="line">        <span class="keyword">const</span> yRandom = yCurrent + (<span class="title class_">Math</span>.<span class="title function_">random</span>() - <span class="number">0.5</span>) * <span class="number">6</span> * <span class="number">1.2</span>;</span><br><span class="line">        offCtx.<span class="title function_">clearRect</span>(</span><br><span class="line">          xRandom,</span><br><span class="line">          yRandom,</span><br><span class="line">          <span class="title class_">Math</span>.<span class="title function_">random</span>() * <span class="number">2</span> + <span class="number">2</span>,</span><br><span class="line">          <span class="title class_">Math</span>.<span class="title function_">random</span>() + <span class="number">1</span></span><br><span class="line">        );</span><br><span class="line">      &#125;</span><br><span class="line">    &#125;</span><br><span class="line"></span><br><span class="line">    queue = [];</span><br><span class="line"></span><br><span class="line">    ctx.<span class="property">globalCompositeOperation</span> = <span class="string">&quot;source-over&quot;</span>;</span><br><span class="line">    ctx.<span class="title function_">drawImage</span>(offScreen, <span class="number">0</span>, <span class="number">0</span>, dimension.<span class="property">width</span>, dimension.<span class="property">height</span>);</span><br><span class="line">    <span class="keyword">if</span> (mark) <span class="title function_">draw</span>();</span><br><span class="line">  &#125;);</span><br><span class="line">&#125;;</span><br></pre></td></tr></table></figure>
- 
-      <!-- reward -->
-      
-    </div>
-    
-
-    <!-- copyright -->
-    
-    <footer class="article-footer">
-       
-  <ul class="article-tag-list" itemprop="keywords"><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/canvas/" rel="tag">canvas</a></li></ul>
-
-    </footer>
-  </div>
-
-   
-    
-</article>
-
-    
-    <article
-  id="posts-design/pattern/⑨迭代器和组合模式"
-  class="article article-type-posts"
-  itemscope
-  itemprop="blogPost"
-  data-scroll-reveal
->
-  <div class="article-inner">
-    
-    <header class="article-header">
-       
-<h2 itemprop="name">
-  <a class="article-title" href="/posts/4513870475c1/"
-    >⑨集合管理-迭代器和组合模式</a> 
-</h2>
- 
-
-      
-    </header>
-     
-    <div class="article-meta">
-      <a href="/posts/4513870475c1/" class="article-date">
-  <time datetime="2023-01-31T01:50:29.000Z" itemprop="datePublished">2023-01-31</time>
-</a> 
-  <div class="article-category">
-    <a class="article-category-link" href="/categories/%E8%AE%BE%E8%AE%A1%E6%A8%A1%E5%BC%8F/">设计模式</a>
-  </div>
-   
-    </div>
-      
-    <div class="article-entry" itemprop="articleBody">
-       
-  <h4 id="统一的遍历方法"><a href="#统一的遍历方法" class="headerlink" title="统一的遍历方法"></a>统一的遍历方法</h4><p>像是为对象提供 Iterator 接口一样，有时需要遍历一个复杂对象的内部属性，所以需要一个统一的接口，这也是迭代器模式需求的由来。</p>
-<p><strong>迭代器模式：提供一种方法顺序访问一个聚合对象中的各个元素，而又不暴露其内部的表示。</strong></p>
-<p>现在有两个对象保存着一些数据，但是数据使用不同的数据结构保存，数组，对象，链表，或是一些特殊的封装结构。</p>
-<figure class="highlight ts"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">class</span> <span class="title class_">Test1</span> &#123;</span><br><span class="line">  data = [<span class="string">&quot;a1&quot;</span>, <span class="string">&quot;b1&quot;</span>, <span class="string">&quot;c1&quot;</span>];</span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line"><span class="keyword">class</span> <span class="title class_">Test2</span> &#123;</span><br><span class="line">  data = &#123;</span><br><span class="line">    <span class="attr">a2</span>: <span class="string">&quot;a2&quot;</span>,</span><br><span class="line">    <span class="attr">b2</span>: <span class="string">&quot;b2&quot;</span>,</span><br><span class="line">    <span class="attr">c2</span>: <span class="string">&quot;c2&quot;</span>,</span><br><span class="line">  &#125;;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
-
-<p>如果想要便利这两个对象中的所有数据，最容易想到的办法就是分别使用数据和对象的遍历方法，通过两次循环依次返回。</p>
-<p>把这个遍历的实现定义为类 <code>MapObject</code>,但这并不是一个合理的办法:</p>
-<ul>
-<li>遍历的前提是必须要知道对象的实现细节，违背了针对接口编程，而不是针对实现，也可以说是违背了封装。</li>
-<li>如果需要更换其中的一个类遍历，那么必须修改 <code>MapObject</code>,违背了对扩展开放，对修改关闭。</li>
-</ul>
-<p>现在已经清楚了变化之处在于遍历，想办法把遍历封装起来。</p>
-<figure class="highlight ts"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br><span class="line">35</span><br><span class="line">36</span><br><span class="line">37</span><br><span class="line">38</span><br><span class="line">39</span><br><span class="line">40</span><br><span class="line">41</span><br><span class="line">42</span><br><span class="line">43</span><br><span class="line">44</span><br><span class="line">45</span><br><span class="line">46</span><br><span class="line">47</span><br><span class="line">48</span><br><span class="line">49</span><br><span class="line">50</span><br><span class="line">51</span><br><span class="line">52</span><br><span class="line">53</span><br><span class="line">54</span><br><span class="line">55</span><br><span class="line">56</span><br><span class="line">57</span><br><span class="line">58</span><br><span class="line">59</span><br><span class="line">60</span><br><span class="line">61</span><br><span class="line">62</span><br><span class="line">63</span><br><span class="line">64</span><br><span class="line">65</span><br><span class="line">66</span><br><span class="line">67</span><br><span class="line">68</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">interface</span> <span class="title class_">IteratorClass</span>&lt;T&gt; &#123;</span><br><span class="line">  <span class="keyword">new</span> (): T;</span><br><span class="line">&#125;</span><br><span class="line"><span class="keyword">interface</span> <span class="title class_">IIterator</span> &#123;</span><br><span class="line">  <span class="title function_">iterator</span>(): <span class="title class_">IterableIterator</span>&lt;<span class="built_in">string</span>&gt;;</span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line"><span class="comment">// 遵循面向接口编程的原则，两个类都实现了相同的接口</span></span><br><span class="line"></span><br><span class="line"><span class="keyword">class</span> <span class="title class_">Test1</span> <span class="keyword">implements</span> <span class="title class_">IIterator</span> &#123;</span><br><span class="line">  data = [<span class="string">&quot;a1&quot;</span>, <span class="string">&quot;b1&quot;</span>, <span class="string">&quot;c1&quot;</span>];</span><br><span class="line">  <span class="title function_">iterator</span>(<span class="params"></span>) &#123;</span><br><span class="line">    <span class="keyword">return</span> <span class="variable language_">this</span>.<span class="property">data</span>[<span class="title class_">Symbol</span>.<span class="property">iterator</span>]();</span><br><span class="line">  &#125;</span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line"><span class="keyword">class</span> <span class="title class_">Test2</span> <span class="keyword">implements</span> <span class="title class_">IIterator</span> &#123;</span><br><span class="line">  data = &#123;</span><br><span class="line">    <span class="attr">a2</span>: <span class="string">&quot;a2&quot;</span>,</span><br><span class="line">    <span class="attr">b2</span>: <span class="string">&quot;b2&quot;</span>,</span><br><span class="line">    <span class="attr">c2</span>: <span class="string">&quot;c2&quot;</span>,</span><br><span class="line">  &#125;;</span><br><span class="line">  <span class="title function_">iterator</span>(<span class="params"></span>) &#123;</span><br><span class="line">    <span class="keyword">const</span> iterator = (): <span class="title class_">IterableIterator</span>&lt;<span class="built_in">string</span>&gt; =&gt; &#123;</span><br><span class="line">      <span class="keyword">let</span> data = <span class="variable language_">this</span>.<span class="property">data</span>;</span><br><span class="line">      <span class="keyword">let</span> keys = <span class="title class_">Object</span>.<span class="title function_">keys</span>(data);</span><br><span class="line">      <span class="keyword">let</span> index = <span class="number">0</span>;</span><br><span class="line">      <span class="keyword">return</span> &#123;</span><br><span class="line">        <span class="title function_">next</span>(<span class="params"></span>) &#123;</span><br><span class="line">          <span class="keyword">return</span> index &lt; keys.<span class="property">length</span></span><br><span class="line">            ? &#123;</span><br><span class="line">                <span class="attr">value</span>: data[keys[index++] <span class="keyword">as</span> keyof <span class="keyword">typeof</span> data],</span><br><span class="line">                <span class="attr">done</span>: <span class="literal">false</span>,</span><br><span class="line">              &#125;</span><br><span class="line">            : &#123;</span><br><span class="line">                <span class="attr">value</span>: <span class="literal">undefined</span>,</span><br><span class="line">                <span class="attr">done</span>: <span class="literal">true</span>,</span><br><span class="line">              &#125;;</span><br><span class="line">        &#125;,</span><br><span class="line">      &#125; <span class="keyword">as</span> <span class="title class_">IterableIterator</span>&lt;<span class="built_in">string</span>&gt;;</span><br><span class="line">    &#125;;</span><br><span class="line"></span><br><span class="line">    <span class="keyword">return</span> <span class="title function_">iterator</span>();</span><br><span class="line">  &#125;</span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line"><span class="keyword">class</span> <span class="title class_">MapObject</span> &#123;</span><br><span class="line">  <span class="attr">test1</span>: <span class="title class_">Test1</span>;</span><br><span class="line">  <span class="attr">test2</span>: <span class="title class_">Test2</span>;</span><br><span class="line">  <span class="title function_">constructor</span>(<span class="params">test1: IteratorClass&lt;Test1&gt;, test2: IteratorClass&lt;Test2&gt;</span>) &#123;</span><br><span class="line">    <span class="variable language_">this</span>.<span class="property">test1</span> = <span class="keyword">new</span> <span class="title function_">test1</span>();</span><br><span class="line">    <span class="variable language_">this</span>.<span class="property">test2</span> = <span class="keyword">new</span> <span class="title function_">test2</span>();</span><br><span class="line">  &#125;</span><br><span class="line">  <span class="title function_">printItem</span>(<span class="params"></span>) &#123;</span><br><span class="line">    <span class="keyword">let</span> stack = [<span class="variable language_">this</span>.<span class="property">test1</span>, <span class="variable language_">this</span>.<span class="property">test2</span>];</span><br><span class="line"></span><br><span class="line">    stack.<span class="title function_">forEach</span>(<span class="function">(<span class="params">instance</span>) =&gt;</span> &#123;</span><br><span class="line">      <span class="keyword">let</span> iterator = instance.<span class="title function_">iterator</span>();</span><br><span class="line">      <span class="keyword">let</span> <span class="attr">done</span>: <span class="built_in">any</span>, <span class="attr">value</span>: <span class="built_in">any</span>;</span><br><span class="line">      <span class="keyword">do</span> &#123;</span><br><span class="line">        (&#123; done, value &#125; = iterator.<span class="title function_">next</span>());</span><br><span class="line">        <span class="keyword">if</span> (value) &#123;</span><br><span class="line">          <span class="variable language_">console</span>.<span class="title function_">log</span>(value);</span><br><span class="line">        &#125;</span><br><span class="line">      &#125; <span class="keyword">while</span> (!done);</span><br><span class="line">    &#125;);</span><br><span class="line">  &#125;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
-
-<h4 id="单一职责"><a href="#单一职责" class="headerlink" title="单一职责"></a>单一职责</h4><p><strong>一个类应该只有一个引起变化的原因。</strong>， 当一个类有多个变化的可能时，会增加维护的成本，或导致其他的功能出现错误。</p>
-<p><strong>内聚</strong>这个术语也可以看作是衡量单一指责的一个表述。</p>
-<h4 id="组合模式"><a href="#组合模式" class="headerlink" title="组合模式"></a>组合模式</h4><p>组合模式相对于之前提到的代码组合更加具体，可以理解为代码组合包括组合模式。</p>
-<p>现在有这样的几个对象，每个对象用不同的数据结构保存自己的数据，而且数据还可能分级，下一级是另一个对象，形成一个树的结构。需要实现一个迭代器，能在树的不同节点中以及下一层节点中移动。</p>
-<p>实现这个功能可以使用组合模式，<strong>组合模式允许你将对象组合成树形结构来表现 ‘整体&#x2F;部分’ 层次结构。组合能让客户以一致的方式处理个别对象以及对象组合。</strong></p>
-<p><strong>组合的目的是忽略整体和个体的差别，应用在整体上的操作同样可以应用在个体上。</strong></p>
-<p>遵循面向接口的变成方式，首先实现抽象类，所有的对象以及叶子节点的对象都需要实现抽象类，并且从冲向类中继承 print 方法。</p>
-<figure class="highlight ts"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">abstract</span> <span class="keyword">class</span> <span class="title class_">AbstractDataCollection</span> &#123;</span><br><span class="line">  <span class="keyword">abstract</span> <span class="title function_">createIterator</span>(): <span class="built_in">any</span>;</span><br><span class="line">  <span class="title function_">print</span>(): <span class="built_in">void</span> &#123;</span><br><span class="line">    <span class="keyword">let</span> <span class="attr">done</span>: <span class="built_in">any</span>, <span class="attr">value</span>: <span class="built_in">any</span>;</span><br><span class="line">    <span class="keyword">const</span> iterator = <span class="variable language_">this</span>.<span class="title function_">createIterator</span>();</span><br><span class="line">    <span class="keyword">do</span> &#123;</span><br><span class="line">      (&#123; done, value &#125; = iterator.<span class="title function_">next</span>());</span><br><span class="line">      <span class="keyword">if</span> (!done) &#123;</span><br><span class="line">        value.<span class="title function_">print</span>();</span><br><span class="line">      &#125;</span><br><span class="line">    &#125; <span class="keyword">while</span> (!done);</span><br><span class="line">  &#125;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
-
-<p>不同的对象集合可以组合但是由于实现方式不同，需要各自实现抽象相类中的 createIterator 方法</p>
-<figure class="highlight ts"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br><span class="line">35</span><br><span class="line">36</span><br><span class="line">37</span><br><span class="line">38</span><br><span class="line">39</span><br><span class="line">40</span><br><span class="line">41</span><br><span class="line">42</span><br><span class="line">43</span><br><span class="line">44</span><br><span class="line">45</span><br><span class="line">46</span><br><span class="line">47</span><br><span class="line">48</span><br><span class="line">49</span><br><span class="line">50</span><br><span class="line">51</span><br><span class="line">52</span><br><span class="line">53</span><br><span class="line">54</span><br><span class="line">55</span><br><span class="line">56</span><br><span class="line">57</span><br><span class="line">58</span><br><span class="line">59</span><br><span class="line">60</span><br><span class="line">61</span><br><span class="line">62</span><br><span class="line">63</span><br><span class="line">64</span><br><span class="line">65</span><br><span class="line">66</span><br><span class="line">67</span><br><span class="line">68</span><br><span class="line">69</span><br><span class="line">70</span><br><span class="line">71</span><br><span class="line">72</span><br><span class="line">73</span><br><span class="line">74</span><br><span class="line">75</span><br><span class="line">76</span><br><span class="line">77</span><br><span class="line">78</span><br><span class="line">79</span><br><span class="line">80</span><br><span class="line">81</span><br><span class="line">82</span><br><span class="line">83</span><br><span class="line">84</span><br><span class="line">85</span><br><span class="line">86</span><br><span class="line">87</span><br><span class="line">88</span><br><span class="line">89</span><br><span class="line">90</span><br><span class="line">91</span><br><span class="line">92</span><br><span class="line">93</span><br><span class="line">94</span><br><span class="line">95</span><br><span class="line">96</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">class</span> <span class="title class_">DataCollection1</span> <span class="keyword">extends</span> <span class="title class_ inherited__">AbstractDataCollection</span> &#123;</span><br><span class="line">  <span class="attr">data</span>: <span class="built_in">any</span>[] = [];</span><br><span class="line">  <span class="title function_">add</span>(<span class="params">dataItem: <span class="built_in">any</span></span>) &#123;</span><br><span class="line">    <span class="variable language_">this</span>.<span class="property">data</span>.<span class="title function_">push</span>(dataItem);</span><br><span class="line">    <span class="keyword">return</span> <span class="variable language_">this</span>;</span><br><span class="line">  &#125;</span><br><span class="line">  <span class="title function_">iterator</span>(<span class="params"></span>) &#123;</span><br><span class="line">    <span class="keyword">return</span> <span class="variable language_">this</span>.<span class="property">data</span>[<span class="title class_">Symbol</span>.<span class="property">iterator</span>]();</span><br><span class="line">  &#125;</span><br><span class="line">  <span class="title function_">createIterator</span>(<span class="params"></span>) &#123;</span><br><span class="line">    <span class="keyword">return</span> <span class="keyword">new</span> <span class="title class_">CompositeIterator</span>(<span class="variable language_">this</span>.<span class="title function_">iterator</span>());</span><br><span class="line">  &#125;</span><br><span class="line">&#125;</span><br><span class="line"><span class="keyword">class</span> <span class="title class_">DataCollection2</span> <span class="keyword">extends</span> <span class="title class_ inherited__">AbstractDataCollection</span> &#123;</span><br><span class="line">  <span class="attr">data</span>: &#123; [<span class="attr">key</span>: <span class="built_in">string</span>]: <span class="built_in">any</span> &#125; = &#123;&#125;;</span><br><span class="line">  <span class="title function_">add</span>(<span class="params">dataItem: <span class="built_in">any</span>, key: <span class="built_in">string</span></span>) &#123;</span><br><span class="line">    <span class="variable language_">this</span>.<span class="property">data</span>[key] = dataItem;</span><br><span class="line">    <span class="keyword">return</span> <span class="variable language_">this</span>;</span><br><span class="line">  &#125;</span><br><span class="line">  <span class="title function_">iterator</span>(<span class="params"></span>) &#123;</span><br><span class="line">    <span class="keyword">let</span> data = <span class="variable language_">this</span>.<span class="property">data</span>;</span><br><span class="line">    <span class="keyword">let</span> keys = <span class="title class_">Object</span>.<span class="title function_">keys</span>(data);</span><br><span class="line">    <span class="keyword">let</span> index = <span class="number">0</span>;</span><br><span class="line">    <span class="keyword">return</span> &#123;</span><br><span class="line">      <span class="title function_">next</span>(<span class="params"></span>) &#123;</span><br><span class="line">        <span class="keyword">return</span> index &lt; keys.<span class="property">length</span></span><br><span class="line">          ? &#123;</span><br><span class="line">              <span class="attr">value</span>: data[keys[index++] <span class="keyword">as</span> keyof <span class="keyword">typeof</span> data],</span><br><span class="line">              <span class="attr">done</span>: <span class="literal">false</span>,</span><br><span class="line">            &#125;</span><br><span class="line">          : &#123;</span><br><span class="line">              <span class="attr">value</span>: <span class="literal">undefined</span>,</span><br><span class="line">              <span class="attr">done</span>: <span class="literal">true</span>,</span><br><span class="line">            &#125;;</span><br><span class="line">      &#125;,</span><br><span class="line">    &#125;;</span><br><span class="line">  &#125;</span><br><span class="line">  <span class="title function_">createIterator</span>(<span class="params"></span>) &#123;</span><br><span class="line">    <span class="keyword">return</span> <span class="keyword">new</span> <span class="title class_">CompositeIterator</span>(<span class="variable language_">this</span>.<span class="title function_">iterator</span>());</span><br><span class="line">  &#125;</span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line"><span class="keyword">type</span> <span class="title class_">LinkData</span> = &#123;</span><br><span class="line">  <span class="attr">next</span>: <span class="title class_">LinkData</span> | <span class="literal">null</span>;</span><br><span class="line">  value?: <span class="built_in">any</span>;</span><br><span class="line">&#125;;</span><br><span class="line"></span><br><span class="line"><span class="keyword">class</span> <span class="title class_">DataCollection3</span> <span class="keyword">extends</span> <span class="title class_ inherited__">AbstractDataCollection</span> &#123;</span><br><span class="line">  <span class="attr">data</span>: <span class="title class_">LinkData</span> = &#123; <span class="attr">next</span>: <span class="literal">null</span> &#125;;</span><br><span class="line">  <span class="attr">last</span>: <span class="title class_">LinkData</span> = <span class="variable language_">this</span>.<span class="property">data</span>;</span><br><span class="line">  <span class="title function_">add</span>(<span class="params">dataItem: <span class="built_in">any</span></span>) &#123;</span><br><span class="line">    <span class="variable language_">this</span>.<span class="property">last</span>.<span class="property">next</span> = &#123;</span><br><span class="line">      <span class="attr">value</span>: dataItem,</span><br><span class="line">      <span class="attr">next</span>: <span class="literal">null</span>,</span><br><span class="line">    &#125;;</span><br><span class="line">    <span class="variable language_">this</span>.<span class="property">last</span> = <span class="variable language_">this</span>.<span class="property">last</span>.<span class="property">next</span>;</span><br><span class="line">    <span class="keyword">return</span> <span class="variable language_">this</span>;</span><br><span class="line">  &#125;</span><br><span class="line">  <span class="title function_">iterator</span>(<span class="params"></span>) &#123;</span><br><span class="line">    <span class="keyword">let</span> <span class="attr">data</span>: <span class="title class_">LinkData</span> | <span class="literal">null</span> = <span class="variable language_">this</span>.<span class="property">data</span>;</span><br><span class="line">    <span class="keyword">return</span> &#123;</span><br><span class="line">      <span class="title function_">next</span>(<span class="params"></span>) &#123;</span><br><span class="line">        data = data!.<span class="property">next</span>;</span><br><span class="line"></span><br><span class="line">        <span class="keyword">if</span> (data === <span class="literal">null</span>) &#123;</span><br><span class="line">          <span class="keyword">return</span> &#123;</span><br><span class="line">            <span class="attr">done</span>: <span class="literal">true</span>,</span><br><span class="line">            <span class="attr">value</span>: <span class="literal">undefined</span>,</span><br><span class="line">          &#125;;</span><br><span class="line">        &#125; <span class="keyword">else</span> &#123;</span><br><span class="line">          <span class="keyword">return</span> &#123;</span><br><span class="line">            <span class="attr">done</span>: <span class="literal">false</span>,</span><br><span class="line">            <span class="attr">value</span>: data.<span class="property">value</span>,</span><br><span class="line">          &#125;;</span><br><span class="line">        &#125;</span><br><span class="line">      &#125;,</span><br><span class="line">    &#125;;</span><br><span class="line">  &#125;</span><br><span class="line">  <span class="title function_">createIterator</span>(<span class="params"></span>) &#123;</span><br><span class="line">    <span class="keyword">return</span> <span class="keyword">new</span> <span class="title class_">CompositeIterator</span>(<span class="variable language_">this</span>.<span class="title function_">iterator</span>());</span><br><span class="line">  &#125;</span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line"><span class="keyword">class</span> <span class="title class_">DataItem</span> <span class="keyword">extends</span> <span class="title class_ inherited__">AbstractDataCollection</span> &#123;</span><br><span class="line">  <span class="attr">data</span>: <span class="built_in">any</span>;</span><br><span class="line">  <span class="title function_">constructor</span>(<span class="params">data: <span class="built_in">any</span></span>) &#123;</span><br><span class="line">    <span class="variable language_">super</span>();</span><br><span class="line">    <span class="variable language_">this</span>.<span class="property">data</span> = data;</span><br><span class="line">  &#125;</span><br><span class="line">  <span class="title function_">createIterator</span>(<span class="params"></span>) &#123;</span><br><span class="line">    <span class="keyword">return</span> <span class="keyword">new</span> <span class="title class_">NullIterator</span>();</span><br><span class="line">  &#125;</span><br><span class="line">  <span class="title function_">print</span>(): <span class="built_in">void</span> &#123;</span><br><span class="line">    <span class="variable language_">console</span>.<span class="title function_">log</span>(<span class="variable language_">this</span>.<span class="property">data</span>);</span><br><span class="line">  &#125;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
-
-<p>叶子节点的 createIterator 方法返回一个空的迭代器，真实环境中经常会使用这个方式添加占位，让所有对象的行为保持一致。</p>
-<p>对象集合的 createIterator 方法，实现了一个 Iterator 类，把没有迭代完成的迭代器重新放回到队列中</p>
-<figure class="highlight ts"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">class</span> <span class="title class_">CompositeIterator</span>&lt;T&gt; <span class="keyword">implements</span> <span class="title class_">Iterator</span>&lt;T&gt; &#123;</span><br><span class="line">  <span class="attr">stack</span>: <span class="title class_">Iterator</span>&lt;T&gt;[] = [];</span><br><span class="line">  <span class="title function_">constructor</span>(<span class="params">iterator: Iterator&lt;T&gt;</span>) &#123;</span><br><span class="line">    <span class="variable language_">this</span>.<span class="property">stack</span>.<span class="title function_">push</span>(iterator);</span><br><span class="line">  &#125;</span><br><span class="line">  <span class="title function_">next</span>(...<span class="attr">args</span>: [] | [<span class="literal">undefined</span>]): <span class="title class_">IteratorResult</span>&lt;T, <span class="built_in">any</span>&gt; &#123;</span><br><span class="line">    <span class="keyword">if</span> (<span class="variable language_">this</span>.<span class="property">stack</span>.<span class="property">length</span>) &#123;</span><br><span class="line">      <span class="keyword">const</span> iterator = <span class="variable language_">this</span>.<span class="property">stack</span>.<span class="title function_">pop</span>();</span><br><span class="line"></span><br><span class="line">      <span class="keyword">let</span> component = iterator!.<span class="title function_">next</span>();</span><br><span class="line">      <span class="keyword">if</span> (!component.<span class="property">done</span>) &#123;</span><br><span class="line">        <span class="variable language_">this</span>.<span class="property">stack</span>.<span class="title function_">push</span>(iterator!);</span><br><span class="line">      &#125;</span><br><span class="line">      <span class="keyword">return</span> component;</span><br><span class="line">    &#125; <span class="keyword">else</span> &#123;</span><br><span class="line">      <span class="keyword">return</span> &#123;</span><br><span class="line">        <span class="attr">value</span>: <span class="literal">undefined</span>,</span><br><span class="line">        <span class="attr">done</span>: <span class="literal">true</span>,</span><br><span class="line">      &#125;;</span><br><span class="line">    &#125;</span><br><span class="line">  &#125;</span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line"><span class="keyword">class</span> <span class="title class_">NullIterator</span>&lt;T&gt; <span class="keyword">implements</span> <span class="title class_">Iterator</span>&lt;T&gt; &#123;</span><br><span class="line">  <span class="title function_">next</span>(...<span class="attr">args</span>: [] | [<span class="literal">undefined</span>]): <span class="title class_">IteratorResult</span>&lt;T, <span class="built_in">any</span>&gt; &#123;</span><br><span class="line">    <span class="keyword">return</span> &#123;</span><br><span class="line">      <span class="attr">done</span>: <span class="literal">true</span>,</span><br><span class="line">      <span class="attr">value</span>: <span class="literal">undefined</span>,</span><br><span class="line">    &#125;;</span><br><span class="line">  &#125;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
-
-<p>最后实现遍历的类</p>
-<figure class="highlight ts"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br><span class="line">35</span><br><span class="line">36</span><br><span class="line">37</span><br><span class="line">38</span><br><span class="line">39</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">const</span> t = <span class="keyword">new</span> <span class="title class_">DataCollection1</span>();</span><br><span class="line">t.<span class="title function_">add</span>(<span class="keyword">new</span> <span class="title class_">DataItem</span>(<span class="number">1</span>));</span><br><span class="line">t.<span class="title function_">add</span>(<span class="keyword">new</span> <span class="title class_">DataItem</span>(<span class="number">2</span>));</span><br><span class="line"></span><br><span class="line"><span class="keyword">const</span> p = <span class="keyword">new</span> <span class="title class_">DataCollection2</span>();</span><br><span class="line"></span><br><span class="line">p.<span class="title function_">add</span>(<span class="keyword">new</span> <span class="title class_">DataItem</span>(<span class="string">&quot;a&quot;</span>), <span class="string">&quot;a&quot;</span>);</span><br><span class="line">p.<span class="title function_">add</span>(<span class="keyword">new</span> <span class="title class_">DataItem</span>(<span class="string">&quot;b&quot;</span>), <span class="string">&quot;b&quot;</span>);</span><br><span class="line"></span><br><span class="line"><span class="keyword">const</span> q = <span class="keyword">new</span> <span class="title class_">DataCollection3</span>();</span><br><span class="line">q.<span class="title function_">add</span>(<span class="keyword">new</span> <span class="title class_">DataItem</span>(<span class="string">&quot;p&quot;</span>));</span><br><span class="line"></span><br><span class="line"><span class="keyword">const</span> w = <span class="keyword">new</span> <span class="title class_">DataCollection2</span>();</span><br><span class="line">w.<span class="title function_">add</span>(<span class="keyword">new</span> <span class="title class_">DataItem</span>(<span class="string">&quot;w1&quot;</span>), <span class="string">&quot;w1&quot;</span>);</span><br><span class="line">w.<span class="title function_">add</span>(<span class="keyword">new</span> <span class="title class_">DataItem</span>(<span class="string">&quot;w2&quot;</span>), <span class="string">&quot;w2&quot;</span>);</span><br><span class="line"></span><br><span class="line">q.<span class="title function_">add</span>(w);</span><br><span class="line"></span><br><span class="line">q.<span class="title function_">add</span>(<span class="keyword">new</span> <span class="title class_">DataItem</span>(<span class="string">&quot;q&quot;</span>));</span><br><span class="line"></span><br><span class="line"><span class="keyword">class</span> <span class="title class_">MapObject</span> <span class="keyword">extends</span> <span class="title class_ inherited__">AbstractDataCollection</span> &#123;</span><br><span class="line">  <span class="attr">stack</span>: <span class="built_in">any</span>[] = [];</span><br><span class="line">  <span class="title function_">add</span>(<span class="params">instance: AbstractDataCollection</span>) &#123;</span><br><span class="line">    <span class="variable language_">this</span>.<span class="property">stack</span>.<span class="title function_">push</span>(instance);</span><br><span class="line">    <span class="keyword">return</span> <span class="variable language_">this</span>;</span><br><span class="line">  &#125;</span><br><span class="line">  <span class="title function_">iterator</span>(<span class="params"></span>) &#123;</span><br><span class="line">    <span class="keyword">return</span> <span class="variable language_">this</span>.<span class="property">stack</span>[<span class="title class_">Symbol</span>.<span class="property">iterator</span>]();</span><br><span class="line">  &#125;</span><br><span class="line">  <span class="title function_">createIterator</span>(<span class="params"></span>) &#123;</span><br><span class="line">    <span class="keyword">return</span> <span class="keyword">new</span> <span class="title class_">CompositeIterator</span>(<span class="variable language_">this</span>.<span class="title function_">iterator</span>());</span><br><span class="line">  &#125;</span><br><span class="line">&#125;</span><br><span class="line"><span class="keyword">const</span> o = <span class="keyword">new</span> <span class="title class_">MapObject</span>();</span><br><span class="line"></span><br><span class="line">o.<span class="title function_">add</span>(t);</span><br><span class="line">o.<span class="title function_">add</span>(p);</span><br><span class="line">o.<span class="title function_">add</span>(q);</span><br><span class="line">o.<span class="title function_">print</span>();</span><br></pre></td></tr></table></figure>
-
-<p>真实世界中的组合模式没有这么刻板，例如 React 组件的组合，通过单向数据流或状态管理工具，只要调用外层组件的方法即可，无需关心子组件的实现。</p>
-<p>有时不同的节点之间需要双向连接用于回退，或反查父节点。</p>
-<p>如果某个节点作为计算功能，并且频繁调用，可以考虑使用缓存。</p>
- 
-      <!-- reward -->
-      
-    </div>
-    
-
-    <!-- copyright -->
-    
-    <footer class="article-footer">
-       
-  <ul class="article-tag-list" itemprop="keywords"><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/%E8%AE%BE%E8%AE%A1%E6%A8%A1%E5%BC%8F/" rel="tag">设计模式</a></li></ul>
-
-    </footer>
-  </div>
-
-   
-    
-</article>
-
-    
-    <article
-  id="posts-javascript/鼠标触摸指针事件"
-  class="article article-type-posts"
-  itemscope
-  itemprop="blogPost"
-  data-scroll-reveal
->
-  <div class="article-inner">
-    
-    <header class="article-header">
-       
-<h2 itemprop="name">
-  <a class="article-title" href="/posts/1430ebf25b0e/"
-    >鼠标，触摸，指针事件</a> 
-</h2>
- 
-
-      
-    </header>
-     
-    <div class="article-meta">
-      <a href="/posts/1430ebf25b0e/" class="article-date">
-  <time datetime="2023-01-26T02:55:26.000Z" itemprop="datePublished">2023-01-26</time>
-</a> 
-  <div class="article-category">
-    <a class="article-category-link" href="/categories/JavaScript/">JavaScript</a>
-  </div>
-   
-    </div>
-      
-    <div class="article-entry" itemprop="articleBody">
-       
-  <h3 id="触摸事件"><a href="#触摸事件" class="headerlink" title="触摸事件"></a>触摸事件</h3><p>Safari 不支持 Touch 事件</p>
-<p>| touches | 正在触摸屏幕所有手指的一个列表 |<br>| targetTouches | 正在触摸当前 DOM 元素上的手指的一个列表 |<br>| changedTouches | 相对上一次触摸事件改变的 Touch 对象， 从无到有，从有到无变化 |</p>
-<h4 id="模拟一个触摸事件"><a href="#模拟一个触摸事件" class="headerlink" title="模拟一个触摸事件"></a>模拟一个触摸事件</h4><figure class="highlight js"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment">// 获取按钮元素</span></span><br><span class="line"><span class="keyword">var</span> button = <span class="variable language_">document</span>.<span class="title function_">getElementById</span>(<span class="string">&quot;myButton&quot;</span>);</span><br><span class="line"></span><br><span class="line"><span class="comment">// 创建一个触摸点</span></span><br><span class="line"><span class="keyword">var</span> touch = <span class="keyword">new</span> <span class="title class_">Touch</span>(&#123;</span><br><span class="line">  <span class="attr">identifier</span>: <span class="title class_">Date</span>.<span class="title function_">now</span>(),</span><br><span class="line">  <span class="attr">target</span>: button,</span><br><span class="line">  <span class="attr">clientX</span>: <span class="number">50</span>, <span class="comment">// X坐标</span></span><br><span class="line">  <span class="attr">clientY</span>: <span class="number">50</span>, <span class="comment">// Y坐标</span></span><br><span class="line">  <span class="attr">radiusX</span>: <span class="number">2.5</span>,</span><br><span class="line">  <span class="attr">radiusY</span>: <span class="number">2.5</span>,</span><br><span class="line">  <span class="attr">rotationAngle</span>: <span class="number">10</span>,</span><br><span class="line">  <span class="attr">force</span>: <span class="number">0.5</span>,</span><br><span class="line">&#125;);</span><br><span class="line"></span><br><span class="line"><span class="comment">// 创建一个触摸事件</span></span><br><span class="line"><span class="keyword">var</span> touchEvent = <span class="keyword">new</span> <span class="title class_">TouchEvent</span>(<span class="string">&quot;touchstart&quot;</span>, &#123;</span><br><span class="line">  <span class="attr">cancelable</span>: <span class="literal">true</span>,</span><br><span class="line">  <span class="attr">bubbles</span>: <span class="literal">true</span>,</span><br><span class="line">  <span class="attr">touches</span>: [touch],</span><br><span class="line">  <span class="attr">targetTouches</span>: [],</span><br><span class="line">  <span class="attr">changedTouches</span>: [touch],</span><br><span class="line">  <span class="attr">shiftKey</span>: <span class="literal">true</span>,</span><br><span class="line">&#125;);</span><br><span class="line"></span><br><span class="line">button.<span class="title function_">dispatchEvent</span>(touchEvent);</span><br></pre></td></tr></table></figure>
-
-<h3 id="指针事件历史"><a href="#指针事件历史" class="headerlink" title="指针事件历史"></a>指针事件历史</h3><p>chrome 55 版本之前，同时期浏览器浏览器都只有 MouseEvent, 然而，近年来的新兴设备支持更多不同方式的指针定点输入，如各类触控笔和触摸屏幕等。这就有必要扩展现存的定点设备事件模型，以有效追踪各类指针事件。</p>
-<p>PointerEvent 接口继承了所有 MouseEvent 中的属性，以保障原有为鼠标事件所开发的内容能更加有效的迁移到指针事件。</p>
-<h4 id="不同事件对应表"><a href="#不同事件对应表" class="headerlink" title="不同事件对应表"></a>不同事件对应表</h4><table>
-<thead>
-<tr>
-<th>MouseEvent</th>
-<th>TouchEvent</th>
-<th>PointerEvent</th>
-</tr>
-</thead>
-<tbody><tr>
-<td>mousedown</td>
-<td>touchstart</td>
-<td>pointerdown</td>
-</tr>
-<tr>
-<td>mousemove</td>
-<td>touchmove</td>
-<td>pointermove</td>
-</tr>
-<tr>
-<td>mouseup</td>
-<td>touchend</td>
-<td>pointerup</td>
-</tr>
-<tr>
-<td></td>
-<td>touchcancel</td>
-<td>pointercancel</td>
-</tr>
-<tr>
-<td>mouseenter</td>
-<td></td>
-<td>pointerenter</td>
-</tr>
-<tr>
-<td>mouseleave</td>
-<td></td>
-<td>pointerleave</td>
-</tr>
-<tr>
-<td>mouseover</td>
-<td></td>
-<td>pointerover</td>
-</tr>
-<tr>
-<td>mouseout</td>
-<td></td>
-<td>pointerout</td>
-</tr>
-<tr>
-<td></td>
-<td></td>
-<td>gotpointercapture</td>
-</tr>
-<tr>
-<td></td>
-<td></td>
-<td>lostpointercapture</td>
-</tr>
-</tbody></table>
-<h4 id="setPointerCapture"><a href="#setPointerCapture" class="headerlink" title="setPointerCapture"></a>setPointerCapture</h4><p>用于将特定元素指定为未来指针事件的捕获目标。指针的后续事件将以捕获元素为目标，直到捕获被释放</p>
-<p>通常用于实现，在元素外拖动的时候让元素保持响应</p>
-<figure class="highlight html"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br></pre></td><td class="code"><pre><span class="line"><span class="tag">&lt;<span class="name">body</span>&gt;</span></span><br><span class="line">  <span class="tag">&lt;<span class="name">div</span> <span class="attr">id</span>=<span class="string">&quot;slider&quot;</span>&gt;</span>SLIDE ME<span class="tag">&lt;/<span class="name">div</span>&gt;</span></span><br><span class="line">  <span class="tag">&lt;<span class="name">script</span>&gt;</span><span class="language-javascript"></span></span><br><span class="line"><span class="language-javascript">    <span class="keyword">function</span> <span class="title function_">beginSliding</span>(<span class="params">e</span>) &#123;</span></span><br><span class="line"><span class="language-javascript">      slider.<span class="property">onpointermove</span> = slide;</span></span><br><span class="line"><span class="language-javascript">      slider.<span class="title function_">setPointerCapture</span>(e.<span class="property">pointerId</span>);</span></span><br><span class="line"><span class="language-javascript">    &#125;</span></span><br><span class="line"><span class="language-javascript"></span></span><br><span class="line"><span class="language-javascript">    <span class="keyword">function</span> <span class="title function_">stopSliding</span>(<span class="params">e</span>) &#123;</span></span><br><span class="line"><span class="language-javascript">      slider.<span class="property">onpointermove</span> = <span class="literal">null</span>;</span></span><br><span class="line"><span class="language-javascript">      slider.<span class="title function_">releasePointerCapture</span>(e.<span class="property">pointerId</span>);</span></span><br><span class="line"><span class="language-javascript">    &#125;</span></span><br><span class="line"><span class="language-javascript"></span></span><br><span class="line"><span class="language-javascript">    <span class="keyword">function</span> <span class="title function_">slide</span>(<span class="params">e</span>) &#123;</span></span><br><span class="line"><span class="language-javascript">      slider.<span class="property">style</span>.<span class="property">transform</span> = <span class="string">`translate(<span class="subst">$&#123;e.clientX - <span class="number">70</span>&#125;</span>px)`</span>;</span></span><br><span class="line"><span class="language-javascript">    &#125;</span></span><br><span class="line"><span class="language-javascript"></span></span><br><span class="line"><span class="language-javascript">    <span class="keyword">const</span> slider = <span class="variable language_">document</span>.<span class="title function_">getElementById</span>(<span class="string">&quot;slider&quot;</span>);</span></span><br><span class="line"><span class="language-javascript"></span></span><br><span class="line"><span class="language-javascript">    slider.<span class="property">onpointerdown</span> = beginSliding;</span></span><br><span class="line"><span class="language-javascript">    slider.<span class="property">onpointerup</span> = stopSliding;</span></span><br><span class="line"><span class="language-javascript">  </span><span class="tag">&lt;/<span class="name">script</span>&gt;</span></span><br><span class="line"><span class="tag">&lt;/<span class="name">body</span>&gt;</span></span><br></pre></td></tr></table></figure>
-
-<h4 id="event-pointerType"><a href="#event-pointerType" class="headerlink" title="event.pointerType"></a>event.pointerType</h4><p>用于区分各类设备，以兼容不同的事件类型.</p>
-<ul>
-<li><p>mouse 鼠标触发的事件</p>
-</li>
-<li><p>pen 笔或手写笔设备</p>
-</li>
-<li><p>touch 手指等触摸事件</p>
-</li>
-</ul>
-<h4 id="多指触控"><a href="#多指触控" class="headerlink" title="多指触控"></a>多指触控</h4><figure class="highlight js"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment">// 通过id区分</span></span><br><span class="line"><span class="variable language_">document</span>.<span class="property">onpointerdown</span> = <span class="function">(<span class="params">e</span>) =&gt;</span> &#123;</span><br><span class="line">  <span class="variable language_">console</span>.<span class="title function_">log</span>(e.<span class="property">pointerId</span>);</span><br><span class="line">&#125;;</span><br></pre></td></tr></table></figure>
- 
-      <!-- reward -->
-      
-    </div>
-    
-
-    <!-- copyright -->
-    
-    <footer class="article-footer">
-       
-  <ul class="article-tag-list" itemprop="keywords"><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/%E9%BC%A0%E6%A0%87%E4%BA%8B%E4%BB%B6/" rel="tag">鼠标事件</a></li></ul>
 
     </footer>
   </div>

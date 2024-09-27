@@ -112,6 +112,68 @@
     
     
     <article
+  id="post-react/更新/FiberRoot"
+  class="article article-type-post"
+  itemscope
+  itemprop="blogPost"
+  data-scroll-reveal
+>
+  <div class="article-inner">
+    
+    <header class="article-header">
+       
+<h2 itemprop="name">
+  <a class="article-title" href="/posts/53f0f9c6dda5/"
+    >FiberRoot</a> 
+</h2>
+ 
+
+      
+    </header>
+     
+    <div class="article-meta">
+      <a href="/posts/53f0f9c6dda5/" class="article-date">
+  <time datetime="2021-02-14T06:15:36.000Z" itemprop="datePublished">2021-02-14</time>
+</a> 
+  <div class="article-category">
+    <a class="article-category-link" href="/categories/React/">React</a> / <a class="article-category-link" href="/categories/React/%E6%9B%B4%E6%96%B0/">更新</a>
+  </div>
+   
+    </div>
+      
+    <div class="article-entry" itemprop="articleBody">
+       
+  <h4 id="FiberRoot"><a href="#FiberRoot" class="headerlink" title="FiberRoot"></a>FiberRoot</h4><ul>
+<li>整个应用的起点</li>
+<li>包含应用挂载的目标节点</li>
+<li>记录整个应用更新过程的各种信息</li>
+</ul>
+<figure class="highlight javascript"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br><span class="line">35</span><br><span class="line">36</span><br><span class="line">37</span><br><span class="line">38</span><br><span class="line">39</span><br><span class="line">40</span><br><span class="line">41</span><br><span class="line">42</span><br><span class="line">43</span><br><span class="line">44</span><br><span class="line">45</span><br><span class="line">46</span><br><span class="line">47</span><br><span class="line">48</span><br><span class="line">49</span><br><span class="line">50</span><br><span class="line">51</span><br><span class="line">52</span><br><span class="line">53</span><br><span class="line">54</span><br><span class="line">55</span><br><span class="line">56</span><br><span class="line">57</span><br></pre></td><td class="code"><pre><span class="line">type <span class="title class_">BaseFiberRootProperties</span> = &#123;|</span><br><span class="line">  <span class="comment">// root节点，render方法接收的第二个参数</span></span><br><span class="line">  <span class="attr">containerInfo</span>: any,</span><br><span class="line">  <span class="comment">// 只有在持久更新中会用到，也就是不支持增量更新的平台，react-dom不会用到</span></span><br><span class="line">  <span class="attr">pendingChildren</span>: any,</span><br><span class="line">  <span class="comment">// 当前应用对应的Fiber对象，是Root Fiber</span></span><br><span class="line">  <span class="attr">current</span>: <span class="title class_">Fiber</span>,</span><br><span class="line"></span><br><span class="line">  <span class="comment">// 一下的优先级是用来区分</span></span><br><span class="line">  <span class="comment">// 1) 没有提交(committed)的任务</span></span><br><span class="line">  <span class="comment">// 2) 没有提交的挂起任务</span></span><br><span class="line">  <span class="comment">// 3) 没有提交的可能被挂起的任务</span></span><br><span class="line">  <span class="comment">// 我们选择不追踪每个单独的阻塞登记，为了兼顾性能</span></span><br><span class="line">  <span class="comment">// The earliest and latest priority levels that are suspended from committing.</span></span><br><span class="line">  <span class="comment">// 最老和新的在提交的时候被挂起的任务</span></span><br><span class="line">  <span class="attr">earliestSuspendedTime</span>: <span class="title class_">ExpirationTime</span>,</span><br><span class="line">  <span class="attr">latestSuspendedTime</span>: <span class="title class_">ExpirationTime</span>,</span><br><span class="line">  <span class="comment">// The earliest and latest priority levels that are not known to be suspended.</span></span><br><span class="line">  <span class="comment">// 最老和最新的不确定是否会挂起的优先级（所有任务进来一开始都是这个状态）</span></span><br><span class="line">  <span class="attr">earliestPendingTime</span>: <span class="title class_">ExpirationTime</span>,</span><br><span class="line">  <span class="attr">latestPendingTime</span>: <span class="title class_">ExpirationTime</span>,</span><br><span class="line">  <span class="comment">// The latest priority level that was pinged by a resolved promise and can</span></span><br><span class="line">  <span class="comment">// be retried.</span></span><br><span class="line">  <span class="comment">// 最新的通过一个promise被reslove并且可以重新尝试的优先级</span></span><br><span class="line">  <span class="attr">latestPingedTime</span>: <span class="title class_">ExpirationTime</span>,</span><br><span class="line"></span><br><span class="line">  <span class="comment">// 如果有错误被抛出并且没有更多的更新存在，我们尝试在处理错误前同步重新从头渲染</span></span><br><span class="line">  <span class="comment">// 在`renderRoot`出现无法处理的错误时会被设置为`true`</span></span><br><span class="line">  <span class="attr">didError</span>: boolean,</span><br><span class="line"></span><br><span class="line">  <span class="comment">// 正在等待提交的任务的`expirationTime`</span></span><br><span class="line">  <span class="attr">pendingCommitExpirationTime</span>: <span class="title class_">ExpirationTime</span>,</span><br><span class="line">  <span class="comment">// 已经完成的任务的FiberRoot对象，如果你只有一个Root，那他永远只可能是这个Root对应的Fiber，或者是null</span></span><br><span class="line">  <span class="comment">// 在commit阶段只会处理这个值对应的任务</span></span><br><span class="line">  <span class="attr">finishedWork</span>: <span class="title class_">Fiber</span> | <span class="literal">null</span>,</span><br><span class="line">  <span class="comment">// 在任务被挂起的时候通过setTimeout设置的返回内容，用来下一次如果有新的任务挂起时清理还没触发的timeout</span></span><br><span class="line">  <span class="attr">timeoutHandle</span>: <span class="title class_">TimeoutHandle</span> | <span class="title class_">NoTimeout</span>,</span><br><span class="line">  <span class="comment">// 顶层context对象，只有主动调用`renderSubtreeIntoContainer`时才会有用</span></span><br><span class="line">  <span class="attr">context</span>: <span class="title class_">Object</span> | <span class="literal">null</span>,</span><br><span class="line">  <span class="attr">pendingContext</span>: <span class="title class_">Object</span> | <span class="literal">null</span>,</span><br><span class="line">  <span class="comment">// 用来确定第一次渲染的时候是否需要融合</span></span><br><span class="line">  +<span class="attr">hydrate</span>: boolean,</span><br><span class="line">  <span class="comment">// 当前root上剩余的过期时间</span></span><br><span class="line">  <span class="comment">// <span class="doctag">TODO:</span> 提到renderer里面区处理</span></span><br><span class="line">  <span class="attr">nextExpirationTimeToWorkOn</span>: <span class="title class_">ExpirationTime</span>,</span><br><span class="line">  <span class="comment">// 当前更新对应的过期时间</span></span><br><span class="line">  <span class="attr">expirationTime</span>: <span class="title class_">ExpirationTime</span>,</span><br><span class="line">  <span class="comment">// List of top-level batches. This list indicates whether a commit should be</span></span><br><span class="line">  <span class="comment">// deferred. Also contains completion callbacks.</span></span><br><span class="line">  <span class="comment">// <span class="doctag">TODO:</span> Lift this into the renderer</span></span><br><span class="line">  <span class="comment">// 顶层批次（批处理任务？）这个变量指明一个commit是否应该被推迟</span></span><br><span class="line">  <span class="comment">// 同时包括完成之后的回调</span></span><br><span class="line">  <span class="comment">// 貌似用在测试的时候？</span></span><br><span class="line">  <span class="attr">firstBatch</span>: <span class="title class_">Batch</span> | <span class="literal">null</span>,</span><br><span class="line">  <span class="comment">// root之间关联的链表结构</span></span><br><span class="line">  <span class="attr">nextScheduledRoot</span>: <span class="title class_">FiberRoot</span> | <span class="literal">null</span>,</span><br><span class="line">|&#125;;</span><br></pre></td></tr></table></figure>
+
+
+
+<h4 id="mode"><a href="#mode" class="headerlink" title="mode"></a>mode</h4><p>创建跟节点RootFiber时，在current属性上挂载了通过<code>createHostRootFiber</code>创建的fiber对象</p>
+<figure class="highlight javascript"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">export</span> <span class="keyword">function</span> <span class="title function_">createHostRootFiber</span>(<span class="params">tag: RootTag</span>): <span class="title class_">Fiber</span> &#123;</span><br><span class="line">  <span class="keyword">let</span> mode;</span><br><span class="line">  <span class="keyword">if</span> (tag === <span class="title class_">ConcurrentRoot</span>) &#123;</span><br><span class="line">    mode = <span class="title class_">ConcurrentMode</span> | <span class="title class_">BlockingMode</span> | <span class="title class_">StrictMode</span>;</span><br><span class="line">  &#125; <span class="keyword">else</span> <span class="keyword">if</span> (tag === <span class="title class_">BlockingRoot</span>) &#123;</span><br><span class="line">    mode = <span class="title class_">BlockingMode</span> | <span class="title class_">StrictMode</span>;</span><br><span class="line">  &#125; <span class="keyword">else</span> &#123;</span><br><span class="line">    <span class="comment">// tag 为0</span></span><br><span class="line">    mode = <span class="title class_">NoMode</span>;</span><br><span class="line">  &#125;</span><br><span class="line"></span><br><span class="line">  <span class="comment">// 开发时mode为8</span></span><br><span class="line">  <span class="keyword">if</span> (enableProfilerTimer &amp;&amp; isDevToolsPresent) &#123;</span><br><span class="line">    <span class="comment">// Always collect profile timings when DevTools are present.</span></span><br><span class="line">    <span class="comment">// This enables DevTools to start capturing timing at any point–</span></span><br><span class="line">    <span class="comment">// Without some nodes in the tree having empty base times.</span></span><br><span class="line">    mode |= <span class="title class_">ProfileMode</span>;</span><br><span class="line">  &#125;</span><br><span class="line"></span><br><span class="line">  <span class="keyword">return</span> <span class="title function_">createFiber</span>(<span class="title class_">HostRoot</span>, <span class="literal">null</span>, <span class="literal">null</span>, mode);</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure> 
+      <!-- reward -->
+      
+    </div>
+    
+
+    <!-- copyright -->
+    
+    <footer class="article-footer">
+       
+  <ul class="article-tag-list" itemprop="keywords"><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/React/" rel="tag">React</a></li></ul>
+
+    </footer>
+  </div>
+
+   
+    
+</article>
+
+    
+    <article
   id="post-react/更新/ReactDOM_render"
   class="article article-type-post"
   itemscope
@@ -180,6 +242,79 @@
 
     
     <article
+  id="post-vue/vue原理1"
+  class="article article-type-post"
+  itemscope
+  itemprop="blogPost"
+  data-scroll-reveal
+>
+  <div class="article-inner">
+    
+    <header class="article-header">
+       
+<h2 itemprop="name">
+  <a class="article-title" href="/posts/38407de60227/"
+    >vue原理A</a> 
+</h2>
+ 
+
+      
+    </header>
+     
+    <div class="article-meta">
+      <a href="/posts/38407de60227/" class="article-date">
+  <time datetime="2021-02-02T00:28:18.000Z" itemprop="datePublished">2021-02-02</time>
+</a> 
+  <div class="article-category">
+    <a class="article-category-link" href="/categories/Vue/">Vue</a>
+  </div>
+   
+    </div>
+      
+    <div class="article-entry" itemprop="articleBody">
+       
+  <h4 id="目录分析"><a href="#目录分析" class="headerlink" title="目录分析"></a>目录分析</h4><ul>
+<li><p>dist 打包出各种不同的规范文件，其中runtime(程序运行起来的状态)文件只包括运行时，runtime包括事件，响应式数数，vdom,<br>complier在线运行时对模板文件编译（在线编译） </p>
+</li>
+<li><p>src</p>
+<ul>
+<li>compiler 目录是编译模板</li>
+<li>core 核心文件<ul>
+<li>keep-alive</li>
+<li>vue 全局api use mixin</li>
+<li>event lifecycle</li>
+<li>observer 双向数据绑定 dep</li>
+</ul>
+</li>
+<li>entries 生产打包的入口</li>
+<li>platforms 是核心模块对应在各平台上的模块</li>
+<li>server 处理服务端渲染</li>
+<li>sfc 目录处理单文件 .vue</li>
+<li>shared 提供全局用到的工具函数</li>
+</ul>
+</li>
+</ul>
+ 
+      <!-- reward -->
+      
+    </div>
+    
+
+    <!-- copyright -->
+    
+    <footer class="article-footer">
+       
+  <ul class="article-tag-list" itemprop="keywords"><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/Vue/" rel="tag">Vue</a></li><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/%E5%BA%94%E7%94%A8%E6%A1%88%E4%BE%8B/" rel="tag">应用案例</a></li></ul>
+
+    </footer>
+  </div>
+
+   
+    
+</article>
+
+    
+    <article
   id="post-vue/vue原理"
   class="article article-type-post"
   itemscope
@@ -234,79 +369,6 @@
 </ul>
 <h4 id="双向数据绑定"><a href="#双向数据绑定" class="headerlink" title="双向数据绑定"></a>双向数据绑定</h4><p><img src="/posts/7485af0dbc40/0001.png"></p>
 <h5 id="OBSERVER"><a href="#OBSERVER" class="headerlink" title="OBSERVER"></a>OBSERVER</h5><p>Observer会观察两种类型的数据，Object 与 Array，对于Array类型的数据，由于 JavaScript 的限制， Vue 不能检测变化,会先重写操作数组的原型方法，重写后能达到两个目的，当数组发生变化时，触发 notify<br>如果是 push，unshift，splice 这些添加新元素的操作，则会使用observer观察新添加的数据，重写完原型方法后，遍历拿到数组中的每个数据 使用observer观察它而对于Object类型的数据，则遍历它的每个key，使用 defineProperty 设置 getter 和 setter，当触发getter的时候，observer则开始收集依赖，而触发setter的时候，observe则触发notify。</p>
- 
-      <!-- reward -->
-      
-    </div>
-    
-
-    <!-- copyright -->
-    
-    <footer class="article-footer">
-       
-  <ul class="article-tag-list" itemprop="keywords"><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/Vue/" rel="tag">Vue</a></li><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/%E5%BA%94%E7%94%A8%E6%A1%88%E4%BE%8B/" rel="tag">应用案例</a></li></ul>
-
-    </footer>
-  </div>
-
-   
-    
-</article>
-
-    
-    <article
-  id="post-vue/vue原理1"
-  class="article article-type-post"
-  itemscope
-  itemprop="blogPost"
-  data-scroll-reveal
->
-  <div class="article-inner">
-    
-    <header class="article-header">
-       
-<h2 itemprop="name">
-  <a class="article-title" href="/posts/38407de60227/"
-    >vue原理A</a> 
-</h2>
- 
-
-      
-    </header>
-     
-    <div class="article-meta">
-      <a href="/posts/38407de60227/" class="article-date">
-  <time datetime="2021-02-02T00:28:18.000Z" itemprop="datePublished">2021-02-02</time>
-</a> 
-  <div class="article-category">
-    <a class="article-category-link" href="/categories/Vue/">Vue</a>
-  </div>
-   
-    </div>
-      
-    <div class="article-entry" itemprop="articleBody">
-       
-  <h4 id="目录分析"><a href="#目录分析" class="headerlink" title="目录分析"></a>目录分析</h4><ul>
-<li><p>dist 打包出各种不同的规范文件，其中runtime(程序运行起来的状态)文件只包括运行时，runtime包括事件，响应式数数，vdom,<br>complier在线运行时对模板文件编译（在线编译） </p>
-</li>
-<li><p>src</p>
-<ul>
-<li>compiler 目录是编译模板</li>
-<li>core 核心文件<ul>
-<li>keep-alive</li>
-<li>vue 全局api use mixin</li>
-<li>event lifecycle</li>
-<li>observer 双向数据绑定 dep</li>
-</ul>
-</li>
-<li>entries 生产打包的入口</li>
-<li>platforms 是核心模块对应在各平台上的模块</li>
-<li>server 处理服务端渲染</li>
-<li>sfc 目录处理单文件 .vue</li>
-<li>shared 提供全局用到的工具函数</li>
-</ul>
-</li>
-</ul>
  
       <!-- reward -->
       
@@ -706,7 +768,7 @@
 
     
     <article
-  id="post-dev/调试npm包"
+  id="post-engg/调试npm包"
   class="article article-type-post"
   itemscope
   itemprop="blogPost"
@@ -717,7 +779,7 @@
     <header class="article-header">
        
 <h2 itemprop="name">
-  <a class="article-title" href="/posts/5470d809b694/"
+  <a class="article-title" href="/posts/b1416cdd1ff6/"
     >调试npm包</a> 
 </h2>
  
@@ -726,7 +788,7 @@
     </header>
      
     <div class="article-meta">
-      <a href="/posts/5470d809b694/" class="article-date">
+      <a href="/posts/b1416cdd1ff6/" class="article-date">
   <time datetime="2021-01-16T14:16:47.000Z" itemprop="datePublished">2021-01-16</time>
 </a> 
   <div class="article-category">
@@ -755,153 +817,6 @@
     <footer class="article-footer">
        
   <ul class="article-tag-list" itemprop="keywords"><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/DevOps/" rel="tag">DevOps</a></li><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/npm/" rel="tag">npm</a></li><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/%E5%B7%A5%E7%A8%8B%E5%8C%96/" rel="tag">工程化</a></li></ul>
-
-    </footer>
-  </div>
-
-   
-    
-</article>
-
-    
-    <article
-  id="post-webpack/webpack核心概念"
-  class="article article-type-post"
-  itemscope
-  itemprop="blogPost"
-  data-scroll-reveal
->
-  <div class="article-inner">
-    
-    <header class="article-header">
-       
-<h2 itemprop="name">
-  <a class="article-title" href="/posts/dce700bcd907/"
-    >webpack核心概念</a> 
-</h2>
- 
-
-      
-    </header>
-     
-    <div class="article-meta">
-      <a href="/posts/dce700bcd907/" class="article-date">
-  <time datetime="2021-01-16T13:32:37.000Z" itemprop="datePublished">2021-01-16</time>
-</a> 
-  <div class="article-category">
-    <a class="article-category-link" href="/categories/webpack/">webpack</a>
-  </div>
-   
-    </div>
-      
-    <div class="article-entry" itemprop="articleBody">
-       
-  <h4 id="安装"><a href="#安装" class="headerlink" title="安装"></a>安装</h4><p>推荐就近安装，即安装在项目中，不要安装在全局中</p>
-<p>通过 <code>npx webpack -v</code> 查看项目中 webpack 版本</p>
-<p><strong>nrm 镜像源管理</strong></p>
-<p><code>yarn add nrm</code></p>
-<p>查看镜像源列表</p>
-<p><code>nrm ls</code></p>
-<p>测速</p>
-<p><code>nrm test taobao</code></p>
-<h4 id="常用工具"><a href="#常用工具" class="headerlink" title="常用工具"></a>常用工具</h4><h5 id="clean-webpack-plugin"><a href="#clean-webpack-plugin" class="headerlink" title="clean-webpack-plugin"></a>clean-webpack-plugin</h5><p><a target="_blank" rel="noopener" href="https://www.npmjs.com/package/clean-webpack-plugin">https://www.npmjs.com/package/clean-webpack-plugin</a></p>
-<h4 id="source-map"><a href="#source-map" class="headerlink" title="source-map"></a>source-map</h4><p>cheap-module-source-map 用于生产环境，不能暴露源码</p>
-<p>eval-cheap-module-source-map 开发环境中使用</p>
-<figure class="highlight javascript"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><span class="line">&#123;</span><br><span class="line">  <span class="attr">devtool</span>:<span class="string">&#x27;cheap-module-source-map&#x27;</span></span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
-
-<h4 id="devServer-和热模块更新"><a href="#devServer-和热模块更新" class="headerlink" title="devServer 和热模块更新"></a>devServer 和热模块更新</h4><p>安装devServer</p>
-<figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">yarn add -D webpack-dev-server</span><br></pre></td></tr></table></figure>
-
-<p>webpack.config.js 中添加配置项  </p>
-<p>contentBase 只有需要在访问静态文件时候使用，默认下面三个配置项都可以不写</p>
-<figure class="highlight javascript"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br></pre></td><td class="code"><pre><span class="line"><span class="attr">devServer</span>: &#123;</span><br><span class="line">  <span class="attr">contentBase</span>: path.<span class="title function_">join</span>(__dirname, <span class="string">&#x27;dist&#x27;</span>),</span><br><span class="line">  <span class="attr">compress</span>: <span class="literal">true</span>,</span><br><span class="line">  <span class="attr">port</span>: <span class="number">9000</span></span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
-
-<p>package.json 中添加启动命令</p>
-<figure class="highlight json"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br></pre></td><td class="code"><pre><span class="line"><span class="punctuation">&#123;</span></span><br><span class="line">  <span class="attr">&quot;scripts&quot;</span><span class="punctuation">:</span><span class="punctuation">&#123;</span></span><br><span class="line">    <span class="attr">&quot;server&quot;</span><span class="punctuation">:</span> <span class="string">&quot;webpack-dev-server --open&quot;</span></span><br><span class="line">  <span class="punctuation">&#125;</span></span><br><span class="line"><span class="punctuation">&#125;</span></span><br></pre></td></tr></table></figure>
-
-<p>开启hmr</p>
-<p>1.配置webpack-dev-server<br>2.devServer配置hot:true<br>3.plugins hotModuleeReplaceMentPlugin<br>4.js 文件中添加hmr代码</p>
-<p>webpack.config.js 中添加</p>
-<figure class="highlight javascript"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">const</span> webpack = <span class="built_in">require</span>(<span class="string">&#x27;webpack&#x27;</span>)</span><br><span class="line"></span><br><span class="line"><span class="variable language_">module</span>.<span class="property">exports</span> = &#123;</span><br><span class="line">  <span class="attr">devServer</span>: &#123;</span><br><span class="line">  ...</span><br><span class="line">  <span class="attr">hot</span>:<span class="literal">true</span></span><br><span class="line">  &#125;,</span><br><span class="line">  <span class="attr">plugins</span>: [</span><br><span class="line">    ...</span><br><span class="line">    <span class="keyword">new</span> webpack.<span class="title class_">NamedModulesPlugin</span>(),</span><br><span class="line">    <span class="keyword">new</span> webpack.<span class="title class_">HotModuleReplacementPlugin</span>()</span><br><span class="line">  ]</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
-
-<p>index.js 增加代码</p>
-<figure class="highlight javascript"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">if</span> (<span class="variable language_">module</span>.<span class="property">hot</span>) &#123;</span><br><span class="line">  <span class="variable language_">module</span>.<span class="property">hot</span>.<span class="title function_">accept</span>(<span class="string">&#x27;./print.js&#x27;</span>, <span class="keyword">function</span>(<span class="params"></span>) &#123;</span><br><span class="line">    <span class="variable language_">console</span>.<span class="title function_">log</span>(<span class="string">&#x27;Accepting the updated printMe module!&#x27;</span>);</span><br><span class="line">   <span class="title function_">printMe</span>();</span><br><span class="line">  &#125;)</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
-
-<h4 id="entry"><a href="#entry" class="headerlink" title="entry"></a>entry</h4><p><strong>string</strong> : 所有的资源打包成一个chunk,输出一个<code>bundle</code>文件，默认的名称是<code>main.js</code></p>
-<p><strong>array</strong>: 多入口，所有的文件也只会被打包成一个<code>chunk</code>,通常只在配置html的HMR时使用</p>
-<p><strong>object</strong> 多入口，有几个入口文件就可以形成几个<code>chunk</code>,输出几个<code>bundle</code>文件，文件的名称时对象中的<code>key</code>，每个key后面可以写一个数组，可以将数组中的文件打包成一个<code>bundle</code>,(参照dll的用法)</p>
-<h4 id="output"><a href="#output" class="headerlink" title="output"></a>output</h4><p><strong>filename</strong> 输出的文件名称，可以指定目录和文件名 <code>js/[name].js</code></p>
-<p><strong>publicpath</strong> 所有资源引入时候的公共路径，会拼在资源路径的前面作为基础路径， <code>publicpath:/</code>,<code>img/a.png</code> &#x3D;&gt; <code>/img/a.png</code>, <strong>注意：不是资源的输出路径</strong></p>
-<p><strong>chunkFilename</strong> 非入口<code>chunk</code>的名称，通过动态<code>import</code>引入的文件名称通过id的形式命名，从0开始，依次递增，<strong>通常会使用<a target="_blank" rel="noopener" href="https://webpack.js.org/migrate/5/#using--webpackchunkname--">webpackchunkname</a>来重命名</strong></p>
-<p><strong>library</strong> 会将<code>chunk</code>文件用一个变量接受，暴露给全局使用</p>
-<p><strong>libraryTarget</strong> 指明以那种方式引入,<code>window</code>把输入的变量添加到浏览器全局环境<code>window[name]=xxx</code>, <code>global</code>把输入的变量添加到node全局环境<code>global[name]=xxx</code>,<code>commonjs</code>以commonjs模块化规范引入，通常配合<code>dll</code>使用 </p>
-<p><strong>与 devserver 中的 publicpath 区别</strong></p>
-<p><a target="_blank" rel="noopener" href="https://webpack.js.org/configuration/output/#outputpublicpath">output 中的 publicpath</a></p>
-<p>这是一个在使用按需加载和引入外部资源（图片,文件等）非常重要的属性，如果设置了一个错误的值，当加载这些资源时会报404错误</p>
-<p>这个配置项指定了输出目录在浏览器中引用时的公共路径（publicpath）,一个相对路径被解析为相对于HTML页面或<a target="_blank" rel="noopener" href="https://developer.mozilla.org/en-US/docs/Web/HTML/Element/base">&lt;base&gt;标签</a></p>
-<blockquote>
-<base> 标签为页面上的所有链接规定默认地址或默认目标。
-</blockquote>
-<p>相对服务器的路径，相对与协议的路径，或绝对路径都是有可能的甚至有时是必须的，换句话说，在CDN 托管静态资源</p>
-<p>在运行时或loader处理时，每一个URL的前缀都会被色设置配置项中的值，这就是为什么在很多例子中这个配置项被设置为 <code>/</code> 的原因</p>
-<p>webpack-dev-server 也需要从publicPath获取信息，使用它来确定从何处提供输出文件。</p>
-<figure class="highlight javascript"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br></pre></td><td class="code"><pre><span class="line"><span class="variable language_">module</span>.<span class="property">exports</span> = &#123;</span><br><span class="line">  <span class="comment">//...</span></span><br><span class="line">  <span class="attr">output</span>: &#123;</span><br><span class="line">    <span class="comment">// One of the below</span></span><br><span class="line">    <span class="attr">publicPath</span>: <span class="string">&#x27;https://cdn.example.com/assets/&#x27;</span>, <span class="comment">// CDN (always HTTPS)</span></span><br><span class="line">    <span class="attr">publicPath</span>: <span class="string">&#x27;//cdn.example.com/assets/&#x27;</span>, <span class="comment">// CDN (same protocol)</span></span><br><span class="line">    <span class="attr">publicPath</span>: <span class="string">&#x27;/assets/&#x27;</span>, <span class="comment">// server-relative</span></span><br><span class="line">    <span class="attr">publicPath</span>: <span class="string">&#x27;assets/&#x27;</span>, <span class="comment">// relative to HTML page</span></span><br><span class="line">    <span class="attr">publicPath</span>: <span class="string">&#x27;../assets/&#x27;</span>, <span class="comment">// relative to HTML page</span></span><br><span class="line">    <span class="attr">publicPath</span>: <span class="string">&#x27;&#x27;</span>, <span class="comment">// relative to HTML page (same directory)</span></span><br><span class="line">  &#125;</span><br><span class="line">&#125;;</span><br></pre></td></tr></table></figure>
-
-<p><a target="_blank" rel="noopener" href="https://webpack.js.org/configuration/dev-server/#devserverpublicpath-">devServer 中的 publicpath</a></p>
-<p>打包的文件可以在浏览器的这个目录下面得到</p>
-<p>如果服务跑在 <a href="http://localhost:8080，打包的文件为bundle.js，publicPath为">http://localhost:8080，打包的文件为bundle.js，publicPath为</a> <code>/</code>, 可以在 <code>http://localhost:8080/bundle.js</code>访问到打包文件</p>
-<p>如果 publicPath 改为 <code>/assets/</code>, 那么可以在 <code>http://localhost:8080/assets/bundle.js</code>访问，也可以把 publicPath 改为 <code>http://localhost:8080/assets/</code></p>
-<p>这说明了 devServer.publicPath 与 output.publicPath 是一致的</p>
-<h5 id="babel-x2F-polyfill-babel-x2F-plugin-transform-runtime-babel-x2F-runtime-corejs2"><a href="#babel-x2F-polyfill-babel-x2F-plugin-transform-runtime-babel-x2F-runtime-corejs2" class="headerlink" title="@babel&#x2F;polyfill  @babel&#x2F;plugin-transform-runtime @babel&#x2F;runtime-corejs2"></a>@babel&#x2F;polyfill  @babel&#x2F;plugin-transform-runtime @babel&#x2F;runtime-corejs2</h5><p>@babel&#x2F;preset-env 只会转换新语法，但是不会转换新的api,比如 <code>Array.from</code></p>
-<p>需要 @babel&#x2F;polyfill 转换新的api,但是 @babel&#x2F;polyfill 会全量引入，不能按需引入</p>
-<p>可以通过 <code>babel.rc</code> 配置文件来实现 </p>
-<figure class="highlight json"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br></pre></td><td class="code"><pre><span class="line"><span class="punctuation">&#123;</span></span><br><span class="line">  <span class="attr">&quot;presets&quot;</span><span class="punctuation">:</span> <span class="punctuation">[</span></span><br><span class="line">    <span class="punctuation">[</span></span><br><span class="line">      <span class="string">&quot;@babel/preset-env&quot;</span><span class="punctuation">,</span></span><br><span class="line">      <span class="comment">// This option was removed in v7 by just making it the default.在新版本中已经移除，无需添加</span></span><br><span class="line">      <span class="comment">// &#123;</span></span><br><span class="line">      <span class="comment">//   &quot;useBuiltIns&quot;: &quot;usage&quot;</span></span><br><span class="line">      <span class="comment">// &#125;</span></span><br><span class="line">    <span class="punctuation">]</span></span><br><span class="line">  <span class="punctuation">]</span></span><br><span class="line"><span class="punctuation">&#125;</span></span><br></pre></td></tr></table></figure>
-
-<p>但是@babel&#x2F;preset-env也存在问题，虽然会按需引入但是每个文件如果有重复的方法，都会被编译成相同的代码引入，文件多的时候会让冗余的代码越来越多</p>
-<p>@babel&#x2F;runtime-corejs2 是一个随着 <a target="_blank" rel="noopener" href="https://babeljs.io/docs/en/babel-plugin-transform-runtime">@babel&#x2F;plugin-transform-runtime</a> 一起时使用的运行时依赖，会把重复的函数覆盖为 @babel&#x2F;runtime-corejs2 中的引用</p>
-<p>@babel&#x2F;runtime-corejs2 仅仅是一个包含着函数的包，把函数以模块化的形式引入, <strong>要安装到生产依赖中</strong></p>
-<p>.babelrc</p>
-<figure class="highlight json"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br></pre></td><td class="code"><pre><span class="line"><span class="punctuation">&#123;</span></span><br><span class="line">  <span class="attr">&quot;plugins&quot;</span><span class="punctuation">:</span> <span class="punctuation">[</span></span><br><span class="line">    <span class="punctuation">[</span></span><br><span class="line">      <span class="string">&quot;@babel/plugin-transform-runtime&quot;</span><span class="punctuation">,</span></span><br><span class="line">      <span class="punctuation">&#123;</span></span><br><span class="line">        <span class="attr">&quot;corejs&quot;</span><span class="punctuation">:</span> <span class="number">3</span></span><br><span class="line">      <span class="punctuation">&#125;</span></span><br><span class="line">    <span class="punctuation">]</span></span><br><span class="line">  <span class="punctuation">]</span></span><br><span class="line"><span class="punctuation">&#125;</span></span><br></pre></td></tr></table></figure>
-
-
-<h4 id="treeshaking"><a href="#treeshaking" class="headerlink" title="treeshaking"></a>treeshaking</h4><p>webpack4 production 默认开启，需要引入的库使用commonjs 模块化规范</p>
-<p>如 loadsh-es</p>
-<h4 id="全局引入"><a href="#全局引入" class="headerlink" title="全局引入"></a>全局引入</h4><p><a target="_blank" rel="noopener" href="https://webpack.js.org/plugins/provide-plugin/#root">provide-plugin</a></p>
-<figure class="highlight javascript"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br></pre></td><td class="code"><pre><span class="line"><span class="attr">plugins</span>: [</span><br><span class="line">  <span class="keyword">new</span> webpack.<span class="title class_">ProvidePlugin</span>(&#123;</span><br><span class="line">    <span class="attr">$</span>: <span class="string">&#x27;jquery&#x27;</span>,</span><br><span class="line">  &#125;)</span><br><span class="line">]</span><br></pre></td></tr></table></figure>
-
-<p>多入口文件的每一个都会被引入jquery，所以需要提取公共代码</p>
-<h4 id="动态加载"><a href="#动态加载" class="headerlink" title="动态加载"></a>动态加载</h4><p><a target="_blank" rel="noopener" href="https://babeljs.io/docs/en/babel-plugin-syntax-dynamic-import">@babel&#x2F;plugin-syntax-dynamic-import</a></p>
-<p><a target="_blank" rel="noopener" href="https://webpack.js.org/guides/code-splitting/#dynamic-imports">Dynamic Imports</a></p>
-<p><strong>需要指明webpackChunkName才能被单独打包</strong></p>
-<figure class="highlight javascript"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br></pre></td><td class="code"><pre><span class="line"><span class="title function_">import</span>(</span><br><span class="line">   <span class="comment">/* webpackChunkName: &quot;my-jquery&quot; */</span></span><br><span class="line">   <span class="string">&#x27;jquery&#x27;</span></span><br><span class="line"> )</span><br><span class="line">   .<span class="title function_">then</span>(<span class="function">(<span class="params">&#123; <span class="keyword">default</span>: $ &#125;</span>) =&gt;</span> &#123;</span><br><span class="line">     <span class="variable language_">console</span>.<span class="title function_">log</span>($)</span><br><span class="line">     <span class="keyword">return</span> $(<span class="string">&#x27;body&#x27;</span>);</span><br><span class="line">   &#125;)</span><br></pre></td></tr></table></figure>
-
-<h4 id="代码分割"><a href="#代码分割" class="headerlink" title="代码分割"></a>代码分割</h4><p><a target="_blank" rel="noopener" href="https://webpack.js.org/plugins/split-chunks-plugin/#root">SplitChunksPlugin</a> 代替原来的 commonChunksPlugin</p>
-<ul>
-<li>splitChunks.chunks</li>
-</ul>
-<p>async表示只从异步加载得模块（动态加载import()）里面进行拆分<br>initial表示只从入口模块进行拆分<br>all表示以上两者都包括</p>
-<ul>
-<li>splitChunks.maxInitialRequests</li>
-</ul>
-<p>每个入口的并发请求数, 如果拆出的包的个数大于maxInitialRequests，则不会把较小的包单独拆出</p>
-<ul>
-<li>splitChunks.maxInitialRequests</li>
-</ul>
-<p>动态引入的模块，最多拆分的数量</p>
-<h4 id="css分割"><a href="#css分割" class="headerlink" title="css分割"></a>css分割</h4><p><a target="_blank" rel="noopener" href="https://webpack.js.org/plugins/css-minimizer-webpack-plugin/">css-minimizer-webpack-plugin</a></p>
-<h4 id="压缩css代码"><a href="#压缩css代码" class="headerlink" title="压缩css代码"></a>压缩css代码</h4><p><a target="_blank" rel="noopener" href="https://webpack.js.org/plugins/mini-css-extract-plugin/#getting-started">MiniCssExtractPlugin</a></p>
-<h4 id="可视化分析"><a href="#可视化分析" class="headerlink" title="可视化分析"></a>可视化分析</h4><p><a target="_blank" rel="noopener" href="https://www.npmjs.com/package/webpack-bundle-analyzer">webpack-bundle-analyzer</a></p>
- 
-      <!-- reward -->
-      
-    </div>
-    
-
-    <!-- copyright -->
-    
-    <footer class="article-footer">
-       
-  <ul class="article-tag-list" itemprop="keywords"><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/webpack/" rel="tag">webpack</a></li><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/%E5%B7%A5%E7%A8%8B%E5%8C%96/" rel="tag">工程化</a></li></ul>
 
     </footer>
   </div>
