@@ -112,6 +112,85 @@
     
     
     <article
+  id="posts-source/react/③concurrent模式"
+  class="article article-type-posts"
+  itemscope
+  itemprop="blogPost"
+  data-scroll-reveal
+>
+  <div class="article-inner">
+    
+    <header class="article-header">
+       
+<h2 itemprop="name">
+  <a class="article-title" href="/posts/66e40253c1f8/"
+    >React源码分析 ③ concurrent 模式简介</a> 
+</h2>
+ 
+
+      
+    </header>
+     
+    <div class="article-meta">
+      <a href="/posts/66e40253c1f8/" class="article-date">
+  <time datetime="2022-05-11T01:47:06.000Z" itemprop="datePublished">2022-05-11</time>
+</a> 
+  <div class="article-category">
+    <a class="article-category-link" href="/categories/%E6%BA%90%E7%A0%81%E5%88%86%E6%9E%90/">源码分析</a> / <a class="article-category-link" href="/categories/%E6%BA%90%E7%A0%81%E5%88%86%E6%9E%90/React/">React</a>
+  </div>
+   
+    </div>
+      
+    <div class="article-entry" itemprop="articleBody">
+       
+  <p>React 官方提供了三种模式可以选择:</p>
+<ul>
+<li>legacy 模式： ReactDOM.render(<App />, rootNode)。这是当前 React app 使用的方式。当前没有计划删除本模式，但是这个模式可能不支持这些新功能。</li>
+<li>blocking 模式： ReactDOM.createBlockingRoot(rootNode).render(<App />)。目前正在实验中。作为迁移到 concurrent 模式的第一个步骤。</li>
+<li>concurrent 模式： ReactDOM.createRoot(rootNode).render(<App />)。目前在实验中，未来稳定之后，打算作为 React 的默认开发模式。这个模式开启了所有的新功能。</li>
+</ul>
+<p>但即使对于最新版本的 React 也没有主动提供 createRoot 这个 api,需要安装 Alpha 版本, 效果仍然相当于 legacy 模式.</p>
+<h4 id="版本演化"><a href="#版本演化" class="headerlink" title="版本演化"></a>版本演化</h4><p>React v15 的版本中用到了 Reconciler 和 Renderer 两个部分</p>
+<p><img src="/posts/66e40253c1f8/0001.png"></p>
+<p>这样存在的问题就是对节点的更新是递归同步更新的，如果节点非常多,即使只有一次 state 变更，React 也需要进行复杂的递归更新，更新一旦开始，中途就无法中断，直到遍历完整颗树，才能释放主线程。</p>
+<p>而 React v16 添加了前两章提到的,Scheduler, Fiber 这些都为最终实现 concurrent 模式提供了支持</p>
+<p><img src="/posts/66e40253c1f8/0002.png"></p>
+<p>但是在 React v16 版本中只是对能实现 concurrent 模式的这些模块进行了尝试. 最重要的还是在 v16.8 版本中发布了全新了 Hooks Api.</p>
+<p>在 v17.0 版本的时候又提出了全新的 lane 模型用于处理更新的优先级. 虽然在 v17.0 版本中没有重大的更新,但是 concurrent 模式已经可以与老的模式稳定共存.</p>
+<h4 id="启动过程"><a href="#启动过程" class="headerlink" title="启动过程"></a>启动过程</h4><p><img src="/posts/66e40253c1f8/0003.png"></p>
+<p>传入不同的 <a href="/posts/0bde2678fb55/#RootTag">RootTag</a> 用于标记不同的类型.这个变量会参与到初始化流程,优先级判断的逻辑中.</p>
+<h4 id="更新入口"><a href="#更新入口" class="headerlink" title="更新入口"></a>更新入口</h4><p>legacy 模式</p>
+<figure class="highlight js"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><span class="line"><span class="title function_">unbatchedUpdates</span>(<span class="function">() =&gt;</span> &#123;</span><br><span class="line">  <span class="title function_">updateContainer</span>(children, fiberRoot, parentComponent, callback);</span><br><span class="line">&#125;);</span><br></pre></td></tr></table></figure>
+
+<p>concurrent 模式</p>
+<figure class="highlight js"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br></pre></td><td class="code"><pre><span class="line"><span class="title class_">ReactDOMRoot</span>.<span class="property"><span class="keyword">prototype</span></span>.<span class="property">render</span> = <span class="title class_">ReactDOMBlockingRoot</span>.<span class="property"><span class="keyword">prototype</span></span>.<span class="property">render</span> =</span><br><span class="line">  <span class="keyword">function</span> (<span class="params">children: ReactNodeList</span>): <span class="keyword">void</span> &#123;</span><br><span class="line">    <span class="keyword">const</span> root = <span class="variable language_">this</span>.<span class="property">_internalRoot</span>;</span><br><span class="line">    <span class="comment">// 执行更新</span></span><br><span class="line">    <span class="title function_">updateContainer</span>(children, root, <span class="literal">null</span>, <span class="literal">null</span>);</span><br><span class="line">  &#125;;</span><br></pre></td></tr></table></figure>
+
+<h4 id="异同点"><a href="#异同点" class="headerlink" title="异同点"></a>异同点</h4><p>不同的模式,传入不同的 rootTag 类型,最终都调用了 updateContainer 函数串联了 react-dom 与 react-reconciler.</p>
+<p>legacy 下的更新会先调用 unbatchedUpdates, 更改执行上下文为 LegacyUnbatchedContext, 之后调用 updateContainer 进行更新.</p>
+<p>concurrent 和 blocking 不会更改执行上下文, 直接调用 updateContainer 进行更新.</p>
+<p>另外在 React 官方文档中可以找到:</p>
+<p>legacy 模式在合成事件中有自动批处理的功能，但仅限于一个浏览器任务。非 React 事件想使用这个功能必须使用 unstable_batchedUpdates。在 blocking 模式和 concurrent 模式下，所有的 setState 在默认情况下都是批处理的,这也意味着 concurrent 模式下所有的更新都是异步的.</p>
+ 
+      <!-- reward -->
+      
+    </div>
+    
+
+    <!-- copyright -->
+    
+    <footer class="article-footer">
+       
+  <ul class="article-tag-list" itemprop="keywords"><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/React/" rel="tag">React</a></li><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/%E6%BA%90%E7%A0%81%E5%88%86%E6%9E%90/" rel="tag">源码分析</a></li></ul>
+
+    </footer>
+  </div>
+
+   
+    
+</article>
+
+    
+    <article
   id="posts-webpack/treeShaking"
   class="article article-type-posts"
   itemscope
@@ -840,73 +919,6 @@
     <footer class="article-footer">
        
   <ul class="article-tag-list" itemprop="keywords"><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/React/" rel="tag">React</a></li><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/TypeScript/" rel="tag">TypeScript</a></li></ul>
-
-    </footer>
-  </div>
-
-   
-    
-</article>
-
-    
-    <article
-  id="posts-linux/operation/IP地址、子网掩码、网关"
-  class="article article-type-posts"
-  itemscope
-  itemprop="blogPost"
-  data-scroll-reveal
->
-  <div class="article-inner">
-    
-    <header class="article-header">
-       
-<h2 itemprop="name">
-  <a class="article-title" href="/posts/964c11e46f74/"
-    >IP地址、子网掩码、网关</a> 
-</h2>
- 
-
-      
-    </header>
-     
-    <div class="article-meta">
-      <a href="/posts/964c11e46f74/" class="article-date">
-  <time datetime="2022-04-10T07:48:27.000Z" itemprop="datePublished">2022-04-10</time>
-</a> 
-  <div class="article-category">
-    <a class="article-category-link" href="/categories/Linux/">Linux</a> / <a class="article-category-link" href="/categories/Linux/%E8%BF%90%E7%BB%B4/">运维</a>
-  </div>
-   
-    </div>
-      
-    <div class="article-entry" itemprop="articleBody">
-       
-  <h4 id="什么是IP地址？"><a href="#什么是IP地址？" class="headerlink" title="什么是IP地址？"></a>什么是IP地址？</h4><p>假如有一群人在一个密闭房间里面，用什么方式能够快速的叫到某一个人呢？没错,一个简单的方式，就是每个人编一个号码，例如，叫到一号，就知道是谁了。</p>
-<p>在网络世界中也是一样的，要想快速访问某一台设备，就需要每台设备有一个编号，而这个编号就是网络设备的IP地址。在这个房间里面，如果有两个人的编号相同，那么会怎么样，肯定就是当叫到这个编号的时候，不知道叫的是谁，所以一个房间里面不允许有两个编号相同的人，在一个局域网里面不允许有两个IP地址相同的设备，如果有就被称为IP冲突，会严重危害到网络的稳定。</p>
-<p>扩展一下，在一栋大楼里面，有好多个这样的密闭房间，每个密闭的房间也都有一群人，那么要怎么定位到某一个房间里面的一个人呢？</p>
-<p>答案肯定也还是编号，给每个房间编号，例如1号房间里面的1号，这样就能定位到特定的那一个人了，这时候我们把房间号也加入到人的编号当中去，房间号和人的编号用一个”.”间隔开来，例如1.1号，说明就这个人就是1号房间里面的1号人。</p>
-<p>网络设备中的IP地址也是如此，例如192.168.1.100，我们可以这样理解，192.168.1号房间，也就是我们会提到的网段，100就是在这个网段里面的编号100的设备。</p>
-<h4 id="什么是子网掩码？"><a href="#什么是子网掩码？" class="headerlink" title="什么是子网掩码？"></a>什么是子网掩码？</h4><p>根据上面提出的编号：192.168.1.100，会引发一个新的疑问，为什么房间号是：192.168.1，而人的编号是100，可不可以把房间号设置成为192.168，人的编号设置成为1.100呢？</p>
-<p>答案当然是可以的，但是这样设置会引发一个问题，同样192.168.1.100这个编号就会有歧义，可以表示192.168.1房间里面的100号人，也可以表示192.168号房间里面的1.100号人，这时候就要引入另外一个规则，告诉人们多少就是房间编号，多少就是人的编号，而这个规则就是子网掩码。</p>
-<p>都知道网络时间就是数字世界，所以这个规则设计得很讨巧，长度设置和编号一样长，通过和编号的于运算，最后告诉人们那些是房间号，那些事是人的编号。</p>
-<p>举个例子：子网掩码是255.255.255.0这个最常用的规则意思是255.255.255这前三位是房间号，后面0那一位是人编号，再比如192.168.1.100这个IP地址和255.255.0.0这个子网掩码，说明192.168是房间号，也就是网段，而1.100是人的编号，也就是设备在这个网段的编号。</p>
-<p>换句话说:子网掩码的作用就是确定设备出于哪个网段。子网掩码 255.255.0.0 表示前两位是网络部分,后两位是主机部分. 所以子网掩码相同且前两位相同的IP (例如:192.168.0.12 与 192.168.1.13) 在同一网段. </p>
-<h4 id="什么是网关？"><a href="#什么是网关？" class="headerlink" title="什么是网关？"></a>什么是网关？</h4><p>接着上面的问题，一群人在一个密闭房间里面，已经每一个人都有了一个编号，就是网络设备中的IP地址，那么这时候需求升级了，房间里面的人需要和房间外面的人们进行沟通对话，这时候怎么办呢，就需要一个会穿墙术的超能力者当传话筒，在这个房间里面穿梭，把房间里面的人的话传到外面去，把外面的人回应传回给房间里面的人。</p>
-<p>这个有超能力的人就是网络世界中的网关，他负责把内部网络的讯息传递到外网， 把外网信息传递回来，对于一个家庭网络而言，这个角色不正是我们的路由器吗？</p>
-<p>路由器是唯一一个和宽带连接的设备，家里所有的设备都要经过路由器才能连接到宽带，进行上网冲浪。所以网关也就是我们家庭宽带网络中的路由器，如果网关设置错误，就好像你把要传递出去的话语传给了一个没有超能力的人，自然也就无法把话语传达到房间外面。</p>
-<p>所以这里所说的穿墙只的就是两个设备不在同一网段,如果在同一网段就可以利用交换机通信,如果不是就需要路由器,也就会用到网关的概念.</p>
-<p>网关就是跨网段通讯的“关口”。当数据包从本网段设备传输到路由器时，首先要保证网关一致。网关可以使用本网段中任何一个地址，但是有一个不成文的规定，一般网关使用本网段中第一个可用的地址，这是为了避免与局域网中其他设备IP产生冲突。所以上面例子中的局域网1中，所有设备的网关都应该是10.0.0.1。局域网2中所有设备的网关都应该是12.0.0.1。有了网关，局域网内的设备才可以通过路由器与其他网段的设备进行通讯。</p>
- 
-      <!-- reward -->
-      
-    </div>
-    
-
-    <!-- copyright -->
-    
-    <footer class="article-footer">
-       
-  <ul class="article-tag-list" itemprop="keywords"><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/Linux/" rel="tag">Linux</a></li></ul>
 
     </footer>
   </div>

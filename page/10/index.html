@@ -112,6 +112,114 @@
     
     
     <article
+  id="post-react/①(SSR)渲染一个简单组件"
+  class="article article-type-post"
+  itemscope
+  itemprop="blogPost"
+  data-scroll-reveal
+>
+  <div class="article-inner">
+    
+    <header class="article-header">
+       
+<h2 itemprop="name">
+  <a class="article-title" href="/posts/2874c8836f69/"
+    >① ReactSSR 渲染一个简单组件</a> 
+</h2>
+ 
+
+      
+    </header>
+     
+    <div class="article-meta">
+      <a href="/posts/2874c8836f69/" class="article-date">
+  <time datetime="2021-10-13T09:24:01.000Z" itemprop="datePublished">2021-10-13</time>
+</a> 
+  <div class="article-category">
+    <a class="article-category-link" href="/categories/React/">React</a> / <a class="article-category-link" href="/categories/React/SSR/">SSR</a>
+  </div>
+   
+    </div>
+      
+    <div class="article-entry" itemprop="articleBody">
+       
+  <h4 id="客户端渲染-vs-服务端渲染"><a href="#客户端渲染-vs-服务端渲染" class="headerlink" title="客户端渲染 vs 服务端渲染"></a>客户端渲染 vs 服务端渲染</h4><p><strong>SSR</strong>：服务端渲染（Server side render）</p>
+<p>优点：① 利于 SEO ②TTFP 首屏渲染时间比较快</p>
+<p>缺点：① 复杂度增加 ② 服务器消耗资源增大，需要处理 IO 和执行 JavaScript</p>
+<p>&amp;nbsp;</p>
+<p><strong>CSR</strong>：客户端渲染（Client side render）</p>
+<p>优点：① 前后端分离，加快开发效率</p>
+<p>缺点：①TTFP 首屏渲染时间比较长 ② 不能 SEO</p>
+<p><img src="/posts/2874c8836f69/0001.png"></p>
+<p><img src="/posts/2874c8836f69/0002.png"></p>
+<h4 id="由服务端返回页面"><a href="#由服务端返回页面" class="headerlink" title="由服务端返回页面"></a>由服务端返回页面</h4><p>万事开头难，现实服务器返回静态页面。</p>
+<p>使用 Koa 搭建一个 Node 服务器，并在访问根路径的时候返回静态页面。</p>
+<blockquote>
+<p>src&#x2F;server.js</p>
+</blockquote>
+<figure class="highlight javascript"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">import</span> <span class="title class_">Koa</span> <span class="keyword">from</span> <span class="string">&quot;koa&quot;</span>;</span><br><span class="line"><span class="keyword">import</span> <span class="title class_">Router</span> <span class="keyword">from</span> <span class="string">&quot;@koa/router&quot;</span>;</span><br><span class="line"></span><br><span class="line"><span class="keyword">const</span> router = <span class="keyword">new</span> <span class="title class_">Router</span>();</span><br><span class="line"><span class="keyword">const</span> app = <span class="keyword">new</span> <span class="title class_">Koa</span>();</span><br><span class="line"></span><br><span class="line">router.<span class="title function_">get</span>(<span class="string">&quot;/&quot;</span>, <span class="keyword">async</span> (ctx, next) =&gt; &#123;</span><br><span class="line">  ctx.<span class="property">body</span> = <span class="string">`</span></span><br><span class="line"><span class="string">    &lt;!DOCTYPE html&gt;</span></span><br><span class="line"><span class="string">      &lt;html lang=&quot;en&quot;&gt;</span></span><br><span class="line"><span class="string">      &lt;head&gt;</span></span><br><span class="line"><span class="string">          &lt;meta charset=&quot;UTF-8&quot;&gt;</span></span><br><span class="line"><span class="string">          &lt;meta http-equiv=&quot;X-UA-Compatible&quot; content=&quot;IE=edge&quot;&gt; </span></span><br><span class="line"><span class="string">          &lt;meta name=&quot;viewport&quot; content=&quot;width=device-width, initial-scale=1.0&quot;&gt;</span></span><br><span class="line"><span class="string">          &lt;title&gt;Document&lt;/title&gt;</span></span><br><span class="line"><span class="string">      &lt;/head&gt;</span></span><br><span class="line"><span class="string">      &lt;body&gt;</span></span><br><span class="line"><span class="string">          Hello</span></span><br><span class="line"><span class="string">      &lt;/body&gt;</span></span><br><span class="line"><span class="string">    &lt;/html&gt;`</span>;</span><br><span class="line">&#125;);</span><br><span class="line"></span><br><span class="line">app.<span class="title function_">use</span>(router.<span class="title function_">routes</span>()).<span class="title function_">use</span>(router.<span class="title function_">allowedMethods</span>());</span><br><span class="line"></span><br><span class="line">app.<span class="title function_">listen</span>(conf.<span class="property">PORT</span>, <span class="function">() =&gt;</span> &#123;</span><br><span class="line">  <span class="string">`server is running in port 3000`</span>;</span><br><span class="line">&#125;);</span><br></pre></td></tr></table></figure>
+
+<h5 id="使用-ES6-语法"><a href="#使用-ES6-语法" class="headerlink" title="使用 ES6 语法"></a>使用 ES6 语法</h5><p>你也可能注意到这里使用了 ES6 的语法，因此需要添加<a target="_blank" rel="noopener" href="https://www.babeljs.cn/docs/babel-register">@babel&#x2F;register</a>这个工具，帮助我们在执行 ES6 的 Node 文件时即时编译。</p>
+<blockquote>
+<p>添加 src&#x2F;start.js 入口文件</p>
+</blockquote>
+<figure class="highlight javascript"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line"><span class="built_in">require</span>(<span class="string">&quot;@babel/register&quot;</span>);</span><br><span class="line"><span class="variable language_">module</span>.<span class="property">exports</span> = <span class="built_in">require</span>(<span class="string">&quot;./server&quot;</span>);</span><br></pre></td></tr></table></figure>
+
+<blockquote>
+<p>添加.babelrc 配置文件</p>
+</blockquote>
+<p>需要添加下面几个依赖，注意区分依赖环境</p>
+<figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br></pre></td><td class="code"><pre><span class="line">yarn add @babel/runtime</span><br><span class="line"></span><br><span class="line">yarn add core-js@3</span><br><span class="line"></span><br><span class="line"><span class="comment"># 用于定义一些编译后的依赖函数</span></span><br><span class="line">yarn add -D @babel/plugin-transform-runtime</span><br></pre></td></tr></table></figure>
+
+<figure class="highlight json"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br></pre></td><td class="code"><pre><span class="line"><span class="punctuation">&#123;</span></span><br><span class="line">  <span class="attr">&quot;presets&quot;</span><span class="punctuation">:</span> <span class="punctuation">[</span></span><br><span class="line">    <span class="punctuation">[</span></span><br><span class="line">      <span class="string">&quot;@babel/preset-env&quot;</span><span class="punctuation">,</span></span><br><span class="line">      <span class="punctuation">&#123;</span></span><br><span class="line">        <span class="attr">&quot;useBuiltIns&quot;</span><span class="punctuation">:</span> <span class="string">&quot;entry&quot;</span><span class="punctuation">,</span></span><br><span class="line">        <span class="attr">&quot;corejs&quot;</span><span class="punctuation">:</span> <span class="string">&quot;3&quot;</span></span><br><span class="line">      <span class="punctuation">&#125;</span></span><br><span class="line">    <span class="punctuation">]</span></span><br><span class="line">  <span class="punctuation">]</span><span class="punctuation">,</span></span><br><span class="line">  <span class="attr">&quot;plugins&quot;</span><span class="punctuation">:</span> <span class="punctuation">[</span><span class="string">&quot;@babel/plugin-transform-runtime&quot;</span><span class="punctuation">]</span></span><br><span class="line"><span class="punctuation">&#125;</span></span><br></pre></td></tr></table></figure>
+
+<p>最后使用 <code>node src/start.js</code> 执行入口文件</p>
+<h5 id="使用-TS"><a href="#使用-TS" class="headerlink" title="使用 TS"></a>使用 TS</h5><blockquote>
+<p>添加 tsconfig.json 配置文件</p>
+</blockquote>
+<figure class="highlight json"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br></pre></td><td class="code"><pre><span class="line"><span class="punctuation">&#123;</span></span><br><span class="line">  <span class="attr">&quot;compilerOptions&quot;</span><span class="punctuation">:</span> <span class="punctuation">&#123;</span></span><br><span class="line">    <span class="comment">/* TypeScript文件编译后生成的javascript文件里的语法应该遵循哪个JavaScript的版本 &quot;ES5&quot;， &quot;ES6&quot;/ &quot;ES2015&quot;， &quot;ES2016&quot;， &quot;ES2017&quot;或 &quot;ESNext&quot;*/</span></span><br><span class="line">    <span class="attr">&quot;target&quot;</span><span class="punctuation">:</span> <span class="string">&quot;es6&quot;</span><span class="punctuation">,</span></span><br><span class="line">    <span class="attr">&quot;jsx&quot;</span><span class="punctuation">:</span> <span class="string">&quot;react&quot;</span><span class="punctuation">,</span></span><br><span class="line">    <span class="comment">/* 编译后生成的javascript文件中的module，采用何种方式实现，可选项为：&quot;None&quot;， &quot;CommonJS&quot;， &quot;AMD&quot;， &quot;System&quot;， &quot;UMD&quot;， &quot;ES6&quot;或 &quot;ES2015&quot;。 */</span></span><br><span class="line">    <span class="attr">&quot;module&quot;</span><span class="punctuation">:</span> <span class="string">&quot;commonjs&quot;</span><span class="punctuation">,</span></span><br><span class="line">    <span class="comment">/*采用何种方式解析（也就是查找）TypeScript文件中依赖的模块的位置*/</span></span><br><span class="line">    <span class="attr">&quot;moduleResolution&quot;</span><span class="punctuation">:</span> <span class="string">&quot;node&quot;</span> <span class="comment">/* Specify how TypeScript looks up a file from a given module specifier. */</span><span class="punctuation">,</span></span><br><span class="line">    <span class="attr">&quot;sourceMap&quot;</span><span class="punctuation">:</span> <span class="keyword">true</span> <span class="comment">/* Create source map files for emitted JavaScript files. */</span><span class="punctuation">,</span></span><br><span class="line">    <span class="attr">&quot;outDir&quot;</span><span class="punctuation">:</span> <span class="string">&quot;dist&quot;</span> <span class="comment">/* Specify an output folder for all emitted files. */</span><span class="punctuation">,</span></span><br><span class="line">    <span class="attr">&quot;allowSyntheticDefaultImports&quot;</span><span class="punctuation">:</span> <span class="keyword">true</span> <span class="comment">/* Allow &#x27;import x from y&#x27; when a module doesn&#x27;t have a default export. */</span><span class="punctuation">,</span></span><br><span class="line">    <span class="attr">&quot;esModuleInterop&quot;</span><span class="punctuation">:</span> <span class="keyword">true</span> <span class="comment">/* Emit additional JavaScript to ease support for importing CommonJS modules. This */</span><span class="punctuation">,</span></span><br><span class="line">    <span class="attr">&quot;forceConsistentCasingInFileNames&quot;</span><span class="punctuation">:</span> <span class="keyword">true</span> <span class="comment">/* Ensure that casing is correct in imports. */</span><span class="punctuation">,</span></span><br><span class="line">    <span class="attr">&quot;strict&quot;</span><span class="punctuation">:</span> <span class="keyword">true</span> <span class="comment">/* Enable all strict type-checking options. */</span><span class="punctuation">,</span></span><br><span class="line">    <span class="attr">&quot;noImplicitAny&quot;</span><span class="punctuation">:</span> <span class="keyword">true</span></span><br><span class="line">  <span class="punctuation">&#125;</span><span class="punctuation">,</span></span><br><span class="line">  <span class="attr">&quot;include&quot;</span><span class="punctuation">:</span> <span class="punctuation">[</span><span class="string">&quot;src/**/*&quot;</span><span class="punctuation">,</span> <span class="string">&quot;global.d.ts&quot;</span><span class="punctuation">]</span><span class="punctuation">,</span></span><br><span class="line">  <span class="attr">&quot;exclude&quot;</span><span class="punctuation">:</span> <span class="punctuation">[</span><span class="string">&quot;node_modules&quot;</span><span class="punctuation">,</span> <span class="string">&quot;**/*.spec.ts&quot;</span><span class="punctuation">]</span></span><br><span class="line"><span class="punctuation">&#125;</span></span><br></pre></td></tr></table></figure>
+
+<h4 id="添加-React-组件"><a href="#添加-React-组件" class="headerlink" title="添加 React 组件"></a>添加 React 组件</h4><p>我们想把 Hello 换成 React 组件试一试，新建 components 文件创建<code>&lt;Hello/&gt;</code>组件并导出</p>
+<figure class="highlight javascript"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">import</span> <span class="title class_">Hello</span> <span class="keyword">from</span> <span class="string">&quot;react&quot;</span>;</span><br><span class="line"></span><br><span class="line"><span class="keyword">const</span> <span class="title class_">Home</span>: <span class="title class_">React</span>.<span class="property">FC</span> = <span class="function">() =&gt;</span> &#123;</span><br><span class="line">  <span class="keyword">return</span> <span class="language-xml"><span class="tag">&lt;<span class="name">div</span>&gt;</span>Hello<span class="tag">&lt;/<span class="name">div</span>&gt;</span></span>;</span><br><span class="line">&#125;;</span><br><span class="line"></span><br><span class="line"><span class="keyword">export</span> <span class="keyword">default</span> <span class="title class_">Hello</span>;</span><br></pre></td></tr></table></figure>
+
+<figure class="highlight javascript"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">import</span> <span class="title class_">Koa</span> <span class="keyword">from</span> <span class="string">&quot;koa&quot;</span>;</span><br><span class="line"><span class="keyword">import</span> <span class="title class_">Home</span> <span class="keyword">from</span> <span class="string">&quot;../components/home&quot;</span>;</span><br><span class="line"></span><br><span class="line"><span class="keyword">const</span> router = <span class="keyword">new</span> <span class="title class_">Router</span>();</span><br><span class="line">router.<span class="title function_">get</span>(<span class="string">&quot;/&quot;</span>, <span class="keyword">async</span> (ctx, next) =&gt; &#123;</span><br><span class="line">  ctx.<span class="property">body</span> = <span class="language-xml"><span class="tag">&lt;<span class="name">Home</span> /&gt;</span></span>;</span><br><span class="line">&#125;);</span><br></pre></td></tr></table></figure>
+
+<p>再一次运行的时候遇到了问题</p>
+<p><img src="/posts/2874c8836f69/0003.png"></p>
+<p>因为现在并不能编译 JSX 语法需要添加一些配置。</p>
+<p>如果使用的<code>babel-register</code>,安装依赖后，可以修改<code>.babelrc</code> 文件添加对 react 的支持</p>
+<figure class="highlight json"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><span class="line"><span class="punctuation">&#123;</span></span><br><span class="line">  <span class="attr">&quot;presets&quot;</span><span class="punctuation">:</span> <span class="punctuation">[</span><span class="string">&quot;@babel/preset-react&quot;</span><span class="punctuation">]</span></span><br><span class="line"><span class="punctuation">&#125;</span></span><br></pre></td></tr></table></figure>
+
+<p>如果使用的是 TS，添加在<code>tsconfig.json</code>中添加 jsx 支持</p>
+<figure class="highlight json"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line"><span class="attr">&quot;jsx&quot;</span><span class="punctuation">:</span> <span class="string">&quot;react&quot;</span><span class="punctuation">,</span></span><br></pre></td></tr></table></figure>
+
+<p>现在服务器可以正常启动了，但是我们的组件还不能正常加载</p>
+<p><img src="/posts/2874c8836f69/0004.png"></p>
+<p>这是因为我们的组件只被解析为 React.Element 而不是字符串，所以我们需要使用 ReactDOM 提供的服务端渲染的方法，将 React.Element 转换为字符串</p>
+<figure class="highlight javascript"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">import</span> <span class="title class_">ReactDOMServer</span> <span class="keyword">from</span> <span class="string">&#x27;react-dom/server&#x27;</span>;</span><br><span class="line">router.<span class="title function_">get</span>(<span class="string">&#x27;/&#x27;</span>,<span class="keyword">async</span> (ctx,next)=&gt;&#123;</span><br><span class="line">    ctx.<span class="property">body</span>= <span class="title class_">ReactDOMServer</span>.<span class="title function_">renderToString</span>(<span class="language-xml"><span class="tag">&lt;<span class="name">Home</span> /&gt;</span></span>;</span><br><span class="line">&#125;)</span><br></pre></td></tr></table></figure>
+
+<p>现在一个最简单的组件就通过服务端渲染并返回给浏览器。</p>
+ 
+      <!-- reward -->
+      
+    </div>
+    
+
+    <!-- copyright -->
+    
+    <footer class="article-footer">
+       
+  <ul class="article-tag-list" itemprop="keywords"><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/React/" rel="tag">React</a></li><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/SSR/" rel="tag">SSR</a></li></ul>
+
+    </footer>
+  </div>
+
+   
+    
+</article>
+
+    
+    <article
   id="post-react/⑩(原理)海量数据"
   class="article article-type-post"
   itemscope
@@ -1040,75 +1148,6 @@
 <p><a target="_blank" rel="noopener" href="https://github.com/prettier/stylelint-config-prettier">stylelint-config-prettier</a> 关闭所有可能冲突的配置</p>
 <p>配置文件</p>
 <figure class="highlight javascript"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br></pre></td><td class="code"><pre><span class="line">&#123;</span><br><span class="line">  <span class="string">&quot;extends&quot;</span>: [</span><br><span class="line">    <span class="string">&quot;stylelint-config-sass-guidelines&quot;</span>,</span><br><span class="line">    <span class="string">&quot;stylelint-prettier/recommended&quot;</span></span><br><span class="line">  ],</span><br><span class="line">  <span class="string">&quot;plugins&quot;</span>: [</span><br><span class="line">    <span class="string">&quot;stylelint-scss&quot;</span></span><br><span class="line">  ]</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure> 
-      <!-- reward -->
-      
-    </div>
-    
-
-    <!-- copyright -->
-    
-    <footer class="article-footer">
-       
-  <ul class="article-tag-list" itemprop="keywords"><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/DevOps/" rel="tag">DevOps</a></li></ul>
-
-    </footer>
-  </div>
-
-   
-    
-</article>
-
-    
-    <article
-  id="post-engg/Prettire配置指南"
-  class="article article-type-post"
-  itemscope
-  itemprop="blogPost"
-  data-scroll-reveal
->
-  <div class="article-inner">
-    
-    <header class="article-header">
-       
-<h2 itemprop="name">
-  <a class="article-title" href="/posts/6918dab02eff/"
-    >Prettire配置指南</a> 
-</h2>
- 
-
-      
-    </header>
-     
-    <div class="article-meta">
-      <a href="/posts/6918dab02eff/" class="article-date">
-  <time datetime="2021-09-12T13:50:39.000Z" itemprop="datePublished">2021-09-12</time>
-</a> 
-  <div class="article-category">
-    <a class="article-category-link" href="/categories/DevOps/">DevOps</a>
-  </div>
-   
-    </div>
-      
-    <div class="article-entry" itemprop="articleBody">
-       
-  <h4 id="基础库"><a href="#基础库" class="headerlink" title="基础库"></a>基础库</h4><p><a target="_blank" rel="noopener" href="https://github.com/prettier/prettier">prettier</a> 定义并实现了基本规则</p>
-<p><a target="_blank" rel="noopener" href="https://github.com/prettier/eslint-config-prettier">eslint-config-prettier</a> 关闭所有可能和 <code>prettier</code> 有冲突的规则</p>
-<p><a target="_blank" rel="noopener" href="https://github.com/prettier/eslint-plugin-prettier">eslint-plugin-prettier</a> 屏蔽了冲突规则之后，仍然想让<code>eslint</code>统一报错信息</p>
-<p><a target="_blank" rel="noopener" href="https://github.com/prettier/prettier-eslint">prettier-eslint</a> 可以通过 <code>eslint --fix</code> 来使用 <code>prettier</code> 格式化代码</p>
-<p><a target="_blank" rel="noopener" href="https://github.com/prettier/prettier-eslint-cli">prettier-eslint-cli</a> 以 cli 方式执行<code>prettier-eslint</code></p>
-<h4 id="Prettier-影响的规则"><a href="#Prettier-影响的规则" class="headerlink" title="Prettier 影响的规则"></a>Prettier 影响的规则</h4><p><a target="_blank" rel="noopener" href="https://prettier.io/docs/en/options.html">规则</a></p>
-<h4 id="Prettier-配置文件"><a href="#Prettier-配置文件" class="headerlink" title="Prettier 配置文件"></a>Prettier 配置文件</h4><p>一共有三种方式支持对 Prettier 进行配置：</p>
-<ul>
-<li>根目录创建.prettierrc 文件，能够写入 YML、JSON 的配置格式，并且支持.yaml&#x2F;.yml&#x2F;.json&#x2F;.js 后缀；</li>
-<li>根目录创建.prettier.config.js 文件，并对外 export 一个对象；</li>
-<li>在 package.json 中新建 prettier 属性。</li>
-</ul>
-<p><a target="_blank" rel="noopener" href="https://prettier.io/docs/en/options.html">更多配置</a></p>
-<figure class="highlight json"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br></pre></td><td class="code"><pre><span class="line"><span class="punctuation">&#123;</span></span><br><span class="line">  <span class="attr">&quot;singleQuote&quot;</span><span class="punctuation">:</span> <span class="keyword">true</span><span class="punctuation">,</span></span><br><span class="line">  <span class="attr">&quot;semi&quot;</span><span class="punctuation">:</span> <span class="keyword">true</span><span class="punctuation">,</span></span><br><span class="line">  <span class="attr">&quot;printWidth&quot;</span><span class="punctuation">:</span> <span class="number">80</span><span class="punctuation">,</span></span><br><span class="line">  <span class="attr">&quot;useTabs&quot;</span><span class="punctuation">:</span> <span class="keyword">false</span></span><br><span class="line"><span class="punctuation">&#125;</span></span><br></pre></td></tr></table></figure>
-
-<h4 id="与-ESLint-结合"><a href="#与-ESLint-结合" class="headerlink" title="与 ESLint 结合"></a>与 ESLint 结合</h4><p>安装 prettier 插件</p>
-<p><a href="/posts/ef51be94/">ESLint 配置指南</a></p>
- 
       <!-- reward -->
       
     </div>

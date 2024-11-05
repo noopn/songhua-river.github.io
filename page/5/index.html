@@ -112,6 +112,113 @@
     
     
     <article
+  id="posts-http/③浏览器工作原理"
+  class="article article-type-posts"
+  itemscope
+  itemprop="blogPost"
+  data-scroll-reveal
+>
+  <div class="article-inner">
+    
+    <header class="article-header">
+       
+<h2 itemprop="name">
+  <a class="article-title" href="/posts/52cc0ef48986/"
+    >浏览器工作原理 ③ 渲染流程</a> 
+</h2>
+ 
+
+      
+    </header>
+     
+    <div class="article-meta">
+      <a href="/posts/52cc0ef48986/" class="article-date">
+  <time datetime="2022-05-22T09:31:30.000Z" itemprop="datePublished">2022-05-22</time>
+</a> 
+  <div class="article-category">
+    <a class="article-category-link" href="/categories/HTTP%E4%B8%8E%E6%B5%8F%E8%A7%88%E5%99%A8/">HTTP与浏览器</a>
+  </div>
+   
+    </div>
+      
+    <div class="article-entry" itemprop="articleBody">
+       
+  <h4 id="渲染流程"><a href="#渲染流程" class="headerlink" title="渲染流程"></a>渲染流程</h4><ul>
+<li><p>解析 HTML 生成 DOM 树</p>
+</li>
+<li><p>计算样式</p>
+<p>将 CSS 文本转换为浏览器可以理解的结构——styleSheets。</p>
+<p>CSS 文本中有很多属性值，如 2em、blue、bold，这些类型数值不容易被渲染引擎理解，所以需要将所有值转换为渲染引擎容易理解的、标准化的计算值，这个过程就是属性值标准化。</p>
+<p>计算出 DOM 树中每个节点的具体样式,最终的样式保存在 ComputedStyle 结构内,在浏览器的开发这工具中可以查看.</p>
+</li>
+<li><p>布局阶段</p>
+<p>接下来就需要计算出 DOM 树中可见元素的几何位置，我们把这个计算过程叫做布局。</p>
+<p>DOM 树还含有很多不可见的元素,所以在显示之前，我们还要额外地构建一棵只包含可见元素布局树。DOM 树中所有不可见的节点都没有包含到布局树中。</p>
+<ul>
+<li>遍历 DOM 树中的所有可见节点，并把这些节点加到布局树中；</li>
+<li>不可见的节点会被布局树忽略掉，</li>
+<li>在执行布局操作的时候，会把布局运算的结果重新写回布局树中，所以布局树既是输入内容也是输出内容，这是布局阶段一个不合理的地方，因为在布局阶段并没有清晰地将输入内容和输出内容区分开来。针对这个问题，Chrome 团队正在重构布局代码，下一代布局系统叫 LayoutNG，试图更清晰地分离输入和输出，从而让新设计的布局算法更加简单。</li>
+</ul>
+</li>
+</ul>
+<h4 id="分层"><a href="#分层" class="headerlink" title="分层"></a>分层</h4><p>因为页面中有很多复杂的效果，如一些复杂的 3D 变换、页面滚动，或者使用 z-indexing 做 z 轴排序等，为了更加方便地实现这些效果，渲染引擎还需要为特定的节点生成专用的图层，并生成一棵对应的图层树（LayerTree）。</p>
+<p>打开 Chrome 的“开发者工具”，选择“Layers”标签，就可以可视化页面的分层情况,浏览器的页面实际上被分成了很多图层，这些图层叠加后合成了最终的页面。</p>
+<p>通常情况下，<strong>并不是布局树的每个节点都包含一个图层，如果一个节点没有对应的层，那么这个节点就从属于父节点的图层。</strong></p>
+<ul>
+<li><p>拥有 <a target="_blank" rel="noopener" href="https://developer.mozilla.org/zh-CN/docs/web/css/css_positioning/understanding_z_index/the_stacking_context">层叠上下文</a> 属性的元素会被提升为单独的一层。<br>明确定位属性的元素、定义透明属性的元素、使用 CSS 滤镜的元素等，都拥有层叠上下文属性。</p>
+</li>
+<li><p>需要剪裁（clip）的地方也会被创建为图层。<br>div 的大小限定为 200*200 像素，而 div 里面的文字内容比较多，文字所显示的区域肯定会超出 200*200 的面积，这时候就产生了剪裁，渲染引擎会把裁剪文字内容的一部分用于显示在 div 区域</p>
+<p>出现这种裁剪情况的时候，渲染引擎会为文字部分单独创建一个层，如果出现滚动条，滚动条也会被提升为单独的层。</p>
+</li>
+</ul>
+<h4 id="绘制图层"><a href="#绘制图层" class="headerlink" title="绘制图层"></a>绘制图层</h4><p>图层的绘制拆分成很多小的绘制指令，然后再把这些指令按照顺序组成一个待绘制列表,开发者工具 的 Layers 标签，可以查看绘制过程</p>
+<p><img src="/posts/52cc0ef48986/0001.webp"></p>
+<h4 id="栅格化操作"><a href="#栅格化操作" class="headerlink" title="栅格化操作"></a>栅格化操作</h4><p>实际上绘制操作是由渲染引擎中的合成线程来完成的。</p>
+<p><img src="/posts/52cc0ef48986/0002.webp"></p>
+<p>当图层的绘制列表准备好之后，主线程会把该绘制列表提交（commit）给合成线程.</p>
+<p>合成线程会将图层划分为图块（tile），这些图块的大小通常是 256x256 或者 512x512.</p>
+<p>然后<strong>合成线程会按照视口附近的图块来优先生成位图，实际生成位图的操作是由栅格化来执行的。所谓栅格化，是指将图块转换为位图。而图块是栅格化执行的最小单位</strong>.渲染进程维护了一个栅格化的线程池，所有的图块栅格化都是在线程池内执行的，</p>
+<p>通常，栅格化过程都会使用 GPU 来加速生成，使用 GPU 生成位图的过程叫快速栅格化，或者 GPU 栅格化，生成的位图被保存在 GPU 内存中。</p>
+<p><img src="/posts/52cc0ef48986/0003.webp"></p>
+<h4 id="合成和显示"><a href="#合成和显示" class="headerlink" title="合成和显示"></a>合成和显示</h4><p>当所有图块都被光栅化，合成线程就会生成一个绘制图块的命令——“DrawQuad”，然后将该命令提交给浏览器进程。</p>
+<p>浏览器进程里面有一个叫 viz 的组件，用来接收合成线程发过来的 DrawQuad 命令，然后根据 DrawQuad 命令，将其页面内容绘制到内存中，最后再将内存显示在屏幕上。</p>
+<h4 id="流程总结"><a href="#流程总结" class="headerlink" title="流程总结"></a>流程总结</h4><ul>
+<li>渲染进程将 HTML 内容转换为能够读懂的 DOM 树结构。</li>
+<li>渲染引擎将 CSS 样式表转化为浏览器可以理解的 styleSheets，计算出 DOM 节点的样式。</li>
+<li>创建布局树，并计算元素的布局信息。</li>
+<li>对布局树进行分层，并生成分层树。为每个图层生成绘制列表，并将其提交到合成线程。</li>
+<li>合成线程将图层分成图块，并在光栅化线程池中将图块转换成位图。</li>
+<li>合成线程发送绘制图块命令 DrawQuad 给浏览器进程。</li>
+<li>浏览器进程根据 DrawQuad 消息生成页面，并显示到显示器上。</li>
+</ul>
+<h4 id="重绘与重排"><a href="#重绘与重排" class="headerlink" title="重绘与重排"></a>重绘与重排</h4><p>如果你通过 JavaScript 或者 CSS 修改元素的几何位置属性，例如改变元素的宽度、高度等，那么浏览器会触发重新布局，解析之后的一系列子阶段，这个过程就叫重排。无疑，重排需要更新完整的渲染流水线，所以开销也是最大的。</p>
+<p><img src="/posts/52cc0ef48986/0004.webp"></p>
+<p>如果修改了元素的背景颜色，那么布局阶段将不会被执行，因为并没有引起几何位置的变换，所以就直接进入了绘制阶段，然后执行之后的一系列子阶段，这个过程就叫重绘。相较于重排操作，重绘省去了布局和分层阶段，所以执行效率会比重排操作要高一些。</p>
+<p><img src="/posts/52cc0ef48986/0005.webp"></p>
+<p>如果更改一个既不要布局也不要绘制的属性,把这个过程叫做合成</p>
+<p>使用了 CSS 的 transform 来实现动画效果，这可以避开重排和重绘阶段，直接在非主线程上执行合成动画操作。这样的效率是最高的，因为是在非主线程上合成，并没有占用主线程的资源，另外也避开了布局和绘制两个子阶段，所以相对于重绘和重排，合成能大大提升绘制效率。</p>
+<p><img src="/posts/52cc0ef48986/0006.webp"></p>
+ 
+      <!-- reward -->
+      
+    </div>
+    
+
+    <!-- copyright -->
+    
+    <footer class="article-footer">
+       
+  <ul class="article-tag-list" itemprop="keywords"><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/HTTP/" rel="tag">HTTP</a></li><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/%E6%B5%8F%E8%A7%88%E5%99%A8/" rel="tag">浏览器</a></li></ul>
+
+    </footer>
+  </div>
+
+   
+    
+</article>
+
+    
+    <article
   id="posts-http/②浏览器工作原理"
   class="article article-type-posts"
   itemscope
@@ -1172,85 +1279,6 @@
 
 <p>接着触发事件的 Fiber 节点会被传入 scheduleUpdateOnFiber 进行调度, 其中会执行 markUpdateLaneFromFiberToRoot 将每一个 Fiber 节点的 lanes 都合并到父级节点上,这样在 rootFiber 节点上就包含了所有子节点的更新优先级信息</p>
 <figure class="highlight js"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br><span class="line">35</span><br><span class="line">36</span><br><span class="line">37</span><br><span class="line">38</span><br><span class="line">39</span><br><span class="line">40</span><br><span class="line">41</span><br><span class="line">42</span><br><span class="line">43</span><br><span class="line">44</span><br><span class="line">45</span><br><span class="line">46</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">function</span> <span class="title function_">markUpdateLaneFromFiberToRoot</span>(<span class="params">sourceFiber, lane</span>) &#123;</span><br><span class="line">  <span class="comment">// Update the source fiber&#x27;s lanes</span></span><br><span class="line">  sourceFiber.<span class="property">lanes</span> = <span class="title function_">mergeLanes</span>(sourceFiber.<span class="property">lanes</span>, lane);</span><br><span class="line">  <span class="keyword">var</span> alternate = sourceFiber.<span class="property">alternate</span>;</span><br><span class="line"></span><br><span class="line">  <span class="keyword">if</span> (alternate !== <span class="literal">null</span>) &#123;</span><br><span class="line">    alternate.<span class="property">lanes</span> = <span class="title function_">mergeLanes</span>(alternate.<span class="property">lanes</span>, lane);</span><br><span class="line">  &#125;</span><br><span class="line"></span><br><span class="line">  &#123;</span><br><span class="line">    <span class="keyword">if</span> (</span><br><span class="line">      alternate === <span class="literal">null</span> &amp;&amp;</span><br><span class="line">      (sourceFiber.<span class="property">flags</span> &amp; (<span class="title class_">Placement</span> | <span class="title class_">Hydrating</span>)) !== <span class="title class_">NoFlags</span></span><br><span class="line">    ) &#123;</span><br><span class="line">      <span class="title function_">warnAboutUpdateOnNotYetMountedFiberInDEV</span>(sourceFiber);</span><br><span class="line">    &#125;</span><br><span class="line">  &#125;</span><br><span class="line"></span><br><span class="line">  <span class="keyword">var</span> node = sourceFiber;</span><br><span class="line">  <span class="keyword">var</span> parent = sourceFiber.<span class="property">return</span>;</span><br><span class="line"></span><br><span class="line">  <span class="keyword">while</span> (parent !== <span class="literal">null</span>) &#123;</span><br><span class="line">    parent.<span class="property">childLanes</span> = <span class="title function_">mergeLanes</span>(parent.<span class="property">childLanes</span>, lane);</span><br><span class="line">    alternate = parent.<span class="property">alternate</span>;</span><br><span class="line"></span><br><span class="line">    <span class="keyword">if</span> (alternate !== <span class="literal">null</span>) &#123;</span><br><span class="line">      alternate.<span class="property">childLanes</span> = <span class="title function_">mergeLanes</span>(alternate.<span class="property">childLanes</span>, lane);</span><br><span class="line">    &#125; <span class="keyword">else</span> &#123;</span><br><span class="line">      &#123;</span><br><span class="line">        <span class="keyword">if</span> ((parent.<span class="property">flags</span> &amp; (<span class="title class_">Placement</span> | <span class="title class_">Hydrating</span>)) !== <span class="title class_">NoFlags</span>) &#123;</span><br><span class="line">          <span class="title function_">warnAboutUpdateOnNotYetMountedFiberInDEV</span>(sourceFiber);</span><br><span class="line">        &#125;</span><br><span class="line">      &#125;</span><br><span class="line">    &#125;</span><br><span class="line"></span><br><span class="line">    node = parent;</span><br><span class="line">    parent = parent.<span class="property">return</span>;</span><br><span class="line">  &#125;</span><br><span class="line"></span><br><span class="line">  <span class="keyword">if</span> (node.<span class="property">tag</span> === <span class="title class_">HostRoot</span>) &#123;</span><br><span class="line">    <span class="keyword">var</span> root = node.<span class="property">stateNode</span>;</span><br><span class="line">    <span class="keyword">return</span> root;</span><br><span class="line">  &#125; <span class="keyword">else</span> &#123;</span><br><span class="line">    <span class="keyword">return</span> <span class="literal">null</span>;</span><br><span class="line">  &#125;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
- 
-      <!-- reward -->
-      
-    </div>
-    
-
-    <!-- copyright -->
-    
-    <footer class="article-footer">
-       
-  <ul class="article-tag-list" itemprop="keywords"><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/React/" rel="tag">React</a></li><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/%E6%BA%90%E7%A0%81%E5%88%86%E6%9E%90/" rel="tag">源码分析</a></li></ul>
-
-    </footer>
-  </div>
-
-   
-    
-</article>
-
-    
-    <article
-  id="posts-source/react/③concurrent模式"
-  class="article article-type-posts"
-  itemscope
-  itemprop="blogPost"
-  data-scroll-reveal
->
-  <div class="article-inner">
-    
-    <header class="article-header">
-       
-<h2 itemprop="name">
-  <a class="article-title" href="/posts/66e40253c1f8/"
-    >React源码分析 ③ concurrent 模式简介</a> 
-</h2>
- 
-
-      
-    </header>
-     
-    <div class="article-meta">
-      <a href="/posts/66e40253c1f8/" class="article-date">
-  <time datetime="2022-05-11T01:47:06.000Z" itemprop="datePublished">2022-05-11</time>
-</a> 
-  <div class="article-category">
-    <a class="article-category-link" href="/categories/%E6%BA%90%E7%A0%81%E5%88%86%E6%9E%90/">源码分析</a> / <a class="article-category-link" href="/categories/%E6%BA%90%E7%A0%81%E5%88%86%E6%9E%90/React/">React</a>
-  </div>
-   
-    </div>
-      
-    <div class="article-entry" itemprop="articleBody">
-       
-  <p>React 官方提供了三种模式可以选择:</p>
-<ul>
-<li>legacy 模式： ReactDOM.render(<App />, rootNode)。这是当前 React app 使用的方式。当前没有计划删除本模式，但是这个模式可能不支持这些新功能。</li>
-<li>blocking 模式： ReactDOM.createBlockingRoot(rootNode).render(<App />)。目前正在实验中。作为迁移到 concurrent 模式的第一个步骤。</li>
-<li>concurrent 模式： ReactDOM.createRoot(rootNode).render(<App />)。目前在实验中，未来稳定之后，打算作为 React 的默认开发模式。这个模式开启了所有的新功能。</li>
-</ul>
-<p>但即使对于最新版本的 React 也没有主动提供 createRoot 这个 api,需要安装 Alpha 版本, 效果仍然相当于 legacy 模式.</p>
-<h4 id="版本演化"><a href="#版本演化" class="headerlink" title="版本演化"></a>版本演化</h4><p>React v15 的版本中用到了 Reconciler 和 Renderer 两个部分</p>
-<p><img src="/posts/66e40253c1f8/0001.png"></p>
-<p>这样存在的问题就是对节点的更新是递归同步更新的，如果节点非常多,即使只有一次 state 变更，React 也需要进行复杂的递归更新，更新一旦开始，中途就无法中断，直到遍历完整颗树，才能释放主线程。</p>
-<p>而 React v16 添加了前两章提到的,Scheduler, Fiber 这些都为最终实现 concurrent 模式提供了支持</p>
-<p><img src="/posts/66e40253c1f8/0002.png"></p>
-<p>但是在 React v16 版本中只是对能实现 concurrent 模式的这些模块进行了尝试. 最重要的还是在 v16.8 版本中发布了全新了 Hooks Api.</p>
-<p>在 v17.0 版本的时候又提出了全新的 lane 模型用于处理更新的优先级. 虽然在 v17.0 版本中没有重大的更新,但是 concurrent 模式已经可以与老的模式稳定共存.</p>
-<h4 id="启动过程"><a href="#启动过程" class="headerlink" title="启动过程"></a>启动过程</h4><p><img src="/posts/66e40253c1f8/0003.png"></p>
-<p>传入不同的 <a href="/posts/0bde2678fb55/#RootTag">RootTag</a> 用于标记不同的类型.这个变量会参与到初始化流程,优先级判断的逻辑中.</p>
-<h4 id="更新入口"><a href="#更新入口" class="headerlink" title="更新入口"></a>更新入口</h4><p>legacy 模式</p>
-<figure class="highlight js"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><span class="line"><span class="title function_">unbatchedUpdates</span>(<span class="function">() =&gt;</span> &#123;</span><br><span class="line">  <span class="title function_">updateContainer</span>(children, fiberRoot, parentComponent, callback);</span><br><span class="line">&#125;);</span><br></pre></td></tr></table></figure>
-
-<p>concurrent 模式</p>
-<figure class="highlight js"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br></pre></td><td class="code"><pre><span class="line"><span class="title class_">ReactDOMRoot</span>.<span class="property"><span class="keyword">prototype</span></span>.<span class="property">render</span> = <span class="title class_">ReactDOMBlockingRoot</span>.<span class="property"><span class="keyword">prototype</span></span>.<span class="property">render</span> =</span><br><span class="line">  <span class="keyword">function</span> (<span class="params">children: ReactNodeList</span>): <span class="keyword">void</span> &#123;</span><br><span class="line">    <span class="keyword">const</span> root = <span class="variable language_">this</span>.<span class="property">_internalRoot</span>;</span><br><span class="line">    <span class="comment">// 执行更新</span></span><br><span class="line">    <span class="title function_">updateContainer</span>(children, root, <span class="literal">null</span>, <span class="literal">null</span>);</span><br><span class="line">  &#125;;</span><br></pre></td></tr></table></figure>
-
-<h4 id="异同点"><a href="#异同点" class="headerlink" title="异同点"></a>异同点</h4><p>不同的模式,传入不同的 rootTag 类型,最终都调用了 updateContainer 函数串联了 react-dom 与 react-reconciler.</p>
-<p>legacy 下的更新会先调用 unbatchedUpdates, 更改执行上下文为 LegacyUnbatchedContext, 之后调用 updateContainer 进行更新.</p>
-<p>concurrent 和 blocking 不会更改执行上下文, 直接调用 updateContainer 进行更新.</p>
-<p>另外在 React 官方文档中可以找到:</p>
-<p>legacy 模式在合成事件中有自动批处理的功能，但仅限于一个浏览器任务。非 React 事件想使用这个功能必须使用 unstable_batchedUpdates。在 blocking 模式和 concurrent 模式下，所有的 setState 在默认情况下都是批处理的,这也意味着 concurrent 模式下所有的更新都是异步的.</p>
  
       <!-- reward -->
       
