@@ -112,6 +112,75 @@
     
     
     <article
+  id="posts-source/react/⑪更新流程"
+  class="article article-type-posts"
+  itemscope
+  itemprop="blogPost"
+  data-scroll-reveal
+>
+  <div class="article-inner">
+    
+    <header class="article-header">
+       
+<h2 itemprop="name">
+  <a class="article-title" href="/posts/46127b00e223/"
+    >React源码分析 ⑪ 更新流程</a> 
+</h2>
+ 
+
+      
+    </header>
+     
+    <div class="article-meta">
+      <a href="/posts/46127b00e223/" class="article-date">
+  <time datetime="2022-05-11T04:19:24.000Z" itemprop="datePublished">2022-05-11</time>
+</a> 
+  <div class="article-category">
+    <a class="article-category-link" href="/categories/%E6%BA%90%E7%A0%81%E5%88%86%E6%9E%90/">源码分析</a> / <a class="article-category-link" href="/categories/%E6%BA%90%E7%A0%81%E5%88%86%E6%9E%90/React/">React</a>
+  </div>
+   
+    </div>
+      
+    <div class="article-entry" itemprop="articleBody">
+       
+  <h4 id="更新流程"><a href="#更新流程" class="headerlink" title="更新流程"></a>更新流程</h4><p>useState 与 setState 更新流程大致相同,只是入口函数不同. 这里以 setState 为例</p>
+<p>在类组件上会挂载 setState 方法, 在调用的时候会把状态添加到队列中</p>
+<figure class="highlight js"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">function</span> <span class="title function_">Component</span>(<span class="params">props, context, updater</span>) &#123;</span><br><span class="line">  <span class="variable language_">this</span>.<span class="property">updater</span> = updater || <span class="title class_">ReactNoopUpdateQueue</span>;</span><br><span class="line">&#125;</span><br><span class="line"><span class="title class_">Component</span>.<span class="property"><span class="keyword">prototype</span></span>.<span class="property">setState</span> = <span class="keyword">function</span> (<span class="params">partialState, callback</span>) &#123;</span><br><span class="line">  <span class="variable language_">this</span>.<span class="property">updater</span>.<span class="title function_">enqueueSetState</span>(<span class="variable language_">this</span>, partialState, callback, <span class="string">&quot;setState&quot;</span>);</span><br><span class="line">&#125;;</span><br></pre></td></tr></table></figure>
+
+<p>在 render 阶段的 <a href="posts/e9338ef539b2/#beginWork">beginWork</a> 中会调用类组件对应的方法创建 Fiber 节点, 类组件会在这时实例化,实例化完成后立即执行 <code>adoptClassInstance</code> 方法, 为实例提供用于更新的 this.updater 对象</p>
+<figure class="highlight js"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">function</span> <span class="title function_">constructClassInstance</span>(<span class="params"></span>) &#123;</span><br><span class="line">  <span class="keyword">var</span> instance = <span class="keyword">new</span> <span class="title function_">ctor</span>(props, context);</span><br><span class="line">  <span class="title function_">adoptClassInstance</span>(workInProgress, instance);</span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line"><span class="keyword">function</span> <span class="title function_">adoptClassInstance</span>(<span class="params">workInProgress, instance</span>) &#123;</span><br><span class="line">  instance.<span class="property">updater</span> = classComponentUpdater;</span><br><span class="line">  workInProgress.<span class="property">stateNode</span> = instance;</span><br><span class="line">  <span class="title function_">set</span>(instance, workInProgress);</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+<p>当事件被触发之后会调用 updater.enqueueSetState, 与首次 <a href="/posts/49df00acbc4a/">render</a> 阶段时为 FiberRoot 创建更新队列相似</p>
+<p>在首次渲染时已经通过 initializeUpdateQueue 为节点初始化了更新队列,现在需要把 update 对象添加到队列中</p>
+<figure class="highlight js"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br><span class="line">35</span><br><span class="line">36</span><br><span class="line">37</span><br><span class="line">38</span><br><span class="line">39</span><br><span class="line">40</span><br><span class="line">41</span><br><span class="line">42</span><br><span class="line">43</span><br><span class="line">44</span><br><span class="line">45</span><br><span class="line">46</span><br><span class="line">47</span><br><span class="line">48</span><br><span class="line">49</span><br><span class="line">50</span><br><span class="line">51</span><br><span class="line">52</span><br><span class="line">53</span><br><span class="line">54</span><br><span class="line">55</span><br><span class="line">56</span><br><span class="line">57</span><br><span class="line">58</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">var</span> classComponentUpdater = &#123;</span><br><span class="line">  <span class="attr">isMounted</span>: isMounted,</span><br><span class="line">  <span class="attr">enqueueSetState</span>: <span class="keyword">function</span> (<span class="params">inst, payload, callback</span>) &#123;</span><br><span class="line">    <span class="keyword">var</span> fiber = <span class="title function_">get</span>(inst);</span><br><span class="line">    <span class="keyword">var</span> eventTime = <span class="title function_">requestEventTime</span>();</span><br><span class="line">    <span class="keyword">var</span> lane = <span class="title function_">requestUpdateLane</span>(fiber);</span><br><span class="line">    <span class="keyword">var</span> update = <span class="title function_">createUpdate</span>(eventTime, lane);</span><br><span class="line">    update.<span class="property">payload</span> = payload;</span><br><span class="line"></span><br><span class="line">    <span class="keyword">if</span> (callback !== <span class="literal">undefined</span> &amp;&amp; callback !== <span class="literal">null</span>) &#123;</span><br><span class="line">      update.<span class="property">callback</span> = callback;</span><br><span class="line">    &#125;</span><br><span class="line"></span><br><span class="line">    <span class="title function_">enqueueUpdate</span>(fiber, update);</span><br><span class="line">    <span class="keyword">var</span> root = <span class="title function_">scheduleUpdateOnFiber</span>(fiber, lane, eventTime);</span><br><span class="line"></span><br><span class="line">    <span class="keyword">if</span> (root !== <span class="literal">null</span>) &#123;</span><br><span class="line">      <span class="title function_">entangleTransitions</span>(root, fiber, lane);</span><br><span class="line">    &#125;</span><br><span class="line">  &#125;,</span><br><span class="line">  <span class="attr">enqueueReplaceState</span>: <span class="keyword">function</span> (<span class="params">inst, payload, callback</span>) &#123;</span><br><span class="line">    <span class="keyword">var</span> fiber = <span class="title function_">get</span>(inst);</span><br><span class="line">    <span class="keyword">var</span> eventTime = <span class="title function_">requestEventTime</span>();</span><br><span class="line">    <span class="keyword">var</span> lane = <span class="title function_">requestUpdateLane</span>(fiber);</span><br><span class="line">    <span class="keyword">var</span> update = <span class="title function_">createUpdate</span>(eventTime, lane);</span><br><span class="line">    update.<span class="property">tag</span> = <span class="title class_">ReplaceState</span>;</span><br><span class="line">    update.<span class="property">payload</span> = payload;</span><br><span class="line"></span><br><span class="line">    <span class="keyword">if</span> (callback !== <span class="literal">undefined</span> &amp;&amp; callback !== <span class="literal">null</span>) &#123;</span><br><span class="line">      update.<span class="property">callback</span> = callback;</span><br><span class="line">    &#125;</span><br><span class="line"></span><br><span class="line">    <span class="title function_">enqueueUpdate</span>(fiber, update);</span><br><span class="line">    <span class="keyword">var</span> root = <span class="title function_">scheduleUpdateOnFiber</span>(fiber, lane, eventTime);</span><br><span class="line"></span><br><span class="line">    <span class="keyword">if</span> (root !== <span class="literal">null</span>) &#123;</span><br><span class="line">      <span class="title function_">entangleTransitions</span>(root, fiber, lane);</span><br><span class="line">    &#125;</span><br><span class="line">  &#125;,</span><br><span class="line">  <span class="attr">enqueueForceUpdate</span>: <span class="keyword">function</span> (<span class="params">inst, callback</span>) &#123;</span><br><span class="line">    <span class="keyword">var</span> fiber = <span class="title function_">get</span>(inst);</span><br><span class="line">    <span class="keyword">var</span> eventTime = <span class="title function_">requestEventTime</span>();</span><br><span class="line">    <span class="keyword">var</span> lane = <span class="title function_">requestUpdateLane</span>(fiber);</span><br><span class="line">    <span class="keyword">var</span> update = <span class="title function_">createUpdate</span>(eventTime, lane);</span><br><span class="line">    update.<span class="property">tag</span> = <span class="title class_">ForceUpdate</span>;</span><br><span class="line"></span><br><span class="line">    <span class="keyword">if</span> (callback !== <span class="literal">undefined</span> &amp;&amp; callback !== <span class="literal">null</span>) &#123;</span><br><span class="line">      update.<span class="property">callback</span> = callback;</span><br><span class="line">    &#125;</span><br><span class="line"></span><br><span class="line">    <span class="title function_">enqueueUpdate</span>(fiber, update);</span><br><span class="line">    <span class="keyword">var</span> root = <span class="title function_">scheduleUpdateOnFiber</span>(fiber, lane, eventTime);</span><br><span class="line"></span><br><span class="line">    <span class="keyword">if</span> (root !== <span class="literal">null</span>) &#123;</span><br><span class="line">      <span class="title function_">entangleTransitions</span>(root, fiber, lane);</span><br><span class="line">    &#125;</span><br><span class="line">  &#125;,</span><br><span class="line">&#125;;</span><br></pre></td></tr></table></figure>
+
+<p>update 对象会被添加到 updateQueue.shared.pending 中,并且形成循环链表,如果有新的更新会成为新的头节点</p>
+<p><img src="/posts/46127b00e223/0001.png"></p>
+<figure class="highlight js"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br><span class="line">35</span><br><span class="line">36</span><br><span class="line">37</span><br><span class="line">38</span><br><span class="line">39</span><br><span class="line">40</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">function</span> <span class="title function_">enqueueUpdate</span>(<span class="params">fiber, update, lane</span>) &#123;</span><br><span class="line">  <span class="keyword">var</span> updateQueue = fiber.<span class="property">updateQueue</span>;</span><br><span class="line"></span><br><span class="line">  <span class="keyword">if</span> (updateQueue === <span class="literal">null</span>) &#123;</span><br><span class="line">    <span class="comment">// Only occurs if the fiber has been unmounted.</span></span><br><span class="line">    <span class="keyword">return</span>;</span><br><span class="line">  &#125;</span><br><span class="line"></span><br><span class="line">  <span class="keyword">var</span> sharedQueue = updateQueue.<span class="property">shared</span>;</span><br><span class="line"></span><br><span class="line">  <span class="keyword">if</span> (<span class="title function_">isInterleavedUpdate</span>(fiber)) &#123;</span><br><span class="line">    <span class="keyword">var</span> interleaved = sharedQueue.<span class="property">interleaved</span>;</span><br><span class="line"></span><br><span class="line">    <span class="keyword">if</span> (interleaved === <span class="literal">null</span>) &#123;</span><br><span class="line">      <span class="comment">// This is the first update. Create a circular list.</span></span><br><span class="line">      update.<span class="property">next</span> = update;</span><br><span class="line">      <span class="comment">// At the end of the current render, this queue&#x27;s interleaved updates will</span></span><br><span class="line">      <span class="comment">// be transferred to the pending queue.</span></span><br><span class="line"></span><br><span class="line">      <span class="title function_">pushInterleavedQueue</span>(sharedQueue);</span><br><span class="line">    &#125; <span class="keyword">else</span> &#123;</span><br><span class="line">      update.<span class="property">next</span> = interleaved.<span class="property">next</span>;</span><br><span class="line">      interleaved.<span class="property">next</span> = update;</span><br><span class="line">    &#125;</span><br><span class="line"></span><br><span class="line">    sharedQueue.<span class="property">interleaved</span> = update;</span><br><span class="line">  &#125; <span class="keyword">else</span> &#123;</span><br><span class="line">    <span class="keyword">var</span> pending = sharedQueue.<span class="property">pending</span>;</span><br><span class="line"></span><br><span class="line">    <span class="keyword">if</span> (pending === <span class="literal">null</span>) &#123;</span><br><span class="line">      <span class="comment">// This is the first update. Create a circular list.</span></span><br><span class="line">      update.<span class="property">next</span> = update;</span><br><span class="line">    &#125; <span class="keyword">else</span> &#123;</span><br><span class="line">      update.<span class="property">next</span> = pending.<span class="property">next</span>;</span><br><span class="line">      pending.<span class="property">next</span> = update;</span><br><span class="line">    &#125;</span><br><span class="line"></span><br><span class="line">    sharedQueue.<span class="property">pending</span> = update;</span><br><span class="line">  &#125;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+<p>接着触发事件的 Fiber 节点会被传入 scheduleUpdateOnFiber 进行调度, 其中会执行 markUpdateLaneFromFiberToRoot 将每一个 Fiber 节点的 lanes 都合并到父级节点上,这样在 rootFiber 节点上就包含了所有子节点的更新优先级信息</p>
+<figure class="highlight js"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br><span class="line">35</span><br><span class="line">36</span><br><span class="line">37</span><br><span class="line">38</span><br><span class="line">39</span><br><span class="line">40</span><br><span class="line">41</span><br><span class="line">42</span><br><span class="line">43</span><br><span class="line">44</span><br><span class="line">45</span><br><span class="line">46</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">function</span> <span class="title function_">markUpdateLaneFromFiberToRoot</span>(<span class="params">sourceFiber, lane</span>) &#123;</span><br><span class="line">  <span class="comment">// Update the source fiber&#x27;s lanes</span></span><br><span class="line">  sourceFiber.<span class="property">lanes</span> = <span class="title function_">mergeLanes</span>(sourceFiber.<span class="property">lanes</span>, lane);</span><br><span class="line">  <span class="keyword">var</span> alternate = sourceFiber.<span class="property">alternate</span>;</span><br><span class="line"></span><br><span class="line">  <span class="keyword">if</span> (alternate !== <span class="literal">null</span>) &#123;</span><br><span class="line">    alternate.<span class="property">lanes</span> = <span class="title function_">mergeLanes</span>(alternate.<span class="property">lanes</span>, lane);</span><br><span class="line">  &#125;</span><br><span class="line"></span><br><span class="line">  &#123;</span><br><span class="line">    <span class="keyword">if</span> (</span><br><span class="line">      alternate === <span class="literal">null</span> &amp;&amp;</span><br><span class="line">      (sourceFiber.<span class="property">flags</span> &amp; (<span class="title class_">Placement</span> | <span class="title class_">Hydrating</span>)) !== <span class="title class_">NoFlags</span></span><br><span class="line">    ) &#123;</span><br><span class="line">      <span class="title function_">warnAboutUpdateOnNotYetMountedFiberInDEV</span>(sourceFiber);</span><br><span class="line">    &#125;</span><br><span class="line">  &#125;</span><br><span class="line"></span><br><span class="line">  <span class="keyword">var</span> node = sourceFiber;</span><br><span class="line">  <span class="keyword">var</span> parent = sourceFiber.<span class="property">return</span>;</span><br><span class="line"></span><br><span class="line">  <span class="keyword">while</span> (parent !== <span class="literal">null</span>) &#123;</span><br><span class="line">    parent.<span class="property">childLanes</span> = <span class="title function_">mergeLanes</span>(parent.<span class="property">childLanes</span>, lane);</span><br><span class="line">    alternate = parent.<span class="property">alternate</span>;</span><br><span class="line"></span><br><span class="line">    <span class="keyword">if</span> (alternate !== <span class="literal">null</span>) &#123;</span><br><span class="line">      alternate.<span class="property">childLanes</span> = <span class="title function_">mergeLanes</span>(alternate.<span class="property">childLanes</span>, lane);</span><br><span class="line">    &#125; <span class="keyword">else</span> &#123;</span><br><span class="line">      &#123;</span><br><span class="line">        <span class="keyword">if</span> ((parent.<span class="property">flags</span> &amp; (<span class="title class_">Placement</span> | <span class="title class_">Hydrating</span>)) !== <span class="title class_">NoFlags</span>) &#123;</span><br><span class="line">          <span class="title function_">warnAboutUpdateOnNotYetMountedFiberInDEV</span>(sourceFiber);</span><br><span class="line">        &#125;</span><br><span class="line">      &#125;</span><br><span class="line">    &#125;</span><br><span class="line"></span><br><span class="line">    node = parent;</span><br><span class="line">    parent = parent.<span class="property">return</span>;</span><br><span class="line">  &#125;</span><br><span class="line"></span><br><span class="line">  <span class="keyword">if</span> (node.<span class="property">tag</span> === <span class="title class_">HostRoot</span>) &#123;</span><br><span class="line">    <span class="keyword">var</span> root = node.<span class="property">stateNode</span>;</span><br><span class="line">    <span class="keyword">return</span> root;</span><br><span class="line">  &#125; <span class="keyword">else</span> &#123;</span><br><span class="line">    <span class="keyword">return</span> <span class="literal">null</span>;</span><br><span class="line">  &#125;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+ 
+      <!-- reward -->
+      
+    </div>
+    
+
+    <!-- copyright -->
+    
+    <footer class="article-footer">
+       
+  <ul class="article-tag-list" itemprop="keywords"><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/React/" rel="tag">React</a></li><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/%E6%BA%90%E7%A0%81%E5%88%86%E6%9E%90/" rel="tag">源码分析</a></li></ul>
+
+    </footer>
+  </div>
+
+   
+    
+</article>
+
+    
+    <article
   id="posts-source/react/③concurrent模式"
   class="article article-type-posts"
   itemscope
@@ -856,85 +925,13 @@
 </article>
 
     
-    <article
-  id="posts-ts/React+TS 实战文档"
-  class="article article-type-posts"
-  itemscope
-  itemprop="blogPost"
-  data-scroll-reveal
->
-  <div class="article-inner">
-    
-    <header class="article-header">
-       
-<h2 itemprop="name">
-  <a class="article-title" href="/posts/1b7f8cf1e61c/"
-    >React+TS 实战文档</a> 
-</h2>
- 
-
-      
-    </header>
-     
-    <div class="article-meta">
-      <a href="/posts/1b7f8cf1e61c/" class="article-date">
-  <time datetime="2022-04-11T15:04:03.000Z" itemprop="datePublished">2022-04-11</time>
-</a> 
-  <div class="article-category">
-    <a class="article-category-link" href="/categories/TypeScript/">TypeScript</a>
-  </div>
-   
-    </div>
-      
-    <div class="article-entry" itemprop="articleBody">
-       
-  <h4 id="Function-Components"><a href="#Function-Components" class="headerlink" title="Function Components"></a>Function Components</h4><p>React.FunctionComponent 或 React.FC 与普通函数有什么不同?</p>
-<p>React.FC 是隐式的返回值类型, 不同函数是显示的返回值类型</p>
-<p>React.FC 提供了一些静态属性类型检查 <code>displayName</code>,<code>propTypes</code>, <code>defaultProps</code></p>
-<p>React.FC 隐式的定义了 children 子元素类型, 但某些场景自定义这个类型会更好</p>
-<p>第二点中,当在 React.FC 中使用 <code>defaultProps</code> 的时候可能会造成错误</p>
-<figure class="highlight ts"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">interface</span> <span class="title class_">Props</span> &#123;</span><br><span class="line">  <span class="attr">text</span>: <span class="built_in">string</span>;</span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line"><span class="keyword">const</span> <span class="title class_">BackButton</span>:<span class="title class_">React</span>.<span class="property">FC</span>&lt;<span class="title class_">Props</span>&gt; = <span class="function">(<span class="params">props</span>)=&gt;</span>&#123;</span><br><span class="line">  <span class="keyword">return</span> <span class="language-xml"><span class="tag">&lt;<span class="name">div</span>/&gt;</span></span></span><br><span class="line">&#125;</span><br><span class="line"><span class="title class_">BackButton</span>.<span class="property">defaultProps</span> = &#123;</span><br><span class="line">  <span class="attr">text</span>: <span class="string">&#x27;Go Back&#x27;</span>,</span><br><span class="line">&#125;;</span><br><span class="line"><span class="keyword">let</span> a = <span class="language-xml"><span class="tag">&lt;<span class="name">BackButton</span> /&gt;</span></span> <span class="comment">// error: text is missing in type &#123;&#125;</span></span><br></pre></td></tr></table></figure>
-
-<p>这个问题有很多种方法可以解决, 可以使用普通函数来定义,而不是使用函数类型</p>
-<figure class="highlight ts"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">interface</span> <span class="title class_">Props</span> &#123;</span><br><span class="line">  <span class="attr">text</span>: <span class="built_in">string</span>;</span><br><span class="line">&#125;</span><br><span class="line"><span class="keyword">function</span> <span class="title function_">BackButton</span>(<span class="params">props: Props</span>) &#123;</span><br><span class="line">  <span class="keyword">return</span> <span class="language-xml"><span class="tag">&lt;<span class="name">div</span>/&gt;</span></span></span><br><span class="line">&#125;</span><br><span class="line"><span class="title class_">BackButton</span>.<span class="property">defaultProps</span> = &#123;</span><br><span class="line">  <span class="attr">text</span>: <span class="string">&#x27;Go Back&#x27;</span>,</span><br><span class="line">&#125;;</span><br><span class="line"><span class="keyword">let</span> a = <span class="language-xml"><span class="tag">&lt;<span class="name">BackButton</span> /&gt;</span></span> <span class="comment">// it&#x27;s OK</span></span><br></pre></td></tr></table></figure>
-
-<p>或者显示的声明 defaultProps</p>
-<figure class="highlight ts"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">interface</span> <span class="title class_">Props</span> &#123;</span><br><span class="line">  <span class="attr">text</span>: <span class="built_in">string</span>;</span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line"><span class="keyword">const</span> <span class="title class_">BackButton</span>: <span class="title class_">React</span>.<span class="property">FC</span>&lt;<span class="title class_">Props</span>&gt; &amp; &#123;</span><br><span class="line">  <span class="attr">defaultProps</span>: &#123;</span><br><span class="line">    <span class="attr">text</span>: <span class="built_in">string</span>;</span><br><span class="line">  &#125;;</span><br><span class="line">&#125; = <span class="function">(<span class="params">props</span>) =&gt;</span> &#123;</span><br><span class="line">  <span class="keyword">return</span> <span class="language-xml"><span class="tag">&lt;<span class="name">div</span> /&gt;</span></span>;</span><br><span class="line">&#125;;</span><br><span class="line"><span class="title class_">BackButton</span>.<span class="property">defaultProps</span> = &#123;</span><br><span class="line">  <span class="attr">text</span>: <span class="string">&#x27;Go Back&#x27;</span>,</span><br><span class="line">&#125;;</span><br><span class="line"><span class="keyword">let</span> a = <span class="language-xml"><span class="tag">&lt;<span class="name">BackButton</span> /&gt;</span></span>; <span class="comment">// it&#x27;s OK</span></span><br></pre></td></tr></table></figure>
-
-<p>另一个问题是 children 类型的问题, 有时组件返回的 children 类型并不是 React.FC 默认的 children 类型</p>
-<figure class="highlight js"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><span class="line"></span><br><span class="line"><span class="comment">// Type &#x27;string&#x27; is not assignable to type &#x27;ReactElement&lt;any, any&gt;&#x27;.</span></span><br><span class="line"><span class="keyword">const</span> <span class="title class_">Title</span>: <span class="title class_">React</span>.<span class="property">FC</span> = <span class="function">() =&gt;</span> <span class="string">&#x27;123&#x27;</span></span><br></pre></td></tr></table></figure>
-
-<p>你可以选择者重新为返回值赋类型,这个处理方法同样适用于条件语句中的子元素,或者通过数组或对象生成的子元素</p>
-<figure class="highlight ts"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">const</span> <span class="title class_">Title</span>: <span class="title class_">React</span>.<span class="property">FC</span> = <span class="function">() =&gt;</span> <span class="string">&#x27;123&#x27;</span> <span class="keyword">as</span> unknown <span class="keyword">as</span> <span class="title class_">React</span>.<span class="property">ReactElement</span></span><br></pre></td></tr></table></figure>
-
-<p>正因为有这种问题, @type&#x2F;react@^18.0.0 将不再把 children 作为默认的属性,而是需要显示声明</p>
- 
-      <!-- reward -->
-      
-    </div>
-    
-
-    <!-- copyright -->
-    
-    <footer class="article-footer">
-       
-  <ul class="article-tag-list" itemprop="keywords"><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/React/" rel="tag">React</a></li><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/TypeScript/" rel="tag">TypeScript</a></li></ul>
-
-    </footer>
-  </div>
-
-   
-    
-</article>
-
-    
   </article>
   
 
   
   <nav class="page-nav">
     
-    <a class="extend prev" rel="prev" href="/page/5/">上一页</a><a class="page-number" href="/">1</a><span class="space">&hellip;</span><a class="page-number" href="/page/4/">4</a><a class="page-number" href="/page/5/">5</a><span class="page-number current">6</span><a class="page-number" href="/page/7/">7</a><a class="page-number" href="/page/8/">8</a><span class="space">&hellip;</span><a class="page-number" href="/page/28/">28</a><a class="extend next" rel="next" href="/page/7/">下一页</a>
+    <a class="extend prev" rel="prev" href="/page/5/">上一页</a><a class="page-number" href="/">1</a><span class="space">&hellip;</span><a class="page-number" href="/page/4/">4</a><a class="page-number" href="/page/5/">5</a><span class="page-number current">6</span><a class="page-number" href="/page/7/">7</a><a class="page-number" href="/page/8/">8</a><span class="space">&hellip;</span><a class="page-number" href="/page/27/">27</a><a class="extend next" rel="next" href="/page/7/">下一页</a>
   </nav>
   
 </section>
@@ -945,7 +942,7 @@
     <ul>
       <li>
         Copyrights &copy;
-        2015-2024
+        2015-2025
         <i class="ri-heart-fill heart_icon"></i> SunZhiqi
       </li>
     </ul>

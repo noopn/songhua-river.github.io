@@ -1,0 +1,663 @@
+<!DOCTYPE html>
+
+
+<html lang="zh-CN">
+  
+
+    <head>
+      <meta charset="utf-8" />
+       
+      <meta name="keywords" content="前端 web react" />
+       
+      <meta name="description" content="前端技术与生活。" />
+      
+      <meta
+        name="viewport"
+        content="width=device-width, initial-scale=1, maximum-scale=1"
+      />
+      <title>Service Worker 相关问题 |  四月八日</title>
+  <meta name="generator" content="hexo-theme-ayer">
+      
+      <link rel="shortcut icon" href="/favicon.ico" />
+       
+<link rel="stylesheet" href="/dist/main.css">
+ 
+<link rel="stylesheet" href="/css/fonts/remixicon.css">
+ 
+<link rel="stylesheet" href="/css/custom.css">
+ 
+      <script src="/js/pace.min.js"></script>
+       
+ 
+
+      <link rel="stylesheet" href="/css/bulma.min.css" />
+      <script src="/js/sweetalert2.min.js"></script>
+
+      <!-- mermaid -->
+      
+      <script src="https://cdn.staticfile.org/mermaid/8.14.0/mermaid.min.js"></script>
+      
+      <style>
+        .swal2-styled.swal2-confirm {
+          font-size: 1.6rem;
+        }
+      </style>
+    <!-- hexo injector head_end start -->
+<link rel="stylesheet" href="/css/katex.min.css">
+
+<link rel="stylesheet" href="/css/style.css">
+<!-- hexo injector head_end end --></head>
+  </html>
+</html>
+
+
+<body>
+  <div id="app">
+    
+      
+    <main class="content on">
+      <section class="outer">
+  <article
+  id="posts-broswer/service-worker"
+  class="article article-type-posts"
+  itemscope
+  itemprop="blogPost"
+  data-scroll-reveal
+>
+  <div class="article-inner">
+    
+    <header class="article-header">
+       
+<h1 class="article-title sea-center" style="border-left:0" itemprop="name">
+  Service Worker 相关问题
+</h1>
+ 
+
+      
+    </header>
+     
+    <div class="article-meta">
+      <a href="/posts/1998cddaf148/" class="article-date">
+  <time datetime="2024-05-22T10:38:27.000Z" itemprop="datePublished">2024-05-22</time>
+</a> 
+  <div class="article-category">
+    <a class="article-category-link" href="/categories/%E6%B5%8F%E8%A7%88%E5%99%A8/">浏览器</a>
+  </div>
+  
+<div class="word_count">
+    <span class="post-time">
+        <span class="post-meta-item-icon">
+            <i class="ri-quill-pen-line"></i>
+            <span class="post-meta-item-text"> 字数统计:</span>
+            <span class="post-count">2.8k</span>
+        </span>
+    </span>
+
+    <span class="post-time">
+        &nbsp; | &nbsp;
+        <span class="post-meta-item-icon">
+            <i class="ri-book-open-line"></i>
+            <span class="post-meta-item-text"> 阅读时长≈</span>
+            <span class="post-count">12 分钟</span>
+        </span>
+    </span>
+</div>
+ 
+    </div>
+      
+    <div class="tocbot"></div>
+
+
+
+
+  
+    <div class="article-entry" itemprop="articleBody">
+       
+  <h4 id="注册"><a href="#注册" class="headerlink" title="注册"></a>注册</h4><blockquote>
+<p>index.html</p>
+</blockquote>
+<p><strong>service worker 的 scope 范围与 sw.js 所在的路径相关，只能对 sw.js 所在路径以及其子路径生效</strong></p>
+<figure class="highlight js"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">const</span> url = <span class="keyword">new</span> <span class="title function_">URL</span>(location.<span class="property">href</span>);</span><br><span class="line"><span class="keyword">if</span> (<span class="string">&quot;serviceWorker&quot;</span> <span class="keyword">in</span> navigator) &#123;</span><br><span class="line">  <span class="title function_">addEventListener</span>(<span class="string">&quot;load&quot;</span>, <span class="function">() =&gt;</span> &#123;</span><br><span class="line">    navigator.<span class="property">serviceWorker</span></span><br><span class="line">      .<span class="title function_">register</span>(<span class="string">&quot;./sw.js&quot;</span>, &#123; <span class="attr">scope</span>: <span class="string">&quot;/&quot;</span> &#125;)</span><br><span class="line">      .<span class="title function_">then</span>(<span class="function">(<span class="params">registration</span>) =&gt;</span> &#123;</span><br><span class="line">        <span class="keyword">var</span> serviceWorker;</span><br><span class="line">        <span class="keyword">if</span> (registration.<span class="property">installing</span>) &#123;</span><br><span class="line">          serviceWorker = registration.<span class="property">installing</span>;</span><br><span class="line">          <span class="comment">// 这里可以处理正在安装状态</span></span><br><span class="line">        &#125; <span class="keyword">else</span> <span class="keyword">if</span> (registration.<span class="property">waiting</span>) &#123;</span><br><span class="line">          serviceWorker = registration.<span class="property">waiting</span>;</span><br><span class="line">          <span class="comment">// 这里可以处理等待状态</span></span><br><span class="line">        &#125; <span class="keyword">else</span> <span class="keyword">if</span> (registration.<span class="property">active</span>) &#123;</span><br><span class="line">          serviceWorker = registration.<span class="property">active</span>;</span><br><span class="line">          <span class="title function_">emitCacheList</span>(serviceWorker);</span><br><span class="line">        &#125;</span><br><span class="line"></span><br><span class="line">        <span class="keyword">if</span> (serviceWorker) &#123;</span><br><span class="line">          serviceWorker.<span class="title function_">addEventListener</span>(<span class="string">&quot;statechange&quot;</span>, <span class="keyword">function</span> (<span class="params">e</span>) &#123;</span><br><span class="line">            <span class="keyword">if</span> (e.<span class="property">target</span>.<span class="property">state</span> === <span class="string">&quot;activated&quot;</span>) &#123;</span><br><span class="line">              <span class="comment">// Service Worker 已经激活，可以发送消息</span></span><br><span class="line">              <span class="title function_">emitCacheList</span>(serviceWorker);</span><br><span class="line">            &#125;</span><br><span class="line">          &#125;);</span><br><span class="line">        &#125;</span><br><span class="line">      &#125;)</span><br><span class="line">      .<span class="title function_">catch</span>(<span class="function">(<span class="params">err</span>) =&gt;</span> &#123;</span><br><span class="line">        <span class="variable language_">console</span>.<span class="title function_">warn</span>(<span class="string">&quot;desktop_sw register fail.&quot;</span>);</span><br><span class="line">      &#125;);</span><br><span class="line">  &#125;);</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+<h4 id="安装"><a href="#安装" class="headerlink" title="安装"></a>安装</h4><figure class="highlight js"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><span class="line"><span class="variable language_">this</span>.<span class="title function_">addEventListener</span>(<span class="string">&quot;install&quot;</span>, <span class="keyword">function</span> (<span class="params">event</span>) &#123;</span><br><span class="line">  <span class="variable language_">console</span>.<span class="title function_">log</span>(<span class="string">&quot;install&quot;</span>);</span><br><span class="line">&#125;);</span><br></pre></td></tr></table></figure>
+
+<h4 id="激活"><a href="#激活" class="headerlink" title="激活"></a>激活</h4><p>不一定每次都能触发。前一个还在工作状态那么后一个就会进 waiting 阶段,只有等到前一个被 terminated 后,后一个才能完全替换 A 的工作</p>
+<figure class="highlight js"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><span class="line"><span class="variable language_">this</span>.<span class="title function_">addEventListener</span>(<span class="string">&quot;activate&quot;</span>, <span class="keyword">function</span> (<span class="params">event</span>) &#123;</span><br><span class="line">  <span class="variable language_">console</span>.<span class="title function_">log</span>(<span class="string">&quot;activate&quot;</span>);</span><br><span class="line">&#125;);</span><br></pre></td></tr></table></figure>
+
+<h4 id="更新"><a href="#更新" class="headerlink" title="更新"></a>更新</h4><p><a target="_blank" rel="noopener" href="https://developer.chrome.com/docs/workbox/service-worker-lifecycle#handling_service_worker_updates">在这些条件中会执行更新操作</a></p>
+<p>主动在每次注册后执行更新</p>
+<figure class="highlight js"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br></pre></td><td class="code"><pre><span class="line">navigator.<span class="property">serviceWorker</span></span><br><span class="line">  .<span class="title function_">register</span>(<span class="string">&quot;/sw.js&quot;</span>, &#123;</span><br><span class="line">    <span class="attr">scope</span>: <span class="string">&quot;/&quot;</span>,</span><br><span class="line">  &#125;)</span><br><span class="line">  .<span class="title function_">then</span>(<span class="function">(<span class="params">registration: any</span>) =&gt;</span> &#123;</span><br><span class="line">    registration.<span class="title function_">update</span>();</span><br><span class="line">  &#125;);</span><br><span class="line"></span><br><span class="line"><span class="comment">// 使用 workbox</span></span><br><span class="line">wb.<span class="title function_">register</span>().<span class="title function_">then</span>(<span class="function">(<span class="params">registration: any</span>) =&gt;</span> &#123;</span><br><span class="line">  registration.<span class="title function_">update</span>();</span><br><span class="line">&#125;);</span><br></pre></td></tr></table></figure>
+
+<h4 id="关闭"><a href="#关闭" class="headerlink" title="关闭"></a>关闭</h4><ul>
+<li>terminated</li>
+<li>关闭浏览器一段时间</li>
+<li>手动清除 serviceworker</li>
+<li>在 sw 安装时直接跳过 waiting 阶段 self.skipWaiting();</li>
+</ul>
+<h4 id="拦截请求"><a href="#拦截请求" class="headerlink" title="拦截请求"></a>拦截请求</h4><p>拦截请求 只有 activate 之后才能工作</p>
+<p><strong>页面本身的 URL 不在 Service Worker 的 scope 内时，Service Worker 并不会对该页面加载过程中的任何请求（包括在 scope 内的资源）有控制权。页面的控制权是从最顶层的文档开始的，如果顶层文档（页面）不在 Service Worker 的 scope 内，那么 Service Worker 就不能影响到从这个页面发出的任何请求，即使这些请求本身的目标 URL 是在 Service Worker 的 scope 范围内。</strong></p>
+<figure class="highlight js"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br></pre></td><td class="code"><pre><span class="line"><span class="variable language_">this</span>.<span class="title function_">addEventListener</span>(<span class="string">&quot;fetch&quot;</span>, <span class="keyword">function</span> (<span class="params">event</span>) &#123;</span><br><span class="line">  <span class="comment">// 返回jSON HTML</span></span><br><span class="line">  <span class="keyword">const</span> json = <span class="title class_">JSON</span>.<span class="title function_">stringify</span>(&#123; <span class="attr">a</span>: <span class="number">1</span> &#125;, <span class="literal">null</span>, <span class="number">2</span>);</span><br><span class="line">  <span class="keyword">return</span> event.<span class="title function_">respondWith</span>(</span><br><span class="line">    <span class="keyword">new</span> <span class="title class_">Response</span>(json, &#123;</span><br><span class="line">      <span class="attr">headers</span>: &#123;</span><br><span class="line">        <span class="string">&quot;content-type&quot;</span>: <span class="string">&quot;application/json;charset=UTF-8&quot;</span>,</span><br><span class="line">      &#125;,</span><br><span class="line">    &#125;)</span><br><span class="line">  );</span><br><span class="line">&#125;);</span><br></pre></td></tr></table></figure>
+
+<figure class="highlight js"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment">// 拦击请求 只有activate之后才能工作</span></span><br><span class="line"><span class="variable language_">this</span>.<span class="title function_">addEventListener</span>(<span class="string">&quot;fetch&quot;</span>, <span class="keyword">function</span> (<span class="params">event</span>) &#123;</span><br><span class="line">  <span class="keyword">const</span> html = <span class="string">&quot;&lt;html&gt;&lt;div&gt;html&lt;/div&gt;&lt;/html&gt;&quot;</span>;</span><br><span class="line">  <span class="keyword">return</span> event.<span class="title function_">respondWith</span>(</span><br><span class="line">    <span class="keyword">new</span> <span class="title class_">Response</span>(html, &#123;</span><br><span class="line">      <span class="attr">headers</span>: &#123;</span><br><span class="line">        <span class="string">&quot;content-type&quot;</span>: <span class="string">&quot;text/html;charset=UTF-8&quot;</span>,</span><br><span class="line">      &#125;,</span><br><span class="line">    &#125;)</span><br><span class="line">  );</span><br><span class="line">  <span class="comment">// 重定向</span></span><br><span class="line">  <span class="keyword">return</span> event.<span class="title function_">respondWith</span>(<span class="title class_">Response</span>.<span class="title function_">redirect</span>(<span class="string">&quot;https://baidu.com&quot;</span>, <span class="number">301</span>));</span><br><span class="line">&#125;);</span><br></pre></td></tr></table></figure>
+
+<figure class="highlight js"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br></pre></td><td class="code"><pre><span class="line"><span class="variable language_">this</span>.<span class="title function_">addEventListener</span>(<span class="string">&quot;fetch&quot;</span>, <span class="keyword">function</span> (<span class="params">event</span>) &#123;</span><br><span class="line">  <span class="keyword">const</span> url = <span class="keyword">new</span> <span class="title function_">URL</span>(event.<span class="property">request</span>.<span class="property">url</span>);</span><br><span class="line">  <span class="keyword">if</span> (location.<span class="property">origin</span> !== url.<span class="property">origin</span>) <span class="keyword">return</span>;</span><br><span class="line">  <span class="keyword">return</span> event.<span class="title function_">respondWith</span>(</span><br><span class="line">    caches.<span class="title function_">match</span>(event.<span class="property">request</span>).<span class="title function_">then</span>(<span class="function">(<span class="params">res</span>) =&gt;</span> &#123;</span><br><span class="line">      <span class="keyword">if</span> (res) <span class="keyword">return</span> res;</span><br><span class="line">      <span class="keyword">return</span> <span class="title function_">fetch</span>(event.<span class="property">request</span>).<span class="title function_">then</span>(<span class="function">(<span class="params">res</span>) =&gt;</span> &#123;</span><br><span class="line">        <span class="keyword">if</span> (!res || res.<span class="property">status</span> !== <span class="number">200</span> || res.<span class="property">type</span> !== <span class="string">&quot;basic&quot;</span>) &#123;</span><br><span class="line">          <span class="keyword">return</span> res;</span><br><span class="line">        &#125;</span><br><span class="line">        <span class="keyword">const</span> clone = res.<span class="title function_">clone</span>();</span><br><span class="line">        caches.<span class="title function_">open</span>(config.<span class="property">CACHE_VERSION</span>).<span class="title function_">then</span>(<span class="function">(<span class="params">caches</span>) =&gt;</span> &#123;</span><br><span class="line">          caches.<span class="title function_">put</span>(event.<span class="property">request</span>, clone);</span><br><span class="line">        &#125;);</span><br><span class="line">        <span class="keyword">return</span> res;</span><br><span class="line">      &#125;);</span><br><span class="line">    &#125;)</span><br><span class="line">  );</span><br><span class="line">&#125;);</span><br></pre></td></tr></table></figure>
+
+<h4 id="通信"><a href="#通信" class="headerlink" title="通信"></a>通信</h4><p>客户端向 sw 发送消息，需要保证 sw 已经处于 activated 状态</p>
+<figure class="highlight js"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment">// index.html</span></span><br><span class="line">serviceWorker.<span class="title function_">postMessage</span>(&#123; <span class="attr">a</span>: <span class="number">1</span> &#125;);</span><br><span class="line"></span><br><span class="line"><span class="comment">// sw.js</span></span><br><span class="line"><span class="variable language_">this</span>.<span class="title function_">addEventListener</span>(<span class="string">&quot;message&quot;</span>, <span class="keyword">function</span> (<span class="params">event</span>) &#123;</span><br><span class="line">  <span class="variable language_">console</span>.<span class="title function_">log</span>(<span class="string">&quot;收到页面消息&quot;</span>, event.<span class="property">data</span>);</span><br><span class="line">&#125;);</span><br></pre></td></tr></table></figure>
+
+<p>数据同步， sw 可以监听客户端发起的 sync 请求，当离线环境时，sw 在后台将任务挂起，当网络恢复会执行回调函数， <strong>相同的 tag 在网络恢复后只会执行一次</strong>， tag 不能用于传输数据， 离线数据应该使用持久化保存。</p>
+<figure class="highlight js"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment">// index.html</span></span><br><span class="line">navigator.<span class="property">serviceWorker</span>.<span class="property">ready</span>.<span class="title function_">then</span>(<span class="keyword">function</span> (<span class="params">registration</span>) &#123;</span><br><span class="line">  <span class="variable language_">document</span>.<span class="property">body</span>.<span class="title function_">addEventListener</span>(<span class="string">&quot;click&quot;</span>, <span class="function">() =&gt;</span> &#123;</span><br><span class="line">    registration.<span class="property">sync</span></span><br><span class="line">      .<span class="title function_">register</span>(<span class="string">&quot;data_sync&quot;</span>)</span><br><span class="line">      .<span class="title function_">then</span>(<span class="keyword">function</span> (<span class="params"></span>) &#123;</span><br><span class="line">        <span class="variable language_">console</span>.<span class="title function_">log</span>(<span class="string">&quot;后台同步已触发&quot;</span>);</span><br><span class="line">      &#125;)</span><br><span class="line">      .<span class="title function_">catch</span>(<span class="keyword">function</span> (<span class="params">err</span>) &#123;</span><br><span class="line">        <span class="variable language_">console</span>.<span class="title function_">log</span>(<span class="string">&quot;后台同步触发失败&quot;</span>, err);</span><br><span class="line">      &#125;);</span><br><span class="line">  &#125;);</span><br><span class="line">&#125;);</span><br><span class="line"></span><br><span class="line"><span class="comment">// sw.js</span></span><br><span class="line">self.<span class="title function_">addEventListener</span>(<span class="string">&quot;sync&quot;</span>, <span class="keyword">function</span> (<span class="params">e</span>) &#123;</span><br><span class="line">  <span class="keyword">switch</span> (e.<span class="property">tag</span>) &#123;</span><br><span class="line">    <span class="keyword">case</span> <span class="string">&quot;data_sync&quot;</span>:</span><br><span class="line">      <span class="keyword">break</span>;</span><br><span class="line">    <span class="attr">default</span>:</span><br><span class="line">      <span class="keyword">return</span>;</span><br><span class="line">  &#125;</span><br><span class="line">&#125;);</span><br></pre></td></tr></table></figure>
+
+<h3 id="workbox"><a href="#workbox" class="headerlink" title="workbox"></a>workbox</h3><p><a target="_blank" rel="noopener" href="https://developer.chrome.com/docs/workbox/modules">workbox docs</a></p>
+<ul>
+<li><p>注册</p>
+<figure class="highlight js"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment">// index.html</span></span><br><span class="line"><span class="keyword">if</span> (<span class="string">&quot;serviceWorker&quot;</span> <span class="keyword">in</span> navigator) &#123;</span><br><span class="line">  <span class="keyword">const</span> &#123; <span class="title class_">Workbox</span> &#125; = <span class="keyword">await</span> <span class="title function_">import</span>(<span class="string">&quot;workbox-window&quot;</span>);</span><br><span class="line">  <span class="keyword">const</span> wb = <span class="keyword">new</span> <span class="title class_">Workbox</span>(<span class="string">&quot;sw.js&quot;</span>);</span><br><span class="line"></span><br><span class="line">  <span class="comment">// 实现 window 与 sw 通信</span></span><br><span class="line">  wb.<span class="title function_">addEventListener</span>(<span class="string">&quot;activated&quot;</span>, <span class="function">(<span class="params">event</span>) =&gt;</span> &#123;</span><br><span class="line">    <span class="keyword">const</span> urlsToCache = [</span><br><span class="line">      location.<span class="property">href</span>,</span><br><span class="line">      ...performance.<span class="title function_">getEntriesByType</span>(<span class="string">&quot;resource&quot;</span>).<span class="title function_">map</span>(<span class="function">(<span class="params">r</span>) =&gt;</span> r.<span class="property">name</span>),</span><br><span class="line">    ];</span><br><span class="line">    wb.<span class="title function_">messageSW</span>(&#123;</span><br><span class="line">      <span class="attr">type</span>: <span class="string">&quot;CACHE_URLS&quot;</span>,</span><br><span class="line">      <span class="attr">payload</span>: urlsToCache,</span><br><span class="line">    &#125;);</span><br><span class="line">  &#125;);</span><br><span class="line">  wb.<span class="title function_">register</span>();</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+</li>
+<li><p>使用预设</p>
+<p>通常不需要手动设置 workbox-precaching， 应该使用 workbox-build 或 workbox-webpack-plugin 自动生成依赖文件</p>
+<figure class="highlight js"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment">// sw.js</span></span><br><span class="line"></span><br><span class="line"><span class="keyword">import</span> &#123; pageCache, staticResourceCache, imageCache &#125; <span class="keyword">from</span> <span class="string">&quot;workbox-recipes&quot;</span>;</span><br><span class="line"><span class="keyword">import</span> &#123; precacheAndRoute &#125; <span class="keyword">from</span> <span class="string">&quot;workbox-precaching&quot;</span>;</span><br><span class="line"></span><br><span class="line"><span class="title function_">pageCache</span>();</span><br><span class="line"><span class="title function_">staticResourceCache</span>();</span><br><span class="line"><span class="title function_">imageCache</span>();</span><br><span class="line"></span><br><span class="line"><span class="comment">// 表示缓存所有 webpack 打包的 manifest 文件</span></span><br><span class="line"><span class="title function_">precacheAndRoute</span>(self.<span class="property">__WB_MANIFEST</span> || []);</span><br></pre></td></tr></table></figure>
+</li>
+<li><p>使用 workbox-precaching 缓存</p>
+<p>当应用首次载入 install 事件中，workbox-precaching 会查看你要下载的资源，删除重复的并使用 SW 事件下载并缓存资源。资源的 URL 中已经包含了可以用作缓存 key 的信息</p>
+</li>
+<li><p>使用 workbox-webpack-plugin</p>
+<p><strong>GenerateSW</strong> : 适用与预缓存文件，或有简单的缓存需求。 不适用与使用其他的 SW 特新，例如 Web Push, 或有自定一的缓存逻辑</p>
+<p><strong>InjectManifest</strong>： InjectManifest 插件将生成一个要预缓存的 url 列表，并将该预缓存清单添加到现有的 service worker 文件中。否则它将使文件保持原样。</p>
+<p>适用于想要更多的控制 SW，缓存文件，自定义路由策略，想要使用其他的 SW 特性，</p>
+<p>会在 output.path 中生成 sw.js 文件，需要手动在 index.html 中引入</p>
+<figure class="highlight js"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment">// webpack.config.js</span></span><br><span class="line"><span class="keyword">const</span> &#123; <span class="title class_">InjectManifest</span> &#125; = <span class="built_in">require</span>(<span class="string">&quot;workbox-webpack-plugin&quot;</span>);</span><br><span class="line"></span><br><span class="line"><span class="variable language_">module</span>.<span class="property">exports</span> = &#123;</span><br><span class="line">  <span class="attr">plugins</span>: [</span><br><span class="line">    <span class="keyword">new</span> <span class="title class_">InjectManifest</span>(&#123;</span><br><span class="line">      <span class="attr">swSrc</span>: <span class="string">&quot;sw.js&quot;</span>,</span><br><span class="line">      <span class="attr">exclude</span>: [</span><br><span class="line">        <span class="regexp">/\.map$/</span>,</span><br><span class="line">        <span class="regexp">/manifest$/</span>,</span><br><span class="line">        <span class="regexp">/\.htaccess$/</span>,</span><br><span class="line">        <span class="regexp">/service-worker\.js$/</span>,</span><br><span class="line">        <span class="regexp">/sw\.js$/</span>,</span><br><span class="line">      ],</span><br><span class="line">    &#125;),</span><br><span class="line">  ],</span><br><span class="line">&#125;;</span><br></pre></td></tr></table></figure></li>
+</ul>
+<h4 id="什么是-Service-Worker？它的作用是什么？"><a href="#什么是-Service-Worker？它的作用是什么？" class="headerlink" title="什么是 Service Worker？它的作用是什么？"></a>什么是 Service Worker？它的作用是什么？</h4><p>Service Worker 是一种运行在浏览器后台的 JavaScript 脚本，独立于页面上下文，并且与页面的生命周期分离。它提供了拦截和处理网络请求的能力，从而使得网页能够支持离线工作、缓存资源和后台同步等功能。它是 渐进式 Web 应用（PWA）的关键组成部分。</p>
+<p>离线支持：缓存页面和资源，使得在没有网络连接时，应用仍能工作。<br>网络请求拦截：可以拦截网络请求并提供自定义响应，例如从缓存中获取资源，或将请求转发给网络。<br>后台同步：在应用有网络时自动同步数据。<br>推送通知：支持推送通知，允许在用户不活跃时向其发送消息。</p>
+<h4 id="Service-Worker-的生命周期是什么样的？"><a href="#Service-Worker-的生命周期是什么样的？" class="headerlink" title="Service Worker 的生命周期是什么样的？"></a>Service Worker 的生命周期是什么样的？</h4><p>注册：通过 navigator.serviceWorker.register() 方法注册 Service Worker。此时浏览器会检查是否需要安装新的 Service Worker。<br>安装（Install）：注册后，如果没有有效的 Service Worker，浏览器会尝试安装它。在此阶段，通常会缓存一些静态资源。<br>激活（Activate）：安装完成后，Service Worker 会激活。在此阶段，可以清理旧的缓存和控制页面。<br>控制：Service Worker 激活后，能够控制所有符合条件的页面，开始拦截网络请求。<br>更新：Service Worker 可能会定期检查更新，新的 Service Worker 安装并激活后，旧的 Service Worker 会被终止。</p>
+<h4 id="Service-Worker-中的-fetch-事件是如何工作的？"><a href="#Service-Worker-中的-fetch-事件是如何工作的？" class="headerlink" title="Service Worker 中的 fetch 事件是如何工作的？"></a>Service Worker 中的 fetch 事件是如何工作的？</h4><p>fetch 事件是 Service Worker 中用于拦截和处理网络请求的核心事件。每当页面发起请求时，Service Worker 会通过 fetch 事件捕获请求，允许开发者决定如何响应这些请求（例如，从缓存中获取、从网络获取或自定义响应）。</p>
+<figure class="highlight js"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br></pre></td><td class="code"><pre><span class="line">self.<span class="title function_">addEventListener</span>(<span class="string">&quot;fetch&quot;</span>, <span class="keyword">function</span> (<span class="params">event</span>) &#123;</span><br><span class="line">  event.<span class="title function_">respondWith</span>(</span><br><span class="line">    caches</span><br><span class="line">      .<span class="title function_">match</span>(event.<span class="property">request</span>) <span class="comment">// 优先从缓存中获取</span></span><br><span class="line">      .<span class="title function_">then</span>(<span class="keyword">function</span> (<span class="params">response</span>) &#123;</span><br><span class="line">        <span class="keyword">return</span> response || <span class="title function_">fetch</span>(event.<span class="property">request</span>); <span class="comment">// 如果缓存中没有，则从网络获取</span></span><br><span class="line">      &#125;)</span><br><span class="line">  );</span><br><span class="line">&#125;);</span><br></pre></td></tr></table></figure>
+
+<p>event.respondWith() 方法用于返回一个 Response 对象，覆盖默认的网络请求处理方式。</p>
+<h4 id="什么是-Service-Worker-的作用域？"><a href="#什么是-Service-Worker-的作用域？" class="headerlink" title="什么是 Service Worker 的作用域？"></a>什么是 Service Worker 的作用域？</h4><p>Service Worker 的作用域是指它可以控制的 URL 范围。在注册时，可以指定作用域，它决定了 Service Worker 可以拦截哪些请求。默认情况下，Service Worker 会控制它所在路径下的所有页面和资源。</p>
+<p>如果没有指定作用域，Service Worker 会默认控制当前路径及其子路径下的页面。</p>
+<figure class="highlight js"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">navigator.<span class="property">serviceWorker</span>.<span class="title function_">register</span>(<span class="string">&quot;/service-worker.js&quot;</span>, &#123; <span class="attr">scope</span>: <span class="string">&quot;/&quot;</span> &#125;);</span><br></pre></td></tr></table></figure>
+
+<h4 id="如何实现离线缓存？"><a href="#如何实现离线缓存？" class="headerlink" title="如何实现离线缓存？"></a>如何实现离线缓存？</h4><p>离线缓存的基本思路是在 install 事件中缓存需要的资源，然后在 fetch 事件中拦截请求，从缓存中提供响应。<br>在安装时，将文件添加到缓存中，fetch 事件会拦截请求，优先从缓存中返回资源。</p>
+<p>cache.add()：将单个资源添加到缓存。<br>cache.addAll()：将多个资源添加到缓存。<br>cache.put()：将指定请求和响应对存入缓存。<br>caches.delete()：删除指定缓存。</p>
+<figure class="highlight js"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br></pre></td><td class="code"><pre><span class="line">self.<span class="title function_">addEventListener</span>(<span class="string">&quot;install&quot;</span>, <span class="keyword">function</span> (<span class="params">event</span>) &#123;</span><br><span class="line">  event.<span class="title function_">waitUntil</span>(</span><br><span class="line">    caches.<span class="title function_">open</span>(<span class="string">&quot;my-cache&quot;</span>).<span class="title function_">then</span>(<span class="keyword">function</span> (<span class="params">cache</span>) &#123;</span><br><span class="line">      <span class="keyword">return</span> cache.<span class="title function_">addAll</span>([</span><br><span class="line">        <span class="string">&quot;/index.html&quot;</span>,</span><br><span class="line">        <span class="string">&quot;/styles.css&quot;</span>,</span><br><span class="line">        <span class="string">&quot;/script.js&quot;</span>,</span><br><span class="line">        <span class="string">&quot;/offline.html&quot;</span>,</span><br><span class="line">      ]);</span><br><span class="line">    &#125;)</span><br><span class="line">  );</span><br><span class="line">&#125;);</span><br><span class="line"></span><br><span class="line">self.<span class="title function_">addEventListener</span>(<span class="string">&quot;fetch&quot;</span>, <span class="keyword">function</span> (<span class="params">event</span>) &#123;</span><br><span class="line">  event.<span class="title function_">respondWith</span>(</span><br><span class="line">    caches.<span class="title function_">match</span>(event.<span class="property">request</span>).<span class="title function_">then</span>(<span class="keyword">function</span> (<span class="params">response</span>) &#123;</span><br><span class="line">      <span class="keyword">return</span> response || <span class="title function_">fetch</span>(event.<span class="property">request</span>); <span class="comment">// 网络优先</span></span><br><span class="line">    &#125;)</span><br><span class="line">  );</span><br><span class="line">&#125;);</span><br></pre></td></tr></table></figure>
+
+<h4 id="self-skipWaiting-和-self-clients-claim-的作用是什么？"><a href="#self-skipWaiting-和-self-clients-claim-的作用是什么？" class="headerlink" title="self.skipWaiting() 和 self.clients.claim() 的作用是什么？"></a>self.skipWaiting() 和 self.clients.claim() 的作用是什么？</h4><p>self.skipWaiting()：在激活新的 Service Worker 时，跳过等待阶段，立即使新的 Service Worker 控制页面。这对实现即时更新非常有用。</p>
+<p>self.clients.claim()：在 Service Worker 激活后，立即接管当前打开的页面，使其受该 Service Worker 控制，避免等待页面重新加载。</p>
+<figure class="highlight js"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br></pre></td><td class="code"><pre><span class="line">self.<span class="title function_">addEventListener</span>(<span class="string">&quot;install&quot;</span>, <span class="keyword">function</span> (<span class="params">event</span>) &#123;</span><br><span class="line">  self.<span class="title function_">skipWaiting</span>(); <span class="comment">// 立即激活</span></span><br><span class="line">&#125;);</span><br><span class="line"></span><br><span class="line">self.<span class="title function_">addEventListener</span>(<span class="string">&quot;activate&quot;</span>, <span class="keyword">function</span> (<span class="params">event</span>) &#123;</span><br><span class="line">  event.<span class="title function_">waitUntil</span>(self.<span class="property">clients</span>.<span class="title function_">claim</span>()); <span class="comment">// 立即接管控制</span></span><br><span class="line">&#125;);</span><br></pre></td></tr></table></figure>
+
+<h4 id="如何清理旧的缓存？"><a href="#如何清理旧的缓存？" class="headerlink" title="如何清理旧的缓存？"></a>如何清理旧的缓存？</h4><p>在 Service Worker 的 activate 事件中，可以清理旧的缓存。例如，在更新时清理不再需要的缓存：</p>
+<figure class="highlight js"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br></pre></td><td class="code"><pre><span class="line">self.<span class="title function_">addEventListener</span>(<span class="string">&quot;activate&quot;</span>, <span class="keyword">function</span> (<span class="params">event</span>) &#123;</span><br><span class="line">  <span class="keyword">var</span> cacheWhitelist = [<span class="string">&quot;my-cache-v2&quot;</span>]; <span class="comment">// 新的缓存名称</span></span><br><span class="line">  event.<span class="title function_">waitUntil</span>(</span><br><span class="line">    caches.<span class="title function_">keys</span>().<span class="title function_">then</span>(<span class="keyword">function</span> (<span class="params">cacheNames</span>) &#123;</span><br><span class="line">      <span class="keyword">return</span> <span class="title class_">Promise</span>.<span class="title function_">all</span>(</span><br><span class="line">        cacheNames.<span class="title function_">map</span>(<span class="keyword">function</span> (<span class="params">cacheName</span>) &#123;</span><br><span class="line">          <span class="keyword">if</span> (!cacheWhitelist.<span class="title function_">includes</span>(cacheName)) &#123;</span><br><span class="line">            <span class="keyword">return</span> caches.<span class="title function_">delete</span>(cacheName); <span class="comment">// 删除不在白名单中的缓存</span></span><br><span class="line">          &#125;</span><br><span class="line">        &#125;)</span><br><span class="line">      );</span><br><span class="line">    &#125;)</span><br><span class="line">  );</span><br><span class="line">&#125;);</span><br></pre></td></tr></table></figure>
+
+<h4 id="如何使用-Service-Worker-支持推送通知"><a href="#如何使用-Service-Worker-支持推送通知" class="headerlink" title="如何使用 Service Worker 支持推送通知"></a>如何使用 Service Worker 支持推送通知</h4><p>推送通知依赖于 Service Worker 的 push 事件。当接收到推送消息时，Service Worker 会在后台处理并显示通知。</p>
+<figure class="highlight js"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br></pre></td><td class="code"><pre><span class="line">self.<span class="title function_">addEventListener</span>(<span class="string">&quot;push&quot;</span>, <span class="keyword">function</span> (<span class="params">event</span>) &#123;</span><br><span class="line">  <span class="keyword">var</span> options = &#123;</span><br><span class="line">    <span class="attr">body</span>: event.<span class="property">data</span>.<span class="title function_">text</span>(),</span><br><span class="line">    <span class="attr">icon</span>: <span class="string">&quot;/icon.png&quot;</span>,</span><br><span class="line">    <span class="attr">badge</span>: <span class="string">&quot;/badge.png&quot;</span>,</span><br><span class="line">  &#125;;</span><br><span class="line">  event.<span class="title function_">waitUntil</span>(</span><br><span class="line">    self.<span class="property">registration</span>.<span class="title function_">showNotification</span>(<span class="string">&quot;Push Notification&quot;</span>, options)</span><br><span class="line">  );</span><br><span class="line">&#125;);</span><br></pre></td></tr></table></figure>
+
+<h4 id="Service-Worker-的缓存策略有哪些"><a href="#Service-Worker-的缓存策略有哪些" class="headerlink" title="Service Worker 的缓存策略有哪些"></a>Service Worker 的缓存策略有哪些</h4><p>Cache-first：优先从缓存获取资源，如果没有，再从网络获取。<br>Network-first：优先从网络获取资源，如果失败，再从缓存中获取。<br>Stale-while-revalidate：先从缓存获取过时的资源，然后异步从网络获取最新的资源，并更新缓存。</p>
+<h4 id="如何使用-Service-Worker-实现离线数据同步？"><a href="#如何使用-Service-Worker-实现离线数据同步？" class="headerlink" title="如何使用 Service Worker 实现离线数据同步？"></a>如何使用 Service Worker 实现离线数据同步？</h4><p>在网络恢复的时候，sync 会自动触发。</p>
+<figure class="highlight js"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment">//客户端，注册监听事件</span></span><br><span class="line">navigator.<span class="property">serviceWorker</span>.<span class="property">ready</span>.<span class="title function_">then</span>(<span class="function">(<span class="params">registration</span>) =&gt;</span> &#123;</span><br><span class="line">  registration.<span class="property">sync</span>.<span class="title function_">register</span>(<span class="string">&quot;syncData&quot;</span>);</span><br><span class="line">&#125;);</span><br><span class="line"></span><br><span class="line"><span class="comment">// service worker</span></span><br><span class="line">self.<span class="title function_">addEventListener</span>(<span class="string">&quot;sync&quot;</span>, <span class="function">(<span class="params">event</span>) =&gt;</span> &#123;</span><br><span class="line">  <span class="keyword">if</span> (event.<span class="property">tag</span> === <span class="string">&quot;syncData&quot;</span>) &#123;</span><br><span class="line">    event.<span class="title function_">waitUntil</span>(<span class="title function_">syncData</span>());</span><br><span class="line">  &#125;</span><br><span class="line">&#125;);</span><br></pre></td></tr></table></figure>
+
+<h4 id="Service-Worker-如何与多个标签页共享数据"><a href="#Service-Worker-如何与多个标签页共享数据" class="headerlink" title="Service Worker 如何与多个标签页共享数据"></a>Service Worker 如何与多个标签页共享数据</h4><p>Service Worker 可以通过 客户端 API 与多个标签页进行通信。clients.matchAll() 可以获取所有控制的页面客户端，postMessage 用于与页面通信。</p>
+<figure class="highlight js"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment">// 页面中</span></span><br><span class="line">self.<span class="title function_">addEventListener</span>(<span class="string">&quot;message&quot;</span>, <span class="keyword">function</span> (<span class="params">event</span>) &#123;</span><br><span class="line">  <span class="variable language_">console</span>.<span class="title function_">log</span>(<span class="string">&quot;Message from client:&quot;</span>, event.<span class="property">data</span>);</span><br><span class="line">  event.<span class="property">ports</span>[<span class="number">0</span>].<span class="title function_">postMessage</span>(<span class="string">&quot;Hello from Service Worker!&quot;</span>);</span><br><span class="line">&#125;);</span><br><span class="line"></span><br><span class="line"><span class="comment">// service worker</span></span><br><span class="line"><span class="keyword">if</span> (navigator.<span class="property">serviceWorker</span>.<span class="property">controller</span>) &#123;</span><br><span class="line">  navigator.<span class="property">serviceWorker</span>.<span class="property">controller</span>.<span class="title function_">postMessage</span>(<span class="string">&quot;Hello from the page!&quot;</span>);</span><br><span class="line">  navigator.<span class="property">serviceWorker</span>.<span class="title function_">addEventListener</span>(<span class="string">&quot;message&quot;</span>, <span class="keyword">function</span> (<span class="params">event</span>) &#123;</span><br><span class="line">    <span class="variable language_">console</span>.<span class="title function_">log</span>(<span class="string">&quot;Message from service worker:&quot;</span>, event.<span class="property">data</span>);</span><br><span class="line">  &#125;);</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+<h4 id="如何在-Service-Worker-中使用-self-registration-update"><a href="#如何在-Service-Worker-中使用-self-registration-update" class="headerlink" title="如何在 Service Worker 中使用 self.registration.update()"></a>如何在 Service Worker 中使用 self.registration.update()</h4><p>self.registration.update() 用于强制浏览器检查 Service Worker 是否有更新。如果应用程序需要强制立即检查更新，可以调用该方法。</p>
+<figure class="highlight js"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br></pre></td><td class="code"><pre><span class="line">self.<span class="title function_">addEventListener</span>(<span class="string">&quot;activate&quot;</span>, <span class="keyword">function</span> (<span class="params">event</span>) &#123;</span><br><span class="line">  event.<span class="title function_">waitUntil</span>(</span><br><span class="line">    self.<span class="property">registration</span>.<span class="title function_">update</span>() <span class="comment">// 强制更新 Service Worker</span></span><br><span class="line">  );</span><br><span class="line">&#125;);</span><br></pre></td></tr></table></figure>
+ 
+      <!-- reward -->
+      
+      <div id="reword-out">
+        <div id="reward-btn">
+          打赏
+        </div>
+      </div>
+      
+    </div>
+    
+
+    <!-- copyright -->
+    
+    <div class="declare">
+      <ul class="post-copyright">
+        <li>
+          <i class="ri-copyright-line"></i>
+          <strong>版权声明： </strong>
+          
+          本博客所有文章除特别声明外，著作权归作者所有。转载请注明出处！
+          
+        </li>
+      </ul>
+    </div>
+    
+    <footer class="article-footer">
+       
+  <ul class="article-tag-list" itemprop="keywords"><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/%E6%B5%8F%E8%A7%88%E5%99%A8/" rel="tag">浏览器</a></li></ul>
+
+    </footer>
+  </div>
+
+   
+  <nav class="article-nav">
+    
+      <a href="/posts/0c9c51f03b67/" class="article-nav-link">
+        <strong class="article-nav-caption">上一篇</strong>
+        <div class="article-nav-title">
+          
+            CSS Grid 布局
+          
+        </div>
+      </a>
+    
+    
+      <a href="/posts/0f6a07f1939f/" class="article-nav-link">
+        <strong class="article-nav-caption">下一篇</strong>
+        <div class="article-nav-title">CSS Flex 布局</div>
+      </a>
+    
+  </nav>
+
+  
+   
+<div class="gitalk" id="gitalk-container"></div>
+
+<link rel="stylesheet" href="https://cdn.staticfile.org/gitalk/1.7.2/gitalk.min.css">
+
+
+<script src="https://cdn.staticfile.org/gitalk/1.7.2/gitalk.min.js"></script>
+
+
+<script src="https://cdn.staticfile.org/blueimp-md5/2.19.0/js/md5.min.js"></script>
+
+<script type="text/javascript">
+  var gitalk = new Gitalk({
+    clientID: 'bce2317b25da7c3c18f6',
+    clientSecret: 'e0ab868ca9054234798be82c2b1c0c9dd8632307',
+    repo: 'noopn.github.io',
+    owner: 'noopn',
+    admin: ['noopn'],
+    // id: location.pathname,      // Ensure uniqueness and length less than 50
+    id: md5(location.pathname),
+    distractionFreeMode: false,  // Facebook-like distraction free mode
+    pagerDirection: 'last'
+  })
+
+  gitalk.render('gitalk-container')
+</script>
+
+     
+</article>
+
+</section>
+      <footer class="footer">
+  <div class="outer">
+    <ul>
+      <li>
+        Copyrights &copy;
+        2015-2025
+        <i class="ri-heart-fill heart_icon"></i> SunZhiqi
+      </li>
+    </ul>
+    <ul>
+      <li>
+        
+      </li>
+    </ul>
+    <ul>
+      <li>
+        
+      </li>
+    </ul>
+    <ul>
+      
+    </ul>
+    <ul>
+      
+    </ul>
+    <ul>
+      <li>
+        <!-- cnzz统计 -->
+        
+      </li>
+    </ul>
+  </div>
+</footer>    
+    </main>
+    <div class="float_btns">
+      <div class="totop" id="totop">
+  <i class="ri-arrow-up-line"></i>
+</div>
+
+    </div>
+    <aside class="sidebar on">
+      <button class="navbar-toggle"></button>
+<nav class="navbar">
+  
+  <div class="logo">
+    <a href="/"><img src="/images/ayer-side.png" alt="四月八日"></a>
+  </div>
+  
+  <ul class="nav nav-main">
+    
+    <li class="nav-item">
+      <a class="nav-item-link" href="/">主页</a>
+    </li>
+    
+    <li class="nav-item">
+      <a class="nav-item-link" href="/archives">归档</a>
+    </li>
+    
+    <li class="nav-item">
+      <a class="nav-item-link" href="/categories">分类</a>
+    </li>
+    
+    <li class="nav-item">
+      <a class="nav-item-link" href="/tags">标签</a>
+    </li>
+    
+    <li class="nav-item">
+      <a class="nav-item-link" href="/tags/Essay">随笔</a>
+    </li>
+    
+  </ul>
+</nav>
+<nav class="navbar navbar-bottom">
+  <ul class="nav">
+    <li class="nav-item">
+      
+      <a class="nav-item-link nav-item-search"  title="搜索">
+        <i class="ri-search-line"></i>
+      </a>
+      
+      
+    </li>
+  </ul>
+</nav>
+<div class="search-form-wrap">
+  <div class="local-search local-search-plugin">
+  <input type="search" id="local-search-input" class="local-search-input" placeholder="Search...">
+  <div id="local-search-result" class="local-search-result"></div>
+</div>
+</div>
+    </aside>
+    <div id="mask"></div>
+
+<!-- #reward -->
+<div id="reward">
+  <span class="close"><i class="ri-close-line"></i></span>
+  <p class="reward-p"><i class="ri-cup-line"></i>此时无声胜有声！</p>
+  <div class="reward-box">
+    
+    <div class="reward-item">
+      <img class="reward-img" src="/images/alipay.jpg">
+      <span class="reward-type">支付宝</span>
+    </div>
+    
+    
+    <div class="reward-item">
+      <img class="reward-img" src="/images/wechat.jpg">
+      <span class="reward-type">微信</span>
+    </div>
+    
+  </div>
+</div>
+    
+<script src="/js/jquery-3.6.0.min.js"></script>
+ 
+<script src="/js/lazyload.min.js"></script>
+
+<!-- Tocbot -->
+ 
+<script src="/js/tocbot.min.js"></script>
+
+<script>
+  tocbot.init({
+    tocSelector: ".tocbot",
+    contentSelector: ".article-entry",
+    headingSelector: "h1, h2, h3, h4, h5, h6",
+    hasInnerContainers: true,
+    scrollSmooth: true,
+    scrollContainer: "main",
+    positionFixedSelector: ".tocbot",
+    positionFixedClass: "is-position-fixed",
+    fixedSidebarOffset: "auto",
+  });
+</script>
+
+<script src="/js/jquery.modal.min.js"></script>
+<link rel="stylesheet" href="/css/jquery.modal.min.css" />
+<script src="/js/jquery.justifiedGallery.min.js"></script>
+
+<script src="/dist/main.js"></script>
+
+<!-- ImageViewer -->
+ <!-- Root element of PhotoSwipe. Must have class pswp. -->
+<div class="pswp" tabindex="-1" role="dialog" aria-hidden="true">
+  <!-- Background of PhotoSwipe. 
+         It's a separate element as animating opacity is faster than rgba(). -->
+  <div class="pswp__bg"></div>
+
+  <!-- Slides wrapper with overflow:hidden. -->
+  <div class="pswp__scroll-wrap">
+    <!-- Container that holds slides. 
+            PhotoSwipe keeps only 3 of them in the DOM to save memory.
+            Don't modify these 3 pswp__item elements, data is added later on. -->
+    <div class="pswp__container">
+      <div class="pswp__item"></div>
+      <div class="pswp__item"></div>
+      <div class="pswp__item"></div>
+    </div>
+
+    <!-- Default (PhotoSwipeUI_Default) interface on top of sliding area. Can be changed. -->
+    <div class="pswp__ui pswp__ui--hidden">
+      <div class="pswp__top-bar">
+        <!--  Controls are self-explanatory. Order can be changed. -->
+
+        <div class="pswp__counter"></div>
+
+        <button
+          class="pswp__button pswp__button--close"
+          title="Close (Esc)"
+        ></button>
+
+        <button
+          class="pswp__button pswp__button--share"
+          style="display: none"
+          title="Share"
+        ></button>
+
+        <button
+          class="pswp__button pswp__button--fs"
+          title="Toggle fullscreen"
+        ></button>
+
+        <button
+          class="pswp__button pswp__button--zoom"
+          title="Zoom in/out"
+        ></button>
+
+        <!-- Preloader demo http://codepen.io/dimsemenov/pen/yyBWoR -->
+        <!-- element will get class pswp__preloader--active when preloader is running -->
+        <div class="pswp__preloader">
+          <div class="pswp__preloader__icn">
+            <div class="pswp__preloader__cut">
+              <div class="pswp__preloader__donut"></div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <div class="pswp__share-modal pswp__share-modal--hidden pswp__single-tap">
+        <div class="pswp__share-tooltip"></div>
+      </div>
+
+      <button
+        class="pswp__button pswp__button--arrow--left"
+        title="Previous (arrow left)"
+      ></button>
+
+      <button
+        class="pswp__button pswp__button--arrow--right"
+        title="Next (arrow right)"
+      ></button>
+
+      <div class="pswp__caption">
+        <div class="pswp__caption__center"></div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<link rel="stylesheet" href="/css/photoswipe.min.css" />
+<link rel="stylesheet" href="/css/default-skin.min.css" />
+<script src="/js/photoswipe.min.js"></script>
+<script src="/js/photoswipe-ui-default.min.js"></script>
+
+<script>
+  function viewer_init() {
+    let pswpElement = document.querySelectorAll(".pswp")[0];
+    let $imgArr = document.querySelectorAll(
+      ".article-entry img:not(.reward-img)"
+    );
+
+    $imgArr.forEach(($em, i) => {
+      $em.onclick = () => {
+        // slider展开状态
+        // todo: 这样不好，后面改成状态
+        if (document.querySelector(".left-col.show")) return;
+        let items = [];
+        $imgArr.forEach(($em2, i2) => {
+          let img = $em2.getAttribute("data-idx", i2);
+          let src =
+            $em2.getAttribute("data-target") || $em2.getAttribute("src");
+          let title = $em2.getAttribute("alt");
+          // 获得原图尺寸
+          const image = new Image();
+          image.src = src;
+          items.push({
+            src: src,
+            w: image.width || $em2.width,
+            h: image.height || $em2.height,
+            title: title,
+          });
+        });
+        var gallery = new PhotoSwipe(pswpElement, PhotoSwipeUI_Default, items, {
+          index: parseInt(i),
+        });
+        gallery.init();
+      };
+    });
+  }
+  viewer_init();
+</script>
+ 
+<!-- MathJax -->
+ <script type="text/x-mathjax-config">
+  MathJax.Hub.Config({
+      tex2jax: {
+          inlineMath: [ ['$','$'], ["\\(","\\)"]  ],
+          processEscapes: true,
+          skipTags: ['script', 'noscript', 'style', 'textarea', 'pre', 'code']
+      }
+  });
+
+  MathJax.Hub.Queue(function() {
+      var all = MathJax.Hub.getAllJax(), i;
+      for(i=0; i < all.length; i += 1) {
+          all[i].SourceElement().parentNode.className += ' has-jax';
+      }
+  });
+</script>
+
+<script src="/js/MathJax.js"></script>
+<script src="/js/TeX-AMS-MML_HTMLorMML-full.js"></script>
+
+<script>
+  var ayerConfig = {
+    mathjax: true,
+  };
+</script>
+
+<!-- Katex -->
+
+<!-- busuanzi  -->
+
+<!-- ClickLove -->
+
+<!-- ClickBoom1 -->
+
+<!-- ClickBoom2 -->
+
+<!-- CodeCopy -->
+ 
+<link rel="stylesheet" href="/css/clipboard.css">
+ <script src="/js/clipboard.min.js"></script>
+<script>
+  function wait(callback, seconds) {
+    var timelag = null;
+    timelag = window.setTimeout(callback, seconds);
+  }
+  !(function (e, t, a) {
+    var initCopyCode = function () {
+      var copyHtml = "";
+      copyHtml += '<button class="btn-copy" data-clipboard-snippet="">';
+      copyHtml += '<i class="ri-file-copy-2-line"></i><span>COPY</span>';
+      copyHtml += "</button>";
+      $(".highlight .code pre").before(copyHtml);
+      $(".article pre code").before(copyHtml);
+      var clipboard = new ClipboardJS(".btn-copy", {
+        target: function (trigger) {
+          return trigger.nextElementSibling;
+        },
+      });
+      clipboard.on("success", function (e) {
+        let $btn = $(e.trigger);
+        $btn.addClass("copied");
+        let $icon = $($btn.find("i"));
+        $icon.removeClass("ri-file-copy-2-line");
+        $icon.addClass("ri-checkbox-circle-line");
+        let $span = $($btn.find("span"));
+        $span[0].innerText = "COPIED";
+
+        wait(function () {
+          // 等待两秒钟后恢复
+          $icon.removeClass("ri-checkbox-circle-line");
+          $icon.addClass("ri-file-copy-2-line");
+          $span[0].innerText = "COPY";
+        }, 2000);
+      });
+      clipboard.on("error", function (e) {
+        e.clearSelection();
+        let $btn = $(e.trigger);
+        $btn.addClass("copy-failed");
+        let $icon = $($btn.find("i"));
+        $icon.removeClass("ri-file-copy-2-line");
+        $icon.addClass("ri-time-line");
+        let $span = $($btn.find("span"));
+        $span[0].innerText = "COPY FAILED";
+
+        wait(function () {
+          // 等待两秒钟后恢复
+          $icon.removeClass("ri-time-line");
+          $icon.addClass("ri-file-copy-2-line");
+          $span[0].innerText = "COPY";
+        }, 2000);
+      });
+    };
+    initCopyCode();
+  })(window, document);
+</script>
+ 
+<!-- CanvasBackground -->
+
+<script>
+  if (window.mermaid) {
+    mermaid.initialize({ theme: "default" });
+  }
+</script>
+
+
+    
+    
+
+  </div>
+</body>
+
+</html>

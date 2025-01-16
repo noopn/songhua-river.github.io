@@ -112,7 +112,7 @@
     
     
     <article
-  id="posts-http/③浏览器工作原理"
+  id="posts-react/v18新特性"
   class="article article-type-posts"
   itemscope
   itemprop="blogPost"
@@ -123,8 +123,8 @@
     <header class="article-header">
        
 <h2 itemprop="name">
-  <a class="article-title" href="/posts/52cc0ef48986/"
-    >浏览器工作原理 ③ 渲染流程</a> 
+  <a class="article-title" href="/posts/0dfb128a2887/"
+    >React 18 新特性</a> 
 </h2>
  
 
@@ -132,72 +132,84 @@
     </header>
      
     <div class="article-meta">
-      <a href="/posts/52cc0ef48986/" class="article-date">
-  <time datetime="2022-05-22T09:31:30.000Z" itemprop="datePublished">2022-05-22</time>
+      <a href="/posts/0dfb128a2887/" class="article-date">
+  <time datetime="2022-06-01T02:11:46.000Z" itemprop="datePublished">2022-06-01</time>
 </a> 
   <div class="article-category">
-    <a class="article-category-link" href="/categories/HTTP%E4%B8%8E%E6%B5%8F%E8%A7%88%E5%99%A8/">HTTP与浏览器</a>
+    <a class="article-category-link" href="/categories/React/">React</a>
   </div>
    
     </div>
       
     <div class="article-entry" itemprop="articleBody">
        
-  <h4 id="渲染流程"><a href="#渲染流程" class="headerlink" title="渲染流程"></a>渲染流程</h4><ul>
-<li><p>解析 HTML 生成 DOM 树</p>
-</li>
-<li><p>计算样式</p>
-<p>将 CSS 文本转换为浏览器可以理解的结构——styleSheets。</p>
-<p>CSS 文本中有很多属性值，如 2em、blue、bold，这些类型数值不容易被渲染引擎理解，所以需要将所有值转换为渲染引擎容易理解的、标准化的计算值，这个过程就是属性值标准化。</p>
-<p>计算出 DOM 树中每个节点的具体样式,最终的样式保存在 ComputedStyle 结构内,在浏览器的开发这工具中可以查看.</p>
-</li>
-<li><p>布局阶段</p>
-<p>接下来就需要计算出 DOM 树中可见元素的几何位置，我们把这个计算过程叫做布局。</p>
-<p>DOM 树还含有很多不可见的元素,所以在显示之前，我们还要额外地构建一棵只包含可见元素布局树。DOM 树中所有不可见的节点都没有包含到布局树中。</p>
+  <h4 id="兼容性"><a href="#兼容性" class="headerlink" title="兼容性"></a>兼容性</h4><p>V18 已不再支持 IE11,计划时间是 2022 年 6 月 15 日, 因为用到的一些现代浏览器新特性如 <code>micro-tasks</code>,在 IE 中无法充分 polyfill .</p>
+<h4 id="并发"><a href="#并发" class="headerlink" title="并发"></a>并发</h4><p>V18 版本在 V17 的基础上又做了一些调整。在过去的 V17 版本中,传统模式和并发模式是共存的， 通过 <code>createRoot</code> API 就可以启用并发模式。React 为向并发模式迁移的最初策略是设计三种模式。</p>
 <ul>
-<li>遍历 DOM 树中的所有可见节点，并把这些节点加到布局树中；</li>
-<li>不可见的节点会被布局树忽略掉，</li>
-<li>在执行布局操作的时候，会把布局运算的结果重新写回布局树中，所以布局树既是输入内容也是输出内容，这是布局阶段一个不合理的地方，因为在布局阶段并没有清晰地将输入内容和输出内容区分开来。针对这个问题，Chrome 团队正在重构布局代码，下一代布局系统叫 LayoutNG，试图更清晰地分离输入和输出，从而让新设计的布局算法更加简单。</li>
+<li>Legacy 模式： V17 中默认使用的模式。默认开启严格模式。默认同步更新。Legacy Suspense semantics。</li>
+<li>Blocking 模式： Legacy 和 Concurrent 混合模式。默认开启严格模式。默认同步更新。开放一些新特性。</li>
+<li>Concurrent 模式：V18 使用的模式。默认开启严格模式。默认并发更新。开发所有的新特性。</li>
 </ul>
-</li>
-</ul>
-<h4 id="分层"><a href="#分层" class="headerlink" title="分层"></a>分层</h4><p>因为页面中有很多复杂的效果，如一些复杂的 3D 变换、页面滚动，或者使用 z-indexing 做 z 轴排序等，为了更加方便地实现这些效果，渲染引擎还需要为特定的节点生成专用的图层，并生成一棵对应的图层树（LayerTree）。</p>
-<p>打开 Chrome 的“开发者工具”，选择“Layers”标签，就可以可视化页面的分层情况,浏览器的页面实际上被分成了很多图层，这些图层叠加后合成了最终的页面。</p>
-<p>通常情况下，<strong>并不是布局树的每个节点都包含一个图层，如果一个节点没有对应的层，那么这个节点就从属于父节点的图层。</strong></p>
+<p>React 最初的计划是用户可以从 Legacy 切换到 Blocking 模式，并不需要修改任何语法，配合严格模式（StrictMode）修改其中的报错，当所有错误被解决之后，可以直接切换到的 Concurrent 模式。</p>
+<p>但在实际的场景 React 思考了以下几个问题:</p>
 <ul>
-<li><p>拥有 <a target="_blank" rel="noopener" href="https://developer.mozilla.org/zh-CN/docs/web/css/css_positioning/understanding_z_index/the_stacking_context">层叠上下文</a> 属性的元素会被提升为单独的一层。<br>明确定位属性的元素、定义透明属性的元素、使用 CSS 滤镜的元素等，都拥有层叠上下文属性。</p>
-</li>
-<li><p>需要剪裁（clip）的地方也会被创建为图层。<br>div 的大小限定为 200*200 像素，而 div 里面的文字内容比较多，文字所显示的区域肯定会超出 200*200 的面积，这时候就产生了剪裁，渲染引擎会把裁剪文字内容的一部分用于显示在 div 区域</p>
-<p>出现这种裁剪情况的时候，渲染引擎会为文字部分单独创建一个层，如果出现滚动条，滚动条也会被提升为单独的层。</p>
-</li>
+<li>项目中会有成百上千个文件，开启严格模式，会有大量的错误信息，虽然不影响程序运行，但是会干扰开发并且不能快速的一次性解决。</li>
+<li>启用并发模式的好处不言而喻，可能会在未来默认启用。提供 <code>startTransition</code> <code>Suspense</code> 等 API 在内部实现并发特性。用户可以增量的选择性的使用这些 API 从而获得并发的特性。</li>
+<li>如果按照上述的思路，那么 Concurrent 模式和 Blocking 模式的唯一区别就只有是否提示错误信息。那么如果默认不启用并发模式，就可以不开启严格模式，用于提示错误信息。</li>
 </ul>
-<h4 id="绘制图层"><a href="#绘制图层" class="headerlink" title="绘制图层"></a>绘制图层</h4><p>图层的绘制拆分成很多小的绘制指令，然后再把这些指令按照顺序组成一个待绘制列表,开发者工具 的 Layers 标签，可以查看绘制过程</p>
-<p><img src="/posts/52cc0ef48986/0001.webp"></p>
-<h4 id="栅格化操作"><a href="#栅格化操作" class="headerlink" title="栅格化操作"></a>栅格化操作</h4><p>实际上绘制操作是由渲染引擎中的合成线程来完成的。</p>
-<p><img src="/posts/52cc0ef48986/0002.webp"></p>
-<p>当图层的绘制列表准备好之后，主线程会把该绘制列表提交（commit）给合成线程.</p>
-<p>合成线程会将图层划分为图块（tile），这些图块的大小通常是 256x256 或者 512x512.</p>
-<p>然后<strong>合成线程会按照视口附近的图块来优先生成位图，实际生成位图的操作是由栅格化来执行的。所谓栅格化，是指将图块转换为位图。而图块是栅格化执行的最小单位</strong>.渲染进程维护了一个栅格化的线程池，所有的图块栅格化都是在线程池内执行的，</p>
-<p>通常，栅格化过程都会使用 GPU 来加速生成，使用 GPU 生成位图的过程叫快速栅格化，或者 GPU 栅格化，生成的位图被保存在 GPU 内存中。</p>
-<p><img src="/posts/52cc0ef48986/0003.webp"></p>
-<h4 id="合成和显示"><a href="#合成和显示" class="headerlink" title="合成和显示"></a>合成和显示</h4><p>当所有图块都被光栅化，合成线程就会生成一个绘制图块的命令——“DrawQuad”，然后将该命令提交给浏览器进程。</p>
-<p>浏览器进程里面有一个叫 viz 的组件，用来接收合成线程发过来的 DrawQuad 命令，然后根据 DrawQuad 命令，将其页面内容绘制到内存中，最后再将内存显示在屏幕上。</p>
-<h4 id="流程总结"><a href="#流程总结" class="headerlink" title="流程总结"></a>流程总结</h4><ul>
-<li>渲染进程将 HTML 内容转换为能够读懂的 DOM 树结构。</li>
-<li>渲染引擎将 CSS 样式表转化为浏览器可以理解的 styleSheets，计算出 DOM 节点的样式。</li>
-<li>创建布局树，并计算元素的布局信息。</li>
-<li>对布局树进行分层，并生成分层树。为每个图层生成绘制列表，并将其提交到合成线程。</li>
-<li>合成线程将图层分成图块，并在光栅化线程池中将图块转换成位图。</li>
-<li>合成线程发送绘制图块命令 DrawQuad 给浏览器进程。</li>
-<li>浏览器进程根据 DrawQuad 消息生成页面，并显示到显示器上。</li>
+<p>基于上面的思考，V18 的策略是不会默认启用并发的特性，即使用 <code>createRoot</code> 启用并发模式并不能体验并发的特性，如果想体验并发的特性，需要使用例如 <code>startTransition</code> 等支持并发特性的 API. 所以官方描述为 <strong>没有并发模式，只有并发特性</strong></p>
+<h4 id="API"><a href="#API" class="headerlink" title="API"></a>API</h4><ul>
+<li>startTransition</li>
 </ul>
-<h4 id="重绘与重排"><a href="#重绘与重排" class="headerlink" title="重绘与重排"></a>重绘与重排</h4><p>如果你通过 JavaScript 或者 CSS 修改元素的几何位置属性，例如改变元素的宽度、高度等，那么浏览器会触发重新布局，解析之后的一系列子阶段，这个过程就叫重排。无疑，重排需要更新完整的渲染流水线，所以开销也是最大的。</p>
-<p><img src="/posts/52cc0ef48986/0004.webp"></p>
-<p>如果修改了元素的背景颜色，那么布局阶段将不会被执行，因为并没有引起几何位置的变换，所以就直接进入了绘制阶段，然后执行之后的一系列子阶段，这个过程就叫重绘。相较于重排操作，重绘省去了布局和分层阶段，所以执行效率会比重排操作要高一些。</p>
-<p><img src="/posts/52cc0ef48986/0005.webp"></p>
-<p>如果更改一个既不要布局也不要绘制的属性,把这个过程叫做合成</p>
-<p>使用了 CSS 的 transform 来实现动画效果，这可以避开重排和重绘阶段，直接在非主线程上执行合成动画操作。这样的效率是最高的，因为是在非主线程上合成，并没有占用主线程的资源，另外也避开了布局和绘制两个子阶段，所以相对于重绘和重排，合成能大大提升绘制效率。</p>
-<p><img src="/posts/52cc0ef48986/0006.webp"></p>
+<p>这个 API 可以防止渲染任务立即执行，允许将应用程序中的某些更新标记为非紧急更新，因此它们会暂停，同时优先考虑更紧急的更新。这可以在一个复杂的更新中相应用户输入。</p>
+<figure class="highlight ts"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br><span class="line">35</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">function</span> <span class="title function_">aaaaaaaaaaaaaaa</span>(<span class="params"></span>) &#123;</span><br><span class="line">  <span class="keyword">for</span> (<span class="keyword">let</span> i = <span class="number">0</span>; i &lt; <span class="number">100000000</span>; i += <span class="number">1</span>) &#123;</span><br><span class="line">    <span class="keyword">const</span> a = <span class="number">1</span>;</span><br><span class="line">  &#125;</span><br><span class="line">&#125;</span><br><span class="line"><span class="keyword">const</span> [num, setNum] = useState&lt;<span class="built_in">string</span>&gt;(<span class="string">&quot;&quot;</span>);</span><br><span class="line"><span class="keyword">const</span> [list, setList] = useState&lt;<span class="built_in">any</span>[]&gt;([]);</span><br><span class="line"><span class="title function_">useEffect</span>(<span class="function">() =&gt;</span> &#123;</span><br><span class="line">  <span class="title function_">setList</span>(<span class="keyword">new</span> <span class="title class_">Array</span>(<span class="number">20000</span>).<span class="title function_">fill</span>(<span class="literal">null</span>));</span><br><span class="line">  <span class="built_in">setTimeout</span>(<span class="function">() =&gt;</span> &#123;</span><br><span class="line">    <span class="keyword">const</span> event = <span class="variable language_">document</span>.<span class="title function_">createEvent</span>(<span class="string">&quot;MouseEvents&quot;</span>);</span><br><span class="line">    event.<span class="title function_">initEvent</span>(<span class="string">&quot;click&quot;</span>, <span class="literal">true</span>, <span class="literal">true</span>);</span><br><span class="line">    <span class="variable language_">document</span>.<span class="title function_">getElementById</span>(<span class="string">&quot;button&quot;</span>)!.<span class="title function_">dispatchEvent</span>(event);</span><br><span class="line">  &#125;, <span class="number">500</span>);</span><br><span class="line">&#125;, []);</span><br><span class="line"><span class="keyword">return</span> (</span><br><span class="line">  <span class="language-xml"><span class="tag">&lt;&gt;</span></span></span><br><span class="line"><span class="language-xml">    <span class="tag">&lt;<span class="name">button</span></span></span></span><br><span class="line"><span class="tag"><span class="language-xml">      <span class="attr">id</span>=<span class="string">&quot;button&quot;</span></span></span></span><br><span class="line"><span class="tag"><span class="language-xml">      <span class="attr">type</span>=<span class="string">&quot;button&quot;</span></span></span></span><br><span class="line"><span class="tag"><span class="language-xml">      <span class="attr">onClick</span>=<span class="string">&#123;()</span> =&gt;</span> &#123;</span></span><br><span class="line"><span class="language-xml">        setNum(() =&gt; &#123;</span></span><br><span class="line"><span class="language-xml">          aaaaaaaaaaaaaaa();</span></span><br><span class="line"><span class="language-xml">          return &quot;123&quot;;</span></span><br><span class="line"><span class="language-xml">        &#125;);</span></span><br><span class="line"><span class="language-xml">      &#125;&#125;</span></span><br><span class="line"><span class="language-xml">    &gt;</span></span><br><span class="line"><span class="language-xml">      点击</span></span><br><span class="line"><span class="language-xml">    <span class="tag">&lt;/<span class="name">button</span>&gt;</span></span></span><br><span class="line"><span class="language-xml">    <span class="tag">&lt;<span class="name">p</span>&gt;</span>&#123;num&#125;<span class="tag">&lt;/<span class="name">p</span>&gt;</span></span></span><br><span class="line"><span class="language-xml">    &#123;list.map((_, i) =&gt; (</span></span><br><span class="line"><span class="language-xml">      <span class="tag">&lt;<span class="name">div</span> <span class="attr">key</span>=<span class="string">&#123;Math.random()&#125;</span>&gt;</span>&#123;i&#125;<span class="tag">&lt;/<span class="name">div</span>&gt;</span></span></span><br><span class="line"><span class="language-xml">    ))&#125;</span></span><br><span class="line"><span class="language-xml">  <span class="tag">&lt;/&gt;</span></span></span><br><span class="line">);</span><br></pre></td></tr></table></figure>
+
+<p>在没有使用并发特性的时候，列表的渲染是一个同步任务，不会相应模拟的用户事件</p>
+<p><img src="/posts/0dfb128a2887/0001.png"></p>
+<p>当开启了并发特性之后，会被拆分成小任务异步执行</p>
+<figure class="highlight ts"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><span class="line"><span class="title function_">startTransition</span>(<span class="function">() =&gt;</span> &#123;</span><br><span class="line">  <span class="title function_">setList</span>(<span class="keyword">new</span> <span class="title class_">Array</span>(<span class="number">20000</span>).<span class="title function_">fill</span>(<span class="literal">null</span>));</span><br><span class="line">&#125;);</span><br></pre></td></tr></table></figure>
+
+<p><img src="/posts/0dfb128a2887/0002.png"></p>
+<ul>
+<li>useDeferredValue</li>
+</ul>
+<p>会创建一个数据的副本，如果当前更新是一个紧急更新，useDeferredValue 会返回之前的状态，从而优先响应紧急更新。当紧急更新渲染完成后，才会去执行的当前更新。底层实现与 useDeferredValue 类似。</p>
+<p>使用 <code>useDeferredValue</code> 也可以实现相同的效果</p>
+<figure class="highlight ts"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">const</span> [list, setList] = useState&lt;<span class="built_in">any</span>[]&gt;([]);</span><br><span class="line"><span class="keyword">const</span> dList = <span class="title function_">useDeferredValue</span>(list);</span><br></pre></td></tr></table></figure>
+
+<ul>
+<li>useId</li>
+</ul>
+<p>生成一个唯一 ID, 在服务端与客户端生成的相同，防止 ID 不匹配</p>
+<ul>
+<li>useSyncExternalStore</li>
+</ul>
+<p>useSyncExternalStore  是一个新的 api，经历了一次修改，由  useMutableSource  改变而来，主要用来解决外部数据撕裂问题。</p>
+<p>useSyncExternalStore 能够通过强制同步更新数据让 React 组件在 CM 下安全地有效地读取外接数据源。 在 Concurrent Mode 下，React 一次渲染会分片执行（以 fiber 为单位），中间可能穿插优先级更高的更新。假如在高优先级的更新中改变了公共数据（比如 redux 中的数据），那之前低优先的渲染必须要重新开始执行，否则就会出现前后状态不一致的情况。</p>
+<p>useSyncExternalStore 一般是三方状态管理库使用，我们在日常业务中不需要关注。因为 React 自身的 useState 已经原生的解决的并发特性下的 tear（撕裂）问题。useSyncExternalStore 主要对于框架开发者，比如 redux，它在控制状态时可能并非直接使用的 React 的 state，而是自己在外部维护了一个 store 对象，用发布订阅模式实现了数据更新，脱离了 React 的管理，也就无法依靠 React 自动解决撕裂问题。因此 React 对外提供了这样一个 API。</p>
+<p>目前 React-Redux 8.0 已经基于 useSyncExternalStore 实现。</p>
+<ul>
+<li>useInsertionEffect</li>
+</ul>
+<p>这个 <a target="_blank" rel="noopener" href="https://github.com/reactwg/react-18/discussions/110">Hooks</a> 只建议  css-in-js 库来使用。 这个 Hooks 执行时机在 DOM 生成之后，useLayoutEffect 之前，它的工作原理大致和  useLayoutEffect  相同，只是此时无法访问  DOM  节点的引用，一般用于提前注入  <code>&lt;style&gt;</code>  脚本。</p>
+<ul>
+<li>Suspense</li>
+</ul>
+<p>官方对 空的 fallback 属性的处理方式做了改变：不再跳过 缺失值 或 值为 null 的 fallback 的 Suspense。如果没有指定 fallback 将会把 fallback 呈现为 null。</p>
+<h4 id="批处理"><a href="#批处理" class="headerlink" title="批处理"></a>批处理</h4><p>在 18 之前，只有在 react 事件处理函数中，才会自动执行批处理，其它情况会多次更新</p>
+<p>在 18 之后，任何情况都会自动执行批处理，多次更新始终合并为一次</p>
+<p>如果想要跳出批处理使用 <code>flushSync</code></p>
+<h4 id="关于卸载组件时的更新状态警告"><a href="#关于卸载组件时的更新状态警告" class="headerlink" title="关于卸载组件时的更新状态警告"></a>关于卸载组件时的更新状态警告</h4><p>有的时候会遇到如下的错误</p>
+<p><img src="/posts/0dfb128a2887/0003.png"></p>
+<p>这个错误表示：无法对未挂载（已卸载）的组件执行状态更新。这是一个无效操作，并且表明我们的代码中存在内存泄漏。</p>
+<p>实际上，这个错误并不多见，在以往的版本中，这个警告被广泛误解，并且有些误导。</p>
+<p>这个错误的初衷，原本旨在针对一些特殊场景，譬如 你在 useEffect 里面设置了定时器，或者订阅了某个事件，从而在组件内部产生了副作用，而且忘记 return 一个函数清除副作用，则会发生内存泄漏…… 之类的场景</p>
+<p>但是在实际开发中，更多的场景是，我们在 useEffect 里面发送了一个异步请求，在异步函数还没有被 resolve 或者被 reject 的时候，我们就卸载了组件。 在这种场景中，警告同样会触发。但是，在这种情况下，组件内部并没有内存泄漏，因为这个异步函数已经被垃圾回收了，此时，警告具有误导性。</p>
+<p>综上所述原因，在 React 18 中，官方删除了这个报错。</p>
+<h4 id="返回值类型"><a href="#返回值类型" class="headerlink" title="返回值类型"></a>返回值类型</h4><p>在 React 18 中，不再检查因返回 undefined 而导致崩溃。既能返回 null，也能返回 undefined。但需要修改相应的 dts 文件。</p>
+<h4 id="Strict-Mode"><a href="#Strict-Mode" class="headerlink" title="Strict Mode"></a>Strict Mode</h4><p>严格模式会打印两次日志，可以在 React DevTools 中关闭。</p>
+<p>在 React 17 中，取消了其中一次渲染的控制台日志，以便让日志更容易阅读。</p>
+<p>在 React 18 中，官方取消了这个限制。如果你安装了 React DevTools，第二次渲染的日志信息将显示为灰色，以柔和的方式显式在控制台。</p>
  
       <!-- reward -->
       
@@ -208,7 +220,7 @@
     
     <footer class="article-footer">
        
-  <ul class="article-tag-list" itemprop="keywords"><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/HTTP/" rel="tag">HTTP</a></li><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/%E6%B5%8F%E8%A7%88%E5%99%A8/" rel="tag">浏览器</a></li></ul>
+  <ul class="article-tag-list" itemprop="keywords"><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/React/" rel="tag">React</a></li></ul>
 
     </footer>
   </div>
@@ -219,7 +231,7 @@
 
     
     <article
-  id="posts-http/②浏览器工作原理"
+  id="posts-javascript/执行机制"
   class="article article-type-posts"
   itemscope
   itemprop="blogPost"
@@ -230,8 +242,8 @@
     <header class="article-header">
        
 <h2 itemprop="name">
-  <a class="article-title" href="/posts/872ab92252f5/"
-    >浏览器工作原理 ② HTTP</a> 
+  <a class="article-title" href="/posts/b672c2864ca4/"
+    >Javascript 执行机制</a> 
 </h2>
  
 
@@ -239,98 +251,76 @@
     </header>
      
     <div class="article-meta">
-      <a href="/posts/872ab92252f5/" class="article-date">
-  <time datetime="2022-05-22T07:27:39.000Z" itemprop="datePublished">2022-05-22</time>
+      <a href="/posts/b672c2864ca4/" class="article-date">
+  <time datetime="2022-05-24T01:17:59.000Z" itemprop="datePublished">2022-05-24</time>
 </a> 
   <div class="article-category">
-    <a class="article-category-link" href="/categories/HTTP%E4%B8%8E%E6%B5%8F%E8%A7%88%E5%99%A8/">HTTP与浏览器</a>
+    <a class="article-category-link" href="/categories/JavaScript/">JavaScript</a> / <a class="article-category-link" href="/categories/JavaScript/%E5%9F%BA%E7%A1%80/">基础</a>
   </div>
    
     </div>
       
     <div class="article-entry" itemprop="articleBody">
        
-  <h4 id="HTTP-与-TCP-关系"><a href="#HTTP-与-TCP-关系" class="headerlink" title="HTTP 与 TCP 关系"></a>HTTP 与 TCP 关系</h4><p>浏览器使用 HTTP 协议作为应用层协议，用来封装请求的文本信息；并使用 TCP&#x2F;IP 作传输层协议将它发到网络上，所以在 HTTP 工作开始之前，浏览器需要通过 TCP 与服务器建立连接。也就是说 HTTP 的内容是通过 TCP 的传输数据阶段来实现的.</p>
-<p><img src="/posts/872ab92252f5/0001.webp"> </p>
-<h4 id="HTTP-请求流程"><a href="#HTTP-请求流程" class="headerlink" title="HTTP 请求流程"></a>HTTP 请求流程</h4><p>HTTP 协议，正是建立在 TCP 连接基础之上的。HTTP 是一种允许浏览器向服务器获取资源的协议，是 Web 的基础，通常由浏览器发起请求，用来获取不同类型的文件，例如 HTML 文件、CSS 文件、JavaScript 文件、图片、视频等。</p>
-<h5 id="构建请求"><a href="#构建请求" class="headerlink" title="构建请求"></a>构建请求</h5><figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">GET /index.html HTTP1.1</span><br></pre></td></tr></table></figure>
+  <h4 id="变量提升与执行上下文"><a href="#变量提升与执行上下文" class="headerlink" title="变量提升与执行上下文"></a>变量提升与执行上下文</h4><p>JS 代码运行会分为<strong>编译</strong>和<strong>执行</strong>两个阶段</p>
+<p>所谓的变量提升，是指在 JavaScript 代码编译过程中，JavaScript 引擎把变量的声明部分和函数的声明部分提升到代码开头的“行为”。变量被提升后，会给变量设置默认值并存到内存中，这个默认值就是我们熟悉的 undefined。</p>
+<p>最终在编译阶段会生成两部分内容：<strong>执行上下文（Execution context</strong>）和 <strong>可执行代码</strong>。</p>
+<p>执行上下文是 JavaScript 执行一段代码时的运行环境，比如调用一个函数，就会进入这个函数的执行上下文，确定该函数在执行期间用到的诸如 this、变量、对象以及函数等。</p>
+<p><img src="/posts/b672c2864ca4/0003.webp"></p>
+<ul>
+<li>当 JavaScript 执行全局代码的时候，会编译全局代码并创建全局执行上下文，而且在整个页面的生存周期内，全局执行上下文只有一份。</li>
+<li>当调用一个函数的时候，函数体内的代码会被编译，并创建函数执行上下文，一般情况下，函数执行结束之后，创建的函数执行上下文会被销毁。</li>
+<li>当使用 eval 函数的时候，eval 的代码也会被编译，并创建执行上下文。</li>
+</ul>
+<h4 id="调用栈"><a href="#调用栈" class="headerlink" title="调用栈"></a>调用栈</h4><p>先进先出,执行上下文通过调用栈来管理</p>
+<p>全局执行是上下文最先被压入栈中, 接下来如果有函数执行,当为函数创建好执行上下文后,也会被压入栈中,当函数返回时,执行上下文会从栈顶弹出.</p>
+<p>调用栈是 JavaScript 引擎追踪函数执行的一个机制，当一次有多个函数被调用时，通过调用栈就能够追踪到哪个函数正在被执行以及各函数之间的调用关系。</p>
+<p>使用 <code>console.trace()</code> 可以查看当前的调用栈信息.</p>
+<h4 id="作用域"><a href="#作用域" class="headerlink" title="作用域"></a>作用域</h4><p>作用域是指在程序中定义变量的区域，该位置决定了变量的生命周期。通俗地理解，作用域就是变量与函数的可访问范围，即作用域控制着变量和函数的可见性和生命周期。</p>
+<p>ES6 总共有三种作用于, <strong>全局作用域</strong>,<strong>函数作用域</strong>,<strong>块级作用域</strong>,如果没有块级作用域会存在两个问题</p>
+<ul>
+<li>变量容易在不被察觉的情况下被覆盖掉</li>
+<li>本应销毁的变量没有被销毁</li>
+</ul>
+<p>JS 通过 <code>const</code>, <code>let</code> 实现块级作用域,在创建执行上下文的时候, 这两个关键字会单独存放在<strong>词法环境</strong>中,而 <code>var</code> 声明的变量于函数会存放在变量环境中.</p>
+<figure class="highlight js"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">function</span> <span class="title function_">foo</span>(<span class="params"></span>) &#123;</span><br><span class="line">  <span class="keyword">var</span> a = <span class="number">1</span>;</span><br><span class="line">  <span class="keyword">let</span> b = <span class="number">2</span>;</span><br><span class="line">  &#123;</span><br><span class="line">    <span class="keyword">let</span> b = <span class="number">3</span>;</span><br><span class="line">    <span class="keyword">var</span> c = <span class="number">4</span>;</span><br><span class="line">    <span class="keyword">let</span> d = <span class="number">5</span>;</span><br><span class="line">  &#125;</span><br><span class="line">&#125;</span><br><span class="line"><span class="title function_">foo</span>();</span><br></pre></td></tr></table></figure>
 
-<h5 id="查找缓存"><a href="#查找缓存" class="headerlink" title="查找缓存"></a>查找缓存</h5><p><img src="/posts/872ab92252f5/0004.png"></p>
-<h6 id="强制缓存"><a href="#强制缓存" class="headerlink" title="强制缓存"></a>强制缓存</h6><p>HTTP&#x2F;1.1 定义的 Cache-Control 头用来区分对缓存机制的支持情况， 请求头和响应头都支持这个属性。通过它提供的不同的值来定义缓存策略。</p>
-<ul>
-<li><p>没有缓存</p>
-<p>缓存中不得存储任何关于客户端请求和服务端响应的内容。每次由客户端发起的请求都会下载完整的响应内容。</p>
-<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">Cache-Control: no-store</span><br></pre></td></tr></table></figure>
-</li>
-<li><p>有缓存但要重新验证<br>此方式下，每次有请求发出时，缓存会将此请求发到服务器（该请求应该会带有与本地缓存相关的验证字段），服务器端会验证请求中所描述的缓存是否过期，若未过期（注：实际就是返回 304），则缓存才使用本地缓存副本。</p>
-<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">Cache-Control: no-cache</span><br></pre></td></tr></table></figure>
-</li>
-<li><p>过期<br>过期机制中，最重要的指令是 “max-age&#x3D;<seconds>“，表示资源能够被缓存（保持新鲜）的最大时间。max-age 是距离请求发起的时间的秒数。针对应用中那些不会改变的文件，通常可以手动设置一定的时长以保证缓存有效，例如图片、css、js 等静态资源。</p>
-<p>Expires 响应头包含日期&#x2F;时间， 即在此时候之后，响应过期。如果在 Cache-Control 响应头设置了 “max-age” 或者 “s-max-age” 指令，那么 Expires 头会被忽略。</p>
-</li>
-</ul>
-<h6 id="协商缓存"><a href="#协商缓存" class="headerlink" title="协商缓存"></a>协商缓存</h6><p>强制缓存失效后，浏览器携带缓存标识向服务器发起请求，由服务器根据缓存标识决定是否使用缓存</p>
-<ul>
-<li><p>Last-Modified &#x2F; If-Modified-Since</p>
-<p>Last-Modified 是由服务器发送给客户端的 HTTP 响应头标签，时间值是当前资源文件的修改时间</p>
-<p>If-Modified-Since 是由客户端发送给服务器的 HTTP 请求头标签，客户端再次发起该请求时，会携带上次请求返回的 Last-Modified 的时间值，对比 If-Modified-Since 的时间和该资源在服务器端最后被修改的时间，决定是否更新资源</p>
-</li>
-<li><p>Etag &#x2F; If-None-Match</p>
-<p>Etag 是由服务器发送给客户端的 HTTP 响应头标签，是服务器端生成的资源文件的一个唯一标识</p>
-<p>If-None-Match 是由客户端发送给服务器的 HTTP 请求头标签，客户端再次发起该请求时，会携带上次请求返回的 Etag 值，对比服务器端的 Etag 值和 If-None-Match 的值，决定是否更新资源</p>
-</li>
-</ul>
-<p>优先级：Etag &#x2F; If-None-Match &gt; Last-Modified &#x2F; If-Modified-Since</p>
-<h5 id="准备-IP-地址和端口"><a href="#准备-IP-地址和端口" class="headerlink" title="准备 IP 地址和端口"></a>准备 IP 地址和端口</h5><p>因为 IP 并不容易记住,通常使用域名来方法,这就需要获取 IP 和域名的对应关系.这套域名映射为 IP 的系统就叫做“域名系统”，简称 DNS（Domain Name System）。</p>
-<p>现在第一步浏览器会请求 DNS 返回域名对应的 IP。当然浏览器还提供了 DNS 数据缓存服务，如果某个域名已经解析过了，那么浏览器会缓存解析的结果，以供下次查询时直接使用，这样也会减少一次网络请求。</p>
-<p>拿到 IP 之后，接下来就需要获取端口号了。通常情况下，如果 URL 没有特别指明端口号，那么 HTTP 协议默认是 80 端口。</p>
-<h6 id="DNS预解析"><a href="#DNS预解析" class="headerlink" title="DNS预解析"></a>DNS预解析</h6><p>dns-prefetch(DNS预获取)是前端网络性能优化的一种措施。它根据浏览器定义的规则，提前解析之后可能会用到的域名，使解析结果缓存到系统缓存中，缩短DNS解析时间，进而提高网站的访问速度。</p>
-<p>每当在首次DNS解析后会对其IP进行缓存。至于缓存时长，每种浏览器都不一样，比如Chrome的过期时间是1分钟，在这个期限内不会重新请求DNS。</p>
-<p>每当Chrome浏览器启动的时候，就会自动的快速解析浏览器最近一次启动时记录的前10个域名。所以经常访问的网址就不存在DNS解析的延迟，进而打开速度更快。</p>
-<ul>
-<li><p>dns-prefetch 仅对跨域域上的 DNS查找有效，因此请避免使用它来指向相同域。这是因为，到浏览器看到提示时，您站点域背后的IP已经被解析。</p>
-</li>
-<li><p>http页面下所有的a标签的href都会自动去启用DNS Prefetch，也就是说网页的a标签href带的域名，是不需要在head里面加上link手动设置的。<br>可以通过在服务器端发送 X-DNS-Prefetch-Control 报头，或是在文档中使用值为 http-equiv 的 <code>&lt;meta&gt;</code> 标签：</p>
-<figure class="highlight html"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line"><span class="tag">&lt;<span class="name">meta</span> <span class="attr">http-equiv</span>=<span class="string">&quot;x-dns-prefetch-control&quot;</span> <span class="attr">content</span>=<span class="string">&quot;on&quot;</span>&gt;</span></span><br></pre></td></tr></table></figure>
-</li>
-<li><p>强制查询特定主机名,使用 rel 属性值为 link type 中的 dns-prefetch 的 标签来对特定域名进行预读取：</p>
-<figure class="highlight html"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line"><span class="tag">&lt;<span class="name">link</span> <span class="attr">rel</span>=<span class="string">&quot;dns-prefetch&quot;</span> <span class="attr">href</span>=<span class="string">&quot;http://www.baidu.com/&quot;</span>&gt;</span></span><br></pre></td></tr></table></figure></li>
-</ul>
-<h5 id="等待-TCP-队列并建立链接"><a href="#等待-TCP-队列并建立链接" class="headerlink" title="等待 TCP 队列并建立链接"></a>等待 TCP 队列并建立链接</h5><p>Chrome 有个机制，同一个域名同时最多只能建立 6 个 TCP 连接，如果在同一个域名下同时有 10 个请求发生，那么其中 4 个请求会进入排队等待状态，直至进行中的请求完成。当然，如果当前请求数量少于 6，会直接进入下一步，建立 TCP 连接。http2 是可以并行请求资源的，所以如果使用 http2，浏览器只会为每个域名维护一个 tcp 连接.</p>
-<p>接着通过三次握手建立链接</p>
-<h5 id="发送-HTTP-请求"><a href="#发送-HTTP-请求" class="headerlink" title="发送 HTTP 请求"></a>发送 HTTP 请求</h5><p>HTTP 中的数据正是在这个通信过程中传输的。</p>
-<p><img src="/posts/872ab92252f5/0002.webp"></p>
-<h5 id="返回请求"><a href="#返回请求" class="headerlink" title="返回请求"></a>返回请求</h5><p><img src="/posts/872ab92252f5/0003.webp"></p>
-<p>服务器也会随同响应向浏览器发送响应头。响应头包含了服务器自身的一些信息，比如服务器生成返回数据的时间、返回的数据类型（JSON、HTML、流媒体等类型），以及服务器要在客户端保存的 Cookie 等信息。发送完响应头后，服务器就可以继续发送响应体的数据，通常，响应体就包含了 HTML 的实际内容。</p>
-<h5 id="Keep-Alive"><a href="#Keep-Alive" class="headerlink" title="Keep-Alive"></a>Keep-Alive</h5><p>通常情况下，一旦服务器向客户端返回了请求数据，它就要关闭 TCP 连接。不过如果浏览器或者服务器在其头信息中加入了：</p>
-<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">Connection:Keep-Alive</span><br></pre></td></tr></table></figure>
+<p>在词法环境内部，维护了一个小型栈结构，栈底是函数最外层的变量，进入一个作用域块后，就会把该作用域块内部的变量压到栈顶；当作用域执行完成之后，该作用域的信息就会从栈顶弹出，这就是词法环境的结构。这里所讲的变量是指通过 let 或者 const 声明的变量。</p>
+<p><img src="/posts/b672c2864ca4/0001.webp"></p>
+<p>查找方式是：沿着词法环境的栈顶向下查询，如果在词法环境中的某个块中查找到了，就直接返回给 JavaScript 引擎，如果没有查找到，那么继续在变量环境中查找。</p>
+<p><img src="/posts/b672c2864ca4/0002.webp"></p>
+<h4 id="作用域链于词法作用域"><a href="#作用域链于词法作用域" class="headerlink" title="作用域链于词法作用域"></a>作用域链于词法作用域</h4><p><strong>作用域链是由词法作用域决定的.</strong></p>
+<p>下面的代码当 <code>bar</code> 在 <code>foo</code> 内部调用的时候, 会先查找自己的词法环境中有没有 <code>name</code>, 然后查找自己的环境变量.</p>
+<p>但是当发现都没有的时候并不会在 <code>foo</code> 的词法环境和变量环境中查找,而是直接查找全局执行上下文中的词法环境和变量环境</p>
+<figure class="highlight js"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">function</span> <span class="title function_">bar</span>(<span class="params"></span>) &#123;</span><br><span class="line">  <span class="variable language_">console</span>.<span class="title function_">log</span>(name);</span><br><span class="line">&#125;</span><br><span class="line"><span class="keyword">function</span> <span class="title function_">foo</span>(<span class="params"></span>) &#123;</span><br><span class="line">  <span class="keyword">var</span> name = <span class="string">&quot;one&quot;</span>;</span><br><span class="line">  <span class="title function_">bar</span>();</span><br><span class="line">&#125;</span><br><span class="line"><span class="keyword">var</span> name = <span class="string">&quot;tow&quot;</span>;</span><br><span class="line"><span class="title function_">foo</span>();</span><br></pre></td></tr></table></figure>
 
-<p>那么 TCP 连接在发送后将仍然保持打开状态，这样浏览器就可以继续通过同一个 TCP 连接发送请求。保持 TCP 连接可以省去下次请求时需要建立连接的时间，提升资源加载速度。比如，一个 Web 页面中内嵌的图片就都来自同一个 Web 站点，如果初始化了一个持久连接，你就可以复用该连接，以请求其他资源，而不需要重新再建立新的 TCP 连接。</p>
-<h5 id="重定向"><a href="#重定向" class="headerlink" title="重定向"></a>重定向</h5><p>响应行返回的状态码是 301，状态 301 就是告诉浏览器，我需要重定向到另外一个网址，而需要重定向的网址正是包含在响应头的 Location 字段中，接下来，浏览器获取 Location 字段中的地址，并使用该地址重新导航</p>
-<h5 id="请求的各个阶段"><a href="#请求的各个阶段" class="headerlink" title="请求的各个阶段"></a>请求的各个阶段</h5><p><img src="/posts/872ab92252f5/0004.webp"></p>
-<h4 id="从输入-URL-到页面展示"><a href="#从输入-URL-到页面展示" class="headerlink" title="从输入 URL 到页面展示"></a>从输入 URL 到页面展示</h4><p>用户发出 URL 请求到页面开始解析的这个过程，就叫做导航。</p>
-<h5 id="用户输入"><a href="#用户输入" class="headerlink" title="用户输入"></a>用户输入</h5><p>当用户在地址栏中输入一个查询关键字时，地址栏会判断输入的关键字是搜索内容，还是请求的 URL。</p>
-<p>如果是搜索内容，地址栏会使用浏览器默认的搜索引擎，来合成新的带搜索关键字的 URL。如果判断输入内容符合 URL 规则，比如输入的是 time.geekbang.org，那么地址栏会根据规则，把这段内容加上协议，合成为完整的 URL.</p>
-<p>当用户输入关键字并键入回车之后，这意味着当前页面即将要被替换成新的页面，不过在这个流程继续之前，浏览器还给了当前页面一次执行 beforeunload 事件的机会，beforeunload 事件允许页面在退出之前执行一些数据清理操作，还可以询问用户是否要离开当前页面，比如当前页面可能有未提交完成的表单等情况，因此用户可以通过 beforeunload 事件来取消导航，让浏览器不再执行任何后续工作。</p>
-<h5 id="URL-请求过程"><a href="#URL-请求过程" class="headerlink" title="URL 请求过程"></a>URL 请求过程</h5><p>浏览器进程会通过进程间通信（IPC）把 URL 请求发送至网络进程，网络进程接收到 URL 请求后，会在这里发起真正的 URL 请求流程。</p>
-<p>首先，网络进程会查找本地缓存是否缓存了该资源。如果有缓存资源，那么直接返回资源给浏览器进程；如果在缓存中没有查找到资源，那么直接进入网络请求流程。这请求前的第一步是要进行 DNS 解析，以获取请求域名的服务器 IP 地址。如果请求协议是 HTTPS，那么还需要建立 TLS 连接。</p>
-<p>接下来就是利用 IP 地址和服务器建立 TCP 连接。连接建立之后，浏览器端会构建请求行、请求头等信息，并把和该域名相关的 Cookie 等数据附加到请求头中，然后向服务器发送构建的请求信息。</p>
-<p>服务器接收到请求信息后，会根据请求信息生成响应数据（包括响应行、响应头和响应体等信息），并发给网络进程。等网络进程接收了响应行和响应头之后，就开始解析响应头的内容了。</p>
-<p>在导航过程中，如果服务器响应行的状态码包含了 301、302 一类的跳转信息，浏览器会跳转到新的地址继续导航；如果响应行是 200，那么表示浏览器可以继续处理该请求。</p>
-<p><strong>Content-Type 是 HTTP 头中一个非常重要的字段， 它告诉浏览器服务器返回的响应体数据是什么类型，然后浏览器会根据 Content-Type 的值来决定如何显示响应体的内容。</strong></p>
-<p>例如 Content-Type 的值是 application&#x2F;octet-stream，显示数据是字节流类型的，通常情况下，浏览器会按照下载类型来处理该请求。</p>
-<p>如果 Content-Type 字段的值被浏览器判断为下载类型，那么该请求会被提交给浏览器的下载管理器，同时该 URL 请求的导航流程就此结束。但如果是 HTML，那么浏览器则会继续进行导航流程。由于 Chrome 的页面渲染是运行在渲染进程中的，所以接下来就需要准备渲染进程了。</p>
-<h5 id="准备渲染进程"><a href="#准备渲染进程" class="headerlink" title="准备渲染进程"></a>准备渲染进程</h5><p>默认情况下，Chrome 会为每个页面分配一个渲染进程，也就是说，每打开一个新页面就会配套创建一个新的渲染进程。但是，也有一些例外，在某些情况下，浏览器会让多个页面直接运行在同一个渲染进程中。</p>
-<p>但如果从一个页面打开了另一个新页面，而新页面和当前页面属于同一站点的话，那么新页面会复用父页面的渲染进程。官方把这个默认策略叫 process-per-site-instance.</p>
-<h5 id="提交文档"><a href="#提交文档" class="headerlink" title="提交文档"></a>提交文档</h5><p>所谓提交文档，就是指浏览器进程将网络进程接收到的 HTML 数据提交给渲染进程，具体流程是这样的：</p>
+<p>控制变量查找顺序的就是作用域链,其实在每个执行上下文的变量环境中，都包含了一个外部引用，用来指向外 部的执行上下文，这个外部引用称为 <code>outer</code>. 但是<strong>决定作用域链的不是执行上下文,而是词法作用域</strong></p>
+<p><strong>词法作用域就是指作用域是由代码中函数声明的位置来决定的，所以词法作用域是静态的作用域，通过它就能够预测代码在执行过程中如何查找标识符。</strong></p>
+<p><code>foo</code> 和 <code>bar</code> 的上级作用域都是全局作用域，所以如果 foo 或者 bar 函数使用了一个它们没有定义的变量，那么它们会到全局作用域去查找。也就是说，词法作用域是代码编译阶段就决定好的，和函数是怎么调用的没有关系。</p>
+<h4 id="闭包"><a href="#闭包" class="headerlink" title="闭包"></a>闭包</h4><p><strong>根据词法作用域的规则，内部函数 getName 和 setName 总是可以访问它们的外部函数 foo 中的变量</strong></p>
+<figure class="highlight js"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">function</span> <span class="title function_">foo</span>(<span class="params"></span>) &#123;</span><br><span class="line">  <span class="keyword">let</span> name = <span class="string">&quot;one&quot;</span>;</span><br><span class="line">  <span class="keyword">const</span> obj = &#123;</span><br><span class="line">    <span class="title function_">getName</span>(<span class="params"></span>) &#123;</span><br><span class="line">      <span class="keyword">return</span> name;</span><br><span class="line">    &#125;,</span><br><span class="line">    <span class="title function_">setName</span>(<span class="params">_name</span>) &#123;</span><br><span class="line">      name = _name;</span><br><span class="line">    &#125;,</span><br><span class="line">  &#125;;</span><br><span class="line">  <span class="keyword">return</span> obj;</span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line"><span class="keyword">var</span> bar = <span class="title function_">foo</span>();</span><br><span class="line">bar.<span class="title function_">setName</span>(<span class="string">&quot;two&quot;</span>);</span><br><span class="line">bar.<span class="title function_">getName</span>();</span><br></pre></td></tr></table></figure>
+
+<p>当 obj 对象返回给全局变量 bar 时，虽然 foo 函数已经执行结束，但是 getName 和 setName 函数依然可以使用 foo 函数中的变量 name.</p>
+<p>虽然 foo 函数执行结束后执行上下文已经从调用栈中弹出,但是由于 obj 对象的方法使用了内部 name 变量,所以 name 变量还是保存在内存中,而保存 name 变量称作闭包. 无论在那里调用 obj 对象的方法,都可以访问到 name 变量.</p>
+<p><strong>在 JavaScript 中，根据词法作用域的规则，内部函数总是可以访问其外部函数中声明的变量，当通过调用一个外部函数返回一个内部函数后，即使该外部函数已经执行结束了，但是内部函数引用外部函数的变量依然保存在内存中，我们就把这些变量的集合称为闭包。</strong></p>
+<p>而调用 obj 方法的时候,作用域链的顺序就是:当前执行上下文–&gt;foo 函数闭包–&gt; 全局执行上下文</p>
+<h4 id="闭包回收"><a href="#闭包回收" class="headerlink" title="闭包回收"></a>闭包回收</h4><p>如果引用闭包的函数是个局部变量，等函数销毁后，在下次 JavaScript 引擎执行垃圾回收时，判断闭包这块内容如果已经不再被使用了，那么 JavaScript 引擎的垃圾回收器就会回收这块内存。</p>
+<p><strong>如果该闭包会一直使用，那么它可以作为全局变量而存在；但如果使用频率不高，而且占用内存又比较大的话，那就尽量让它成为一个局部变量。</strong></p>
+<h4 id="this"><a href="#this" class="headerlink" title="this"></a>this</h4><p>实现 this 的一个初衷就是 <strong>在对象内部的方法中使用对象内部的属性</strong></p>
+<p>因为作用域链由词法作用域决定,所以调用 getName 并不会获取对象属性而是在全局的执行上下文中查找</p>
+<figure class="highlight js"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">const</span> obj = &#123;</span><br><span class="line">  <span class="attr">name</span>: <span class="string">&quot;one&quot;</span>,</span><br><span class="line">  <span class="title function_">getName</span>(<span class="params"></span>) &#123;</span><br><span class="line">    <span class="variable language_">console</span>.<span class="title function_">log</span>(name);</span><br><span class="line">  &#125;,</span><br><span class="line">&#125;;</span><br></pre></td></tr></table></figure>
+
+<h5 id="全局执行上下文中的-this"><a href="#全局执行上下文中的-this" class="headerlink" title="全局执行上下文中的 this"></a>全局执行上下文中的 this</h5><p>this 和作用域链的唯一交点，作用域链的最底端包含了 window 对象，全局执行上下文中的 this 也是指向 window 对象。</p>
+<p>这种设计很容易误操作,所以严格模式下默认执行一个函数 this 为 undefined</p>
+<h5 id="函数执行上下文中的-this"><a href="#函数执行上下文中的-this" class="headerlink" title="函数执行上下文中的 this"></a>函数执行上下文中的 this</h5><p>直接调用一个函数，其执行上下文中的 this 也是指向 window 对象的. 但是可以通过 <code>call</code> <code>apply</code> <code>bind</code> 修改 this 的指向</p>
+<h5 id="通过对象调用方法-this"><a href="#通过对象调用方法-this" class="headerlink" title="通过对象调用方法 this"></a>通过对象调用方法 this</h5><p>this 是指向对象本身的。 也可以理解为在调用的时候转化为了这样的形式 <code>myObj.showThis.call(myObj)</code></p>
+<h4 id="构造函数中的-this"><a href="#构造函数中的-this" class="headerlink" title="构造函数中的 this"></a>构造函数中的 this</h4><p>this 指向创建的实例. new 操作符实际上做了一下几件事.</p>
 <ul>
-<li>首先当浏览器进程接收到网络进程的响应头数据之后，便向渲染进程发起“提交文档”的消息；</li>
-<li>渲染进程接收到“提交文档”的消息后，会和网络进程建立传输数据的“管道”；</li>
-<li>等文档数据传输完成之后，渲染进程会返回“确认提交”的消息给浏览器进程；</li>
-<li>浏览器进程在收到“确认提交”的消息后，会更新浏览器界面状态，包括了安全状态、地址栏的 URL、前进后退的历史状态，并更新 Web 页面。</li>
+<li>创建一个空的简单 JavaScript 对象（即{}）；</li>
+<li>为步骤 1 新创建的对象添加属性__proto__，将该属性链接至构造函数的原型对象 ；</li>
+<li>将步骤 1 新创建的对象作为 this 的上下文 ；</li>
+<li>如果该函数没有返回对象，则返回 this。</li>
 </ul>
-<h5 id="渲染阶段"><a href="#渲染阶段" class="headerlink" title="渲染阶段"></a>渲染阶段</h5><p>文档被提交，渲染进程便开始页面解析和子资源加载了.</p>
-<p>一旦页面生成完成，渲染进程会发送一个消息给浏览器进程，浏览器接收到消息后，会停止标签图标上的加载动画。</p>
  
       <!-- reward -->
       
@@ -341,7 +331,7 @@
     
     <footer class="article-footer">
        
-  <ul class="article-tag-list" itemprop="keywords"><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/HTTP/" rel="tag">HTTP</a></li><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/%E6%B5%8F%E8%A7%88%E5%99%A8/" rel="tag">浏览器</a></li></ul>
+  <ul class="article-tag-list" itemprop="keywords"><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/ES6%E5%9F%BA%E7%A1%80/" rel="tag">ES6基础</a></li><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/JavaScript/" rel="tag">JavaScript</a></li></ul>
 
     </footer>
   </div>
@@ -352,7 +342,7 @@
 
     
     <article
-  id="posts-http/①浏览器工作原理"
+  id="posts-broswer/浏览器相关知识"
   class="article article-type-posts"
   itemscope
   itemprop="blogPost"
@@ -363,8 +353,8 @@
     <header class="article-header">
        
 <h2 itemprop="name">
-  <a class="article-title" href="/posts/57a0a2abab4c/"
-    >浏览器工作原理 ① 浏览器架构</a> 
+  <a class="article-title" href="/posts/fe6954b3445e/"
+    >浏览器相关知识点</a> 
 </h2>
  
 
@@ -372,11 +362,11 @@
     </header>
      
     <div class="article-meta">
-      <a href="/posts/57a0a2abab4c/" class="article-date">
+      <a href="/posts/fe6954b3445e/" class="article-date">
   <time datetime="2022-05-22T05:38:27.000Z" itemprop="datePublished">2022-05-22</time>
 </a> 
   <div class="article-category">
-    <a class="article-category-link" href="/categories/HTTP%E4%B8%8E%E6%B5%8F%E8%A7%88%E5%99%A8/">HTTP与浏览器</a>
+    <a class="article-category-link" href="/categories/%E6%B5%8F%E8%A7%88%E5%99%A8/">浏览器</a>
   </div>
    
     </div>
@@ -391,8 +381,17 @@
 <li><p><strong>Web 操作系统化</strong> ,可能以后浏览器会提供更多的模块给上层应用使用,如新支持的 WebAssembly；</p>
 </li>
 </ul>
+<h4 id="OSI-七层网络模型"><a href="#OSI-七层网络模型" class="headerlink" title="OSI 七层网络模型"></a>OSI 七层网络模型</h4><ul>
+<li>应用层： HTTP,HTTPS,FTP,NFS,FMTP,DHCP,SNMP,TELNET,POP3,IRC,NNTP 这些应用层协议为应用提供服务，可以执行用户活动。</li>
+<li>表示层： 从应用层接受数据，并将 ASCII 码转化为 EBCDIC 码(二进制),执行数据压缩（有损&#x2F;无损）,使用 SSL (加密&#x2F;解密)保证数据安全。</li>
+<li>会话层: 会话管理，身份验证，授权方面</li>
+<li>传输层：TCP,UDP, 流量控制，数据校验</li>
+<li>网络层：IP 逻辑寻址</li>
+<li>数据链层： 数据单元被称之为帧</li>
+<li>物理层：传输物理信号</li>
+</ul>
 <h4 id="进程与线程"><a href="#进程与线程" class="headerlink" title="进程与线程"></a>进程与线程</h4><p><strong>进程</strong>是一个程序的运行实例,启动一个程序的时候，操作系统会为该程序创建一块内存，用来存放代码、运行中的数据和一个执行任务的主线程，我们把这样的一个运行环境叫进程。 <strong>线程是依附于进程的，而进程中使用多线程并行处理能提升运算效率。</strong></p>
-<p><img src="/posts/57a0a2abab4c/0001.webp"></p>
+<p><img src="/posts/fe6954b3445e/0001.webp"></p>
 <p>进程和线程之间的关系有以下特点:</p>
 <ul>
 <li><p>进程中的任意一线程执行出错，都会导致整个进程的崩溃。</p>
@@ -406,7 +405,7 @@
 <p>进程隔离是为保护操作系统中进程互不干扰的技术，每一个进程只能访问自己占有的数据.所以一个进程如果崩溃了，或者挂起了，是不会影响到其他进程的。如果进程之间需要进行数据的通信，这时候，就需要使用用于进程间通信（IPC）的机制了。</p>
 </li>
 </ul>
-<p>目前浏览器主要包含以下几个进程:</p>
+<p>目前浏览器主要包含以下几个进程, <a target="_blank" rel="noopener" href="https://developer.chrome.com/docs/extensions/reference/api/processes#enum">查看 Chrome 的进程类型</a></p>
 <ul>
 <li><p><strong>1 个浏览器进程</strong>。主要负责界面显示、用户交互、子进程管理，同时提供存储等功能</p>
 </li>
@@ -417,6 +416,131 @@
 <li><p><strong>1 个网络进程</strong>。主要负责页面的网络资源加载，之前是作为一个模块运行在浏览器进程里面的，后面独立出来，成为一个单独的进程。</p>
 </li>
 <li><p><strong>多个插件进程</strong>。主要是负责插件的运行，因插件易崩溃，所以需要通过插件进程来隔离，以保证插件进程崩溃不会对浏览器和页面造成影响。</p>
+</li>
+</ul>
+<p>渲染进程的个数如何计算：</p>
+<ul>
+<li>如果从一个标签页中打开了另一个新标签页，当新标签页和当前标签页属于同一站点的话，那么新标签页会复用当前标签页的渲染进程。 <strong>Chrome 浏览器会将浏览上下文组中属于同一站点的标签分配到同一个渲染进程中,要同时满足 A 和 B 属于同一站点，且 A 和 B 之间有链接关系</strong><br><code>&lt;a&gt;</code> 元素的 rel 属性为 <code>noopener noreferrer</code> 时会阻止使用同一个渲染进程。</li>
+<li>chrome 浏览器实现了站点隔离，所以 iframe 也会遵循以下的渲染规则，如果和父页面属于同一站点，且有链接关系，也会运行在相同的渲染进程中。</li>
+</ul>
+<h4 id="请求的各个阶段"><a href="#请求的各个阶段" class="headerlink" title="请求的各个阶段"></a>请求的各个阶段</h4><p><img src="/posts/fe6954b3445e/004.webp"></p>
+<h4 id="DNS-域名解析过程"><a href="#DNS-域名解析过程" class="headerlink" title="DNS 域名解析过程"></a>DNS 域名解析过程</h4><p>域名使用 <code>.</code> 划分, 最后由根域名服务器统一管理，根域名服务器是一个服务器集群，有十几个根域名，但是有一千多台根域名服务器，这就需要通过<strong>任播</strong>技术找到最近的一台根域名服务器。</p>
+<p>顶级域名服务器会管理 <code>.net</code> <code>.com</code> 这些域名， 权威域名服务器会管理 <code>.qq</code> <code>baidu</code> 这些域名。</p>
+<ul>
+<li><p>发起解析前会检查本地是否有缓存文件。</p>
+</li>
+<li><p>调用 DNS 客户端发起查询请求，本地的 DNS 服务端一般有互联网服务提供商(ISP)管理，DNS 服务端会查询是否有缓存,如果有则返回带有 Non-authoritative 字段的数据。如果是根域名服务器则返回带有 Authoritative 的字段。缓存需要定期更新。<br>DNS 迭代查询的时候使用的时 UDP 请求，数据量比较小，可以用一个 UDP 包返回，比较注重效率。更新缓存时使用的时 TCP 查询。</p>
+</li>
+<li><p>获取最近的根域名服务器的地址，查询 <code>.com</code> 域名的服务器地址。</p>
+</li>
+<li><p>获取最近的 <code>.com</code> 服务器的地址，查询 <code>baidu.com</code> 的服务器地址。</p>
+</li>
+<li><p>获取最近的 <code>baidu.com</code> 权威域名服务器的地址，查询 <code>mail.baidu.com</code> 对应的 IP。</p>
+</li>
+<li><p>可能会返回 <code>mail.baidu.com</code> 对应的 CDN(内容分发服务器) 地址,这就是最终的地址。</p>
+</li>
+</ul>
+<h6 id="DNS-预解析"><a href="#DNS-预解析" class="headerlink" title="DNS 预解析"></a>DNS 预解析</h6><p>dns-prefetch(DNS 预获取)是前端网络性能优化的一种措施。它根据浏览器定义的规则，提前解析之后可能会用到的域名，使解析结果缓存到系统缓存中，缩短 DNS 解析时间，进而提高网站的访问速度。</p>
+<p>每当在首次 DNS 解析后会对其 IP 进行缓存。至于缓存时长，每种浏览器都不一样，比如 Chrome 的过期时间是 1 分钟，在这个期限内不会重新请求 DNS。</p>
+<p>每当 Chrome 浏览器启动的时候，就会自动的快速解析浏览器最近一次启动时记录的前 10 个域名。所以经常访问的网址就不存在 DNS 解析的延迟，进而打开速度更快。</p>
+<ul>
+<li><p>dns-prefetch 仅对跨域域上的 DNS 查找有效，因此请避免使用它来指向相同域。这是因为，到浏览器看到提示时，您站点域背后的 IP 已经被解析。</p>
+</li>
+<li><p>http 页面下所有的 a 标签的 href 都会自动去启用 DNS Prefetch，也就是说网页的 a 标签 href 带的域名，是不需要在 head 里面加上 link 手动设置的。</p>
+<p>可以通过在服务器端发送 X-DNS-Prefetch-Control 报头，或是在文档中使用值为 http-equiv 的 <code>&lt;meta&gt;</code> 标签：</p>
+<figure class="highlight html"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line"><span class="tag">&lt;<span class="name">meta</span> <span class="attr">http-equiv</span>=<span class="string">&quot;x-dns-prefetch-control&quot;</span> <span class="attr">content</span>=<span class="string">&quot;on&quot;</span> /&gt;</span></span><br></pre></td></tr></table></figure>
+</li>
+<li><p>强制查询特定主机名,使用 rel 属性值为 link type 中的 dns-prefetch 的 标签来对特定域名进行预读取：</p>
+<figure class="highlight html"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line"><span class="tag">&lt;<span class="name">link</span> <span class="attr">rel</span>=<span class="string">&quot;dns-prefetch&quot;</span> <span class="attr">href</span>=<span class="string">&quot;http://www.baidu.com/&quot;</span> /&gt;</span></span><br></pre></td></tr></table></figure></li>
+</ul>
+<h5 id="Keep-Alive"><a href="#Keep-Alive" class="headerlink" title="Keep-Alive"></a>Keep-Alive</h5><p>通常情况下，一旦服务器向客户端返回了请求数据，它就要关闭 TCP 连接。不过如果浏览器或者服务器在其头信息中加入了：</p>
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">Connection:Keep-Alive</span><br></pre></td></tr></table></figure>
+
+<p>那么 TCP 连接在发送后将仍然保持打开状态，这样浏览器就可以继续通过同一个 TCP 连接发送请求。保持 TCP 连接可以省去下次请求时需要建立连接的时间，提升资源加载速度。比如，一个 Web 页面中内嵌的图片就都来自同一个 Web 站点，如果初始化了一个持久连接，你就可以复用该连接，以请求其他资源，而不需要重新再建立新的 TCP 连接。</p>
+<h4 id="如何保证页面文件能被完整地送达浏览器？"><a href="#如何保证页面文件能被完整地送达浏览器？" class="headerlink" title="如何保证页面文件能被完整地送达浏览器？"></a>如何保证页面文件能被完整地送达浏览器？</h4><p>在网络中，一个文件通常会被拆分为很多数据包来进行传输，而数据包在传输过程中又有很大概率丢失或者出错。</p>
+<p>联网，实际上是一套理念和协议组成的体系架构。其中，协议是一套众所周知的规则和标准，如果各方都同意使用，那么它们之间的通信将变得毫无障碍。</p>
+<h5 id="IP：把数据包送达目的主机"><a href="#IP：把数据包送达目的主机" class="headerlink" title="IP：把数据包送达目的主机"></a>IP：把数据包送达目的主机</h5><p>数据包要在互联网上进行传输，就要符合网际协议（Internet Protocol，简称 IP）标准, 访问网站就是向另一台有明确地址的计算机请求信息.</p>
+<p>想通信一定要知道双方 IP 地址, <strong>这些附加的信息会被装进一个叫 IP 头的数据结构里。IP 头是 IP 数据包开头的信息，包含 IP 版本、源 IP 地址、目标 IP 地址、生存时间等信息</strong></p>
+<ul>
+<li>将要发送的数据交给网络进程</li>
+<li>创建 IP 头并附加到数据包上，并交给底层传输</li>
+<li>底层通过物理网络，将数据发送到 B</li>
+<li>数据被传输到 B 的网络层，会拆开 IP 头信息，并将数据交给上层处理</li>
+</ul>
+<h5 id="UDP：把数据包送达应用程序"><a href="#UDP：把数据包送达应用程序" class="headerlink" title="UDP：把数据包送达应用程序"></a>UDP：把数据包送达应用程序</h5><p>到达主机后还需要把数据送给应用,，需要基于 IP 之上开发能和应用打交道的协议，最常见的是 <strong>用户数据包协议（User Datagram Protocol）</strong>，简称 UDP。</p>
+<p>UDP 中一个最重要的信息是端口号，端口号其实就是一个数字，每个想访问网络的程序都需要绑定一个端口号。通过端口号 UDP 就能把指定的数据包发送给指定的程序了，所以 IP 通过 IP 地址信息把数据包发送给指定的电脑，而 UDP 通过端口号把数据包分发给正确的程序。和 IP 头一样，端口号会被装进 UDP 头里面，UDP 头再和原始数据包合并组成新的 UDP 数据包。UDP 头中除了目的端口，还有源端口号等信息。</p>
+<p>虽然 UDP 可以校验数据是否正确，但是对于错误的数据包，UDP 并不提供重发机制，只是丢弃当前的包，而且 UDP 在发送之后也无法知道是否能达到目的地。虽说 UDP 不能保证数据可靠性，但是传输速度却非常快，所以 UDP 会应用在一些关注速度、但不那么严格要求数据完整性的领域，如在线视频、互动游戏等。</p>
+<ul>
+<li>传输层会在数据包前面附加上 UDP 头，组成新的 UDP 数据包，再将新的 UDP 数据包交给网络层</li>
+<li>网络层再将 IP 头附加到数据包上，组成新的 IP 数据包，并交给底层；</li>
+<li>数据包被传输到主机 B 的网络层，在这里主机 B 拆开 IP 头信息，并将拆开来的数据部分交给传输层；</li>
+<li>在传输层，数据包中的 UDP 头会被拆开，并根据 UDP 中所提供的端口号，把数据部分交给上层的应用程序；</li>
+</ul>
+<h5 id="TCP：确保数据包的完整性"><a href="#TCP：确保数据包的完整性" class="headerlink" title="TCP：确保数据包的完整性"></a>TCP：确保数据包的完整性</h5><p>使用 UDP 来传输会存在两个问题：</p>
+<ul>
+<li><p>数据包在传输过程中容易丢失；</p>
+</li>
+<li><p>大文件会被拆分成很多小的数据包来传输，这些小的数据包会经过不同的路由，并在不同的时间到达接收端，而 UDP 协议并不知道如何组装这些数据包，从而把这些数据包还原成完整的文件。</p>
+</li>
+</ul>
+<p>基于这两个问题，我们引入 TCP 了。<a target="_blank" rel="noopener" href="https://zh.wikipedia.org/wiki/%E4%BC%A0%E8%BE%93%E6%8E%A7%E5%88%B6%E5%8D%8F%E8%AE%AE">TCP(Transmission Control Protocol，传输控制协议)</a>是一种面向连接的、可靠的、基于字节流的传输层通信协议。相对于 UDP，TCP 有下面两个特点:</p>
+<ul>
+<li><p>对于数据包丢失的情况，TCP 提供重传机制；</p>
+</li>
+<li><p>TCP 引入了数据包排序机制，用来保证把乱序的数据包组合成一个完整的文件。</p>
+</li>
+</ul>
+<p>既然要实现重传和数据包排序,必然需要一套链接机制,这也就是三次握手,和四次挥手</p>
+<ul>
+<li><p>首先，建立连接阶段。这个阶段是通过<a target="_blank" rel="noopener" href="https://developer.mozilla.org/zh-CN/docs/Glossary/TCP_handshake"><strong>三次握手</strong></a>来建立客户端和服务器之间的连接。TCP 提供面向连接的通信传输。面向连接是指在数据通信开始之前先做好两端之间的准备工作,通过三次握手建立链接.</p>
+</li>
+<li><p>其次，传输数据阶段。在该阶段，接收端需要对每个数据包进行确认操作，也就是接收端在接收到数据包之后，需要发送确认数据包给发送端。所以当发送端发送了一个数据包之后，在规定时间内没有接收到接收端反馈的确认消息，则判断为数据包丢失，并触发发送端的重发机制。同样，一个大的文件在传输过程中会被拆分成很多小的数据包，这些数据包到达接收端后，接收端会按照 TCP 头中的序号为其排序，从而保证组成完整的数据。</p>
+</li>
+<li><p>最后，断开连接阶段。数据传输完毕之后，就要终止连接了，涉及到最后一个阶段“四次挥手”来保证双方都能断开连接。</p>
+</li>
+</ul>
+<p>流量控制：通过滑动窗口，取值为 min(拥塞窗口，接受窗口)；<br>拥塞控制：慢启动（从 1 开始指数增加），达到阈值之后每次+1（拥塞避免），如果超时阈值修改为当前窗口的一半，重新慢启动开始传输。(TCP Tahoe 版本已废弃)<br>快重传，快恢复，如果接收到三个确认重传的 ack,会直接将阈值修改为当前窗口的一半，并每次传输时窗口大小增加 1（拥塞避免）。(TCP Reno 版本)</p>
+<h4 id="HTTP1-1-HTTP2-HTTP3"><a href="#HTTP1-1-HTTP2-HTTP3" class="headerlink" title="HTTP1.1 HTTP2 HTTP3"></a>HTTP1.1 HTTP2 HTTP3</h4><ul>
+<li><p>HTTP1.1</p>
+<p>增加了持久连接的方法，它的特点是在一个 TCP 连接上可以传输多个 HTTP 请求，只要浏览器或者服务器没有明确断开连接，那么该 TCP 连接会一直保持,持久连接在 HTTP&#x2F;1.1 中是默认开启的，所以你不需要专门为了持久连接去 HTTP 请求头设置信息，如果你不想要采用持久连接，可以在 HTTP 请求头中加上 Connection: close。目前浏览器中对于同一个域名，默认允许同时建立 6 个 TCP 持久连接。</p>
+<p>提供虚拟主机的支持,HTTP&#x2F;1.0 中，每个域名绑定了一个唯一的 IP 地址，因此一个服务器只能支持一个域名.但是随着虚拟主机技术的发展，需要实现在一台物理主机上绑定多个虚拟主机，每个虚拟主机都有自己的单独的域名，这些单独的域名都公用同一个 IP 地址。HTTP&#x2F;1.1 的请求头中增加了 Host 字段，用来表示当前的域名地址，这样服务器就可以根据不同的 Host 值做不同的处理。</p>
+<p>对动态生成的内容提供了支持,在设计 HTTP&#x2F;1.0 时，需要在响应头中设置完整的数据大小,但是大部分页面内容都是动态的，，因此在传输数据之前并不知道最终的数据大小。HTTP&#x2F;1.1 通过引入 Chunk transfer 机制来解决这个问题，服务器会将数据分割成若干个任意大小的数据块，每个数据块发送时会附上上个数据块的长度，最后使用一个零长度的块作为发送数据完成的标志。这样就提供了对动态内容的支持。</p>
+<p>安全性，cookies</p>
+<p><strong>存在的问题</strong>：</p>
+<p>TCP 慢启动，导致小的核心资源并不能占满带宽立即下载<br>多个 TCP 链接会竞争贷款，可能让核心资源的下载速度变慢<br>队头阻塞的问题，同一时间只能一个 TCP 链接只能处理一个请求，其他的任务需要排队<br>头信息没有压缩,并且被频繁的重复传输</p>
+</li>
+<li><p>HTTP2<br>解决 HTTP1.1 存在的问题 <strong>一个域名只使用一个 TCP 长连接和消除队头阻塞问题</strong> 。但是 HTTP2 仍然是基于 TCP 协议的，TCP 传输过程中的丢包，会导致 TCP 队头阻塞，所以随着丢包率的增加，HTTP&#x2F;2 的传输效率也会越来越差。有测试数据表明，当系统达到了 2% 的丢包率时，HTTP&#x2F;1.1 的传输效率反而比 HTTP&#x2F;2 表现得更好。</p>
+<p>HTTP2 构建了一个 2 进制分帧层，其中<strong>帧</strong>和<strong>流</strong>是两个核心概念。<strong>帧是数据传输的最小单位</strong>。帧的最外层格式如下。</p>
+<p><img src="/posts/fe6954b3445e/011.png"></p>
+<p>HTTP2 把请求和响应报文分成头部帧和数据帧。由 <code>type</code> 字段标识。一个流用多个帧组成，同一个流的帧共用一个流 ID 标识,可以将乱序的帧关联起来。</p>
+<p>使用 HPACK 算法，减少头信息的小，减小发送包的体积，从而降低延迟。此算法包含静态表，动态表，Huffman 编码，静态表预定义了 61 个 header 的 key，value。动态表由双方维护自定义的 header 字段，Huffman 编码用于消除重复的字节。</p>
+<p>可以设置请求的权重，高优先级的请求会优先响应。<br>可以服务端推送，如果请求的网页有依赖资源，服务器会主动将资源推送到客户端。</p>
+<p>但是 HTTP2 并没有解决 TCP 层面的队头阻塞，如果传输过程中的包丢失，依然会重传并等待。</p>
+</li>
+<li><p>HTTP3<br>在 UDP 协议之上，实现了 QUIC 协议，实现了类似 TCP 的流量控制、传输可靠性的功能。虽然 UDP 不提供可靠性的传输，但 QUIC 在 UDP 的基础之上增加了一层来保证数据可靠性传输。它提供了数据包重传、拥塞控制以及其他一些 TCP 中存在的特性。</p>
+<p>集成了 TLS 加密功能。目前 QUIC 使用的是 TLS1.3，相较于早期版本 TLS1.3 有更多的优点，其中最重要的一点是减少了握手所花费的 RTT 个数。</p>
+<p>实现了 HTTP&#x2F;2 中的多路复用功能。和 TCP 不同，QUIC 实现了在同一物理连接上可以有多个独立的逻辑数据流（如下图）。实现了数据流的单独传输，就解决了 TCP 中队头阻塞的问题。</p>
+<p>实现了快速握手功能。由于 QUIC 是基于 UDP 的，所以 QUIC 可以实现使用 0-RTT 或者 1-RTT 来建立连接，这意味着 QUIC 可以用最快的速度来发送和接收数据，这样可以大大提升首次打开页面的速度。</p>
+<p>同时也存在一下问题：</p>
+<p>浏览器的实现和官方定义差距过大，系统内核对 UPD 的优化不佳。中间设备僵化导致丢包率远大于 TCP 链接。</p>
+</li>
+</ul>
+<h4 id="TLS-握手过程"><a href="#TLS-握手过程" class="headerlink" title="TLS 握手过程"></a>TLS 握手过程</h4><ul>
+<li>客户端发送给服务端，TLS 版本，加密套件，seq(随机数)1</li>
+<li>服务端响应 TLS 版本，加密套件，seq2</li>
+<li>服务端发送证书</li>
+<li>服务端发送公钥</li>
+<li>服务点通知客户端发送完成</li>
+<li>客户端生成 seq3(预主密钥) 用接收到的公钥加密后在发送给服务端</li>
+<li>服务端用私钥解密，获取预主密钥</li>
+<li>服务端和客户端分别用 seq1+seq2+seq3(预主密钥) 生成会话密钥</li>
+<li>后续的通信使用会话密钥</li>
+</ul>
+<p>TLS 只有在握手的过程中使用非对称加密，非对称加密对资源的消耗很大，通信过程使用加密后的会话密钥。</p>
+<h4 id="报文格式"><a href="#报文格式" class="headerlink" title="报文格式"></a>报文格式</h4><ul>
+<li><p><strong>HTTP</strong></p>
+<p><img src="/posts/fe6954b3445e/005.webp"></p>
+<p><img src="/posts/fe6954b3445e/006.webp"></p>
 </li>
 </ul>
 <h4 id="页面性能指标"><a href="#页面性能指标" class="headerlink" title="页面性能指标"></a>页面性能指标</h4><ul>
@@ -431,35 +555,58 @@
 <li><p>TTI（Time to Interactive）:表示网页第一次完全达到可交互状态的时间点，浏览器已经可以持续性的响应用户的输入。</p>
 </li>
 </ul>
-<h4 id="如何保证页面文件能被完整地送达浏览器？"><a href="#如何保证页面文件能被完整地送达浏览器？" class="headerlink" title="如何保证页面文件能被完整地送达浏览器？"></a>如何保证页面文件能被完整地送达浏览器？</h4><p>在网络中，一个文件通常会被拆分为很多数据包来进行传输，而数据包在传输过程中又有很大概率丢失或者出错。</p>
-<p>联网，实际上是一套理念和协议组成的体系架构。其中，协议是一套众所周知的规则和标准，如果各方都同意使用，那么它们之间的通信将变得毫无障碍。</p>
-<h5 id="IP：把数据包送达目的主机"><a href="#IP：把数据包送达目的主机" class="headerlink" title="IP：把数据包送达目的主机"></a>IP：把数据包送达目的主机</h5><p>数据包要在互联网上进行传输，就要符合网际协议（Internet Protocol，简称 IP）标准, 访问网站就是向另一台有明确地址的计算机请求信息.</p>
-<p>想通信一定要知道双方 IP 地址,用于请求和回复,另外还有 IP 版本,生存时间等,这些信息都会放在 IP 头中,并附加在数据包上. 组成的新数据包就能交给底层传输了.</p>
-<p>当另外的主机接收到数据包,会将数据包拆开,并把数据交给主机上层.</p>
-<h5 id="UDP：把数据包送达应用程序"><a href="#UDP：把数据包送达应用程序" class="headerlink" title="UDP：把数据包送达应用程序"></a>UDP：把数据包送达应用程序</h5><p>到达主机后还需要把数据送给应用,，需要基于 IP 之上开发能和应用打交道的协议，最常见的是“用户数据包协议（User Datagram Protocol）”，简称 UDP。</p>
-<p>UDP 中一个最重要的信息是端口号，端口号其实就是一个数字，每个想访问网络的程序都需要绑定一个端口号。通过端口号 UDP 就能把指定的数据包发送给指定的程序了，所以 IP 通过 IP 地址信息把数据包发送给指定的电脑，而 UDP 通过端口号把数据包分发给正确的程序。和 IP 头一样，端口号会被装进 UDP 头里面，UDP 头再和原始数据包合并组成新的 UDP 数据包。UDP 头中除了目的端口，还有源端口号等信息。</p>
-<p>在使用 UDP 发送数据时，有各种因素会导致数据包出错，虽然 UDP 可以校验数据是否正确，但是对于错误的数据包，UDP 并不提供重发机制，只是丢弃当前的包，而且 UDP 在发送之后也无法知道是否能达到目的地。虽说 UDP 不能保证数据可靠性，但是传输速度却非常快，所以 UDP 会应用在一些关注速度、但不那么严格要求数据完整性的领域，如在线视频、互动游戏等。</p>
-<h5 id="TCP：把数据完整地送达应用程序"><a href="#TCP：把数据完整地送达应用程序" class="headerlink" title="TCP：把数据完整地送达应用程序"></a>TCP：把数据完整地送达应用程序</h5><p>使用 UDP 来传输会存在两个问题：</p>
+<h4 id="HTTP-缓存"><a href="#HTTP-缓存" class="headerlink" title="HTTP 缓存"></a><a target="_blank" rel="noopener" href="https://developer.mozilla.org/zh-CN/docs/Web/HTTP/Caching">HTTP 缓存</a></h4><p><img src="/posts/fe6954b3445e/004.png"></p>
+<h5 id="强制缓存"><a href="#强制缓存" class="headerlink" title="强制缓存"></a>强制缓存</h5><p>HTTP&#x2F;1.1 定义的 Cache-Control 头用来区分对缓存机制的支持情况， 请求头和响应头都支持这个属性。通过它提供的不同的值来定义缓存策略。</p>
 <ul>
-<li><p>数据包在传输过程中容易丢失；</p>
+<li><p>每次都提供最新的内容</p>
+<p>此方式下，每次有请求发出时，缓存会将此请求发到服务器（该请求应该会带有与本地缓存相关的验证字段），服务器端会验证请求中所描述的缓存是否过期，若未过期（注：实际就是返回 304），则缓存才使用本地缓存副本。</p>
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">Cache-Control: no-cache</span><br></pre></td></tr></table></figure>
 </li>
-<li><p>大文件会被拆分成很多小的数据包来传输，这些小的数据包会经过不同的路由，并在不同的时间到达接收端，而 UDP 协议并不知道如何组装这些数据包，从而把这些数据包还原成完整的文件。</p>
+<li><p>过期<br>过期机制中，最重要的指令是 “max-age&#x3D;<seconds>“，表示资源能够被缓存（保持新鲜）的最大时间。max-age 是距离请求发起的时间的秒数。针对应用中那些不会改变的文件，通常可以手动设置一定的时长以保证缓存有效，例如图片、css、js 等静态资源。</p>
+<p>Expires 响应头包含日期&#x2F;时间， 即在此时候之后，响应过期。如果在 Cache-Control 响应头设置了 “max-age” 或者 “s-max-age” 指令，那么 Expires 头会被忽略。</p>
 </li>
 </ul>
-<p>基于这两个问题，我们引入 TCP 了。TCP（Transmission Control Protocol，传输控制协议）是一种面向连接的、可靠的、基于字节流的传输层通信协议。相对于 UDP，TCP 有下面两个特点:</p>
+<h5 id="协商缓存"><a href="#协商缓存" class="headerlink" title="协商缓存"></a>协商缓存</h5><p>强制缓存失效后，浏览器携带缓存标识向服务器发起请求，由服务器根据缓存标识决定是否使用缓存</p>
 <ul>
-<li><p>对于数据包丢失的情况，TCP 提供重传机制；</p>
+<li><p>Last-Modified &#x2F; If-Modified-Since</p>
+<p>Last-Modified 是由服务器发送给客户端的 HTTP 响应头标签，时间值是当前资源文件的修改时间</p>
+<p>If-Modified-Since 是由客户端发送给服务器的 HTTP 请求头标签，客户端再次发起该请求时，会携带上次请求返回的 Last-Modified 的时间值，对比 If-Modified-Since 的时间和该资源在服务器端最后被修改的时间，决定是否更新资源</p>
 </li>
-<li><p>TCP 引入了数据包排序机制，用来保证把乱序的数据包组合成一个完整的文件。</p>
+<li><p>Etag &#x2F; If-None-Match</p>
+<p>Etag 是由服务器发送给客户端的 HTTP 响应头标签，是服务器端生成的资源文件的一个唯一标识</p>
+<p>If-None-Match 是由客户端发送给服务器的 HTTP 请求头标签，客户端再次发起该请求时，会携带上次请求返回的 Etag 值，对比服务器端的 Etag 值和 If-None-Match 的值，决定是否更新资源</p>
 </li>
 </ul>
-<p>既然要实现重传和数据包排序,必然需要一套链接机制,这也就是三次握手,和四次挥手</p>
+<p>优先级：Etag &#x2F; If-None-Match &gt; Last-Modified &#x2F; If-Modified-Since</p>
+<h4 id="重绘与重排"><a href="#重绘与重排" class="headerlink" title="重绘与重排"></a>重绘与重排</h4><p>如果你通过 JavaScript 或者 CSS 修改元素的几何位置属性，例如改变元素的宽度、高度等，那么浏览器会触发重新布局，解析之后的一系列子阶段，这个过程就叫重排。无疑，重排需要更新完整的渲染流水线，所以开销也是最大的。</p>
+<p><img src="/posts/fe6954b3445e/007.webp"></p>
+<p>如果修改了元素的背景颜色，那么布局阶段将不会被执行，因为并没有引起几何位置的变换，所以就直接进入了绘制阶段，然后执行之后的一系列子阶段，这个过程就叫重绘。相较于重排操作，重绘省去了布局和分层阶段，所以执行效率会比重排操作要高一些。</p>
+<p><img src="/posts/fe6954b3445e/008.webp"></p>
+<p>如果更改一个既不要布局也不要绘制的属性,把这个过程叫做合成</p>
+<p>使用了 CSS 的 transform 来实现动画效果，这可以避开重排和重绘阶段，直接在非主线程上执行合成动画操作。这样的效率是最高的，因为是在非主线程上合成，并没有占用主线程的资源，另外也避开了布局和绘制两个子阶段，所以相对于重绘和重排，合成能大大提升绘制效率。</p>
+<p><img src="/posts/fe6954b3445e/009.webp"></p>
+<h4 id="请求时间线"><a href="#请求时间线" class="headerlink" title="请求时间线"></a>请求时间线</h4><p><img src="/010.webp"></p>
 <ul>
-<li><p>首先，建立连接阶段。这个阶段是通过“三次握手”来建立客户端和服务器之间的连接。TCP 提供面向连接的通信传输。面向连接是指在数据通信开始之前先做好两端之间的准备工作,通过三次握手建立链接.</p>
+<li><p>Queuing(排队), 导致排队状态有很多<br>遇到 CSS、HTML、JavaScript 等高优先级资源，图片、视频、音频 这些低优先级资源会让路。<br>浏览器会为每个域名最多维护 6 个 TCP 连接,如果超过这个数量会处于排队状态。<br>网络进程在为数据分配磁盘空间时，新的 HTTP 请求也需要短暂地等待磁盘分配结束。</p>
+<p><strong>优化方案</strong>： 使用域名分片技术,提高整体的 TCP 链接数量， 把站点升级到 HTTP2。</p>
 </li>
-<li><p>其次，传输数据阶段。在该阶段，接收端需要对每个数据包进行确认操作，也就是接收端在接收到数据包之后，需要发送确认数据包给发送端。所以当发送端发送了一个数据包之后，在规定时间内没有接收到接收端反馈的确认消息，则判断为数据包丢失，并触发发送端的重发机制。同样，一个大的文件在传输过程中会被拆分成很多小的数据包，这些数据包到达接收端后，接收端会按照 TCP 头中的序号为其排序，从而保证组成完整的数据。</p>
+<li><p>Stalled(停滞), 一些其他的原因导致链接被推</p>
 </li>
-<li><p>最后，断开连接阶段。数据传输完毕之后，就要终止连接了，涉及到最后一个阶段“四次挥手”来保证双方都能断开连接。</p>
+<li><p>Initial connection（初始化链接）, 建立 TCP 所花费的时间如果是 HTTPS 请求，还会有 SSL 握手时间。</p>
+</li>
+<li><p>Request sent(请求发送)，由于只需要把缓冲区中的数据发送出去，所以速度比较快。</p>
+</li>
+<li><p>TTFB(第一字节时间)，收服务器第一个字节的数据，TTFB 时间越短，就说明服务器响应越快。</p>
+<p><strong>优化方案</strong>： 提高运营商的网络带宽,使用 CDN 技术。服务器响应时间过长，问题可能出现在渲染，信息处理等方面,可以考虑提高缓存的使用效率。</p>
+</li>
+<li><p>Content Download（资源下载时间）</p>
+<p><strong>优化方案</strong>： 压缩文件，流式传输。</p>
+</li>
+</ul>
+<h4 id="如何验证数字证书"><a href="#如何验证数字证书" class="headerlink" title="如何验证数字证书"></a>如何验证数字证书</h4><ul>
+<li><p>申请数字证书<br>网站需要准备一套私钥和公钥，私钥留着自己使用；<br>向 CA 机构提交公钥、公司、站点等信息并等待认证，这个认证过程可能是收费的；<br>CA 通过线上、线下等多种渠道来验证极客时间所提供信息的真实性，如公司是否存在、企业是否合法、域名是否归属该企业等；<br>如信息审核通过，CA 会向极客时间签发认证的数字证书，包含了极客时间的公钥、组织信息、CA 的信息、有效时间、证书序列号等，这些信息都是明文的，同时包含一个 CA 生成的签名。</p>
+</li>
+<li><p>浏览器验证证书合法性<br>首先，浏览器利用证书的原始信息计算出信息摘要；然后，利用 CA 的公钥来解密数字证书中的数字签名，解密出来的数据也是信息摘要；最后，判断这两个信息摘要是否相等就可以了。<br><strong>浏览器是怎么获取到 CA 公钥的</strong>,当部署 HTTP 服务器的时候，除了部署当前的数字证书之外，还需要部署 CA 机构的数字证书，CA 机构的数字证书包括了 CA 的公钥，以及 CA 机构的一些基础信息。服务器会有两个数字证书，域名的数字证书,CA 机构的数字证书。然后在建立 HTTPS 链接时，服务器会将这两个证书一同发送给浏览器，于是浏览器就可以获取到 CA 的公钥了。<br><strong>证明 CA 机构的合法性</strong>,操作系统中内置这些 CA 机构的数字证书,，CA 机构众多，因此操作系统不可能将每家 CA 的数字证书都内置进操作系统。于是人们又想出来一个折中的方案，将颁发证书的机构划分为两种类型，根 CA(Root CAs)和中间 CA(Intermediates CAs)，通常申请者都是向中间 CA 去申请证书的，而根 CA 作用就是给中间 CA 做认证，一个根 CA 会认证很多中间的 CA，而这些中间 CA 又可以去认证其他的中间 CA，也就形成了<strong>数字证书链</strong>。</p>
 </li>
 </ul>
 <h4 id="FAQ"><a href="#FAQ" class="headerlink" title="FAQ"></a>FAQ</h4><ul>
@@ -471,6 +618,106 @@
 </li>
 <li><p>http 和 websocket 都是属于应用层的协议吗？</p>
 <p>都是应用层协议，而且 websocket 名字取的比较有迷惑性，其实和 socket 完全不一样，可以把 websocket 看出是 http 的改造版本，增加了服务器向客户端主动发送消息的能力。</p>
+</li>
+</ul>
+ 
+      <!-- reward -->
+      
+    </div>
+    
+
+    <!-- copyright -->
+    
+    <footer class="article-footer">
+       
+  <ul class="article-tag-list" itemprop="keywords"><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/HTTP/" rel="tag">HTTP</a></li><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/%E6%B5%8F%E8%A7%88%E5%99%A8/" rel="tag">浏览器</a></li></ul>
+
+    </footer>
+  </div>
+
+   
+    
+</article>
+
+    
+    <article
+  id="posts-broswer/浏览器渲染原理"
+  class="article article-type-posts"
+  itemscope
+  itemprop="blogPost"
+  data-scroll-reveal
+>
+  <div class="article-inner">
+    
+    <header class="article-header">
+       
+<h2 itemprop="name">
+  <a class="article-title" href="/posts/0d7c79d891ee/"
+    >浏览器渲染过程</a> 
+</h2>
+ 
+
+      
+    </header>
+     
+    <div class="article-meta">
+      <a href="/posts/0d7c79d891ee/" class="article-date">
+  <time datetime="2022-05-20T02:30:27.000Z" itemprop="datePublished">2022-05-20</time>
+</a> 
+  <div class="article-category">
+    <a class="article-category-link" href="/categories/%E6%B5%8F%E8%A7%88%E5%99%A8/">浏览器</a>
+  </div>
+   
+    </div>
+      
+    <div class="article-entry" itemprop="articleBody">
+       
+  <h4 id="用户输入"><a href="#用户输入" class="headerlink" title="用户输入"></a>用户输入</h4><p><strong>用户发出 URL 请求到页面开始解析的这个过程，就叫做导航。</strong></p>
+<p>搜索内容: 使用浏览器默认的搜索引擎合成新的带搜索关键字的 URL<br>合法的 URL: 加上协议，合成为完整的 URL</p>
+<p>执行搜索交互后，会先执行 beforeunload 事件，可以通过此事件取消导航。此时浏览器的状态是在加载中，但是页面内容并没有被替换，因为需要等待提交文档阶段.</p>
+<h4 id="URL-请求过程"><a href="#URL-请求过程" class="headerlink" title="URL 请求过程"></a>URL 请求过程</h4><p>浏览器进程会通过进程间通信（IPC）把 URL 请求发送至网络进程。</p>
+<p>是否命中 DNS 缓存，如果命中缓存直接返回。接下来就是利用 IP 地址和服务器建立 TCP 连接。连接建立之后，浏览器端会构建请求行、请求头等信息，并把和该域名相关的 Cookie 等数据附加到请求头中，然后向服务器发送构建的请求信息。</p>
+<p>如果时通过链接打开页面,如果两个页面是同一站点，新页面会复用父页面的渲染进程。</p>
+<h4 id="提交文档"><a href="#提交文档" class="headerlink" title="提交文档"></a>提交文档</h4><ul>
+<li>网络进程获取到响应之后，向渲染进程发起<strong>提交文档</strong>的消息</li>
+<li>渲染进程接收到<strong>提交文档</strong>的消息后，会和网络进程建立传输数据的<strong>管道</strong></li>
+<li>等文档数据传输完成之后，渲染进程会返回<strong>确认提交</strong>的消息给浏览器进程</li>
+<li>浏览器进程在收到<strong>确认提交</strong>的消息后，会更新浏览器界面状态，包括了安全状态、地址栏的 URL、前进后退的历史状态，并更新 Web 页面。</li>
+</ul>
+<h4 id="页面渲染"><a href="#页面渲染" class="headerlink" title="页面渲染"></a>页面渲染</h4><p><img src="/posts/0d7c79d891ee/001.webp"></p>
+<ul>
+<li><p>构建 DOM 树<br>HTML 解析器（HTMLParser）负责将 HTML 字节流转换为 DOM 结构。网络进程接收到响应头之后，会根据响应头中的 content-type 字段来判断文件的类型,如果这是一个 HTML 类型的文件，然后为该请求选择或者创建一个渲染进程。<strong>网络进程和渲染进程之间会建立一个共享数据的管道,网络进程加载了多少数据，HTML 解析器便解析多少数据。</strong></p>
+<p>第一个阶段，通过分词器将字节流转换为 Token。</p>
+<p><img src="/0011.webp"></p>
+<p>第二个和第三个阶段是同步进行的，需要将 Token 解析为 DOM 节点，并将 DOM 节点添加到 DOM 树中。HTML 解析器维护了一个 Token 栈结构,使用栈解构实现了匹配算法。</p>
+</li>
+<li><p>构建 StyleSheet<br>属性标准化<br>计算每个节点的样式，css 继承规则和层叠规则</p>
+</li>
+<li><p>创建渲染树,遍历 DOM 树中的可见节点,计算出每个元素的样式（即 ComputedStyle）。这里的计算包括所有继承的样式和从 CSS 规则中继承来的样式。</p>
+</li>
+<li><p>创建布局树<br>计算布局信息，布局信息保存在布局树中。</p>
+</li>
+<li><p>创建无障碍树</p>
+</li>
+<li><p>分层，创建图层树<br>定位属性的元素、定义透明属性的元素、使用 CSS 滤镜的元素,需要被剪裁等，都拥有<a target="_blank" rel="noopener" href="https://developer.mozilla.org/zh-CN/docs/Web/CSS/CSS_positioned_layout/Understanding_z-index/Stacking_context">层叠上下文属性</a>。<br>可以通过 <code>will-change</code> 属性，让元素单独在合成线程中执行。</p>
+</li>
+<li><p>图层绘制，渲染进程生成绘制指令,真实的绘制由渲染进程中的合成线程来完成。<br>通常只绘制视口附近的图像，合成线程会将图层划分为图块。</p>
+<p>合成线程会按照视口附近的图块来优先生成位图，实际生成位图的操作是由栅格化来执行的。所谓<strong>栅格化</strong>，是指将图块转换为位图。而图块是栅格化执行的最小单位。渲染进程维护了一个栅格化的线程池，所有的图块栅格化都是在线程池内执行的。</p>
+<p>合成过程会使用 GPU 加速生成，这涉及到块进程操作。渲染进程把生成指令发送给 GPU 进程，生成的位图保存在 GPU 内存中。</p>
+<p>一旦所有图块都被光栅化，合成线程就会生成一个绘制图块的命令——“DrawQuad”，然后将该命令提交给浏览器进程。浏览器进程里面有一个叫 viz 的组件，用来接收合成线程发过来的 DrawQuad 命令，然后根据 DrawQuad 命令，将其页面内容绘制到内存中，最后再将内存显示在屏幕上。</p>
+</li>
+</ul>
+<h4 id="资源加载-x2F-解析"><a href="#资源加载-x2F-解析" class="headerlink" title="资源加载&#x2F;解析"></a>资源加载&#x2F;解析</h4><ul>
+<li><p>JS 在 Css 前面,且在 <code>head</code> 中，会阻塞 DOM 的解析</p>
+<figure class="highlight html"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br></pre></td><td class="code"><pre><span class="line"><span class="tag">&lt;<span class="name">html</span>&gt;</span></span><br><span class="line">  <span class="tag">&lt;<span class="name">head</span>&gt;</span></span><br><span class="line">    <span class="tag">&lt;<span class="name">script</span>&gt;</span><span class="language-javascript"></span></span><br><span class="line"><span class="language-javascript">      <span class="variable language_">console</span>.<span class="title function_">log</span>(<span class="variable language_">document</span>.<span class="title function_">querySelector</span>(<span class="string">&quot;p&quot;</span>));</span></span><br><span class="line"><span class="language-javascript">    </span><span class="tag">&lt;/<span class="name">script</span>&gt;</span></span><br><span class="line">    <span class="tag">&lt;<span class="name">link</span> <span class="attr">rel</span>=<span class="string">&quot;stylesheet&quot;</span> <span class="attr">href</span>=<span class="string">&quot;http://localhost:8000/big.css&quot;</span> /&gt;</span></span><br><span class="line">  <span class="tag">&lt;/<span class="name">head</span>&gt;</span></span><br><span class="line"></span><br><span class="line">  <span class="tag">&lt;<span class="name">body</span>&gt;</span></span><br><span class="line">    <span class="tag">&lt;<span class="name">p</span> <span class="attr">id</span>=<span class="string">&quot;test&quot;</span>&gt;</span>xxx<span class="tag">&lt;/<span class="name">p</span>&gt;</span></span><br><span class="line">  <span class="tag">&lt;/<span class="name">body</span>&gt;</span></span><br><span class="line"><span class="tag">&lt;/<span class="name">html</span>&gt;</span></span><br></pre></td></tr></table></figure>
+
+<p>JS 在 Css 后面，且在<code>head</code> 中，会等待 Css 加载，因为可能会通过 JS 获取样式，而且阻塞 DOM 解析, 也就是说只要在 Js 文件后面 DOM 解析都会被阻止。</p>
+<figure class="highlight html"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br></pre></td><td class="code"><pre><span class="line"><span class="tag">&lt;<span class="name">html</span>&gt;</span></span><br><span class="line">  <span class="tag">&lt;<span class="name">head</span>&gt;</span></span><br><span class="line">    <span class="tag">&lt;<span class="name">link</span> <span class="attr">rel</span>=<span class="string">&quot;stylesheet&quot;</span> <span class="attr">href</span>=<span class="string">&quot;http://localhost:8000/big.css&quot;</span> /&gt;</span></span><br><span class="line">    <span class="tag">&lt;<span class="name">script</span>&gt;</span><span class="language-javascript"></span></span><br><span class="line"><span class="language-javascript">      <span class="variable language_">console</span>.<span class="title function_">log</span>(<span class="variable language_">document</span>.<span class="title function_">querySelector</span>(<span class="string">&quot;p&quot;</span>)); <span class="comment">//null</span></span></span><br><span class="line"><span class="language-javascript">    </span><span class="tag">&lt;/<span class="name">script</span>&gt;</span></span><br><span class="line">  <span class="tag">&lt;/<span class="name">head</span>&gt;</span></span><br><span class="line"></span><br><span class="line">  <span class="tag">&lt;<span class="name">body</span>&gt;</span></span><br><span class="line">    <span class="tag">&lt;<span class="name">p</span> <span class="attr">id</span>=<span class="string">&quot;test&quot;</span>&gt;</span>xxx?<span class="tag">&lt;/<span class="name">p</span>&gt;</span></span><br><span class="line">  <span class="tag">&lt;/<span class="name">body</span>&gt;</span></span><br><span class="line"><span class="tag">&lt;/<span class="name">html</span>&gt;</span></span><br></pre></td></tr></table></figure>
+
+<p>在 Firefox, Chrome, Edge 中，如果 <code>&lt;link rel=&quot;stylesheet&quot; href=&quot;xxx&quot;&gt;</code> 后面跟着 <code>&lt;script&gt;</code>, 则 CSS 加载完成后, 才能触发 DOMContentLoaded</p>
+</li>
+<li><p>Css 文件如果在 <code>&lt;head&gt;</code> 中，那么 Css 文件的加载不会影响 DOM 的解析，但是影响 DOM 的<strong>渲染</strong>。<br>因为 Css 文件的加载可以放在预解析线程中，所以不会影响 DOM 解析，但是 DOM 解析完成后，必须等待样式文件被解析，才能渲染页面。</p>
+<p>Css 文件如果在 <code>&lt;body&gt;</code> 中，那么 Css 文件的加载会阻塞 Css 资源后面的 DOM 的解析(阻塞 DOMContentLoaded 执行的时机)。这种情况称为 FOUC(Flash of Unstyled Content) 样式闪烁。也就是说 Css 资源前面的 DOM 会被渲染，Css 后面的 DOM 必须要等待 Css 资源加载完成后才会被渲染，而之前已经渲染的 DOM 会在 Css 资源加载后重绘。</p>
 </li>
 </ul>
  
@@ -1230,82 +1477,13 @@
 </article>
 
     
-    <article
-  id="posts-source/react/⑪更新流程"
-  class="article article-type-posts"
-  itemscope
-  itemprop="blogPost"
-  data-scroll-reveal
->
-  <div class="article-inner">
-    
-    <header class="article-header">
-       
-<h2 itemprop="name">
-  <a class="article-title" href="/posts/46127b00e223/"
-    >React源码分析 ⑪ 更新流程</a> 
-</h2>
- 
-
-      
-    </header>
-     
-    <div class="article-meta">
-      <a href="/posts/46127b00e223/" class="article-date">
-  <time datetime="2022-05-11T04:19:24.000Z" itemprop="datePublished">2022-05-11</time>
-</a> 
-  <div class="article-category">
-    <a class="article-category-link" href="/categories/%E6%BA%90%E7%A0%81%E5%88%86%E6%9E%90/">源码分析</a> / <a class="article-category-link" href="/categories/%E6%BA%90%E7%A0%81%E5%88%86%E6%9E%90/React/">React</a>
-  </div>
-   
-    </div>
-      
-    <div class="article-entry" itemprop="articleBody">
-       
-  <h4 id="更新流程"><a href="#更新流程" class="headerlink" title="更新流程"></a>更新流程</h4><p>useState 与 setState 更新流程大致相同,只是入口函数不同. 这里以 setState 为例</p>
-<p>在类组件上会挂载 setState 方法, 在调用的时候会把状态添加到队列中</p>
-<figure class="highlight js"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">function</span> <span class="title function_">Component</span>(<span class="params">props, context, updater</span>) &#123;</span><br><span class="line">  <span class="variable language_">this</span>.<span class="property">updater</span> = updater || <span class="title class_">ReactNoopUpdateQueue</span>;</span><br><span class="line">&#125;</span><br><span class="line"><span class="title class_">Component</span>.<span class="property"><span class="keyword">prototype</span></span>.<span class="property">setState</span> = <span class="keyword">function</span> (<span class="params">partialState, callback</span>) &#123;</span><br><span class="line">  <span class="variable language_">this</span>.<span class="property">updater</span>.<span class="title function_">enqueueSetState</span>(<span class="variable language_">this</span>, partialState, callback, <span class="string">&quot;setState&quot;</span>);</span><br><span class="line">&#125;;</span><br></pre></td></tr></table></figure>
-
-<p>在 render 阶段的 <a href="posts/e9338ef539b2/#beginWork">beginWork</a> 中会调用类组件对应的方法创建 Fiber 节点, 类组件会在这时实例化,实例化完成后立即执行 <code>adoptClassInstance</code> 方法, 为实例提供用于更新的 this.updater 对象</p>
-<figure class="highlight js"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">function</span> <span class="title function_">constructClassInstance</span>(<span class="params"></span>) &#123;</span><br><span class="line">  <span class="keyword">var</span> instance = <span class="keyword">new</span> <span class="title function_">ctor</span>(props, context);</span><br><span class="line">  <span class="title function_">adoptClassInstance</span>(workInProgress, instance);</span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line"><span class="keyword">function</span> <span class="title function_">adoptClassInstance</span>(<span class="params">workInProgress, instance</span>) &#123;</span><br><span class="line">  instance.<span class="property">updater</span> = classComponentUpdater;</span><br><span class="line">  workInProgress.<span class="property">stateNode</span> = instance;</span><br><span class="line">  <span class="title function_">set</span>(instance, workInProgress);</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
-
-<p>当事件被触发之后会调用 updater.enqueueSetState, 与首次 <a href="/posts/49df00acbc4a/">render</a> 阶段时为 FiberRoot 创建更新队列相似</p>
-<p>在首次渲染时已经通过 initializeUpdateQueue 为节点初始化了更新队列,现在需要把 update 对象添加到队列中</p>
-<figure class="highlight js"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br><span class="line">35</span><br><span class="line">36</span><br><span class="line">37</span><br><span class="line">38</span><br><span class="line">39</span><br><span class="line">40</span><br><span class="line">41</span><br><span class="line">42</span><br><span class="line">43</span><br><span class="line">44</span><br><span class="line">45</span><br><span class="line">46</span><br><span class="line">47</span><br><span class="line">48</span><br><span class="line">49</span><br><span class="line">50</span><br><span class="line">51</span><br><span class="line">52</span><br><span class="line">53</span><br><span class="line">54</span><br><span class="line">55</span><br><span class="line">56</span><br><span class="line">57</span><br><span class="line">58</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">var</span> classComponentUpdater = &#123;</span><br><span class="line">  <span class="attr">isMounted</span>: isMounted,</span><br><span class="line">  <span class="attr">enqueueSetState</span>: <span class="keyword">function</span> (<span class="params">inst, payload, callback</span>) &#123;</span><br><span class="line">    <span class="keyword">var</span> fiber = <span class="title function_">get</span>(inst);</span><br><span class="line">    <span class="keyword">var</span> eventTime = <span class="title function_">requestEventTime</span>();</span><br><span class="line">    <span class="keyword">var</span> lane = <span class="title function_">requestUpdateLane</span>(fiber);</span><br><span class="line">    <span class="keyword">var</span> update = <span class="title function_">createUpdate</span>(eventTime, lane);</span><br><span class="line">    update.<span class="property">payload</span> = payload;</span><br><span class="line"></span><br><span class="line">    <span class="keyword">if</span> (callback !== <span class="literal">undefined</span> &amp;&amp; callback !== <span class="literal">null</span>) &#123;</span><br><span class="line">      update.<span class="property">callback</span> = callback;</span><br><span class="line">    &#125;</span><br><span class="line"></span><br><span class="line">    <span class="title function_">enqueueUpdate</span>(fiber, update);</span><br><span class="line">    <span class="keyword">var</span> root = <span class="title function_">scheduleUpdateOnFiber</span>(fiber, lane, eventTime);</span><br><span class="line"></span><br><span class="line">    <span class="keyword">if</span> (root !== <span class="literal">null</span>) &#123;</span><br><span class="line">      <span class="title function_">entangleTransitions</span>(root, fiber, lane);</span><br><span class="line">    &#125;</span><br><span class="line">  &#125;,</span><br><span class="line">  <span class="attr">enqueueReplaceState</span>: <span class="keyword">function</span> (<span class="params">inst, payload, callback</span>) &#123;</span><br><span class="line">    <span class="keyword">var</span> fiber = <span class="title function_">get</span>(inst);</span><br><span class="line">    <span class="keyword">var</span> eventTime = <span class="title function_">requestEventTime</span>();</span><br><span class="line">    <span class="keyword">var</span> lane = <span class="title function_">requestUpdateLane</span>(fiber);</span><br><span class="line">    <span class="keyword">var</span> update = <span class="title function_">createUpdate</span>(eventTime, lane);</span><br><span class="line">    update.<span class="property">tag</span> = <span class="title class_">ReplaceState</span>;</span><br><span class="line">    update.<span class="property">payload</span> = payload;</span><br><span class="line"></span><br><span class="line">    <span class="keyword">if</span> (callback !== <span class="literal">undefined</span> &amp;&amp; callback !== <span class="literal">null</span>) &#123;</span><br><span class="line">      update.<span class="property">callback</span> = callback;</span><br><span class="line">    &#125;</span><br><span class="line"></span><br><span class="line">    <span class="title function_">enqueueUpdate</span>(fiber, update);</span><br><span class="line">    <span class="keyword">var</span> root = <span class="title function_">scheduleUpdateOnFiber</span>(fiber, lane, eventTime);</span><br><span class="line"></span><br><span class="line">    <span class="keyword">if</span> (root !== <span class="literal">null</span>) &#123;</span><br><span class="line">      <span class="title function_">entangleTransitions</span>(root, fiber, lane);</span><br><span class="line">    &#125;</span><br><span class="line">  &#125;,</span><br><span class="line">  <span class="attr">enqueueForceUpdate</span>: <span class="keyword">function</span> (<span class="params">inst, callback</span>) &#123;</span><br><span class="line">    <span class="keyword">var</span> fiber = <span class="title function_">get</span>(inst);</span><br><span class="line">    <span class="keyword">var</span> eventTime = <span class="title function_">requestEventTime</span>();</span><br><span class="line">    <span class="keyword">var</span> lane = <span class="title function_">requestUpdateLane</span>(fiber);</span><br><span class="line">    <span class="keyword">var</span> update = <span class="title function_">createUpdate</span>(eventTime, lane);</span><br><span class="line">    update.<span class="property">tag</span> = <span class="title class_">ForceUpdate</span>;</span><br><span class="line"></span><br><span class="line">    <span class="keyword">if</span> (callback !== <span class="literal">undefined</span> &amp;&amp; callback !== <span class="literal">null</span>) &#123;</span><br><span class="line">      update.<span class="property">callback</span> = callback;</span><br><span class="line">    &#125;</span><br><span class="line"></span><br><span class="line">    <span class="title function_">enqueueUpdate</span>(fiber, update);</span><br><span class="line">    <span class="keyword">var</span> root = <span class="title function_">scheduleUpdateOnFiber</span>(fiber, lane, eventTime);</span><br><span class="line"></span><br><span class="line">    <span class="keyword">if</span> (root !== <span class="literal">null</span>) &#123;</span><br><span class="line">      <span class="title function_">entangleTransitions</span>(root, fiber, lane);</span><br><span class="line">    &#125;</span><br><span class="line">  &#125;,</span><br><span class="line">&#125;;</span><br></pre></td></tr></table></figure>
-
-<p>update 对象会被添加到 updateQueue.shared.pending 中,并且形成循环链表,如果有新的更新会成为新的头节点</p>
-<p><img src="/posts/46127b00e223/0001.png"></p>
-<figure class="highlight js"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br><span class="line">35</span><br><span class="line">36</span><br><span class="line">37</span><br><span class="line">38</span><br><span class="line">39</span><br><span class="line">40</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">function</span> <span class="title function_">enqueueUpdate</span>(<span class="params">fiber, update, lane</span>) &#123;</span><br><span class="line">  <span class="keyword">var</span> updateQueue = fiber.<span class="property">updateQueue</span>;</span><br><span class="line"></span><br><span class="line">  <span class="keyword">if</span> (updateQueue === <span class="literal">null</span>) &#123;</span><br><span class="line">    <span class="comment">// Only occurs if the fiber has been unmounted.</span></span><br><span class="line">    <span class="keyword">return</span>;</span><br><span class="line">  &#125;</span><br><span class="line"></span><br><span class="line">  <span class="keyword">var</span> sharedQueue = updateQueue.<span class="property">shared</span>;</span><br><span class="line"></span><br><span class="line">  <span class="keyword">if</span> (<span class="title function_">isInterleavedUpdate</span>(fiber)) &#123;</span><br><span class="line">    <span class="keyword">var</span> interleaved = sharedQueue.<span class="property">interleaved</span>;</span><br><span class="line"></span><br><span class="line">    <span class="keyword">if</span> (interleaved === <span class="literal">null</span>) &#123;</span><br><span class="line">      <span class="comment">// This is the first update. Create a circular list.</span></span><br><span class="line">      update.<span class="property">next</span> = update;</span><br><span class="line">      <span class="comment">// At the end of the current render, this queue&#x27;s interleaved updates will</span></span><br><span class="line">      <span class="comment">// be transferred to the pending queue.</span></span><br><span class="line"></span><br><span class="line">      <span class="title function_">pushInterleavedQueue</span>(sharedQueue);</span><br><span class="line">    &#125; <span class="keyword">else</span> &#123;</span><br><span class="line">      update.<span class="property">next</span> = interleaved.<span class="property">next</span>;</span><br><span class="line">      interleaved.<span class="property">next</span> = update;</span><br><span class="line">    &#125;</span><br><span class="line"></span><br><span class="line">    sharedQueue.<span class="property">interleaved</span> = update;</span><br><span class="line">  &#125; <span class="keyword">else</span> &#123;</span><br><span class="line">    <span class="keyword">var</span> pending = sharedQueue.<span class="property">pending</span>;</span><br><span class="line"></span><br><span class="line">    <span class="keyword">if</span> (pending === <span class="literal">null</span>) &#123;</span><br><span class="line">      <span class="comment">// This is the first update. Create a circular list.</span></span><br><span class="line">      update.<span class="property">next</span> = update;</span><br><span class="line">    &#125; <span class="keyword">else</span> &#123;</span><br><span class="line">      update.<span class="property">next</span> = pending.<span class="property">next</span>;</span><br><span class="line">      pending.<span class="property">next</span> = update;</span><br><span class="line">    &#125;</span><br><span class="line"></span><br><span class="line">    sharedQueue.<span class="property">pending</span> = update;</span><br><span class="line">  &#125;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
-
-<p>接着触发事件的 Fiber 节点会被传入 scheduleUpdateOnFiber 进行调度, 其中会执行 markUpdateLaneFromFiberToRoot 将每一个 Fiber 节点的 lanes 都合并到父级节点上,这样在 rootFiber 节点上就包含了所有子节点的更新优先级信息</p>
-<figure class="highlight js"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br><span class="line">35</span><br><span class="line">36</span><br><span class="line">37</span><br><span class="line">38</span><br><span class="line">39</span><br><span class="line">40</span><br><span class="line">41</span><br><span class="line">42</span><br><span class="line">43</span><br><span class="line">44</span><br><span class="line">45</span><br><span class="line">46</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">function</span> <span class="title function_">markUpdateLaneFromFiberToRoot</span>(<span class="params">sourceFiber, lane</span>) &#123;</span><br><span class="line">  <span class="comment">// Update the source fiber&#x27;s lanes</span></span><br><span class="line">  sourceFiber.<span class="property">lanes</span> = <span class="title function_">mergeLanes</span>(sourceFiber.<span class="property">lanes</span>, lane);</span><br><span class="line">  <span class="keyword">var</span> alternate = sourceFiber.<span class="property">alternate</span>;</span><br><span class="line"></span><br><span class="line">  <span class="keyword">if</span> (alternate !== <span class="literal">null</span>) &#123;</span><br><span class="line">    alternate.<span class="property">lanes</span> = <span class="title function_">mergeLanes</span>(alternate.<span class="property">lanes</span>, lane);</span><br><span class="line">  &#125;</span><br><span class="line"></span><br><span class="line">  &#123;</span><br><span class="line">    <span class="keyword">if</span> (</span><br><span class="line">      alternate === <span class="literal">null</span> &amp;&amp;</span><br><span class="line">      (sourceFiber.<span class="property">flags</span> &amp; (<span class="title class_">Placement</span> | <span class="title class_">Hydrating</span>)) !== <span class="title class_">NoFlags</span></span><br><span class="line">    ) &#123;</span><br><span class="line">      <span class="title function_">warnAboutUpdateOnNotYetMountedFiberInDEV</span>(sourceFiber);</span><br><span class="line">    &#125;</span><br><span class="line">  &#125;</span><br><span class="line"></span><br><span class="line">  <span class="keyword">var</span> node = sourceFiber;</span><br><span class="line">  <span class="keyword">var</span> parent = sourceFiber.<span class="property">return</span>;</span><br><span class="line"></span><br><span class="line">  <span class="keyword">while</span> (parent !== <span class="literal">null</span>) &#123;</span><br><span class="line">    parent.<span class="property">childLanes</span> = <span class="title function_">mergeLanes</span>(parent.<span class="property">childLanes</span>, lane);</span><br><span class="line">    alternate = parent.<span class="property">alternate</span>;</span><br><span class="line"></span><br><span class="line">    <span class="keyword">if</span> (alternate !== <span class="literal">null</span>) &#123;</span><br><span class="line">      alternate.<span class="property">childLanes</span> = <span class="title function_">mergeLanes</span>(alternate.<span class="property">childLanes</span>, lane);</span><br><span class="line">    &#125; <span class="keyword">else</span> &#123;</span><br><span class="line">      &#123;</span><br><span class="line">        <span class="keyword">if</span> ((parent.<span class="property">flags</span> &amp; (<span class="title class_">Placement</span> | <span class="title class_">Hydrating</span>)) !== <span class="title class_">NoFlags</span>) &#123;</span><br><span class="line">          <span class="title function_">warnAboutUpdateOnNotYetMountedFiberInDEV</span>(sourceFiber);</span><br><span class="line">        &#125;</span><br><span class="line">      &#125;</span><br><span class="line">    &#125;</span><br><span class="line"></span><br><span class="line">    node = parent;</span><br><span class="line">    parent = parent.<span class="property">return</span>;</span><br><span class="line">  &#125;</span><br><span class="line"></span><br><span class="line">  <span class="keyword">if</span> (node.<span class="property">tag</span> === <span class="title class_">HostRoot</span>) &#123;</span><br><span class="line">    <span class="keyword">var</span> root = node.<span class="property">stateNode</span>;</span><br><span class="line">    <span class="keyword">return</span> root;</span><br><span class="line">  &#125; <span class="keyword">else</span> &#123;</span><br><span class="line">    <span class="keyword">return</span> <span class="literal">null</span>;</span><br><span class="line">  &#125;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
- 
-      <!-- reward -->
-      
-    </div>
-    
-
-    <!-- copyright -->
-    
-    <footer class="article-footer">
-       
-  <ul class="article-tag-list" itemprop="keywords"><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/React/" rel="tag">React</a></li><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/%E6%BA%90%E7%A0%81%E5%88%86%E6%9E%90/" rel="tag">源码分析</a></li></ul>
-
-    </footer>
-  </div>
-
-   
-    
-</article>
-
-    
   </article>
   
 
   
   <nav class="page-nav">
     
-    <a class="extend prev" rel="prev" href="/page/4/">上一页</a><a class="page-number" href="/">1</a><span class="space">&hellip;</span><a class="page-number" href="/page/3/">3</a><a class="page-number" href="/page/4/">4</a><span class="page-number current">5</span><a class="page-number" href="/page/6/">6</a><a class="page-number" href="/page/7/">7</a><span class="space">&hellip;</span><a class="page-number" href="/page/28/">28</a><a class="extend next" rel="next" href="/page/6/">下一页</a>
+    <a class="extend prev" rel="prev" href="/page/4/">上一页</a><a class="page-number" href="/">1</a><span class="space">&hellip;</span><a class="page-number" href="/page/3/">3</a><a class="page-number" href="/page/4/">4</a><span class="page-number current">5</span><a class="page-number" href="/page/6/">6</a><a class="page-number" href="/page/7/">7</a><span class="space">&hellip;</span><a class="page-number" href="/page/27/">27</a><a class="extend next" rel="next" href="/page/6/">下一页</a>
   </nav>
   
 </section>
@@ -1316,7 +1494,7 @@
     <ul>
       <li>
         Copyrights &copy;
-        2015-2024
+        2015-2025
         <i class="ri-heart-fill heart_icon"></i> SunZhiqi
       </li>
     </ul>

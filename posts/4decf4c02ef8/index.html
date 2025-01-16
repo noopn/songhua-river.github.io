@@ -1,0 +1,660 @@
+<!DOCTYPE html>
+
+
+<html lang="zh-CN">
+  
+
+    <head>
+      <meta charset="utf-8" />
+       
+      <meta name="keywords" content="前端 web react" />
+       
+      <meta name="description" content="前端技术与生活。" />
+      
+      <meta
+        name="viewport"
+        content="width=device-width, initial-scale=1, maximum-scale=1"
+      />
+      <title>Nodejs 基础 API |  四月八日</title>
+  <meta name="generator" content="hexo-theme-ayer">
+      
+      <link rel="shortcut icon" href="/favicon.ico" />
+       
+<link rel="stylesheet" href="/dist/main.css">
+ 
+<link rel="stylesheet" href="/css/fonts/remixicon.css">
+ 
+<link rel="stylesheet" href="/css/custom.css">
+ 
+      <script src="/js/pace.min.js"></script>
+       
+ 
+
+      <link rel="stylesheet" href="/css/bulma.min.css" />
+      <script src="/js/sweetalert2.min.js"></script>
+
+      <!-- mermaid -->
+      
+      <script src="https://cdn.staticfile.org/mermaid/8.14.0/mermaid.min.js"></script>
+      
+      <style>
+        .swal2-styled.swal2-confirm {
+          font-size: 1.6rem;
+        }
+      </style>
+    <!-- hexo injector head_end start -->
+<link rel="stylesheet" href="/css/katex.min.css">
+
+<link rel="stylesheet" href="/css/style.css">
+<!-- hexo injector head_end end --></head>
+  </html>
+</html>
+
+
+<body>
+  <div id="app">
+    
+      
+    <main class="content on">
+      <section class="outer">
+  <article
+  id="post-node/node基础"
+  class="article article-type-post"
+  itemscope
+  itemprop="blogPost"
+  data-scroll-reveal
+>
+  <div class="article-inner">
+    
+    <header class="article-header">
+       
+<h1 class="article-title sea-center" style="border-left:0" itemprop="name">
+  Nodejs 基础 API
+</h1>
+ 
+
+      
+    </header>
+     
+    <div class="article-meta">
+      <a href="/posts/4decf4c02ef8/" class="article-date">
+  <time datetime="2021-01-25T07:49:33.000Z" itemprop="datePublished">2021-01-25</time>
+</a> 
+  <div class="article-category">
+    <a class="article-category-link" href="/categories/NodeJS/">NodeJS</a>
+  </div>
+  
+<div class="word_count">
+    <span class="post-time">
+        <span class="post-meta-item-icon">
+            <i class="ri-quill-pen-line"></i>
+            <span class="post-meta-item-text"> 字数统计:</span>
+            <span class="post-count">3.1k</span>
+        </span>
+    </span>
+
+    <span class="post-time">
+        &nbsp; | &nbsp;
+        <span class="post-meta-item-icon">
+            <i class="ri-book-open-line"></i>
+            <span class="post-meta-item-text"> 阅读时长≈</span>
+            <span class="post-count">14 分钟</span>
+        </span>
+    </span>
+</div>
+ 
+    </div>
+      
+    <div class="tocbot"></div>
+
+
+
+
+  
+    <div class="article-entry" itemprop="articleBody">
+       
+  <h4 id="Buffer"><a href="#Buffer" class="headerlink" title="Buffer"></a>Buffer</h4><figure class="highlight js"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br><span class="line">35</span><br><span class="line">36</span><br><span class="line">37</span><br><span class="line">38</span><br><span class="line">39</span><br><span class="line">40</span><br><span class="line">41</span><br><span class="line">42</span><br><span class="line">43</span><br><span class="line">44</span><br><span class="line">45</span><br><span class="line">46</span><br><span class="line">47</span><br><span class="line">48</span><br><span class="line">49</span><br><span class="line">50</span><br><span class="line">51</span><br><span class="line">52</span><br><span class="line">53</span><br><span class="line">54</span><br><span class="line">55</span><br><span class="line">56</span><br><span class="line">57</span><br><span class="line">58</span><br><span class="line">59</span><br><span class="line">60</span><br><span class="line">61</span><br><span class="line">62</span><br><span class="line">63</span><br><span class="line">64</span><br><span class="line">65</span><br><span class="line">66</span><br><span class="line">67</span><br><span class="line">68</span><br><span class="line">69</span><br><span class="line">70</span><br><span class="line">71</span><br><span class="line">72</span><br><span class="line">73</span><br><span class="line">74</span><br><span class="line">75</span><br><span class="line">76</span><br><span class="line">77</span><br><span class="line">78</span><br><span class="line">79</span><br><span class="line">80</span><br><span class="line">81</span><br><span class="line">82</span><br><span class="line">83</span><br><span class="line">84</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment">// 20个字节</span></span><br><span class="line"><span class="keyword">const</span> b1 = <span class="title class_">Buffer</span>.<span class="title function_">alloc</span>(<span class="number">20</span>);</span><br><span class="line"></span><br><span class="line"><span class="comment">// 直接去一块连续内存，可能有没有回收的垃圾数据</span></span><br><span class="line"><span class="keyword">const</span> b2 = <span class="title class_">Buffer</span>.<span class="title function_">allocUnsafe</span>(<span class="number">20</span>);</span><br><span class="line"></span><br><span class="line"><span class="comment">// 为什么是 31 而不是01， 因为uft8 编码下并不是1</span></span><br><span class="line"><span class="keyword">const</span> b3 = <span class="title class_">Buffer</span>.<span class="title function_">from</span>(<span class="string">&quot;1&quot;</span>);</span><br><span class="line"></span><br><span class="line"><span class="comment">// 无法保存文字的信息, 数组中的每一个必须是16进制 8 或2</span></span><br><span class="line"><span class="keyword">const</span> b4 = <span class="title class_">Buffer</span>.<span class="title function_">from</span>([<span class="number">1</span>, <span class="string">&quot;维护&quot;</span>]);</span><br><span class="line"></span><br><span class="line"><span class="comment">// 两块内存不会相同，内存上是分开的</span></span><br><span class="line"><span class="keyword">const</span> b5 = <span class="title class_">Buffer</span>.<span class="title function_">alloc</span>(<span class="number">3</span>);</span><br><span class="line"><span class="keyword">const</span> b6 = <span class="title class_">Buffer</span>.<span class="title function_">from</span>(b5);</span><br><span class="line"></span><br><span class="line"><span class="comment">// 填充</span></span><br><span class="line"></span><br><span class="line"><span class="keyword">const</span> b7 = <span class="title class_">Buffer</span>.<span class="title function_">alloc</span>(<span class="number">5</span>);</span><br><span class="line"><span class="comment">//会把整个buffer填满，如果长度不够，会截断</span></span><br><span class="line"><span class="comment">//                       开始字节位置，结束字节位置</span></span><br><span class="line"><span class="variable language_">console</span>.<span class="title function_">log</span>(b7.<span class="title function_">fill</span>(<span class="string">&quot;中&quot;</span>, <span class="number">1</span>, <span class="number">2</span>));</span><br><span class="line"><span class="variable language_">console</span>.<span class="title function_">log</span>(b7.<span class="title function_">toString</span>());</span><br><span class="line"></span><br><span class="line"><span class="comment">// 写入</span></span><br><span class="line"><span class="keyword">const</span> b8 = <span class="title class_">Buffer</span>.<span class="title function_">alloc</span>(<span class="number">5</span>);</span><br><span class="line"><span class="variable language_">console</span>.<span class="title function_">log</span>(b8.<span class="title function_">write</span>(<span class="string">&quot;中&quot;</span>, <span class="number">1</span>, <span class="number">4</span>));</span><br><span class="line"></span><br><span class="line"><span class="comment">// toString 可以选择从哪一个字节下标开始解析</span></span><br><span class="line"></span><br><span class="line"><span class="variable language_">console</span>.<span class="title function_">log</span>(b7.<span class="title function_">toString</span>(<span class="string">&quot;utf-8&quot;</span>, <span class="number">3</span>, <span class="number">6</span>));</span><br><span class="line"></span><br><span class="line"><span class="comment">// slice 截取操作</span></span><br><span class="line"><span class="keyword">const</span> b9 = <span class="title class_">Buffer</span>.<span class="title function_">from</span>(<span class="string">&quot;为各位&quot;</span>);</span><br><span class="line"><span class="variable language_">console</span>.<span class="title function_">log</span>(b9.<span class="title function_">slice</span>());</span><br><span class="line"></span><br><span class="line"><span class="comment">// 查找可以指定从哪一位后面开始查找</span></span><br><span class="line"><span class="variable language_">console</span>.<span class="title function_">log</span>(b9.<span class="title function_">indexOf</span>(<span class="string">&quot;为&quot;</span>, <span class="number">2</span>));</span><br><span class="line"></span><br><span class="line"><span class="comment">// copy</span></span><br><span class="line"><span class="keyword">const</span> b10 = <span class="title class_">Buffer</span>.<span class="title function_">from</span>(<span class="string">&quot;为各位&quot;</span>);</span><br><span class="line"></span><br><span class="line"><span class="keyword">const</span> b11 = <span class="title class_">Buffer</span>.<span class="title function_">alloc</span>(<span class="number">39</span>);</span><br><span class="line"><span class="comment">// 开始结束位置</span></span><br><span class="line">b10.<span class="title function_">copy</span>(b11, <span class="number">3</span>, <span class="number">6</span>);</span><br><span class="line"></span><br><span class="line"><span class="comment">// concat</span></span><br><span class="line"></span><br><span class="line"><span class="keyword">const</span> b12 = <span class="title class_">Buffer</span>.<span class="title function_">from</span>(<span class="string">&quot;1&quot;</span>);</span><br><span class="line"><span class="keyword">const</span> b13 = <span class="title class_">Buffer</span>.<span class="title function_">from</span>(<span class="string">&quot;2&quot;</span>);</span><br><span class="line"><span class="keyword">const</span> b14 = <span class="title class_">Buffer</span>.<span class="title function_">concat</span>([b12, b13]);</span><br><span class="line"></span><br><span class="line"><span class="comment">// slice 方法已经被标记为过时，使用 subarray 从 Buffer 中截取一段数据</span></span><br><span class="line"><span class="comment">//                      start end</span></span><br><span class="line"><span class="keyword">const</span> b15 = b14.<span class="title function_">subarray</span>(<span class="number">0</span>，<span class="number">2</span>);</span><br><span class="line"></span><br><span class="line"><span class="comment">// 判断</span></span><br><span class="line"><span class="title class_">Buffer</span>.<span class="property">isBuffer</span>;</span><br><span class="line"></span><br><span class="line"><span class="comment">// 实现对 Buffer 的split</span></span><br><span class="line"><span class="title class_">Buffer</span>.<span class="property"><span class="keyword">prototype</span></span>.<span class="property">split</span> = <span class="keyword">function</span> (<span class="params">sep</span>) &#123;</span><br><span class="line">  <span class="keyword">const</span> length = <span class="title class_">Buffer</span>.<span class="title function_">from</span>(sep).<span class="property">length</span>;</span><br><span class="line">  <span class="keyword">let</span> ret = [];</span><br><span class="line">  <span class="keyword">let</span> start = <span class="number">0</span>;</span><br><span class="line">  <span class="keyword">let</span> offset = <span class="number">0</span>;</span><br><span class="line">  <span class="keyword">while</span> ((offset = <span class="variable language_">this</span>.<span class="title function_">indexOf</span>(sep, start)) !== -<span class="number">1</span>) &#123;</span><br><span class="line">    ret.<span class="title function_">push</span>(<span class="variable language_">this</span>.<span class="title function_">subarray</span>(start, offset).<span class="title function_">toString</span>());</span><br><span class="line">    start = offset + length;</span><br><span class="line">  &#125;</span><br><span class="line">  ret.<span class="title function_">push</span>(<span class="variable language_">this</span>.<span class="title function_">subarray</span>(start).<span class="title function_">toString</span>());</span><br><span class="line">  <span class="keyword">return</span> ret;</span><br><span class="line">&#125;;</span><br><span class="line"></span><br><span class="line"><span class="comment">// 向buffer中写入数据</span></span><br><span class="line"><span class="comment">// value 必须是指定进制的整数</span></span><br><span class="line"><span class="comment">// offset从哪个字节开始写入</span></span><br><span class="line"><span class="comment">// LE 表示按小端字节序写入  1 =&gt; [01,00,00,00]</span></span><br><span class="line"><span class="comment">// LB 表示按大端字节序写入  1 =&gt; [00,00,00,01]</span></span><br><span class="line">buf.<span class="title function_">writeInt32LE</span>(value,offset);</span><br><span class="line"></span><br><span class="line"><span class="comment">// 从buffer中读取数据</span></span><br><span class="line"><span class="comment">// offset 表示从哪个位置开始读取</span></span><br><span class="line"><span class="comment">// 注意： 不能设置读取长度，他读取的长度是固定的，4个字节32位</span></span><br><span class="line">buf.<span class="title function_">readInt32LE</span>(offset)</span><br></pre></td></tr></table></figure>
+
+<h4 id="Event-Loop"><a href="#Event-Loop" class="headerlink" title="Event Loop"></a>Event Loop</h4><p>Node.js 的事件循环基于 <strong>libuv</strong>，用于管理异步操作。事件循环分为多个阶段，每个阶段负责处理特定类型的回调。</p>
+<p><strong>1. Timers 阶段</strong></p>
+<ul>
+<li><strong>作用</strong>：处理由 <code>setTimeout()</code> 和 <code>setInterval()</code> 创建的回调。</li>
+<li><strong>行为</strong>：<ul>
+<li>检查到期的定时器，并执行其回调。</li>
+<li>如果没有到期的定时器，则直接跳到下一个阶段。</li>
+</ul>
+</li>
+</ul>
+<p><strong>2. I&#x2F;O Callbacks 阶段</strong></p>
+<ul>
+<li><strong>作用</strong>：处理几乎所有延迟的 I&#x2F;O 回调（除了 <code>close</code> 事件、<code>setImmediate</code> 和定时器回调）。</li>
+<li><strong>行为</strong>：<ul>
+<li>处理如网络请求错误等 I&#x2F;O 回调。</li>
+<li>较少用在用户代码中，因为大多数 I&#x2F;O 会在 <code>Poll</code> 阶段完成。</li>
+</ul>
+</li>
+</ul>
+<p><strong>3. Idle, Prepare 阶段</strong></p>
+<ul>
+<li><strong>作用</strong>：供内部使用，用于准备事件循环和一些内部操作。</li>
+<li><strong>行为</strong>：<ul>
+<li>通常不处理用户定义的回调。</li>
+<li>主要为 Node.js 引擎的内部运行服务。</li>
+</ul>
+</li>
+</ul>
+<p><strong>4. Poll 阶段</strong></p>
+<ul>
+<li><strong>作用</strong>：处理新到达的 I&#x2F;O 事件并执行相关回调。</li>
+<li><strong>行为</strong>：<ul>
+<li>如果没有到期的定时器，这个阶段会阻塞，等待新的 I&#x2F;O 事件。</li>
+<li>如果有定时器到期，会直接跳到 <code>Timers</code> 阶段。</li>
+</ul>
+</li>
+</ul>
+<p><strong>5. Check 阶段</strong></p>
+<ul>
+<li><strong>作用</strong>：执行 <code>setImmediate()</code> 的回调。</li>
+<li><strong>行为</strong>：<ul>
+<li>优先于下一次 <code>Poll</code> 阶段任务执行。</li>
+<li>在 <code>Poll</code> 阶段结束后立即执行。</li>
+</ul>
+</li>
+</ul>
+<p><strong>6. Close Callbacks 阶段</strong></p>
+<ul>
+<li><strong>作用</strong>：处理关闭事件的回调。</li>
+<li><strong>行为</strong>：<ul>
+<li>例如处理 <code>socket.on(&#39;close&#39;)</code> 或 <code>fs.close()</code> 的回调。</li>
+<li>用于释放资源时执行相关任务。</li>
+</ul>
+</li>
+</ul>
+<p><strong>特殊任务：微任务队列（Microtask Queue）</strong></p>
+<ul>
+<li><p>并不属于事件循环的某个阶段，而是会在每个阶段完成后执行。</p>
+</li>
+<li><p>包括以下两种任务：</p>
+<ul>
+<li><code>process.nextTick()</code> 回调。</li>
+<li><code>Promise</code> 的 <code>.then()</code>、<code>.catch()</code> 和 <code>.finally()</code>。</li>
+</ul>
+</li>
+<li><p>微任务优先于下一个事件循环阶段执行。</p>
+</li>
+<li><p>例如，在 <code>Timers</code> 阶段执行完所有回调后，会立即执行微任务队列中的任务。</p>
+</li>
+</ul>
+<figure class="highlight javascript"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment">// setTimeout  setImmediate 执行时机并不确定</span></span><br><span class="line"><span class="built_in">setTimeout</span>(<span class="function">() =&gt;</span> <span class="variable language_">console</span>.<span class="title function_">log</span>(<span class="string">&quot;Timers&quot;</span>), <span class="number">0</span>);</span><br><span class="line"><span class="title function_">setImmediate</span>(<span class="function">() =&gt;</span> <span class="variable language_">console</span>.<span class="title function_">log</span>(<span class="string">&quot;Check&quot;</span>));</span><br><span class="line"><span class="title class_">Promise</span>.<span class="title function_">resolve</span>().<span class="title function_">then</span>(<span class="function">() =&gt;</span> <span class="variable language_">console</span>.<span class="title function_">log</span>(<span class="string">&quot;Microtask&quot;</span>));</span><br><span class="line">process.<span class="title function_">nextTick</span>(<span class="function">() =&gt;</span> <span class="variable language_">console</span>.<span class="title function_">log</span>(<span class="string">&quot;Next Tick&quot;</span>));</span><br><span class="line"></span><br><span class="line"><span class="comment">// 1. Next Tick</span></span><br><span class="line"><span class="comment">// 2. Microtask</span></span><br><span class="line"><span class="comment">// 3. Timers</span></span><br><span class="line"><span class="comment">// 4. Check</span></span><br></pre></td></tr></table></figure>
+
+<figure class="highlight js"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br></pre></td><td class="code"><pre><span class="line">fs.<span class="title function_">readFileSync</span>(<span class="function">() =&gt;</span> &#123;</span><br><span class="line">  <span class="built_in">setTimeout</span>(<span class="function">() =&gt;</span> <span class="variable language_">console</span>.<span class="title function_">log</span>(<span class="string">&quot;Timers&quot;</span>), <span class="number">0</span>);</span><br><span class="line">  <span class="comment">// setImmediate 永远先执行，因为 fs队列是在poll中</span></span><br><span class="line">  <span class="comment">// 下一步会执行 check 队列中的 setImmediate</span></span><br><span class="line">  <span class="title function_">setImmediate</span>(<span class="function">() =&gt;</span> <span class="variable language_">console</span>.<span class="title function_">log</span>(<span class="string">&quot;Check&quot;</span>));</span><br><span class="line">&#125;);</span><br></pre></td></tr></table></figure>
+
+<h4 id="模拟一个模块加载函数"><a href="#模拟一个模块加载函数" class="headerlink" title="模拟一个模块加载函数"></a>模拟一个模块加载函数</h4><figure class="highlight js"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br><span class="line">35</span><br><span class="line">36</span><br><span class="line">37</span><br><span class="line">38</span><br><span class="line">39</span><br><span class="line">40</span><br><span class="line">41</span><br><span class="line">42</span><br><span class="line">43</span><br><span class="line">44</span><br><span class="line">45</span><br><span class="line">46</span><br><span class="line">47</span><br><span class="line">48</span><br><span class="line">49</span><br><span class="line">50</span><br><span class="line">51</span><br><span class="line">52</span><br><span class="line">53</span><br><span class="line">54</span><br><span class="line">55</span><br><span class="line">56</span><br><span class="line">57</span><br><span class="line">58</span><br><span class="line">59</span><br><span class="line">60</span><br><span class="line">61</span><br><span class="line">62</span><br><span class="line">63</span><br><span class="line">64</span><br><span class="line">65</span><br><span class="line">66</span><br><span class="line">67</span><br><span class="line">68</span><br><span class="line">69</span><br><span class="line">70</span><br><span class="line">71</span><br><span class="line">72</span><br><span class="line">73</span><br><span class="line">74</span><br><span class="line">75</span><br><span class="line">76</span><br><span class="line">77</span><br><span class="line">78</span><br><span class="line">79</span><br><span class="line">80</span><br><span class="line">81</span><br><span class="line">82</span><br><span class="line">83</span><br><span class="line">84</span><br><span class="line">85</span><br><span class="line">86</span><br><span class="line">87</span><br><span class="line">88</span><br><span class="line">89</span><br><span class="line">90</span><br><span class="line">91</span><br><span class="line">92</span><br><span class="line">93</span><br><span class="line">94</span><br><span class="line">95</span><br><span class="line">96</span><br><span class="line">97</span><br><span class="line">98</span><br><span class="line">99</span><br><span class="line">100</span><br><span class="line">101</span><br><span class="line">102</span><br><span class="line">103</span><br><span class="line">104</span><br><span class="line">105</span><br><span class="line">106</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">const</span> path = <span class="built_in">require</span>(<span class="string">&quot;path&quot;</span>);</span><br><span class="line"><span class="keyword">const</span> fs = <span class="built_in">require</span>(<span class="string">&quot;fs&quot;</span>);</span><br><span class="line"><span class="keyword">const</span> vm = <span class="built_in">require</span>(<span class="string">&quot;vm&quot;</span>);</span><br><span class="line"></span><br><span class="line"><span class="keyword">class</span> <span class="title class_">Module</span> &#123;</span><br><span class="line">  <span class="comment">// 模块的导出对象，类似于 CommonJS 中的 `module.exports`</span></span><br><span class="line">  <span class="built_in">exports</span> = &#123;&#125;;</span><br><span class="line"></span><br><span class="line">  <span class="comment">// 模块缓存，用于存储已加载的模块，避免重复加载</span></span><br><span class="line">  <span class="keyword">static</span> cache = &#123;&#125;;</span><br><span class="line"></span><br><span class="line">  <span class="comment">// 文件扩展名及对应的加载器方法</span></span><br><span class="line">  <span class="keyword">static</span> extensions = &#123;</span><br><span class="line">    <span class="string">&quot;.js&quot;</span>: <span class="function">(<span class="params"><span class="variable language_">module</span></span>) =&gt;</span> &#123;</span><br><span class="line">      <span class="comment">// 读取 JavaScript 文件内容</span></span><br><span class="line">      <span class="keyword">let</span> content = fs.<span class="title function_">readFileSync</span>(<span class="variable language_">module</span>.<span class="property">id</span>, <span class="string">&quot;utf-8&quot;</span>);</span><br><span class="line"></span><br><span class="line">      <span class="comment">// 将文件内容包装成 CommonJS 模块的函数形式</span></span><br><span class="line">      content = <span class="title class_">Module</span>.<span class="title function_">wrap</span>(content);</span><br><span class="line"></span><br><span class="line">      <span class="comment">// 将包装后的代码编译为可执行的函数</span></span><br><span class="line">      <span class="keyword">const</span> script = <span class="keyword">new</span> vm.<span class="title class_">Script</span>(content);</span><br><span class="line">      <span class="keyword">const</span> fn = script.<span class="title function_">runInThisContext</span>();</span><br><span class="line"></span><br><span class="line">      <span class="comment">// 调用包装函数，将 `exports`、`require` 等注入到模块上下文</span></span><br><span class="line">      <span class="title function_">fn</span>(<span class="variable language_">module</span>.<span class="property">exports</span>, myRequire, <span class="variable language_">module</span>, <span class="variable language_">module</span>.<span class="property">id</span>, path.<span class="title function_">dirname</span>(<span class="variable language_">module</span>.<span class="property">id</span>));</span><br><span class="line">    &#125;,</span><br><span class="line">    <span class="string">&quot;.json&quot;</span>: <span class="function">(<span class="params"><span class="variable language_">module</span></span>) =&gt;</span> &#123;</span><br><span class="line">      <span class="comment">// 读取 JSON 文件内容</span></span><br><span class="line">      <span class="keyword">const</span> content = fs.<span class="title function_">readFileSync</span>(<span class="variable language_">module</span>.<span class="property">id</span>, <span class="string">&quot;utf-8&quot;</span>);</span><br><span class="line"></span><br><span class="line">      <span class="comment">// 将 JSON 内容解析为对象，并赋值给模块的 `exports`</span></span><br><span class="line">      <span class="variable language_">module</span>.<span class="property">exports</span> = <span class="title class_">JSON</span>.<span class="title function_">parse</span>(content);</span><br><span class="line">    &#125;,</span><br><span class="line">  &#125;;</span><br><span class="line"></span><br><span class="line">  <span class="title function_">constructor</span>(<span class="params">id</span>) &#123;</span><br><span class="line">    <span class="comment">// 模块的唯一标识符，通常为文件的绝对路径</span></span><br><span class="line">    <span class="variable language_">this</span>.<span class="property">id</span> = id;</span><br><span class="line">  &#125;</span><br><span class="line"></span><br><span class="line">  <span class="comment">// 包装模块代码，模拟 CommonJS 的运行环境</span></span><br><span class="line">  <span class="keyword">static</span> <span class="title function_">wrap</span>(<span class="params">content</span>) &#123;</span><br><span class="line">    <span class="keyword">return</span> <span class="string">`(function(exports, require, module, __filename, __dirname) &#123; <span class="subst">$&#123;content&#125;</span> &#125;)`</span>;</span><br><span class="line">  &#125;</span><br><span class="line"></span><br><span class="line">  <span class="comment">// 解析文件名，包括支持自动添加扩展名</span></span><br><span class="line">  <span class="keyword">static</span> <span class="title function_">resolveFileName</span>(<span class="params">filePath</span>) &#123;</span><br><span class="line">    <span class="comment">// 将文件路径转换为绝对路径</span></span><br><span class="line">    <span class="keyword">const</span> absolutePath = path.<span class="title function_">resolve</span>(filePath);</span><br><span class="line"></span><br><span class="line">    <span class="comment">// 检查文件是否存在</span></span><br><span class="line">    <span class="keyword">if</span> (fs.<span class="title function_">existsSync</span>(absolutePath)) &#123;</span><br><span class="line">      <span class="keyword">return</span> absolutePath;</span><br><span class="line">    &#125;</span><br><span class="line"></span><br><span class="line">    <span class="comment">// 检查支持的文件扩展名</span></span><br><span class="line">    <span class="keyword">for</span> (<span class="keyword">const</span> ext <span class="keyword">of</span> <span class="title class_">Object</span>.<span class="title function_">keys</span>(<span class="title class_">Module</span>.<span class="property">extensions</span>)) &#123;</span><br><span class="line">      <span class="keyword">const</span> fullPath = absolutePath + ext;</span><br><span class="line">      <span class="keyword">if</span> (fs.<span class="title function_">existsSync</span>(fullPath)) &#123;</span><br><span class="line">        <span class="keyword">return</span> fullPath;</span><br><span class="line">      &#125;</span><br><span class="line">    &#125;</span><br><span class="line"></span><br><span class="line">    <span class="comment">// 如果文件未找到，抛出错误</span></span><br><span class="line">    <span class="keyword">throw</span> <span class="keyword">new</span> <span class="title class_">Error</span>(<span class="string">`无法找到模块 &#x27;<span class="subst">$&#123;filePath&#125;</span>&#x27;`</span>);</span><br><span class="line">  &#125;</span><br><span class="line"></span><br><span class="line">  <span class="comment">// 加载模块，根据扩展名选择合适的加载器</span></span><br><span class="line">  <span class="title function_">load</span>(<span class="params"></span>) &#123;</span><br><span class="line">    <span class="keyword">const</span> ext = path.<span class="title function_">extname</span>(<span class="variable language_">this</span>.<span class="property">id</span>); <span class="comment">// 获取文件扩展名</span></span><br><span class="line">    <span class="keyword">const</span> loader = <span class="title class_">Module</span>.<span class="property">extensions</span>[ext]; <span class="comment">// 根据扩展名找到对应的加载器</span></span><br><span class="line"></span><br><span class="line">    <span class="keyword">if</span> (loader) &#123;</span><br><span class="line">      <span class="title function_">loader</span>(<span class="variable language_">this</span>); <span class="comment">// 执行加载器</span></span><br><span class="line">    &#125; <span class="keyword">else</span> &#123;</span><br><span class="line">      <span class="keyword">throw</span> <span class="keyword">new</span> <span class="title class_">Error</span>(<span class="string">`不支持的文件扩展名 &#x27;<span class="subst">$&#123;ext&#125;</span>&#x27;`</span>);</span><br><span class="line">    &#125;</span><br><span class="line">  &#125;</span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line"><span class="comment">// 自定义的 `require` 方法，用于加载模块</span></span><br><span class="line"><span class="keyword">function</span> <span class="title function_">myRequire</span>(<span class="params">filePath</span>) &#123;</span><br><span class="line">  <span class="comment">// 解析文件名，确保获取的是有效路径</span></span><br><span class="line">  <span class="keyword">const</span> resolvedPath = <span class="title class_">Module</span>.<span class="title function_">resolveFileName</span>(filePath);</span><br><span class="line"></span><br><span class="line">  <span class="comment">// 如果模块已缓存，直接返回缓存中的 `exports`</span></span><br><span class="line">  <span class="keyword">if</span> (<span class="title class_">Module</span>.<span class="property">cache</span>[resolvedPath]) &#123;</span><br><span class="line">    <span class="keyword">return</span> <span class="title class_">Module</span>.<span class="property">cache</span>[resolvedPath].<span class="property">exports</span>;</span><br><span class="line">  &#125;</span><br><span class="line"></span><br><span class="line">  <span class="comment">// 创建一个新的模块实例</span></span><br><span class="line">  <span class="keyword">const</span> <span class="variable language_">module</span> = <span class="keyword">new</span> <span class="title class_">Module</span>(resolvedPath);</span><br><span class="line"></span><br><span class="line">  <span class="comment">// 将模块实例存入缓存</span></span><br><span class="line">  <span class="title class_">Module</span>.<span class="property">cache</span>[resolvedPath] = <span class="variable language_">module</span>;</span><br><span class="line"></span><br><span class="line">  <span class="comment">// 加载模块内容</span></span><br><span class="line">  <span class="variable language_">module</span>.<span class="title function_">load</span>();</span><br><span class="line"></span><br><span class="line">  <span class="comment">// 返回模块的导出对象</span></span><br><span class="line">  <span class="keyword">return</span> <span class="variable language_">module</span>.<span class="property">exports</span>;</span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line"><span class="comment">// 示例：加载一个模块</span></span><br><span class="line"><span class="keyword">const</span> res = <span class="title function_">myRequire</span>(<span class="string">&quot;./path&quot;</span>);</span><br></pre></td></tr></table></figure>
+
+<h4 id="模拟一个-WriteStream"><a href="#模拟一个-WriteStream" class="headerlink" title="模拟一个 WriteStream"></a>模拟一个 WriteStream</h4><figure class="highlight js"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br><span class="line">35</span><br><span class="line">36</span><br><span class="line">37</span><br><span class="line">38</span><br><span class="line">39</span><br><span class="line">40</span><br><span class="line">41</span><br><span class="line">42</span><br><span class="line">43</span><br><span class="line">44</span><br><span class="line">45</span><br><span class="line">46</span><br><span class="line">47</span><br><span class="line">48</span><br><span class="line">49</span><br><span class="line">50</span><br><span class="line">51</span><br><span class="line">52</span><br><span class="line">53</span><br><span class="line">54</span><br><span class="line">55</span><br><span class="line">56</span><br><span class="line">57</span><br><span class="line">58</span><br><span class="line">59</span><br><span class="line">60</span><br><span class="line">61</span><br><span class="line">62</span><br><span class="line">63</span><br><span class="line">64</span><br><span class="line">65</span><br><span class="line">66</span><br><span class="line">67</span><br><span class="line">68</span><br><span class="line">69</span><br><span class="line">70</span><br><span class="line">71</span><br><span class="line">72</span><br><span class="line">73</span><br><span class="line">74</span><br><span class="line">75</span><br><span class="line">76</span><br><span class="line">77</span><br><span class="line">78</span><br><span class="line">79</span><br><span class="line">80</span><br><span class="line">81</span><br><span class="line">82</span><br><span class="line">83</span><br><span class="line">84</span><br><span class="line">85</span><br><span class="line">86</span><br><span class="line">87</span><br><span class="line">88</span><br><span class="line">89</span><br><span class="line">90</span><br><span class="line">91</span><br><span class="line">92</span><br><span class="line">93</span><br><span class="line">94</span><br><span class="line">95</span><br><span class="line">96</span><br><span class="line">97</span><br><span class="line">98</span><br><span class="line">99</span><br><span class="line">100</span><br><span class="line">101</span><br><span class="line">102</span><br><span class="line">103</span><br><span class="line">104</span><br><span class="line">105</span><br><span class="line">106</span><br><span class="line">107</span><br><span class="line">108</span><br><span class="line">109</span><br><span class="line">110</span><br><span class="line">111</span><br><span class="line">112</span><br><span class="line">113</span><br><span class="line">114</span><br><span class="line">115</span><br><span class="line">116</span><br><span class="line">117</span><br><span class="line">118</span><br><span class="line">119</span><br><span class="line">120</span><br><span class="line">121</span><br><span class="line">122</span><br><span class="line">123</span><br><span class="line">124</span><br><span class="line">125</span><br><span class="line">126</span><br><span class="line">127</span><br><span class="line">128</span><br><span class="line">129</span><br><span class="line">130</span><br><span class="line">131</span><br><span class="line">132</span><br><span class="line">133</span><br><span class="line">134</span><br><span class="line">135</span><br><span class="line">136</span><br><span class="line">137</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">const</span> fs = <span class="built_in">require</span>(<span class="string">&quot;fs&quot;</span>);</span><br><span class="line"><span class="keyword">const</span> <span class="title class_">EventEmitter</span> = <span class="built_in">require</span>(<span class="string">&quot;events&quot;</span>);</span><br><span class="line"></span><br><span class="line"><span class="keyword">function</span> <span class="title function_">createWriteStream</span>(<span class="params">path, options = &#123;&#125;</span>) &#123;</span><br><span class="line">  <span class="comment">// 解构并设置默认参数</span></span><br><span class="line">  <span class="keyword">const</span> &#123;</span><br><span class="line">    flags = <span class="string">&quot;w&quot;</span>, <span class="comment">// 文件打开模式（默认为写入模式）</span></span><br><span class="line">    encoding = <span class="string">&quot;utf8&quot;</span>, <span class="comment">// 默认编码</span></span><br><span class="line">    autoClose = <span class="literal">true</span>, <span class="comment">// 是否自动关闭文件描述符</span></span><br><span class="line">    emitClose = <span class="literal">true</span>, <span class="comment">// 是否在关闭时触发 &quot;close&quot; 事件</span></span><br><span class="line">    start = <span class="number">0</span>, <span class="comment">// 文件写入的起始位置</span></span><br><span class="line">    highWaterMark = <span class="number">16</span> * <span class="number">1024</span>, <span class="comment">// 写入的高水位标记（默认 16KB）</span></span><br><span class="line">  &#125; = options;</span><br><span class="line"></span><br><span class="line">  <span class="comment">// 内部状态变量</span></span><br><span class="line">  <span class="keyword">let</span> offset = start; <span class="comment">// 文件写入偏移量</span></span><br><span class="line">  <span class="keyword">let</span> written = <span class="number">0</span>; <span class="comment">// 当前已写入的字节数</span></span><br><span class="line">  <span class="keyword">let</span> writing = <span class="literal">false</span>; <span class="comment">// 是否正在写入</span></span><br><span class="line">  <span class="keyword">let</span> cache = []; <span class="comment">// 缓存区，用于存储等待写入的数据</span></span><br><span class="line"></span><br><span class="line">  <span class="comment">// 定义一个可写流类</span></span><br><span class="line">  <span class="keyword">class</span> <span class="title class_">WriteStream</span> <span class="keyword">extends</span> <span class="title class_ inherited__">EventEmitter</span> &#123;</span><br><span class="line">    fd = <span class="literal">null</span>; <span class="comment">// 文件描述符</span></span><br><span class="line"></span><br><span class="line">    <span class="comment">// 打开文件</span></span><br><span class="line">    <span class="title function_">open</span>(<span class="params"></span>) &#123;</span><br><span class="line">      fs.<span class="title function_">open</span>(path, flags, <span class="function">(<span class="params">err, fd</span>) =&gt;</span> &#123;</span><br><span class="line">        <span class="keyword">if</span> (err) &#123;</span><br><span class="line">          <span class="variable language_">this</span>.<span class="title function_">emit</span>(<span class="string">&quot;error&quot;</span>, err); <span class="comment">// 打开文件失败，触发错误事件</span></span><br><span class="line">          <span class="keyword">if</span> (autoClose) &#123;</span><br><span class="line">            <span class="variable language_">this</span>.<span class="title function_">destroy</span>(); <span class="comment">// 发生错误时自动关闭</span></span><br><span class="line">          &#125;</span><br><span class="line">          <span class="keyword">return</span>;</span><br><span class="line">        &#125;</span><br><span class="line">        <span class="variable language_">this</span>.<span class="property">fd</span> = fd; <span class="comment">// 保存文件描述符</span></span><br><span class="line">        <span class="variable language_">this</span>.<span class="title function_">emit</span>(<span class="string">&quot;open&quot;</span>, fd); <span class="comment">// 触发 open 事件</span></span><br><span class="line">      &#125;);</span><br><span class="line">    &#125;</span><br><span class="line"></span><br><span class="line">    <span class="comment">// 写入数据</span></span><br><span class="line">    <span class="title function_">write</span>(<span class="params">chunk, encoding = <span class="string">&quot;utf8&quot;</span>, callback = () =&gt; &#123;&#125;</span>) &#123;</span><br><span class="line">      <span class="keyword">const</span> buffer = <span class="title class_">Buffer</span>.<span class="title function_">isBuffer</span>(chunk)</span><br><span class="line">        ? chunk</span><br><span class="line">        : <span class="title class_">Buffer</span>.<span class="title function_">from</span>(chunk, encoding);</span><br><span class="line"></span><br><span class="line">      <span class="keyword">const</span> canWrite = written &lt; highWaterMark; <span class="comment">// 判断当前写入是否超出高水位标记</span></span><br><span class="line"></span><br><span class="line">      <span class="comment">// writeStream 首次会直接写入数据，后面的数据会写入缓存</span></span><br><span class="line">      <span class="keyword">if</span> (writing) &#123;</span><br><span class="line">        <span class="comment">// 如果正在写入，缓存数据并延迟写入</span></span><br><span class="line">        cache.<span class="title function_">push</span>(&#123; buffer, callback &#125;);</span><br><span class="line">      &#125; <span class="keyword">else</span> &#123;</span><br><span class="line">        writing = <span class="literal">true</span>;</span><br><span class="line">        <span class="variable language_">this</span>.<span class="title function_">_write</span>(buffer, callback);</span><br><span class="line">      &#125;</span><br><span class="line"></span><br><span class="line">      <span class="keyword">return</span> canWrite; <span class="comment">// 返回是否可以继续写入</span></span><br><span class="line">    &#125;</span><br><span class="line"></span><br><span class="line">    <span class="comment">// 实际写入操作</span></span><br><span class="line">    <span class="title function_">_write</span>(<span class="params">buffer, callback</span>) &#123;</span><br><span class="line">      <span class="keyword">if</span> (<span class="variable language_">this</span>.<span class="property">fd</span> === <span class="literal">null</span>) &#123;</span><br><span class="line">        <span class="comment">// 如果文件描述符尚未打开，等待 open 事件后再写入</span></span><br><span class="line">        <span class="keyword">return</span> <span class="variable language_">this</span>.<span class="title function_">once</span>(<span class="string">&quot;open&quot;</span>, <span class="function">() =&gt;</span> <span class="variable language_">this</span>.<span class="title function_">_write</span>(buffer, callback));</span><br><span class="line">      &#125;</span><br><span class="line"></span><br><span class="line">      fs.<span class="title function_">write</span>(</span><br><span class="line">        <span class="variable language_">this</span>.<span class="property">fd</span>,</span><br><span class="line">        buffer,</span><br><span class="line">        <span class="number">0</span>,</span><br><span class="line">        buffer.<span class="property">length</span>,</span><br><span class="line">        offset,</span><br><span class="line">        <span class="function">(<span class="params">err, bytesWritten</span>) =&gt;</span> &#123;</span><br><span class="line">          <span class="keyword">if</span> (err) &#123;</span><br><span class="line">            <span class="variable language_">this</span>.<span class="title function_">emit</span>(<span class="string">&quot;error&quot;</span>, err); <span class="comment">// 写入失败，触发错误事件</span></span><br><span class="line">            <span class="keyword">if</span> (autoClose) &#123;</span><br><span class="line">              <span class="variable language_">this</span>.<span class="title function_">destroy</span>();</span><br><span class="line">            &#125;</span><br><span class="line">            <span class="keyword">return</span>;</span><br><span class="line">          &#125;</span><br><span class="line"></span><br><span class="line">          offset += bytesWritten; <span class="comment">// 更新写入偏移量</span></span><br><span class="line">          written -= bytesWritten; <span class="comment">// 更新已写入的字节数</span></span><br><span class="line"></span><br><span class="line">          <span class="comment">// 检查缓存区中是否还有待写入的数据</span></span><br><span class="line">          <span class="keyword">const</span> next = cache.<span class="title function_">shift</span>();</span><br><span class="line">          <span class="keyword">if</span> (next) &#123;</span><br><span class="line">            <span class="variable language_">this</span>.<span class="title function_">_write</span>(next.<span class="property">buffer</span>, next.<span class="property">callback</span>);</span><br><span class="line">          &#125; <span class="keyword">else</span> &#123;</span><br><span class="line">            writing = <span class="literal">false</span>; <span class="comment">// 当前写入完成</span></span><br><span class="line">            <span class="title function_">callback</span>(); <span class="comment">// 执行回调</span></span><br><span class="line">            <span class="keyword">if</span> (written &lt; highWaterMark) &#123;</span><br><span class="line">              <span class="variable language_">this</span>.<span class="title function_">emit</span>(<span class="string">&quot;drain&quot;</span>); <span class="comment">// 缓存区清空，触发 drain 事件</span></span><br><span class="line">            &#125;</span><br><span class="line">          &#125;</span><br><span class="line">        &#125;</span><br><span class="line">      );</span><br><span class="line">    &#125;</span><br><span class="line"></span><br><span class="line">    <span class="comment">// 销毁流（关闭文件描述符）</span></span><br><span class="line">    <span class="title function_">destroy</span>(<span class="params"></span>) &#123;</span><br><span class="line">      <span class="keyword">if</span> (<span class="variable language_">this</span>.<span class="property">fd</span> !== <span class="literal">null</span>) &#123;</span><br><span class="line">        fs.<span class="title function_">close</span>(<span class="variable language_">this</span>.<span class="property">fd</span>, <span class="function">(<span class="params">err</span>) =&gt;</span> &#123;</span><br><span class="line">          <span class="keyword">if</span> (emitClose) &#123;</span><br><span class="line">            <span class="variable language_">this</span>.<span class="title function_">emit</span>(<span class="string">&quot;close&quot;</span>); <span class="comment">// 触发 close 事件</span></span><br><span class="line">          &#125;</span><br><span class="line">        &#125;);</span><br><span class="line">        <span class="variable language_">this</span>.<span class="property">fd</span> = <span class="literal">null</span>;</span><br><span class="line">      &#125;</span><br><span class="line">    &#125;</span><br><span class="line">  &#125;</span><br><span class="line"></span><br><span class="line">  <span class="comment">// 创建流实例并打开文件</span></span><br><span class="line">  <span class="keyword">const</span> stream = <span class="keyword">new</span> <span class="title class_">WriteStream</span>();</span><br><span class="line">  stream.<span class="title function_">open</span>();</span><br><span class="line"></span><br><span class="line">  <span class="keyword">return</span> stream;</span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line"><span class="comment">// 使用示例</span></span><br><span class="line"><span class="keyword">const</span> writeStream = <span class="title function_">createWriteStream</span>(<span class="string">&quot;./package.txt&quot;</span>);</span><br><span class="line"></span><br><span class="line"><span class="comment">// 监听事件</span></span><br><span class="line">writeStream.<span class="title function_">on</span>(<span class="string">&quot;open&quot;</span>, <span class="function">(<span class="params">fd</span>) =&gt;</span> <span class="variable language_">console</span>.<span class="title function_">log</span>(<span class="string">&quot;文件已打开，描述符:&quot;</span>, fd));</span><br><span class="line">writeStream.<span class="title function_">on</span>(<span class="string">&quot;error&quot;</span>, <span class="function">(<span class="params">err</span>) =&gt;</span> <span class="variable language_">console</span>.<span class="title function_">error</span>(<span class="string">&quot;发生错误:&quot;</span>, err));</span><br><span class="line">writeStream.<span class="title function_">on</span>(<span class="string">&quot;drain&quot;</span>, <span class="function">() =&gt;</span> <span class="variable language_">console</span>.<span class="title function_">log</span>(<span class="string">&quot;缓存已清空，可以继续写入&quot;</span>));</span><br><span class="line"></span><br><span class="line"><span class="comment">// 写入数据</span></span><br><span class="line">writeStream.<span class="title function_">write</span>(<span class="string">&quot;Hello, World!&quot;</span>, <span class="string">&quot;utf-8&quot;</span>, <span class="function">(<span class="params">err</span>) =&gt;</span> &#123;</span><br><span class="line">  <span class="keyword">if</span> (err) <span class="variable language_">console</span>.<span class="title function_">error</span>(<span class="string">&quot;写入失败:&quot;</span>, err);</span><br><span class="line">  <span class="keyword">else</span> <span class="variable language_">console</span>.<span class="title function_">log</span>(<span class="string">&quot;写入成功&quot;</span>);</span><br><span class="line">&#125;);</span><br><span class="line"></span><br><span class="line">writeStream.<span class="title function_">write</span>(<span class="string">&quot;Another line.&quot;</span>, <span class="string">&quot;utf-8&quot;</span>, <span class="function">(<span class="params">err</span>) =&gt;</span> &#123;</span><br><span class="line">  <span class="keyword">if</span> (err) <span class="variable language_">console</span>.<span class="title function_">error</span>(<span class="string">&quot;写入失败:&quot;</span>, err);</span><br><span class="line">  <span class="keyword">else</span> <span class="variable language_">console</span>.<span class="title function_">log</span>(<span class="string">&quot;写入成功&quot;</span>);</span><br><span class="line">&#125;);</span><br></pre></td></tr></table></figure>
+
+<h4 id="模拟-TCP-粘包的解决方法"><a href="#模拟-TCP-粘包的解决方法" class="headerlink" title="模拟 TCP 粘包的解决方法"></a>模拟 TCP 粘包的解决方法</h4><figure class="highlight js"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment">// util.js</span></span><br><span class="line"><span class="keyword">const</span> <span class="title class_">Buffer</span> = <span class="built_in">require</span>(<span class="string">&quot;buffer&quot;</span>).<span class="property">Buffer</span>;</span><br><span class="line"></span><br><span class="line"><span class="comment">// 获取数据包长度</span></span><br><span class="line"><span class="keyword">const</span> <span class="title function_">getLength</span> = (<span class="params">chunk</span>) =&gt; &#123;</span><br><span class="line">  <span class="keyword">if</span> (chunk.<span class="property">length</span> &lt; <span class="number">12</span>) <span class="keyword">return</span> <span class="number">0</span>; <span class="comment">// 不满足最小长度的包直接返回 0</span></span><br><span class="line">  <span class="keyword">return</span> <span class="number">12</span> + chunk.<span class="title function_">readInt32LE</span>(<span class="number">4</span>); <span class="comment">// 长度字段存储在偏移量为 4 的位置</span></span><br><span class="line">&#125;;</span><br><span class="line"></span><br><span class="line"><span class="comment">// 编码消息为特定格式的 Buffer</span></span><br><span class="line"><span class="keyword">const</span> <span class="title function_">encode</span> = (<span class="params">string, id = <span class="number">1</span></span>) =&gt; &#123;</span><br><span class="line">  <span class="keyword">const</span> strBuffer = <span class="title class_">Buffer</span>.<span class="title function_">from</span>(string); <span class="comment">// 将字符串转为 Buffer</span></span><br><span class="line">  <span class="keyword">const</span> headerBuffer = <span class="title class_">Buffer</span>.<span class="title function_">allocUnsafe</span>(<span class="number">12</span>); <span class="comment">// 创建 12 字节的头部</span></span><br><span class="line">  headerBuffer.<span class="title function_">writeInt32LE</span>(id, <span class="number">0</span>); <span class="comment">// 写入消息 ID (4 字节)</span></span><br><span class="line">  headerBuffer.<span class="title function_">writeInt32LE</span>(strBuffer.<span class="property">length</span>, <span class="number">4</span>); <span class="comment">// 写入消息长度 (4 字节)</span></span><br><span class="line">  <span class="keyword">return</span> <span class="title class_">Buffer</span>.<span class="title function_">concat</span>([headerBuffer, strBuffer]); <span class="comment">// 合并头部和消息</span></span><br><span class="line">&#125;;</span><br><span class="line"></span><br><span class="line"><span class="comment">// 解码 Buffer 为字符串</span></span><br><span class="line"><span class="keyword">const</span> <span class="title function_">decode</span> = (<span class="params">chunk</span>) =&gt; &#123;</span><br><span class="line">  <span class="keyword">const</span> bodyLength = chunk.<span class="title function_">readInt32LE</span>(<span class="number">4</span>); <span class="comment">// 获取消息体的长度</span></span><br><span class="line">  <span class="keyword">return</span> chunk.<span class="title function_">subarray</span>(<span class="number">12</span>, <span class="number">12</span> + bodyLength).<span class="title function_">toString</span>(); <span class="comment">// 提取消息体并转为字符串</span></span><br><span class="line">&#125;;</span><br><span class="line"></span><br><span class="line"><span class="variable language_">module</span>.<span class="property">exports</span> = &#123; getLength, encode, decode &#125;;</span><br></pre></td></tr></table></figure>
+
+<figure class="highlight js"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment">// server.js</span></span><br><span class="line"><span class="keyword">const</span> net = <span class="built_in">require</span>(<span class="string">&quot;net&quot;</span>);</span><br><span class="line"><span class="keyword">const</span> &#123; getLength, encode, decode &#125; = <span class="built_in">require</span>(<span class="string">&quot;./utils&quot;</span>);</span><br><span class="line"></span><br><span class="line"><span class="comment">// 创建服务端</span></span><br><span class="line"><span class="keyword">const</span> server = net.<span class="title function_">createServer</span>();</span><br><span class="line"></span><br><span class="line">server.<span class="title function_">listen</span>(<span class="number">8080</span>, <span class="string">&quot;127.0.0.1&quot;</span>, <span class="function">() =&gt;</span> &#123;</span><br><span class="line">  <span class="variable language_">console</span>.<span class="title function_">log</span>(<span class="string">&quot;服务端启动，监听端口 8080&quot;</span>);</span><br><span class="line">&#125;);</span><br><span class="line"></span><br><span class="line">server.<span class="title function_">on</span>(<span class="string">&quot;connection&quot;</span>, <span class="function">(<span class="params">socket</span>) =&gt;</span> &#123;</span><br><span class="line">  <span class="variable language_">console</span>.<span class="title function_">log</span>(<span class="string">&quot;客户端连接成功&quot;</span>);</span><br><span class="line"></span><br><span class="line">  <span class="keyword">let</span> unReadChunks = <span class="title class_">Buffer</span>.<span class="title function_">alloc</span>(<span class="number">0</span>); <span class="comment">// 存储未处理的缓冲区数据</span></span><br><span class="line"></span><br><span class="line">  socket.<span class="title function_">on</span>(<span class="string">&quot;data&quot;</span>, <span class="function">(<span class="params">chunk</span>) =&gt;</span> &#123;</span><br><span class="line">    unReadChunks = <span class="title class_">Buffer</span>.<span class="title function_">concat</span>([unReadChunks, chunk]); <span class="comment">// 拼接收到的数据</span></span><br><span class="line">    <span class="keyword">let</span> len;</span><br><span class="line"></span><br><span class="line">    <span class="comment">// 循环处理完整的数据包</span></span><br><span class="line">    <span class="keyword">while</span> ((len = <span class="title function_">getLength</span>(unReadChunks))) &#123;</span><br><span class="line">      <span class="keyword">const</span> cur = unReadChunks.<span class="title function_">subarray</span>(<span class="number">0</span>, len); <span class="comment">// 提取当前完整数据包</span></span><br><span class="line">      unReadChunks = unReadChunks.<span class="title function_">subarray</span>(len); <span class="comment">// 更新未处理数据</span></span><br><span class="line"></span><br><span class="line">      <span class="comment">// 解码消息，生成回复</span></span><br><span class="line">      <span class="keyword">const</span> response = <span class="title function_">encode</span>(<span class="title function_">decode</span>(cur) + <span class="string">&quot; 服务端恢复&quot;</span>, cur.<span class="title function_">readInt32LE</span>(<span class="number">0</span>));</span><br><span class="line">      socket.<span class="title function_">write</span>(response); <span class="comment">// 发送回复消息</span></span><br><span class="line">    &#125;</span><br><span class="line">  &#125;);</span><br><span class="line"></span><br><span class="line">  socket.<span class="title function_">on</span>(<span class="string">&quot;close&quot;</span>, <span class="function">() =&gt;</span> <span class="variable language_">console</span>.<span class="title function_">log</span>(<span class="string">&quot;客户端连接关闭&quot;</span>));</span><br><span class="line">  socket.<span class="title function_">on</span>(<span class="string">&quot;error&quot;</span>, <span class="function">(<span class="params">err</span>) =&gt;</span> <span class="variable language_">console</span>.<span class="title function_">error</span>(<span class="string">&quot;服务端错误:&quot;</span>, err));</span><br><span class="line">&#125;);</span><br></pre></td></tr></table></figure>
+
+<figure class="highlight js"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment">// client.js</span></span><br><span class="line"><span class="keyword">const</span> net = <span class="built_in">require</span>(<span class="string">&quot;net&quot;</span>);</span><br><span class="line"><span class="keyword">const</span> &#123; getLength, encode, decode &#125; = <span class="built_in">require</span>(<span class="string">&quot;./utils&quot;</span>);</span><br><span class="line"></span><br><span class="line"><span class="comment">// 创建客户端</span></span><br><span class="line"><span class="keyword">const</span> client = net.<span class="title function_">createConnection</span>(<span class="number">8080</span>, <span class="string">&quot;127.0.0.1&quot;</span>, <span class="function">() =&gt;</span> &#123;</span><br><span class="line">  <span class="variable language_">console</span>.<span class="title function_">log</span>(<span class="string">&quot;客户端连接成功&quot;</span>);</span><br><span class="line"></span><br><span class="line">  <span class="comment">// 发送多条消息</span></span><br><span class="line">  client.<span class="title function_">write</span>(<span class="title function_">encode</span>(<span class="string">&quot;消息1&quot;</span>));</span><br><span class="line">  client.<span class="title function_">write</span>(<span class="title function_">encode</span>(<span class="string">&quot;消息2&quot;</span>));</span><br><span class="line">  client.<span class="title function_">write</span>(<span class="title function_">encode</span>(<span class="string">&quot;消息3&quot;</span>));</span><br><span class="line">  client.<span class="title function_">write</span>(<span class="title function_">encode</span>(<span class="string">&quot;消息4&quot;</span>));</span><br><span class="line">  client.<span class="title function_">write</span>(<span class="title function_">encode</span>(<span class="string">&quot;消息5&quot;</span>));</span><br><span class="line">&#125;);</span><br><span class="line"></span><br><span class="line"><span class="keyword">let</span> unReadChunks = <span class="title class_">Buffer</span>.<span class="title function_">alloc</span>(<span class="number">0</span>); <span class="comment">// 存储未处理的缓冲区数据</span></span><br><span class="line"></span><br><span class="line">client.<span class="title function_">on</span>(<span class="string">&quot;data&quot;</span>, <span class="function">(<span class="params">chunk</span>) =&gt;</span> &#123;</span><br><span class="line">  unReadChunks = <span class="title class_">Buffer</span>.<span class="title function_">concat</span>([unReadChunks, chunk]); <span class="comment">// 拼接收到的数据</span></span><br><span class="line">  <span class="keyword">let</span> len;</span><br><span class="line"></span><br><span class="line">  <span class="comment">// 循环处理完整的数据包</span></span><br><span class="line">  <span class="keyword">while</span> ((len = <span class="title function_">getLength</span>(unReadChunks))) &#123;</span><br><span class="line">    <span class="keyword">const</span> cur = unReadChunks.<span class="title function_">subarray</span>(<span class="number">0</span>, len); <span class="comment">// 提取当前完整数据包</span></span><br><span class="line">    unReadChunks = unReadChunks.<span class="title function_">subarray</span>(len); <span class="comment">// 更新未处理数据</span></span><br><span class="line"></span><br><span class="line">    <span class="comment">// 解码消息并输出</span></span><br><span class="line">    <span class="variable language_">console</span>.<span class="title function_">log</span>(<span class="string">&quot;收到服务端回复:&quot;</span>, <span class="title function_">decode</span>(cur));</span><br><span class="line">  &#125;</span><br><span class="line">&#125;);</span><br><span class="line"></span><br><span class="line">client.<span class="title function_">on</span>(<span class="string">&quot;close&quot;</span>, <span class="function">() =&gt;</span> <span class="variable language_">console</span>.<span class="title function_">log</span>(<span class="string">&quot;客户端连接关闭&quot;</span>));</span><br><span class="line">client.<span class="title function_">on</span>(<span class="string">&quot;error&quot;</span>, <span class="function">(<span class="params">err</span>) =&gt;</span> <span class="variable language_">console</span>.<span class="title function_">error</span>(<span class="string">&quot;客户端错误:&quot;</span>, err));</span><br></pre></td></tr></table></figure>
+ 
+      <!-- reward -->
+      
+      <div id="reword-out">
+        <div id="reward-btn">
+          打赏
+        </div>
+      </div>
+      
+    </div>
+    
+
+    <!-- copyright -->
+    
+    <div class="declare">
+      <ul class="post-copyright">
+        <li>
+          <i class="ri-copyright-line"></i>
+          <strong>版权声明： </strong>
+          
+          本博客所有文章除特别声明外，著作权归作者所有。转载请注明出处！
+          
+        </li>
+      </ul>
+    </div>
+    
+    <footer class="article-footer">
+       
+  <ul class="article-tag-list" itemprop="keywords"><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/NodeJS/" rel="tag">NodeJS</a></li></ul>
+
+    </footer>
+  </div>
+
+   
+  <nav class="article-nav">
+    
+      <a href="/posts/70e91da5d313/" class="article-nav-link">
+        <strong class="article-nav-caption">上一篇</strong>
+        <div class="article-nav-title">
+          
+            集合
+          
+        </div>
+      </a>
+    
+    
+      <a href="/posts/052762c3e747/" class="article-nav-link">
+        <strong class="article-nav-caption">下一篇</strong>
+        <div class="article-nav-title">链表</div>
+      </a>
+    
+  </nav>
+
+  
+   
+<div class="gitalk" id="gitalk-container"></div>
+
+<link rel="stylesheet" href="https://cdn.staticfile.org/gitalk/1.7.2/gitalk.min.css">
+
+
+<script src="https://cdn.staticfile.org/gitalk/1.7.2/gitalk.min.js"></script>
+
+
+<script src="https://cdn.staticfile.org/blueimp-md5/2.19.0/js/md5.min.js"></script>
+
+<script type="text/javascript">
+  var gitalk = new Gitalk({
+    clientID: 'bce2317b25da7c3c18f6',
+    clientSecret: 'e0ab868ca9054234798be82c2b1c0c9dd8632307',
+    repo: 'noopn.github.io',
+    owner: 'noopn',
+    admin: ['noopn'],
+    // id: location.pathname,      // Ensure uniqueness and length less than 50
+    id: md5(location.pathname),
+    distractionFreeMode: false,  // Facebook-like distraction free mode
+    pagerDirection: 'last'
+  })
+
+  gitalk.render('gitalk-container')
+</script>
+
+     
+</article>
+
+</section>
+      <footer class="footer">
+  <div class="outer">
+    <ul>
+      <li>
+        Copyrights &copy;
+        2015-2025
+        <i class="ri-heart-fill heart_icon"></i> SunZhiqi
+      </li>
+    </ul>
+    <ul>
+      <li>
+        
+      </li>
+    </ul>
+    <ul>
+      <li>
+        
+      </li>
+    </ul>
+    <ul>
+      
+    </ul>
+    <ul>
+      
+    </ul>
+    <ul>
+      <li>
+        <!-- cnzz统计 -->
+        
+      </li>
+    </ul>
+  </div>
+</footer>    
+    </main>
+    <div class="float_btns">
+      <div class="totop" id="totop">
+  <i class="ri-arrow-up-line"></i>
+</div>
+
+    </div>
+    <aside class="sidebar on">
+      <button class="navbar-toggle"></button>
+<nav class="navbar">
+  
+  <div class="logo">
+    <a href="/"><img src="/images/ayer-side.png" alt="四月八日"></a>
+  </div>
+  
+  <ul class="nav nav-main">
+    
+    <li class="nav-item">
+      <a class="nav-item-link" href="/">主页</a>
+    </li>
+    
+    <li class="nav-item">
+      <a class="nav-item-link" href="/archives">归档</a>
+    </li>
+    
+    <li class="nav-item">
+      <a class="nav-item-link" href="/categories">分类</a>
+    </li>
+    
+    <li class="nav-item">
+      <a class="nav-item-link" href="/tags">标签</a>
+    </li>
+    
+    <li class="nav-item">
+      <a class="nav-item-link" href="/tags/Essay">随笔</a>
+    </li>
+    
+  </ul>
+</nav>
+<nav class="navbar navbar-bottom">
+  <ul class="nav">
+    <li class="nav-item">
+      
+      <a class="nav-item-link nav-item-search"  title="搜索">
+        <i class="ri-search-line"></i>
+      </a>
+      
+      
+    </li>
+  </ul>
+</nav>
+<div class="search-form-wrap">
+  <div class="local-search local-search-plugin">
+  <input type="search" id="local-search-input" class="local-search-input" placeholder="Search...">
+  <div id="local-search-result" class="local-search-result"></div>
+</div>
+</div>
+    </aside>
+    <div id="mask"></div>
+
+<!-- #reward -->
+<div id="reward">
+  <span class="close"><i class="ri-close-line"></i></span>
+  <p class="reward-p"><i class="ri-cup-line"></i>此时无声胜有声！</p>
+  <div class="reward-box">
+    
+    <div class="reward-item">
+      <img class="reward-img" src="/images/alipay.jpg">
+      <span class="reward-type">支付宝</span>
+    </div>
+    
+    
+    <div class="reward-item">
+      <img class="reward-img" src="/images/wechat.jpg">
+      <span class="reward-type">微信</span>
+    </div>
+    
+  </div>
+</div>
+    
+<script src="/js/jquery-3.6.0.min.js"></script>
+ 
+<script src="/js/lazyload.min.js"></script>
+
+<!-- Tocbot -->
+ 
+<script src="/js/tocbot.min.js"></script>
+
+<script>
+  tocbot.init({
+    tocSelector: ".tocbot",
+    contentSelector: ".article-entry",
+    headingSelector: "h1, h2, h3, h4, h5, h6",
+    hasInnerContainers: true,
+    scrollSmooth: true,
+    scrollContainer: "main",
+    positionFixedSelector: ".tocbot",
+    positionFixedClass: "is-position-fixed",
+    fixedSidebarOffset: "auto",
+  });
+</script>
+
+<script src="/js/jquery.modal.min.js"></script>
+<link rel="stylesheet" href="/css/jquery.modal.min.css" />
+<script src="/js/jquery.justifiedGallery.min.js"></script>
+
+<script src="/dist/main.js"></script>
+
+<!-- ImageViewer -->
+ <!-- Root element of PhotoSwipe. Must have class pswp. -->
+<div class="pswp" tabindex="-1" role="dialog" aria-hidden="true">
+  <!-- Background of PhotoSwipe. 
+         It's a separate element as animating opacity is faster than rgba(). -->
+  <div class="pswp__bg"></div>
+
+  <!-- Slides wrapper with overflow:hidden. -->
+  <div class="pswp__scroll-wrap">
+    <!-- Container that holds slides. 
+            PhotoSwipe keeps only 3 of them in the DOM to save memory.
+            Don't modify these 3 pswp__item elements, data is added later on. -->
+    <div class="pswp__container">
+      <div class="pswp__item"></div>
+      <div class="pswp__item"></div>
+      <div class="pswp__item"></div>
+    </div>
+
+    <!-- Default (PhotoSwipeUI_Default) interface on top of sliding area. Can be changed. -->
+    <div class="pswp__ui pswp__ui--hidden">
+      <div class="pswp__top-bar">
+        <!--  Controls are self-explanatory. Order can be changed. -->
+
+        <div class="pswp__counter"></div>
+
+        <button
+          class="pswp__button pswp__button--close"
+          title="Close (Esc)"
+        ></button>
+
+        <button
+          class="pswp__button pswp__button--share"
+          style="display: none"
+          title="Share"
+        ></button>
+
+        <button
+          class="pswp__button pswp__button--fs"
+          title="Toggle fullscreen"
+        ></button>
+
+        <button
+          class="pswp__button pswp__button--zoom"
+          title="Zoom in/out"
+        ></button>
+
+        <!-- Preloader demo http://codepen.io/dimsemenov/pen/yyBWoR -->
+        <!-- element will get class pswp__preloader--active when preloader is running -->
+        <div class="pswp__preloader">
+          <div class="pswp__preloader__icn">
+            <div class="pswp__preloader__cut">
+              <div class="pswp__preloader__donut"></div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <div class="pswp__share-modal pswp__share-modal--hidden pswp__single-tap">
+        <div class="pswp__share-tooltip"></div>
+      </div>
+
+      <button
+        class="pswp__button pswp__button--arrow--left"
+        title="Previous (arrow left)"
+      ></button>
+
+      <button
+        class="pswp__button pswp__button--arrow--right"
+        title="Next (arrow right)"
+      ></button>
+
+      <div class="pswp__caption">
+        <div class="pswp__caption__center"></div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<link rel="stylesheet" href="/css/photoswipe.min.css" />
+<link rel="stylesheet" href="/css/default-skin.min.css" />
+<script src="/js/photoswipe.min.js"></script>
+<script src="/js/photoswipe-ui-default.min.js"></script>
+
+<script>
+  function viewer_init() {
+    let pswpElement = document.querySelectorAll(".pswp")[0];
+    let $imgArr = document.querySelectorAll(
+      ".article-entry img:not(.reward-img)"
+    );
+
+    $imgArr.forEach(($em, i) => {
+      $em.onclick = () => {
+        // slider展开状态
+        // todo: 这样不好，后面改成状态
+        if (document.querySelector(".left-col.show")) return;
+        let items = [];
+        $imgArr.forEach(($em2, i2) => {
+          let img = $em2.getAttribute("data-idx", i2);
+          let src =
+            $em2.getAttribute("data-target") || $em2.getAttribute("src");
+          let title = $em2.getAttribute("alt");
+          // 获得原图尺寸
+          const image = new Image();
+          image.src = src;
+          items.push({
+            src: src,
+            w: image.width || $em2.width,
+            h: image.height || $em2.height,
+            title: title,
+          });
+        });
+        var gallery = new PhotoSwipe(pswpElement, PhotoSwipeUI_Default, items, {
+          index: parseInt(i),
+        });
+        gallery.init();
+      };
+    });
+  }
+  viewer_init();
+</script>
+ 
+<!-- MathJax -->
+ <script type="text/x-mathjax-config">
+  MathJax.Hub.Config({
+      tex2jax: {
+          inlineMath: [ ['$','$'], ["\\(","\\)"]  ],
+          processEscapes: true,
+          skipTags: ['script', 'noscript', 'style', 'textarea', 'pre', 'code']
+      }
+  });
+
+  MathJax.Hub.Queue(function() {
+      var all = MathJax.Hub.getAllJax(), i;
+      for(i=0; i < all.length; i += 1) {
+          all[i].SourceElement().parentNode.className += ' has-jax';
+      }
+  });
+</script>
+
+<script src="/js/MathJax.js"></script>
+<script src="/js/TeX-AMS-MML_HTMLorMML-full.js"></script>
+
+<script>
+  var ayerConfig = {
+    mathjax: true,
+  };
+</script>
+
+<!-- Katex -->
+
+<!-- busuanzi  -->
+
+<!-- ClickLove -->
+
+<!-- ClickBoom1 -->
+
+<!-- ClickBoom2 -->
+
+<!-- CodeCopy -->
+ 
+<link rel="stylesheet" href="/css/clipboard.css">
+ <script src="/js/clipboard.min.js"></script>
+<script>
+  function wait(callback, seconds) {
+    var timelag = null;
+    timelag = window.setTimeout(callback, seconds);
+  }
+  !(function (e, t, a) {
+    var initCopyCode = function () {
+      var copyHtml = "";
+      copyHtml += '<button class="btn-copy" data-clipboard-snippet="">';
+      copyHtml += '<i class="ri-file-copy-2-line"></i><span>COPY</span>';
+      copyHtml += "</button>";
+      $(".highlight .code pre").before(copyHtml);
+      $(".article pre code").before(copyHtml);
+      var clipboard = new ClipboardJS(".btn-copy", {
+        target: function (trigger) {
+          return trigger.nextElementSibling;
+        },
+      });
+      clipboard.on("success", function (e) {
+        let $btn = $(e.trigger);
+        $btn.addClass("copied");
+        let $icon = $($btn.find("i"));
+        $icon.removeClass("ri-file-copy-2-line");
+        $icon.addClass("ri-checkbox-circle-line");
+        let $span = $($btn.find("span"));
+        $span[0].innerText = "COPIED";
+
+        wait(function () {
+          // 等待两秒钟后恢复
+          $icon.removeClass("ri-checkbox-circle-line");
+          $icon.addClass("ri-file-copy-2-line");
+          $span[0].innerText = "COPY";
+        }, 2000);
+      });
+      clipboard.on("error", function (e) {
+        e.clearSelection();
+        let $btn = $(e.trigger);
+        $btn.addClass("copy-failed");
+        let $icon = $($btn.find("i"));
+        $icon.removeClass("ri-file-copy-2-line");
+        $icon.addClass("ri-time-line");
+        let $span = $($btn.find("span"));
+        $span[0].innerText = "COPY FAILED";
+
+        wait(function () {
+          // 等待两秒钟后恢复
+          $icon.removeClass("ri-time-line");
+          $icon.addClass("ri-file-copy-2-line");
+          $span[0].innerText = "COPY";
+        }, 2000);
+      });
+    };
+    initCopyCode();
+  })(window, document);
+</script>
+ 
+<!-- CanvasBackground -->
+
+<script>
+  if (window.mermaid) {
+    mermaid.initialize({ theme: "default" });
+  }
+</script>
+
+
+    
+    
+
+  </div>
+</body>
+
+</html>
