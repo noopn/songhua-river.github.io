@@ -1,0 +1,604 @@
+<!DOCTYPE html>
+
+
+<html lang="zh-CN">
+  
+
+    <head>
+      <meta charset="utf-8" />
+       
+      <meta name="keywords" content="前端 web react" />
+       
+      <meta name="description" content="前端技术与生活。" />
+      
+      <meta
+        name="viewport"
+        content="width=device-width, initial-scale=1, maximum-scale=1"
+      />
+      <title>LeetCode 二叉树展开为链表 |  四月八日</title>
+  <meta name="generator" content="hexo-theme-ayer">
+      
+      <link rel="shortcut icon" href="/favicon.ico" />
+       
+<link rel="stylesheet" href="/dist/main.css">
+ 
+<link rel="stylesheet" href="/css/fonts/remixicon.css">
+ 
+<link rel="stylesheet" href="/css/custom.css">
+ 
+      <script src="/js/pace.min.js"></script>
+       
+ 
+
+      <link rel="stylesheet" href="/css/bulma.min.css" />
+      <script src="/js/sweetalert2.min.js"></script>
+
+      <!-- mermaid -->
+      
+      <script src="https://cdn.staticfile.org/mermaid/8.14.0/mermaid.min.js"></script>
+      
+      <style>
+        .swal2-styled.swal2-confirm {
+          font-size: 1.6rem;
+        }
+      </style>
+    <!-- hexo injector head_end start -->
+<link rel="stylesheet" href="/css/katex.min.css">
+
+<link rel="stylesheet" href="/css/style.css">
+<!-- hexo injector head_end end --></head>
+  </html>
+</html>
+
+
+<body>
+  <div id="app">
+    
+      
+    <main class="content on">
+      <section class="outer">
+  <article
+  id="post-algorithm/leetcode/二叉树展开为链表"
+  class="article article-type-post"
+  itemscope
+  itemprop="blogPost"
+  data-scroll-reveal
+>
+  <div class="article-inner">
+    
+    <header class="article-header">
+       
+<h1 class="article-title sea-center" style="border-left:0" itemprop="name">
+  LeetCode 二叉树展开为链表
+</h1>
+ 
+
+      
+    </header>
+     
+    <div class="article-meta">
+      <a href="/posts/13ae1e52470a/" class="article-date">
+  <time datetime="2021-01-20T02:20:22.000Z" itemprop="datePublished">2021-01-20</time>
+</a> 
+  <div class="article-category">
+    <a class="article-category-link" href="/categories/%E7%AE%97%E6%B3%95/">算法</a> / <a class="article-category-link" href="/categories/%E7%AE%97%E6%B3%95/%E5%85%B3%E8%81%94%E9%A2%98%E7%9B%AE/">关联题目</a>
+  </div>
+  
+<div class="word_count">
+    <span class="post-time">
+        <span class="post-meta-item-icon">
+            <i class="ri-quill-pen-line"></i>
+            <span class="post-meta-item-text"> 字数统计:</span>
+            <span class="post-count">721</span>
+        </span>
+    </span>
+
+    <span class="post-time">
+        &nbsp; | &nbsp;
+        <span class="post-meta-item-icon">
+            <i class="ri-book-open-line"></i>
+            <span class="post-meta-item-text"> 阅读时长≈</span>
+            <span class="post-count">2 分钟</span>
+        </span>
+    </span>
+</div>
+ 
+    </div>
+      
+    <div class="tocbot"></div>
+
+
+
+
+  
+    <div class="article-entry" itemprop="articleBody">
+       
+  <p><a target="_blank" rel="noopener" href="https://leetcode.cn/problems/flatten-binary-tree-to-linked-list/description/">二叉树展开为链表</a></p>
+<h4 id="思考"><a href="#思考" class="headerlink" title="思考"></a>思考</h4><p>可以很自然想到的是需要一个递归，因为他需要先序遍历<br>我们会直接进入到每个左边子树的左节点。<br>但是这经过的右子树是暂时用不到的，所以需要想办法把他们存起来，在稍后使用</p>
+<!-- It's natural to think that a recursive approach is needed, as it requires a pre-order traversal.
+We will directly move into the left node of each left subtree.
+However, the right subtrees encountered along the way are temporarily unused,
+so we need a way to store them for later use. -->
+
+<figure class="highlight javascript"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">const</span> <span class="title function_">flatten</span> = (<span class="params">root</span>) =&gt; &#123;</span><br><span class="line">  <span class="keyword">if</span> (root === <span class="literal">null</span>) <span class="keyword">return</span> root;</span><br><span class="line"></span><br><span class="line">  <span class="keyword">const</span> stack = [];</span><br><span class="line">  <span class="keyword">const</span> <span class="title function_">dig</span> = (<span class="params">root</span>) =&gt; &#123;</span><br><span class="line">    <span class="keyword">if</span> (root === <span class="literal">null</span>) <span class="keyword">return</span>;</span><br><span class="line">    <span class="keyword">const</span> right = root.<span class="property">right</span>;</span><br><span class="line">    root.<span class="property">right</span> = <span class="literal">null</span>;</span><br><span class="line">    <span class="comment">// 暂存右节点</span></span><br><span class="line">    <span class="keyword">if</span> (right !== <span class="literal">null</span>) stack.<span class="title function_">push</span>(right);</span><br><span class="line"></span><br><span class="line">    <span class="comment">// 将左节点放到有节点上</span></span><br><span class="line">    <span class="comment">// 并先序遍历继续递归向下</span></span><br><span class="line">    <span class="keyword">if</span> (root.<span class="property">left</span> !== <span class="literal">null</span>) &#123;</span><br><span class="line">      root.<span class="property">right</span> = root.<span class="property">left</span>;</span><br><span class="line">      root.<span class="property">left</span> = <span class="literal">null</span>;</span><br><span class="line">      <span class="title function_">dig</span>(root.<span class="property">right</span>);</span><br><span class="line">    &#125; <span class="keyword">else</span> &#123;</span><br><span class="line">      <span class="comment">// 如果已经没有下面的节点</span></span><br><span class="line">      <span class="comment">// 从队列中取出最后的右子树遍历</span></span><br><span class="line">      <span class="keyword">const</span> next = stack.<span class="title function_">pop</span>();</span><br><span class="line">      <span class="keyword">if</span> (next == <span class="literal">undefined</span>) <span class="keyword">return</span>;</span><br><span class="line">      root.<span class="property">right</span> = next;</span><br><span class="line">      <span class="title function_">dig</span>(next);</span><br><span class="line">    &#125;</span><br><span class="line">  &#125;;</span><br><span class="line">  <span class="title function_">dig</span>(root);</span><br><span class="line">  <span class="keyword">return</span> root;</span><br><span class="line">&#125;;</span><br></pre></td></tr></table></figure>
+
+<p>还可以思考用 O(1) 的空间复杂度，解决这个问题。既然不能用额外的储存空间，那么可以考虑将用到的信息放在树的节点上操作。</p>
+<p>题目要求是以先序遍历的顺序，并且通用右指针相连，对于右指针相连这个问题我们可以弱化它，因为这可以通过节点交换很容易的完成。</p>
+<p>而以先序遍历顺序返回，并不意味着一定要先访问根节点，只要处理之后的链表的顺序是先序遍历就可以了，所以对于一个只有三个节点的子树来说，将右节点接在左节点的后面就是先序遍历。</p>
+<p>那要如何保证在访问根节点的时候，左右子树都是一个处理好的链表，我们会想到后序遍历，因为在访问某个节点的时候，他的左右子树都已经在后序遍历的代码位置处理成了链表，可以直接拼接。</p>
+<p>所以可以写出下面的框架</p>
+<!-- We can also consider solving this problem with O(1) space complexity/kəmˈpleksəti/. Since(通常用于提供上下文或理由而不强调原因。) we cannot use extra/ˈekstrə/ storage space, we might think about leveraging(充分利用) the tree nodes themselves to store and operate on the required information.
+
+The problem requires linking nodes in pre-order traversal order using the right pointer. However, we can simplify this requirement for right-pointer linking, as it can be easily achieved through node rearrangement later.
+
+Returning the nodes in pre-order traversal order doesn't necessarily mean visiting the root node first. As long as the final linked list follows the pre-order traversal sequence, it's valid. For example, in a subtree with only three nodes, connecting the right child to the end of the left child's list achieves the pre-order traversal order.
+
+So, how can we ensure that, when visiting a root node, its left and right subtrees are already processed into linked lists? Post-order traversal comes to mind, as it ensures that when processing a node, its left and right subtrees have already been transformed into linked lists, making it easy to concatenate them.
+
+Based on this, we can construct the following framework: -->
+
+<figure class="highlight js"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">const</span> <span class="title function_">dig</span> = (<span class="params">root</span>) =&gt; &#123;</span><br><span class="line">  <span class="keyword">if</span> (root === <span class="literal">null</span>) <span class="keyword">return</span>;</span><br><span class="line">  <span class="title function_">dig</span>(root.<span class="property">left</span>);</span><br><span class="line">  <span class="title function_">dig</span>(root.<span class="property">right</span>);</span><br><span class="line"></span><br><span class="line">  <span class="comment">// 处理左右节点</span></span><br><span class="line">&#125;;</span><br><span class="line"></span><br><span class="line"><span class="keyword">const</span> <span class="title function_">flatten</span> = (<span class="params">root</span>) =&gt; &#123;</span><br><span class="line">  <span class="keyword">if</span> (root === <span class="literal">null</span>) <span class="keyword">return</span> root;</span><br><span class="line">  <span class="title function_">dig</span>(root);</span><br><span class="line">  <span class="keyword">return</span> root;</span><br><span class="line">&#125;;</span><br></pre></td></tr></table></figure>
+
+<p>思考一些具体的细节，当一个节点的左节点不存在的时候，可以直接跳过，因为它只有一个右节点的话不需要处理，或者右节点已经处理成一个链表。</p>
+<p>而当一个左节点存在的时候，需要能获取到左节点这个链表中的最后一个，才能和右节点相连，最后还需要交换左右节点。</p>
+<!-- When a node does not have a left child, we can simply skip it because if it only has a right child, there is no need for processing, or the right child has already been processed into a linked list.
+
+However, when a left child exists, we need to find the last node in the linked list formed by the left child to connect it with the right child. Finally, we need to swap the left and right children. -->
+
+<figure class="highlight js"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">const</span> <span class="title function_">dig</span> = (<span class="params">root</span>) =&gt; &#123;</span><br><span class="line">  <span class="keyword">if</span> (root === <span class="literal">null</span>) <span class="keyword">return</span>;</span><br><span class="line">  <span class="title function_">dig</span>(root.<span class="property">left</span>);</span><br><span class="line">  <span class="title function_">dig</span>(root.<span class="property">right</span>);</span><br><span class="line"></span><br><span class="line">  <span class="keyword">let</span> last = root.<span class="property">left</span>;</span><br><span class="line">  <span class="comment">// 左节点不存在，直接返回</span></span><br><span class="line">  <span class="keyword">if</span> (last === <span class="literal">null</span>) <span class="keyword">return</span>;</span><br><span class="line"></span><br><span class="line">  <span class="comment">// 获取最后一个节点</span></span><br><span class="line">  <span class="keyword">while</span> (last.<span class="property">right</span>) &#123;</span><br><span class="line">    last = last.<span class="property">right</span>;</span><br><span class="line">  &#125;</span><br><span class="line"></span><br><span class="line">  <span class="comment">// 交换左右子树</span></span><br><span class="line">  last.<span class="property">right</span> = root.<span class="property">right</span>;</span><br><span class="line">  root.<span class="property">right</span> = root.<span class="property">left</span>;</span><br><span class="line">  root.<span class="property">left</span> = <span class="literal">null</span>;</span><br><span class="line">&#125;;</span><br><span class="line"></span><br><span class="line"><span class="keyword">const</span> <span class="title function_">flatten</span> = (<span class="params">root</span>) =&gt; &#123;</span><br><span class="line">  <span class="keyword">if</span> (root === <span class="literal">null</span>) <span class="keyword">return</span> root;</span><br><span class="line">  <span class="title function_">dig</span>(root);</span><br><span class="line">  <span class="keyword">return</span> root;</span><br><span class="line">&#125;;</span><br></pre></td></tr></table></figure>
+ 
+      <!-- reward -->
+      
+      <div id="reword-out">
+        <div id="reward-btn">
+          打赏
+        </div>
+      </div>
+      
+    </div>
+    
+
+    <!-- copyright -->
+    
+    <div class="declare">
+      <ul class="post-copyright">
+        <li>
+          <i class="ri-copyright-line"></i>
+          <strong>版权声明： </strong>
+          
+          本博客所有文章除特别声明外，著作权归作者所有。转载请注明出处！
+          
+        </li>
+      </ul>
+    </div>
+    
+    <footer class="article-footer">
+       
+  <ul class="article-tag-list" itemprop="keywords"><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/%E5%85%B3%E8%81%94%E9%A2%98%E7%9B%AE/" rel="tag">关联题目</a></li><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/%E7%AE%97%E6%B3%95/" rel="tag">算法</a></li></ul>
+
+    </footer>
+  </div>
+
+   
+  <nav class="article-nav">
+    
+      <a href="/posts/0d16fafcd38e/" class="article-nav-link">
+        <strong class="article-nav-caption">上一篇</strong>
+        <div class="article-nav-title">
+          
+            LeetCode 填充每个节点的下一个右侧节点指针
+          
+        </div>
+      </a>
+    
+    
+      <a href="/posts/6a338e4e2cab/" class="article-nav-link">
+        <strong class="article-nav-caption">下一篇</strong>
+        <div class="article-nav-title">LeetCode 二叉树直径</div>
+      </a>
+    
+  </nav>
+
+  
+   
+<div class="gitalk" id="gitalk-container"></div>
+
+<link rel="stylesheet" href="https://cdn.staticfile.org/gitalk/1.7.2/gitalk.min.css">
+
+
+<script src="https://cdn.staticfile.org/gitalk/1.7.2/gitalk.min.js"></script>
+
+
+<script src="https://cdn.staticfile.org/blueimp-md5/2.19.0/js/md5.min.js"></script>
+
+<script type="text/javascript">
+  var gitalk = new Gitalk({
+    clientID: 'bce2317b25da7c3c18f6',
+    clientSecret: 'e0ab868ca9054234798be82c2b1c0c9dd8632307',
+    repo: 'noopn.github.io',
+    owner: 'noopn',
+    admin: ['noopn'],
+    // id: location.pathname,      // Ensure uniqueness and length less than 50
+    id: md5(location.pathname),
+    distractionFreeMode: false,  // Facebook-like distraction free mode
+    pagerDirection: 'last'
+  })
+
+  gitalk.render('gitalk-container')
+</script>
+
+     
+</article>
+
+</section>
+      <footer class="footer">
+  <div class="outer">
+    <ul>
+      <li>
+        Copyrights &copy;
+        2015-2025
+        <i class="ri-heart-fill heart_icon"></i> SunZhiqi
+      </li>
+    </ul>
+    <ul>
+      <li>
+        
+      </li>
+    </ul>
+    <ul>
+      <li>
+        
+      </li>
+    </ul>
+    <ul>
+      
+    </ul>
+    <ul>
+      
+    </ul>
+    <ul>
+      <li>
+        <!-- cnzz统计 -->
+        
+      </li>
+    </ul>
+  </div>
+</footer>    
+    </main>
+    <div class="float_btns">
+      <div class="totop" id="totop">
+  <i class="ri-arrow-up-line"></i>
+</div>
+
+    </div>
+    <aside class="sidebar on">
+      <button class="navbar-toggle"></button>
+<nav class="navbar">
+  
+  <div class="logo">
+    <a href="/"><img src="/images/ayer-side.png" alt="四月八日"></a>
+  </div>
+  
+  <ul class="nav nav-main">
+    
+    <li class="nav-item">
+      <a class="nav-item-link" href="/">主页</a>
+    </li>
+    
+    <li class="nav-item">
+      <a class="nav-item-link" href="/archives">归档</a>
+    </li>
+    
+    <li class="nav-item">
+      <a class="nav-item-link" href="/categories">分类</a>
+    </li>
+    
+    <li class="nav-item">
+      <a class="nav-item-link" href="/tags">标签</a>
+    </li>
+    
+  </ul>
+</nav>
+<nav class="navbar navbar-bottom">
+  <ul class="nav">
+    <li class="nav-item">
+      
+      <a class="nav-item-link nav-item-search"  title="搜索">
+        <i class="ri-search-line"></i>
+      </a>
+      
+      
+    </li>
+  </ul>
+</nav>
+<div class="search-form-wrap">
+  <div class="local-search local-search-plugin">
+  <input type="search" id="local-search-input" class="local-search-input" placeholder="Search...">
+  <div id="local-search-result" class="local-search-result"></div>
+</div>
+</div>
+    </aside>
+    <div id="mask"></div>
+
+<!-- #reward -->
+<div id="reward">
+  <span class="close"><i class="ri-close-line"></i></span>
+  <p class="reward-p"><i class="ri-cup-line"></i>此时无声胜有声！</p>
+  <div class="reward-box">
+    
+    <div class="reward-item">
+      <img class="reward-img" src="/images/alipay.jpg">
+      <span class="reward-type">支付宝</span>
+    </div>
+    
+    
+    <div class="reward-item">
+      <img class="reward-img" src="/images/wechat.jpg">
+      <span class="reward-type">微信</span>
+    </div>
+    
+  </div>
+</div>
+    
+<script src="/js/jquery-3.6.0.min.js"></script>
+ 
+<script src="/js/lazyload.min.js"></script>
+
+<!-- Tocbot -->
+ 
+<script src="/js/tocbot.min.js"></script>
+
+<script>
+  tocbot.init({
+    tocSelector: ".tocbot",
+    contentSelector: ".article-entry",
+    headingSelector: "h1, h2, h3, h4, h5, h6",
+    hasInnerContainers: true,
+    scrollSmooth: true,
+    scrollContainer: "main",
+    positionFixedSelector: ".tocbot",
+    positionFixedClass: "is-position-fixed",
+    fixedSidebarOffset: "auto",
+  });
+</script>
+
+<script src="/js/jquery.modal.min.js"></script>
+<link rel="stylesheet" href="/css/jquery.modal.min.css" />
+<script src="/js/jquery.justifiedGallery.min.js"></script>
+
+<script src="/dist/main.js"></script>
+
+<!-- ImageViewer -->
+ <!-- Root element of PhotoSwipe. Must have class pswp. -->
+<div class="pswp" tabindex="-1" role="dialog" aria-hidden="true">
+  <!-- Background of PhotoSwipe. 
+         It's a separate element as animating opacity is faster than rgba(). -->
+  <div class="pswp__bg"></div>
+
+  <!-- Slides wrapper with overflow:hidden. -->
+  <div class="pswp__scroll-wrap">
+    <!-- Container that holds slides. 
+            PhotoSwipe keeps only 3 of them in the DOM to save memory.
+            Don't modify these 3 pswp__item elements, data is added later on. -->
+    <div class="pswp__container">
+      <div class="pswp__item"></div>
+      <div class="pswp__item"></div>
+      <div class="pswp__item"></div>
+    </div>
+
+    <!-- Default (PhotoSwipeUI_Default) interface on top of sliding area. Can be changed. -->
+    <div class="pswp__ui pswp__ui--hidden">
+      <div class="pswp__top-bar">
+        <!--  Controls are self-explanatory. Order can be changed. -->
+
+        <div class="pswp__counter"></div>
+
+        <button
+          class="pswp__button pswp__button--close"
+          title="Close (Esc)"
+        ></button>
+
+        <button
+          class="pswp__button pswp__button--share"
+          style="display: none"
+          title="Share"
+        ></button>
+
+        <button
+          class="pswp__button pswp__button--fs"
+          title="Toggle fullscreen"
+        ></button>
+
+        <button
+          class="pswp__button pswp__button--zoom"
+          title="Zoom in/out"
+        ></button>
+
+        <!-- Preloader demo http://codepen.io/dimsemenov/pen/yyBWoR -->
+        <!-- element will get class pswp__preloader--active when preloader is running -->
+        <div class="pswp__preloader">
+          <div class="pswp__preloader__icn">
+            <div class="pswp__preloader__cut">
+              <div class="pswp__preloader__donut"></div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <div class="pswp__share-modal pswp__share-modal--hidden pswp__single-tap">
+        <div class="pswp__share-tooltip"></div>
+      </div>
+
+      <button
+        class="pswp__button pswp__button--arrow--left"
+        title="Previous (arrow left)"
+      ></button>
+
+      <button
+        class="pswp__button pswp__button--arrow--right"
+        title="Next (arrow right)"
+      ></button>
+
+      <div class="pswp__caption">
+        <div class="pswp__caption__center"></div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<link rel="stylesheet" href="/css/photoswipe.min.css" />
+<link rel="stylesheet" href="/css/default-skin.min.css" />
+<script src="/js/photoswipe.min.js"></script>
+<script src="/js/photoswipe-ui-default.min.js"></script>
+
+<script>
+  function viewer_init() {
+    let pswpElement = document.querySelectorAll(".pswp")[0];
+    let $imgArr = document.querySelectorAll(
+      ".article-entry img:not(.reward-img)"
+    );
+
+    $imgArr.forEach(($em, i) => {
+      $em.onclick = () => {
+        // slider展开状态
+        // todo: 这样不好，后面改成状态
+        if (document.querySelector(".left-col.show")) return;
+        let items = [];
+        $imgArr.forEach(($em2, i2) => {
+          let img = $em2.getAttribute("data-idx", i2);
+          let src =
+            $em2.getAttribute("data-target") || $em2.getAttribute("src");
+          let title = $em2.getAttribute("alt");
+          // 获得原图尺寸
+          const image = new Image();
+          image.src = src;
+          items.push({
+            src: src,
+            w: image.width || $em2.width,
+            h: image.height || $em2.height,
+            title: title,
+          });
+        });
+        var gallery = new PhotoSwipe(pswpElement, PhotoSwipeUI_Default, items, {
+          index: parseInt(i),
+        });
+        gallery.init();
+      };
+    });
+  }
+  viewer_init();
+</script>
+ 
+<!-- MathJax -->
+ <script type="text/x-mathjax-config">
+  MathJax.Hub.Config({
+      tex2jax: {
+          inlineMath: [ ['$','$'], ["\\(","\\)"]  ],
+          processEscapes: true,
+          skipTags: ['script', 'noscript', 'style', 'textarea', 'pre', 'code']
+      }
+  });
+
+  MathJax.Hub.Queue(function() {
+      var all = MathJax.Hub.getAllJax(), i;
+      for(i=0; i < all.length; i += 1) {
+          all[i].SourceElement().parentNode.className += ' has-jax';
+      }
+  });
+</script>
+
+<script src="/js/MathJax.js"></script>
+<script src="/js/TeX-AMS-MML_HTMLorMML-full.js"></script>
+
+<script>
+  var ayerConfig = {
+    mathjax: true,
+  };
+</script>
+
+<!-- Katex -->
+
+<!-- busuanzi  -->
+
+<!-- ClickLove -->
+
+<!-- ClickBoom1 -->
+
+<!-- ClickBoom2 -->
+
+<!-- CodeCopy -->
+ 
+<link rel="stylesheet" href="/css/clipboard.css">
+ <script src="/js/clipboard.min.js"></script>
+<script>
+  function wait(callback, seconds) {
+    var timelag = null;
+    timelag = window.setTimeout(callback, seconds);
+  }
+  !(function (e, t, a) {
+    var initCopyCode = function () {
+      var copyHtml = "";
+      copyHtml += '<button class="btn-copy" data-clipboard-snippet="">';
+      copyHtml += '<i class="ri-file-copy-2-line"></i><span>COPY</span>';
+      copyHtml += "</button>";
+      $(".highlight .code pre").before(copyHtml);
+      $(".article pre code").before(copyHtml);
+      var clipboard = new ClipboardJS(".btn-copy", {
+        target: function (trigger) {
+          return trigger.nextElementSibling;
+        },
+      });
+      clipboard.on("success", function (e) {
+        let $btn = $(e.trigger);
+        $btn.addClass("copied");
+        let $icon = $($btn.find("i"));
+        $icon.removeClass("ri-file-copy-2-line");
+        $icon.addClass("ri-checkbox-circle-line");
+        let $span = $($btn.find("span"));
+        $span[0].innerText = "COPIED";
+
+        wait(function () {
+          // 等待两秒钟后恢复
+          $icon.removeClass("ri-checkbox-circle-line");
+          $icon.addClass("ri-file-copy-2-line");
+          $span[0].innerText = "COPY";
+        }, 2000);
+      });
+      clipboard.on("error", function (e) {
+        e.clearSelection();
+        let $btn = $(e.trigger);
+        $btn.addClass("copy-failed");
+        let $icon = $($btn.find("i"));
+        $icon.removeClass("ri-file-copy-2-line");
+        $icon.addClass("ri-time-line");
+        let $span = $($btn.find("span"));
+        $span[0].innerText = "COPY FAILED";
+
+        wait(function () {
+          // 等待两秒钟后恢复
+          $icon.removeClass("ri-time-line");
+          $icon.addClass("ri-file-copy-2-line");
+          $span[0].innerText = "COPY";
+        }, 2000);
+      });
+    };
+    initCopyCode();
+  })(window, document);
+</script>
+ 
+<!-- CanvasBackground -->
+
+<script>
+  if (window.mermaid) {
+    mermaid.initialize({ theme: "default" });
+  }
+</script>
+
+
+    
+    
+
+  </div>
+</body>
+
+</html>

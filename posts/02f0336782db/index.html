@@ -1,0 +1,622 @@
+<!DOCTYPE html>
+
+
+<html lang="zh-CN">
+  
+
+    <head>
+      <meta charset="utf-8" />
+       
+      <meta name="keywords" content="前端 web react" />
+       
+      <meta name="description" content="前端技术与生活。" />
+      
+      <meta
+        name="viewport"
+        content="width=device-width, initial-scale=1, maximum-scale=1"
+      />
+      <title>ESLint 和 Prettier 区别 |  四月八日</title>
+  <meta name="generator" content="hexo-theme-ayer">
+      
+      <link rel="shortcut icon" href="/favicon.ico" />
+       
+<link rel="stylesheet" href="/dist/main.css">
+ 
+<link rel="stylesheet" href="/css/fonts/remixicon.css">
+ 
+<link rel="stylesheet" href="/css/custom.css">
+ 
+      <script src="/js/pace.min.js"></script>
+       
+ 
+
+      <link rel="stylesheet" href="/css/bulma.min.css" />
+      <script src="/js/sweetalert2.min.js"></script>
+
+      <!-- mermaid -->
+      
+      <script src="https://cdn.staticfile.org/mermaid/8.14.0/mermaid.min.js"></script>
+      
+      <style>
+        .swal2-styled.swal2-confirm {
+          font-size: 1.6rem;
+        }
+      </style>
+    <!-- hexo injector head_end start -->
+<link rel="stylesheet" href="/css/katex.min.css">
+
+<link rel="stylesheet" href="/css/style.css">
+<!-- hexo injector head_end end --></head>
+  </html>
+</html>
+
+
+<body>
+  <div id="app">
+    
+      
+    <main class="content on">
+      <section class="outer">
+  <article
+  id="post-devops/ESLint和Prettier区别"
+  class="article article-type-post"
+  itemscope
+  itemprop="blogPost"
+  data-scroll-reveal
+>
+  <div class="article-inner">
+    
+    <header class="article-header">
+       
+<h1 class="article-title sea-center" style="border-left:0" itemprop="name">
+  ESLint 和 Prettier 区别
+</h1>
+ 
+
+      
+    </header>
+     
+    <div class="article-meta">
+      <a href="/posts/02f0336782db/" class="article-date">
+  <time datetime="2021-09-10T16:15:41.000Z" itemprop="datePublished">2021-09-11</time>
+</a> 
+  <div class="article-category">
+    <a class="article-category-link" href="/categories/DevOps/">DevOps</a>
+  </div>
+  
+<div class="word_count">
+    <span class="post-time">
+        <span class="post-meta-item-icon">
+            <i class="ri-quill-pen-line"></i>
+            <span class="post-meta-item-text"> 字数统计:</span>
+            <span class="post-count">1k</span>
+        </span>
+    </span>
+
+    <span class="post-time">
+        &nbsp; | &nbsp;
+        <span class="post-meta-item-icon">
+            <i class="ri-book-open-line"></i>
+            <span class="post-meta-item-text"> 阅读时长≈</span>
+            <span class="post-count">3 分钟</span>
+        </span>
+    </span>
+</div>
+ 
+    </div>
+      
+    <div class="tocbot"></div>
+
+
+
+
+  
+    <div class="article-entry" itemprop="articleBody">
+       
+  <h4 id="ESLint-是什么呢？"><a href="#ESLint-是什么呢？" class="headerlink" title="ESLint 是什么呢？"></a>ESLint 是什么呢？</h4><p>是一个开源的 JavaScript 的 linting 工具，使用 espree 将 JavaScript 代码解析成抽象语法树 (AST)，然后通过AST 来分析我们代码，从而给予我们两种提示：</p>
+<ul>
+<li>代码质量问题：使用方式有可能有问题(problematic patterns)</li>
+<li>代码风格问题：风格不符合一定规则 (doesn’t adhere to certain style guidelines)<br>(这里的两种问题的分类很重要，下面会主要讲）</li>
+</ul>
+<p>你可能开始为了缩进问题配置了一个规则</p>
+<figure class="highlight json"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment">// .eslintrc    </span></span><br><span class="line"><span class="punctuation">&#123;</span>        </span><br><span class="line">    <span class="attr">&quot;indent&quot;</span><span class="punctuation">:</span> <span class="punctuation">[</span><span class="string">&quot;error&quot;</span><span class="punctuation">,</span> <span class="number">2</span><span class="punctuation">]</span>    </span><br><span class="line"><span class="punctuation">&#125;</span></span><br></pre></td></tr></table></figure>
+
+<ul>
+<li><p>还安装了 ESLint 的 VSCode 插件，没有通过 ESLint 校验的代码 VSCode 会给予下滑波浪线提示。</p>
+</li>
+<li><p>为了万无一失，你还添加一个 <code>pre-commit</code> 钩子 <code>eslint --ext .js src</code>，确保没有通过 lint 的代码不会被提交。</p>
+</li>
+<li><p>更让人开心的是，之前不统一的代码也能通过 eslint –fix 来修改成新的格式。</p>
+</li>
+</ul>
+<h4 id="Airbnb-Style-Guide"><a href="#Airbnb-Style-Guide" class="headerlink" title="Airbnb Style Guide"></a>Airbnb Style Guide</h4><p>配置完了缩进之后你可能又会发现有人写大括号的时候不会换行。最终你找到了一个和你有一样困惑的公司Airbnb,并且他们自行讨论出一套完整的校验规则。你 <code>install</code> 了 <code>eslint-config-airbnb</code> ，并且将 <code>.eslintrc</code> 文件改成了下面这样，终于大功告成。</p>
+<figure class="highlight json"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment">// .eslintrc</span></span><br><span class="line"><span class="punctuation">&#123;</span></span><br><span class="line">  <span class="attr">&quot;extends&quot;</span><span class="punctuation">:</span> <span class="punctuation">[</span><span class="string">&quot;airbnb&quot;</span><span class="punctuation">]</span></span><br><span class="line"><span class="punctuation">&#125;</span></span><br></pre></td></tr></table></figure>
+
+<h4 id="Prettier"><a href="#Prettier" class="headerlink" title="Prettier"></a>Prettier</h4><p>上面我们说到，ESLint 主要解决了两类问题，但其实 ESLint 主要解决的是代码质量问题。另外一类代码风格问题其实 Airbnb JavaScript Style Guide 并没有完完全全做完，因为这些问题”没那么重要”，代码质量出问题意味着程序有潜在 Bug，而风格问题充其量也只是看着不爽。</p>
+<ul>
+<li><p>代码质量规则 (code-quality rules)</p>
+</li>
+<li><p>no-unused-vars</p>
+</li>
+<li><p>no-extra-bind</p>
+</li>
+<li><p>no-implicit-globals</p>
+</li>
+<li><p>prefer-promise-reject-errors<br>…</p>
+</li>
+<li><p>代码风格规则 (code-formatting rules)</p>
+</li>
+<li><p>max-len</p>
+</li>
+<li><p>no-mixed-spaces-and-tabs</p>
+</li>
+<li><p>keyword-spacing</p>
+</li>
+<li><p>comma-style<br>…</p>
+</li>
+</ul>
+<p>这时候就出现了 Prettier，Prettier 声称自己是一个有主见 (偏见) 的代码格式化工具 (opinionated code formatter)，Prettier 认为格式很重要，但是格式好麻烦，我来帮你们定好吧。简单来说，不需要我们再思考究竟是用 single quote，还是 double quote 这些乱起八糟的格式问题，Prettier 帮你处理。最后的结果，可能不是你完全满意，但是，绝对不会丑，况且，Prettier 还给予了一部分配置项，可以通过 <code>.prettierrc</code> 文件修改。</p>
+<p>所以相当于 Prettier 接管了两个问题其中的代码格式的问题，而使用 Prettier + ESLint 就完完全全解决了两个问题。但实际上使用起来配置有些小麻烦，但也不是什么大问题。因为 Prettier 和 ESLint 一起使用的时候会有冲突，所以</p>
+<p>首先我们需要使用 eslint-config-prettier 来关掉 (disable) 所有和 Prettier 冲突的 ESLint 的配置（这部分配置就是上面说的，格式问题的配置，所以关掉不会有问题），方法就是在 <code>.eslintrc</code> 里面将 prettier 设为最后一个 extends</p>
+<figure class="highlight json"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment">// .eslintrc</span></span><br><span class="line"><span class="punctuation">&#123;</span></span><br><span class="line">    <span class="attr">&quot;extends&quot;</span><span class="punctuation">:</span> <span class="punctuation">[</span><span class="string">&quot;prettier&quot;</span><span class="punctuation">]</span> <span class="comment">// prettier 一定要是最后一个，才能确保覆盖</span></span><br><span class="line"><span class="punctuation">&#125;</span></span><br><span class="line"></span><br></pre></td></tr></table></figure>
+
+<p> 然后再启用 <code>eslint-plugin-prettier</code> ，将 prettier 的 rules 以插件的形式加入到 ESLint 里面。这里插一句，为什么”可选” ？当你使用 Prettier + ESLint 的时候，其实格式问题两个都有参与，disable ESLint 之后，其实格式的问题已经全部由 prettier 接手了。那我们为什么还要这个 plugin？其实是因为我们期望报错的来源依旧是 ESLint ，使用这个，相当于把 Prettier 推荐的格式问题的配置以 ESLint rules 的方式写入，这样相当于可以统一代码问题的来源。</p>
+<figure class="highlight json"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment">// .eslintrc    </span></span><br><span class="line"><span class="punctuation">&#123;</span></span><br><span class="line">    <span class="attr">&quot;plugins&quot;</span><span class="punctuation">:</span> <span class="punctuation">[</span><span class="string">&quot;prettier&quot;</span><span class="punctuation">]</span><span class="punctuation">,</span></span><br><span class="line">    <span class="attr">&quot;rules&quot;</span><span class="punctuation">:</span> <span class="punctuation">&#123;</span>        </span><br><span class="line">        <span class="attr">&quot;prettier/prettier&quot;</span><span class="punctuation">:</span> <span class="string">&quot;error&quot;</span></span><br><span class="line">    <span class="punctuation">&#125;</span></span><br><span class="line"><span class="punctuation">&#125;</span></span><br><span class="line"></span><br></pre></td></tr></table></figure>
+
+<p>将上面两个步骤和在一起就是下面的配置，也是官方的推荐配置</p>
+<figure class="highlight json"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment">// .eslintrc</span></span><br><span class="line"><span class="punctuation">&#123;</span></span><br><span class="line">  <span class="attr">&quot;extends&quot;</span><span class="punctuation">:</span> <span class="punctuation">[</span><span class="string">&quot;plugin:prettier/recommended&quot;</span><span class="punctuation">]</span></span><br><span class="line"><span class="punctuation">&#125;</span></span><br></pre></td></tr></table></figure> 
+      <!-- reward -->
+      
+      <div id="reword-out">
+        <div id="reward-btn">
+          打赏
+        </div>
+      </div>
+      
+    </div>
+    
+
+    <!-- copyright -->
+    
+    <div class="declare">
+      <ul class="post-copyright">
+        <li>
+          <i class="ri-copyright-line"></i>
+          <strong>版权声明： </strong>
+          
+          本博客所有文章除特别声明外，著作权归作者所有。转载请注明出处！
+          
+        </li>
+      </ul>
+    </div>
+    
+    <footer class="article-footer">
+       
+  <ul class="article-tag-list" itemprop="keywords"><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/DevOps/" rel="tag">DevOps</a></li></ul>
+
+    </footer>
+  </div>
+
+   
+  <nav class="article-nav">
+    
+      <a href="/posts/87a060953f56/" class="article-nav-link">
+        <strong class="article-nav-caption">上一篇</strong>
+        <div class="article-nav-title">
+          
+            ESLint配置指南
+          
+        </div>
+      </a>
+    
+    
+      <a href="/posts/afa1cc89da08/" class="article-nav-link">
+        <strong class="article-nav-caption">下一篇</strong>
+        <div class="article-nav-title">React原理 生命周期</div>
+      </a>
+    
+  </nav>
+
+  
+   
+<div class="gitalk" id="gitalk-container"></div>
+
+<link rel="stylesheet" href="https://cdn.staticfile.org/gitalk/1.7.2/gitalk.min.css">
+
+
+<script src="https://cdn.staticfile.org/gitalk/1.7.2/gitalk.min.js"></script>
+
+
+<script src="https://cdn.staticfile.org/blueimp-md5/2.19.0/js/md5.min.js"></script>
+
+<script type="text/javascript">
+  var gitalk = new Gitalk({
+    clientID: 'bce2317b25da7c3c18f6',
+    clientSecret: 'e0ab868ca9054234798be82c2b1c0c9dd8632307',
+    repo: 'noopn.github.io',
+    owner: 'noopn',
+    admin: ['noopn'],
+    // id: location.pathname,      // Ensure uniqueness and length less than 50
+    id: md5(location.pathname),
+    distractionFreeMode: false,  // Facebook-like distraction free mode
+    pagerDirection: 'last'
+  })
+
+  gitalk.render('gitalk-container')
+</script>
+
+     
+</article>
+
+</section>
+      <footer class="footer">
+  <div class="outer">
+    <ul>
+      <li>
+        Copyrights &copy;
+        2015-2025
+        <i class="ri-heart-fill heart_icon"></i> SunZhiqi
+      </li>
+    </ul>
+    <ul>
+      <li>
+        
+      </li>
+    </ul>
+    <ul>
+      <li>
+        
+      </li>
+    </ul>
+    <ul>
+      
+    </ul>
+    <ul>
+      
+    </ul>
+    <ul>
+      <li>
+        <!-- cnzz统计 -->
+        
+      </li>
+    </ul>
+  </div>
+</footer>    
+    </main>
+    <div class="float_btns">
+      <div class="totop" id="totop">
+  <i class="ri-arrow-up-line"></i>
+</div>
+
+    </div>
+    <aside class="sidebar on">
+      <button class="navbar-toggle"></button>
+<nav class="navbar">
+  
+  <div class="logo">
+    <a href="/"><img src="/images/ayer-side.png" alt="四月八日"></a>
+  </div>
+  
+  <ul class="nav nav-main">
+    
+    <li class="nav-item">
+      <a class="nav-item-link" href="/">主页</a>
+    </li>
+    
+    <li class="nav-item">
+      <a class="nav-item-link" href="/archives">归档</a>
+    </li>
+    
+    <li class="nav-item">
+      <a class="nav-item-link" href="/categories">分类</a>
+    </li>
+    
+    <li class="nav-item">
+      <a class="nav-item-link" href="/tags">标签</a>
+    </li>
+    
+  </ul>
+</nav>
+<nav class="navbar navbar-bottom">
+  <ul class="nav">
+    <li class="nav-item">
+      
+      <a class="nav-item-link nav-item-search"  title="搜索">
+        <i class="ri-search-line"></i>
+      </a>
+      
+      
+    </li>
+  </ul>
+</nav>
+<div class="search-form-wrap">
+  <div class="local-search local-search-plugin">
+  <input type="search" id="local-search-input" class="local-search-input" placeholder="Search...">
+  <div id="local-search-result" class="local-search-result"></div>
+</div>
+</div>
+    </aside>
+    <div id="mask"></div>
+
+<!-- #reward -->
+<div id="reward">
+  <span class="close"><i class="ri-close-line"></i></span>
+  <p class="reward-p"><i class="ri-cup-line"></i>此时无声胜有声！</p>
+  <div class="reward-box">
+    
+    <div class="reward-item">
+      <img class="reward-img" src="/images/alipay.jpg">
+      <span class="reward-type">支付宝</span>
+    </div>
+    
+    
+    <div class="reward-item">
+      <img class="reward-img" src="/images/wechat.jpg">
+      <span class="reward-type">微信</span>
+    </div>
+    
+  </div>
+</div>
+    
+<script src="/js/jquery-3.6.0.min.js"></script>
+ 
+<script src="/js/lazyload.min.js"></script>
+
+<!-- Tocbot -->
+ 
+<script src="/js/tocbot.min.js"></script>
+
+<script>
+  tocbot.init({
+    tocSelector: ".tocbot",
+    contentSelector: ".article-entry",
+    headingSelector: "h1, h2, h3, h4, h5, h6",
+    hasInnerContainers: true,
+    scrollSmooth: true,
+    scrollContainer: "main",
+    positionFixedSelector: ".tocbot",
+    positionFixedClass: "is-position-fixed",
+    fixedSidebarOffset: "auto",
+  });
+</script>
+
+<script src="/js/jquery.modal.min.js"></script>
+<link rel="stylesheet" href="/css/jquery.modal.min.css" />
+<script src="/js/jquery.justifiedGallery.min.js"></script>
+
+<script src="/dist/main.js"></script>
+
+<!-- ImageViewer -->
+ <!-- Root element of PhotoSwipe. Must have class pswp. -->
+<div class="pswp" tabindex="-1" role="dialog" aria-hidden="true">
+  <!-- Background of PhotoSwipe. 
+         It's a separate element as animating opacity is faster than rgba(). -->
+  <div class="pswp__bg"></div>
+
+  <!-- Slides wrapper with overflow:hidden. -->
+  <div class="pswp__scroll-wrap">
+    <!-- Container that holds slides. 
+            PhotoSwipe keeps only 3 of them in the DOM to save memory.
+            Don't modify these 3 pswp__item elements, data is added later on. -->
+    <div class="pswp__container">
+      <div class="pswp__item"></div>
+      <div class="pswp__item"></div>
+      <div class="pswp__item"></div>
+    </div>
+
+    <!-- Default (PhotoSwipeUI_Default) interface on top of sliding area. Can be changed. -->
+    <div class="pswp__ui pswp__ui--hidden">
+      <div class="pswp__top-bar">
+        <!--  Controls are self-explanatory. Order can be changed. -->
+
+        <div class="pswp__counter"></div>
+
+        <button
+          class="pswp__button pswp__button--close"
+          title="Close (Esc)"
+        ></button>
+
+        <button
+          class="pswp__button pswp__button--share"
+          style="display: none"
+          title="Share"
+        ></button>
+
+        <button
+          class="pswp__button pswp__button--fs"
+          title="Toggle fullscreen"
+        ></button>
+
+        <button
+          class="pswp__button pswp__button--zoom"
+          title="Zoom in/out"
+        ></button>
+
+        <!-- Preloader demo http://codepen.io/dimsemenov/pen/yyBWoR -->
+        <!-- element will get class pswp__preloader--active when preloader is running -->
+        <div class="pswp__preloader">
+          <div class="pswp__preloader__icn">
+            <div class="pswp__preloader__cut">
+              <div class="pswp__preloader__donut"></div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <div class="pswp__share-modal pswp__share-modal--hidden pswp__single-tap">
+        <div class="pswp__share-tooltip"></div>
+      </div>
+
+      <button
+        class="pswp__button pswp__button--arrow--left"
+        title="Previous (arrow left)"
+      ></button>
+
+      <button
+        class="pswp__button pswp__button--arrow--right"
+        title="Next (arrow right)"
+      ></button>
+
+      <div class="pswp__caption">
+        <div class="pswp__caption__center"></div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<link rel="stylesheet" href="/css/photoswipe.min.css" />
+<link rel="stylesheet" href="/css/default-skin.min.css" />
+<script src="/js/photoswipe.min.js"></script>
+<script src="/js/photoswipe-ui-default.min.js"></script>
+
+<script>
+  function viewer_init() {
+    let pswpElement = document.querySelectorAll(".pswp")[0];
+    let $imgArr = document.querySelectorAll(
+      ".article-entry img:not(.reward-img)"
+    );
+
+    $imgArr.forEach(($em, i) => {
+      $em.onclick = () => {
+        // slider展开状态
+        // todo: 这样不好，后面改成状态
+        if (document.querySelector(".left-col.show")) return;
+        let items = [];
+        $imgArr.forEach(($em2, i2) => {
+          let img = $em2.getAttribute("data-idx", i2);
+          let src =
+            $em2.getAttribute("data-target") || $em2.getAttribute("src");
+          let title = $em2.getAttribute("alt");
+          // 获得原图尺寸
+          const image = new Image();
+          image.src = src;
+          items.push({
+            src: src,
+            w: image.width || $em2.width,
+            h: image.height || $em2.height,
+            title: title,
+          });
+        });
+        var gallery = new PhotoSwipe(pswpElement, PhotoSwipeUI_Default, items, {
+          index: parseInt(i),
+        });
+        gallery.init();
+      };
+    });
+  }
+  viewer_init();
+</script>
+ 
+<!-- MathJax -->
+ <script type="text/x-mathjax-config">
+  MathJax.Hub.Config({
+      tex2jax: {
+          inlineMath: [ ['$','$'], ["\\(","\\)"]  ],
+          processEscapes: true,
+          skipTags: ['script', 'noscript', 'style', 'textarea', 'pre', 'code']
+      }
+  });
+
+  MathJax.Hub.Queue(function() {
+      var all = MathJax.Hub.getAllJax(), i;
+      for(i=0; i < all.length; i += 1) {
+          all[i].SourceElement().parentNode.className += ' has-jax';
+      }
+  });
+</script>
+
+<script src="/js/MathJax.js"></script>
+<script src="/js/TeX-AMS-MML_HTMLorMML-full.js"></script>
+
+<script>
+  var ayerConfig = {
+    mathjax: true,
+  };
+</script>
+
+<!-- Katex -->
+
+<!-- busuanzi  -->
+
+<!-- ClickLove -->
+
+<!-- ClickBoom1 -->
+
+<!-- ClickBoom2 -->
+
+<!-- CodeCopy -->
+ 
+<link rel="stylesheet" href="/css/clipboard.css">
+ <script src="/js/clipboard.min.js"></script>
+<script>
+  function wait(callback, seconds) {
+    var timelag = null;
+    timelag = window.setTimeout(callback, seconds);
+  }
+  !(function (e, t, a) {
+    var initCopyCode = function () {
+      var copyHtml = "";
+      copyHtml += '<button class="btn-copy" data-clipboard-snippet="">';
+      copyHtml += '<i class="ri-file-copy-2-line"></i><span>COPY</span>';
+      copyHtml += "</button>";
+      $(".highlight .code pre").before(copyHtml);
+      $(".article pre code").before(copyHtml);
+      var clipboard = new ClipboardJS(".btn-copy", {
+        target: function (trigger) {
+          return trigger.nextElementSibling;
+        },
+      });
+      clipboard.on("success", function (e) {
+        let $btn = $(e.trigger);
+        $btn.addClass("copied");
+        let $icon = $($btn.find("i"));
+        $icon.removeClass("ri-file-copy-2-line");
+        $icon.addClass("ri-checkbox-circle-line");
+        let $span = $($btn.find("span"));
+        $span[0].innerText = "COPIED";
+
+        wait(function () {
+          // 等待两秒钟后恢复
+          $icon.removeClass("ri-checkbox-circle-line");
+          $icon.addClass("ri-file-copy-2-line");
+          $span[0].innerText = "COPY";
+        }, 2000);
+      });
+      clipboard.on("error", function (e) {
+        e.clearSelection();
+        let $btn = $(e.trigger);
+        $btn.addClass("copy-failed");
+        let $icon = $($btn.find("i"));
+        $icon.removeClass("ri-file-copy-2-line");
+        $icon.addClass("ri-time-line");
+        let $span = $($btn.find("span"));
+        $span[0].innerText = "COPY FAILED";
+
+        wait(function () {
+          // 等待两秒钟后恢复
+          $icon.removeClass("ri-time-line");
+          $icon.addClass("ri-file-copy-2-line");
+          $span[0].innerText = "COPY";
+        }, 2000);
+      });
+    };
+    initCopyCode();
+  })(window, document);
+</script>
+ 
+<!-- CanvasBackground -->
+
+<script>
+  if (window.mermaid) {
+    mermaid.initialize({ theme: "default" });
+  }
+</script>
+
+
+    
+    
+
+  </div>
+</body>
+
+</html>

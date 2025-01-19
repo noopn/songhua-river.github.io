@@ -112,7 +112,7 @@
     
     
     <article
-  id="posts-ts/React+TS 实战文档"
+  id="posts-react/highchartsWrapper"
   class="article article-type-posts"
   itemscope
   itemprop="blogPost"
@@ -123,7 +123,63 @@
     <header class="article-header">
        
 <h2 itemprop="name">
-  <a class="article-title" href="/posts/1b7f8cf1e61c/"
+  <a class="article-title" href="/posts/5735b2be6e00/"
+    >Highcharts wrapper for React</a> 
+</h2>
+ 
+
+      
+    </header>
+     
+    <div class="article-meta">
+      <a href="/posts/5735b2be6e00/" class="article-date">
+  <time datetime="2022-04-14T05:46:40.000Z" itemprop="datePublished">2022-04-14</time>
+</a> 
+  <div class="article-category">
+    <a class="article-category-link" href="/categories/React/">React</a>
+  </div>
+   
+    </div>
+      
+    <div class="article-entry" itemprop="articleBody">
+       
+  <h4 id="简介"><a href="#简介" class="headerlink" title="简介"></a>简介</h4><p>一个非常精简的包装工具,可以在 React 项目中使用 highcharts</p>
+<h4 id="源码分析"><a href="#源码分析" class="headerlink" title="源码分析"></a>源码分析</h4><p>服务端渲染的时候 <code>useLayoutEffect</code> 会抛出警告,所以需要按条件使用,如果是浏览器环境使用 <code>useLayoutEffect</code>,如果是服务器环境使用 <code>useEffect</code></p>
+<p>使用 <code>useLayoutEffect</code> 可以保证在布局阶段, ref 所指向的挂载元素是可以使用的,也可以用在一个父组件的 <code>componentDidMount</code></p>
+<figure class="highlight ts"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br><span class="line">35</span><br><span class="line">36</span><br><span class="line">37</span><br><span class="line">38</span><br><span class="line">39</span><br><span class="line">40</span><br><span class="line">41</span><br><span class="line">42</span><br><span class="line">43</span><br><span class="line">44</span><br><span class="line">45</span><br><span class="line">46</span><br><span class="line">47</span><br><span class="line">48</span><br><span class="line">49</span><br><span class="line">50</span><br><span class="line">51</span><br><span class="line">52</span><br><span class="line">53</span><br><span class="line">54</span><br><span class="line">55</span><br><span class="line">56</span><br><span class="line">57</span><br><span class="line">58</span><br><span class="line">59</span><br><span class="line">60</span><br><span class="line">61</span><br><span class="line">62</span><br><span class="line">63</span><br><span class="line">64</span><br><span class="line">65</span><br><span class="line">66</span><br><span class="line">67</span><br><span class="line">68</span><br><span class="line">69</span><br><span class="line">70</span><br><span class="line">71</span><br><span class="line">72</span><br><span class="line">73</span><br><span class="line">74</span><br><span class="line">75</span><br><span class="line">76</span><br><span class="line">77</span><br><span class="line">78</span><br><span class="line">79</span><br><span class="line">80</span><br><span class="line">81</span><br><span class="line">82</span><br><span class="line">83</span><br><span class="line">84</span><br><span class="line">85</span><br><span class="line">86</span><br><span class="line">87</span><br><span class="line">88</span><br><span class="line">89</span><br><span class="line">90</span><br><span class="line">91</span><br><span class="line">92</span><br><span class="line">93</span><br><span class="line">94</span><br><span class="line">95</span><br><span class="line">96</span><br><span class="line">97</span><br><span class="line">98</span><br><span class="line">99</span><br></pre></td><td class="code"><pre><span class="line"></span><br><span class="line"><span class="comment">// 区分浏览器环境还是</span></span><br><span class="line"><span class="keyword">const</span> useIsomorphicLayoutEffect =</span><br><span class="line">  <span class="keyword">typeof</span> <span class="variable language_">window</span> !== <span class="string">&#x27;undefined&#x27;</span> ? useLayoutEffect : useEffect;</span><br><span class="line"></span><br><span class="line"></span><br><span class="line"><span class="comment">// 使用 forwardRef 转发 ref, 将 ref 传递到子组件</span></span><br><span class="line"><span class="comment">// 如果有需要可以通过传入 ref 属性,获取到挂载节点的真是DOM元素</span></span><br><span class="line"><span class="comment">// 也可以配合 useImperativeHandle 使用</span></span><br><span class="line"><span class="keyword">const</span> <span class="title class_">HighchartsReact</span> = <span class="title function_">forwardRef</span>(</span><br><span class="line">  <span class="keyword">function</span> <span class="title function_">HighchartsReact</span>(<span class="params">props, ref</span>) &#123;</span><br><span class="line"></span><br><span class="line">    <span class="keyword">const</span> containerRef = <span class="title function_">useRef</span>();</span><br><span class="line">    <span class="keyword">const</span> chartRef = <span class="title function_">useRef</span>();</span><br><span class="line"></span><br><span class="line">    <span class="title function_">useIsomorphicLayoutEffect</span>(<span class="function">() =&gt;</span> &#123;</span><br><span class="line">      <span class="keyword">function</span> <span class="title function_">createChart</span>(<span class="params"></span>) &#123;</span><br><span class="line">        <span class="keyword">const</span> H = props.<span class="property">highcharts</span> || (</span><br><span class="line">          <span class="keyword">typeof</span> <span class="variable language_">window</span> === <span class="string">&#x27;object&#x27;</span> &amp;&amp; <span class="variable language_">window</span>.<span class="property">Highcharts</span></span><br><span class="line">        );</span><br><span class="line"></span><br><span class="line">        <span class="comment">// 暴露参数,用于表明实例化图表类型</span></span><br><span class="line">        <span class="keyword">const</span> constructorType = props.<span class="property">constructorType</span> || <span class="string">&#x27;chart&#x27;</span>;</span><br><span class="line"></span><br><span class="line">        <span class="keyword">if</span> (!H) &#123;</span><br><span class="line">          <span class="variable language_">console</span>.<span class="title function_">warn</span>(<span class="string">&#x27;The &quot;highcharts&quot; property was not passed.&#x27;</span>);</span><br><span class="line"></span><br><span class="line">        &#125; <span class="keyword">else</span> <span class="keyword">if</span> (!H[constructorType]) &#123;</span><br><span class="line">          <span class="variable language_">console</span>.<span class="title function_">warn</span>(</span><br><span class="line">            <span class="string">&#x27;The &quot;constructorType&quot; property is incorrect or some &#x27;</span> +</span><br><span class="line">              <span class="string">&#x27;required module is not imported.&#x27;</span></span><br><span class="line">          );</span><br><span class="line"></span><br><span class="line">        <span class="comment">// options 必填参数,如果没有提示警告</span></span><br><span class="line">        &#125; <span class="keyword">else</span> <span class="keyword">if</span> (!props.<span class="property">options</span>) &#123;</span><br><span class="line">          <span class="variable language_">console</span>.<span class="title function_">warn</span>(<span class="string">&#x27;The &quot;options&quot; property was not passed.&#x27;</span>);</span><br><span class="line"></span><br><span class="line">        &#125; <span class="keyword">else</span> &#123;</span><br><span class="line">          <span class="comment">// 创建图表实例</span></span><br><span class="line">          chartRef.<span class="property">current</span> = H[constructorType](</span><br><span class="line">            containerRef.<span class="property">current</span>,</span><br><span class="line">            props.<span class="property">options</span>,</span><br><span class="line">            props.<span class="property">callback</span> ? props.<span class="property">callback</span> : <span class="literal">undefined</span></span><br><span class="line">          );</span><br><span class="line">        &#125;</span><br><span class="line">      &#125;</span><br><span class="line"></span><br><span class="line">      <span class="keyword">if</span> (!chartRef.<span class="property">current</span>) &#123;</span><br><span class="line">        <span class="title function_">createChart</span>();</span><br><span class="line">      &#125; <span class="keyword">else</span> &#123;</span><br><span class="line">        <span class="comment">// 是否允许图表更新,如果为假,在接受到新的 props 之后会直接忽略掉</span></span><br><span class="line">        <span class="keyword">if</span> (props.<span class="property">allowChartUpdate</span> !== <span class="literal">false</span>) &#123;</span><br><span class="line">          <span class="comment">// immutable 用于指定是否使用不可变数据</span></span><br><span class="line">          <span class="comment">// 本质就是不会再原有的图表上更新,而会直接创建新图表的实例</span></span><br><span class="line">          <span class="keyword">if</span> (!props.<span class="property">immutable</span> &amp;&amp; chartRef.<span class="property">current</span>) &#123;</span><br><span class="line">            chartRef.<span class="property">current</span>.<span class="title function_">update</span>(</span><br><span class="line">              props.<span class="property">options</span>,</span><br><span class="line">              <span class="comment">// 与用指定原生的更新参数,由 highcharts 自己提供</span></span><br><span class="line">              ...(props.<span class="property">updateArgs</span> || [<span class="literal">true</span>, <span class="literal">true</span>])</span><br><span class="line">            );</span><br><span class="line">          &#125; <span class="keyword">else</span> &#123;</span><br><span class="line">            <span class="title function_">createChart</span>();</span><br><span class="line">          &#125;</span><br><span class="line">        &#125;</span><br><span class="line">      &#125;</span><br><span class="line">    &#125;);</span><br><span class="line"></span><br><span class="line">    <span class="title function_">useIsomorphicLayoutEffect</span>(<span class="function">() =&gt;</span> &#123;</span><br><span class="line">      <span class="keyword">return</span> <span class="function">() =&gt;</span> &#123;</span><br><span class="line">        <span class="comment">// 组件卸载的时候注销实例</span></span><br><span class="line">        <span class="keyword">if</span> (chartRef.<span class="property">current</span>) &#123;</span><br><span class="line">          chartRef.<span class="property">current</span>.<span class="title function_">destroy</span>();</span><br><span class="line">          chartRef.<span class="property">current</span> = <span class="literal">null</span>;</span><br><span class="line">        &#125;</span><br><span class="line">      &#125;;</span><br><span class="line">    &#125;, []);</span><br><span class="line"></span><br><span class="line"></span><br><span class="line">    </span><br><span class="line">    <span class="comment">// 一般配合 forwardRef 使用</span></span><br><span class="line">    <span class="comment">// 可以用于暴露封装组件内部的状态</span></span><br><span class="line">    <span class="comment">// 通过 ref.current.chart 或 ref.current.chart 可以在外部获取到组件实例,以及挂载节点</span></span><br><span class="line">    <span class="title function_">useImperativeHandle</span>(</span><br><span class="line">      ref,</span><br><span class="line">      <span class="function">() =&gt;</span> (&#123;</span><br><span class="line">        <span class="keyword">get</span> <span class="title function_">chart</span>() &#123;</span><br><span class="line">          <span class="keyword">return</span> chartRef.<span class="property">current</span>;</span><br><span class="line">        &#125;,</span><br><span class="line">        <span class="attr">container</span>: containerRef</span><br><span class="line">      &#125;),</span><br><span class="line">      []</span><br><span class="line">    );</span><br><span class="line"></span><br><span class="line">    <span class="comment">// Create container for the chart</span></span><br><span class="line">    <span class="keyword">return</span> <span class="language-xml"><span class="tag">&lt;<span class="name">div</span> &#123; <span class="attr">...props.containerProps</span> &#125; <span class="attr">ref</span>=<span class="string">&#123;</span> <span class="attr">containerRef</span> &#125; /&gt;</span></span>;</span><br><span class="line">  &#125;</span><br><span class="line">);</span><br><span class="line"></span><br><span class="line"><span class="keyword">export</span> <span class="keyword">default</span> <span class="title function_">memo</span>(<span class="title class_">HighchartsReact</span>);</span><br></pre></td></tr></table></figure>
+ 
+      <!-- reward -->
+      
+    </div>
+    
+
+    <!-- copyright -->
+    
+    <footer class="article-footer">
+       
+  <ul class="article-tag-list" itemprop="keywords"><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/React/" rel="tag">React</a></li></ul>
+
+    </footer>
+  </div>
+
+   
+    
+</article>
+
+    
+    <article
+  id="posts-javascript/React+TS 实战文档"
+  class="article article-type-posts"
+  itemscope
+  itemprop="blogPost"
+  data-scroll-reveal
+>
+  <div class="article-inner">
+    
+    <header class="article-header">
+       
+<h2 itemprop="name">
+  <a class="article-title" href="/posts/a5ff92dd5e4d/"
     >React+TS 实战文档</a> 
 </h2>
  
@@ -132,7 +188,7 @@
     </header>
      
     <div class="article-meta">
-      <a href="/posts/1b7f8cf1e61c/" class="article-date">
+      <a href="/posts/a5ff92dd5e4d/" class="article-date">
   <time datetime="2022-04-11T15:04:03.000Z" itemprop="datePublished">2022-04-11</time>
 </a> 
   <div class="article-category">
@@ -148,19 +204,19 @@
 <p>React.FC 提供了一些静态属性类型检查 <code>displayName</code>,<code>propTypes</code>, <code>defaultProps</code></p>
 <p>React.FC 隐式的定义了 children 子元素类型, 但某些场景自定义这个类型会更好</p>
 <p>第二点中,当在 React.FC 中使用 <code>defaultProps</code> 的时候可能会造成错误</p>
-<figure class="highlight ts"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">interface</span> <span class="title class_">Props</span> &#123;</span><br><span class="line">  <span class="attr">text</span>: <span class="built_in">string</span>;</span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line"><span class="keyword">const</span> <span class="title class_">BackButton</span>:<span class="title class_">React</span>.<span class="property">FC</span>&lt;<span class="title class_">Props</span>&gt; = <span class="function">(<span class="params">props</span>)=&gt;</span>&#123;</span><br><span class="line">  <span class="keyword">return</span> <span class="language-xml"><span class="tag">&lt;<span class="name">div</span>/&gt;</span></span></span><br><span class="line">&#125;</span><br><span class="line"><span class="title class_">BackButton</span>.<span class="property">defaultProps</span> = &#123;</span><br><span class="line">  <span class="attr">text</span>: <span class="string">&#x27;Go Back&#x27;</span>,</span><br><span class="line">&#125;;</span><br><span class="line"><span class="keyword">let</span> a = <span class="language-xml"><span class="tag">&lt;<span class="name">BackButton</span> /&gt;</span></span> <span class="comment">// error: text is missing in type &#123;&#125;</span></span><br></pre></td></tr></table></figure>
+<figure class="highlight ts"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">interface</span> <span class="title class_">Props</span> &#123;</span><br><span class="line">  <span class="attr">text</span>: <span class="built_in">string</span>;</span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line"><span class="keyword">const</span> <span class="title class_">BackButton</span>: <span class="title class_">React</span>.<span class="property">FC</span>&lt;<span class="title class_">Props</span>&gt; = <span class="function">(<span class="params">props</span>) =&gt;</span> &#123;</span><br><span class="line">  <span class="keyword">return</span> <span class="language-xml"><span class="tag">&lt;<span class="name">div</span> /&gt;</span></span>;</span><br><span class="line">&#125;;</span><br><span class="line"><span class="title class_">BackButton</span>.<span class="property">defaultProps</span> = &#123;</span><br><span class="line">  <span class="attr">text</span>: <span class="string">&quot;Go Back&quot;</span>,</span><br><span class="line">&#125;;</span><br><span class="line"><span class="keyword">let</span> a = <span class="language-xml"><span class="tag">&lt;<span class="name">BackButton</span> /&gt;</span></span>; <span class="comment">// error: text is missing in type &#123;&#125;</span></span><br></pre></td></tr></table></figure>
 
 <p>这个问题有很多种方法可以解决, 可以使用普通函数来定义,而不是使用函数类型</p>
-<figure class="highlight ts"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">interface</span> <span class="title class_">Props</span> &#123;</span><br><span class="line">  <span class="attr">text</span>: <span class="built_in">string</span>;</span><br><span class="line">&#125;</span><br><span class="line"><span class="keyword">function</span> <span class="title function_">BackButton</span>(<span class="params">props: Props</span>) &#123;</span><br><span class="line">  <span class="keyword">return</span> <span class="language-xml"><span class="tag">&lt;<span class="name">div</span>/&gt;</span></span></span><br><span class="line">&#125;</span><br><span class="line"><span class="title class_">BackButton</span>.<span class="property">defaultProps</span> = &#123;</span><br><span class="line">  <span class="attr">text</span>: <span class="string">&#x27;Go Back&#x27;</span>,</span><br><span class="line">&#125;;</span><br><span class="line"><span class="keyword">let</span> a = <span class="language-xml"><span class="tag">&lt;<span class="name">BackButton</span> /&gt;</span></span> <span class="comment">// it&#x27;s OK</span></span><br></pre></td></tr></table></figure>
+<figure class="highlight ts"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">interface</span> <span class="title class_">Props</span> &#123;</span><br><span class="line">  <span class="attr">text</span>: <span class="built_in">string</span>;</span><br><span class="line">&#125;</span><br><span class="line"><span class="keyword">function</span> <span class="title function_">BackButton</span>(<span class="params">props: Props</span>) &#123;</span><br><span class="line">  <span class="keyword">return</span> <span class="language-xml"><span class="tag">&lt;<span class="name">div</span> /&gt;</span></span>;</span><br><span class="line">&#125;</span><br><span class="line"><span class="title class_">BackButton</span>.<span class="property">defaultProps</span> = &#123;</span><br><span class="line">  <span class="attr">text</span>: <span class="string">&quot;Go Back&quot;</span>,</span><br><span class="line">&#125;;</span><br><span class="line"><span class="keyword">let</span> a = <span class="language-xml"><span class="tag">&lt;<span class="name">BackButton</span> /&gt;</span></span>; <span class="comment">// it&#x27;s OK</span></span><br></pre></td></tr></table></figure>
 
 <p>或者显示的声明 defaultProps</p>
-<figure class="highlight ts"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">interface</span> <span class="title class_">Props</span> &#123;</span><br><span class="line">  <span class="attr">text</span>: <span class="built_in">string</span>;</span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line"><span class="keyword">const</span> <span class="title class_">BackButton</span>: <span class="title class_">React</span>.<span class="property">FC</span>&lt;<span class="title class_">Props</span>&gt; &amp; &#123;</span><br><span class="line">  <span class="attr">defaultProps</span>: &#123;</span><br><span class="line">    <span class="attr">text</span>: <span class="built_in">string</span>;</span><br><span class="line">  &#125;;</span><br><span class="line">&#125; = <span class="function">(<span class="params">props</span>) =&gt;</span> &#123;</span><br><span class="line">  <span class="keyword">return</span> <span class="language-xml"><span class="tag">&lt;<span class="name">div</span> /&gt;</span></span>;</span><br><span class="line">&#125;;</span><br><span class="line"><span class="title class_">BackButton</span>.<span class="property">defaultProps</span> = &#123;</span><br><span class="line">  <span class="attr">text</span>: <span class="string">&#x27;Go Back&#x27;</span>,</span><br><span class="line">&#125;;</span><br><span class="line"><span class="keyword">let</span> a = <span class="language-xml"><span class="tag">&lt;<span class="name">BackButton</span> /&gt;</span></span>; <span class="comment">// it&#x27;s OK</span></span><br></pre></td></tr></table></figure>
+<figure class="highlight ts"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">interface</span> <span class="title class_">Props</span> &#123;</span><br><span class="line">  <span class="attr">text</span>: <span class="built_in">string</span>;</span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line"><span class="keyword">const</span> <span class="title class_">BackButton</span>: <span class="title class_">React</span>.<span class="property">FC</span>&lt;<span class="title class_">Props</span>&gt; &amp; &#123;</span><br><span class="line">  <span class="attr">defaultProps</span>: &#123;</span><br><span class="line">    <span class="attr">text</span>: <span class="built_in">string</span>;</span><br><span class="line">  &#125;;</span><br><span class="line">&#125; = <span class="function">(<span class="params">props</span>) =&gt;</span> &#123;</span><br><span class="line">  <span class="keyword">return</span> <span class="language-xml"><span class="tag">&lt;<span class="name">div</span> /&gt;</span></span>;</span><br><span class="line">&#125;;</span><br><span class="line"><span class="title class_">BackButton</span>.<span class="property">defaultProps</span> = &#123;</span><br><span class="line">  <span class="attr">text</span>: <span class="string">&quot;Go Back&quot;</span>,</span><br><span class="line">&#125;;</span><br><span class="line"><span class="keyword">let</span> a = <span class="language-xml"><span class="tag">&lt;<span class="name">BackButton</span> /&gt;</span></span>; <span class="comment">// it&#x27;s OK</span></span><br></pre></td></tr></table></figure>
 
 <p>另一个问题是 children 类型的问题, 有时组件返回的 children 类型并不是 React.FC 默认的 children 类型</p>
-<figure class="highlight js"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><span class="line"></span><br><span class="line"><span class="comment">// Type &#x27;string&#x27; is not assignable to type &#x27;ReactElement&lt;any, any&gt;&#x27;.</span></span><br><span class="line"><span class="keyword">const</span> <span class="title class_">Title</span>: <span class="title class_">React</span>.<span class="property">FC</span> = <span class="function">() =&gt;</span> <span class="string">&#x27;123&#x27;</span></span><br></pre></td></tr></table></figure>
+<figure class="highlight js"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment">// Type &#x27;string&#x27; is not assignable to type &#x27;ReactElement&lt;any, any&gt;&#x27;.</span></span><br><span class="line"><span class="keyword">const</span> <span class="title class_">Title</span>: <span class="title class_">React</span>.<span class="property">FC</span> = <span class="function">() =&gt;</span> <span class="string">&quot;123&quot;</span>;</span><br></pre></td></tr></table></figure>
 
 <p>你可以选择者重新为返回值赋类型,这个处理方法同样适用于条件语句中的子元素,或者通过数组或对象生成的子元素</p>
-<figure class="highlight ts"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">const</span> <span class="title class_">Title</span>: <span class="title class_">React</span>.<span class="property">FC</span> = <span class="function">() =&gt;</span> <span class="string">&#x27;123&#x27;</span> <span class="keyword">as</span> unknown <span class="keyword">as</span> <span class="title class_">React</span>.<span class="property">ReactElement</span></span><br></pre></td></tr></table></figure>
+<figure class="highlight ts"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">const</span> <span class="title class_">Title</span>: <span class="title class_">React</span>.<span class="property">FC</span> = <span class="function">() =&gt;</span> <span class="string">&quot;123&quot;</span> <span class="keyword">as</span> unknown <span class="keyword">as</span> <span class="title class_">React</span>.<span class="property">ReactElement</span>;</span><br></pre></td></tr></table></figure>
 
 <p>正因为有这种问题, @type&#x2F;react@^18.0.0 将不再把 children 作为默认的属性,而是需要显示声明</p>
  
@@ -184,7 +240,7 @@
 
     
     <article
-  id="posts-linux/operation/IP地址、子网掩码、网关"
+  id="posts-linux/IP地址、子网掩码、网关"
   class="article article-type-posts"
   itemscope
   itemprop="blogPost"
@@ -195,7 +251,7 @@
     <header class="article-header">
        
 <h2 itemprop="name">
-  <a class="article-title" href="/posts/964c11e46f74/"
+  <a class="article-title" href="/posts/36c6d9747dce/"
     >IP地址、子网掩码、网关</a> 
 </h2>
  
@@ -204,7 +260,7 @@
     </header>
      
     <div class="article-meta">
-      <a href="/posts/964c11e46f74/" class="article-date">
+      <a href="/posts/36c6d9747dce/" class="article-date">
   <time datetime="2022-04-10T07:48:27.000Z" itemprop="datePublished">2022-04-10</time>
 </a> 
   <div class="article-category">
@@ -251,7 +307,7 @@
 
     
     <article
-  id="posts-vm/ssh链接"
+  id="posts-other/ssh链接"
   class="article article-type-posts"
   itemscope
   itemprop="blogPost"
@@ -262,7 +318,7 @@
     <header class="article-header">
        
 <h2 itemprop="name">
-  <a class="article-title" href="/posts/4246aadafc2f/"
+  <a class="article-title" href="/posts/a3838b1f2d96/"
     >VMWare 使用SSH链接</a> 
 </h2>
  
@@ -271,7 +327,7 @@
     </header>
      
     <div class="article-meta">
-      <a href="/posts/4246aadafc2f/" class="article-date">
+      <a href="/posts/a3838b1f2d96/" class="article-date">
   <time datetime="2022-04-10T05:59:18.000Z" itemprop="datePublished">2022-04-10</time>
 </a> 
   <div class="article-category">
@@ -295,13 +351,13 @@
 <figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line">ps -e | grep ssh</span><br><span class="line"><span class="comment"># 1512 00:00:00 sshd</span></span><br></pre></td></tr></table></figure>
 
 <h4 id="VMWare-配置"><a href="#VMWare-配置" class="headerlink" title="VMWare 配置"></a>VMWare 配置</h4><h5 id="查询-IP"><a href="#查询-IP" class="headerlink" title="查询 IP"></a>查询 IP</h5><p>查询宿主机和虚拟机的 ip 备用</p>
-<p><img src="/posts/4246aadafc2f/0002.png"> </p>
+<p><img src="/posts/a3838b1f2d96/0002.png"> </p>
 <p>宿主机IP</p>
-<p><img src="/posts/4246aadafc2f/0003.png"> </p>
+<p><img src="/posts/a3838b1f2d96/0003.png"> </p>
 <p>虚拟机IP</p>
 <h5 id="建立映射"><a href="#建立映射" class="headerlink" title="建立映射"></a>建立映射</h5><p>接下来就需要将宿主机和虚拟机的IP映射起来。</p>
 <p>打开VMware的虚拟网络编辑器（编辑&gt;虚拟网络编辑器）：</p>
-<p><img src="/posts/4246aadafc2f/0004.png"></p>
+<p><img src="/posts/a3838b1f2d96/0004.png"></p>
 <p><a href="/posts/964c11e46f74/">检查子网Ip(Subnet IP) 和 子网掩码(Subnet mask)</a>, 正常情况下无需修改</p>
 <p>如果保存时报错 <strong>子网ip和子网掩码不匹配</strong>,请检查子网IP, 格式为 xxx.xxx.xxx.0 他与子网掩码 255.255.255.0 对应</p>
 <p>不可以写为 <code>xxx.xxx.xxx.120</code> 等其他数字,这表示具体子网中的一个网络设备,并不是子网IP</p>
@@ -440,7 +496,7 @@
 
     
     <article
-  id="posts-ts/练习题"
+  id="posts-javascript/练习题"
   class="article article-type-posts"
   itemscope
   itemprop="blogPost"
@@ -451,7 +507,7 @@
     <header class="article-header">
        
 <h2 itemprop="name">
-  <a class="article-title" href="/posts/0013ba44e010/"
+  <a class="article-title" href="/posts/448ff5304ffa/"
     >TypeScript 练习题</a> 
 </h2>
  
@@ -460,7 +516,7 @@
     </header>
      
     <div class="article-meta">
-      <a href="/posts/0013ba44e010/" class="article-date">
+      <a href="/posts/448ff5304ffa/" class="article-date">
   <time datetime="2022-04-07T10:42:52.000Z" itemprop="datePublished">2022-04-07</time>
 </a> 
   <div class="article-category">
@@ -972,163 +1028,13 @@
 </article>
 
     
-    <article
-  id="posts-css/绘制形状"
-  class="article article-type-posts"
-  itemscope
-  itemprop="blogPost"
-  data-scroll-reveal
->
-  <div class="article-inner">
-    
-    <header class="article-header">
-       
-<h2 itemprop="name">
-  <a class="article-title" href="/posts/f50453852f11/"
-    >CSS艺术 绘制形状</a> 
-</h2>
- 
-
-      
-    </header>
-     
-    <div class="article-meta">
-      <a href="/posts/f50453852f11/" class="article-date">
-  <time datetime="2022-03-07T01:16:42.000Z" itemprop="datePublished">2022-03-07</time>
-</a> 
-  <div class="article-category">
-    <a class="article-category-link" href="/categories/CSS/">CSS</a>
-  </div>
-   
-    </div>
-      
-    <div class="article-entry" itemprop="articleBody">
-       
-  <h4 id="椭圆"><a href="#椭圆" class="headerlink" title="椭圆"></a>椭圆</h4><p>border-radius 可以指定数值或百分比,当使用百分比的时候,可以让 border 按各自边长计算圆角,实现椭圆</p>
-<figure class="highlight javascript"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br></pre></td><td class="code"><pre><span class="line">.<span class="property">box</span> &#123;</span><br><span class="line">  <span class="attr">width</span>: 200px;</span><br><span class="line">  <span class="attr">height</span>: 100px;</span><br><span class="line">  <span class="attr">background</span>: goldenrod;</span><br><span class="line">  border-<span class="attr">radius</span>: <span class="number">50</span>%;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
-
-<p><strong>半橢圓</strong></p>
-<p>border-radius 是一个简写的属性, 它的完整属性可以表述四个角的圆角</p>
-<p>border-top-left-radius<br>border-top-right-radius<br>border-bottom-left-radius<br>border-bottom-right-radius</p>
-<p>属性的两个长度或百分比值定义了椭圆的四分之一外边框的边缘角落的形状。第一个值是水平半径，第二个是垂直半径。如果省略第二个值，它是从第一个复制。如果任一长度为零，角落里是方的，不圆润。水平半径的百分比是指边界框的宽度，而垂直半径的百分比是指边界框的高度。</p>
-<p>这样我们只需要指定上边两个角或下边两个角的圆角即可</p>
-<figure class="highlight css"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br></pre></td><td class="code"><pre><span class="line"><span class="selector-class">.box</span> &#123;</span><br><span class="line">  <span class="attribute">width</span>: <span class="number">200px</span>;</span><br><span class="line">  <span class="attribute">height</span>: <span class="number">100px</span>;</span><br><span class="line">  <span class="attribute">background</span>: goldenrod;</span><br><span class="line">  <span class="attribute">border-top-left-radius</span>: <span class="number">50%</span> <span class="number">100%</span>;</span><br><span class="line">  <span class="attribute">border-top-right-radius</span>:<span class="number">50%</span> <span class="number">100%</span>;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
-
-<p>可以是使用简写的属性, border-radius 可以用 <code>/</code> 分隔两组值,左边代表四个角的水平半径,右边代表垂直半径</p>
-<p>而且不同的个数代表不同的位置,这与 border 类似</p>
-<p><span style='display:inline-block;width:200px'>50%</span>             top-left:50% | top-right:50% | bottom-right:50% | bottom-left:50%<br><span style='display:inline-block;width:200px'>50% 40%</span>         top-left:50% | top-right:40% | bottom-right:50% | bottom-left:40%<br><span style='display:inline-block;width:200px'>50% 40% 30%</span>     top-left:50% | top-right:40% | bottom-right:30% | bottom-left:40%<br><span style='display:inline-block;width:200px'>50% 40% 30% 20%</span> top-left:50% | top-right:40% | bottom-right:30% | bottom-left:20%</p>
-<p>所以分析一下这个半椭圆</p>
-<p><img src="/posts/f50453852f11/0001.png"></p>
-<ul>
-<li>水平方向上面的两个角是 <code>50%</code>,  暂时可以写为 <code>50% 50% 0 0 / xx xx xx xx</code></li>
-<li>垂直方向上面两个角是 <code>100%</code>,现在变为 <code>50% 50% 0 0 / 100% 100% 0 0</code></li>
-<li>因为半椭圆的垂直方向占据了整个元素的高度,所以不能使用简写属性, 必须要指定上面两垂直半径是100%, 这样弧度才会从底部延伸到顶部<br>现在垂直半径后两个为0,意味着对应的水平半径即使给了也不会生效,因为不能只通过一个半轴长度画椭圆,最终能够属性会变为 <code>50% / 100% 100% 0 0</code></li>
-</ul>
-<figure class="highlight css"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br></pre></td><td class="code"><pre><span class="line"><span class="selector-class">.box</span> &#123;</span><br><span class="line">  <span class="attribute">width</span>: <span class="number">200px</span>;</span><br><span class="line">  <span class="attribute">height</span>: <span class="number">100px</span>;</span><br><span class="line">  <span class="attribute">background</span>: goldenrod;</span><br><span class="line">  <span class="attribute">border-radius</span>: <span class="number">50%</span>/ <span class="number">100%</span> <span class="number">100%</span> <span class="number">0</span> <span class="number">0</span>;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
-
-<p>同理如果你想画一个垂直方向的半椭圆</p>
-<figure class="highlight css"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br></pre></td><td class="code"><pre><span class="line"><span class="selector-class">.box</span> &#123;</span><br><span class="line">  <span class="attribute">width</span>: <span class="number">200px</span>;</span><br><span class="line">  <span class="attribute">height</span>: <span class="number">100px</span>;</span><br><span class="line">  <span class="attribute">background</span>: goldenrod;</span><br><span class="line">  <span class="attribute">border-radius</span>: <span class="number">100%</span> <span class="number">0</span> <span class="number">0</span> <span class="number">100%</span>/<span class="number">50%</span>;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
-
-<p>1&#x2F;4 椭圆也是同样的道理,只需指定一个角上的半径 </p>
-<figure class="highlight css"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br></pre></td><td class="code"><pre><span class="line"><span class="selector-class">.box</span> &#123;</span><br><span class="line">  <span class="attribute">width</span>: <span class="number">200px</span>;</span><br><span class="line">  <span class="attribute">height</span>: <span class="number">100px</span>;</span><br><span class="line">  <span class="attribute">background</span>: goldenrod;</span><br><span class="line">  <span class="attribute">border-radius</span>: <span class="number">100%</span> <span class="number">0</span> <span class="number">0</span> <span class="number">0</span>;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
-
-<p><a target="_blank" rel="noopener" href="https://simurai.com/archive/buttons/#">这个网址</a>里你可以看到各种通过圆角制作的精美按钮</p>
-<p><img src="/posts/f50453852f11/0002.png"></p>
-<h4 id="平行四边形-x2F-菱形"><a href="#平行四边形-x2F-菱形" class="headerlink" title="平行四边形&#x2F;菱形"></a>平行四边形&#x2F;菱形</h4><p>你可能很容易想到使用 <code>skew</code>, 但是有一些细节需要注意, 如果 <code>skew</code> 作用在一个有文字的元素上, 那么里面的文字也会被拉伸</p>
-<p>想解决这个问题, 可能会想到使用两个元素嵌套, 让里面的元素使用反向 <code>skew</code>, 让文字重新边正</p>
-<p>有没有一种方式,可以不嵌套元素,还能让文字不受影响, 办法就是使用 <strong>伪元素</strong>, 因为伪元素和元素本身不属于嵌套关系,所以更容易处理</p>
-<figure class="highlight css"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br></pre></td><td class="code"><pre><span class="line"><span class="selector-class">.el</span> &#123;</span><br><span class="line">  <span class="attribute">position</span>: relative;</span><br><span class="line">  <span class="comment">/* 写文字相关的样式 */</span></span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line"><span class="comment">/* 写背景形状相关的样式 */</span></span><br><span class="line"><span class="selector-class">.el</span><span class="selector-pseudo">::after</span> &#123;</span><br><span class="line">  <span class="attribute">content</span>: <span class="string">&quot;&quot;</span>;</span><br><span class="line">  <span class="attribute">position</span>: absolute;</span><br><span class="line">  <span class="attribute">left</span>:<span class="number">0</span>;</span><br><span class="line">  <span class="attribute">top</span>:<span class="number">0</span>;</span><br><span class="line">  <span class="attribute">right</span>:<span class="number">0</span>;</span><br><span class="line">  <span class="attribute">bottom</span>: <span class="number">0</span>;</span><br><span class="line">  <span class="comment">/* 放在文字元素下面 */</span></span><br><span class="line">  <span class="attribute">z-index</span>: -<span class="number">1</span>;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
-
-<p>对于菱形, 是四边相等的平行四边形, 最容易想到的就是旋转一个正方形</p>
-<figure class="highlight css"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><span class="line"><span class="attribute">width</span>: <span class="number">100px</span>;</span><br><span class="line"><span class="attribute">height</span>: <span class="number">100px</span>;</span><br><span class="line"><span class="attribute">transform</span>: <span class="built_in">rotate</span>(<span class="number">45deg</span>);</span><br></pre></td></tr></table></figure>
-
-<p>但是中心线长度不相等平行四边形会遇到一点麻烦, 最核心的一个问题就是, 拉伸后的高度应该等于宽度, 以下面这个 宽为100,高为40 的长方形为例</p>
-<p><img src="/posts/f50453852f11/0003.png"></p>
-<p>想求的是 AGF 的角度, 那么只要求出 FGE 就可以了, <code>sinFGE = AG / FG</code> 所以 <code>FCE = srcsin(40/100)</code> </p>
-<p>再把 FCE 转成角度 <code>FCE = srcsin(40/100) * 360 / (2 * PI) = 23.5781(deg)</code></p>
-<p>那么 <code>AGF = (90 - 23.57)deg</code></p>
-<figure class="highlight css"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><span class="line"><span class="attribute">width</span>: <span class="number">100px</span>;</span><br><span class="line"><span class="attribute">height</span>: <span class="number">40px</span>;</span><br><span class="line"><span class="attribute">transform</span>: <span class="built_in">skew</span>(-<span class="number">66.43deg</span>);</span><br></pre></td></tr></table></figure>
-
-<p><img src="/posts/f50453852f11/0004.png"></p>
-<h4 id="菱形剪裁"><a href="#菱形剪裁" class="headerlink" title="菱形剪裁"></a>菱形剪裁</h4><p>有时候希望一张图片能剪裁成菱形的形状, 我们已经知道菱形如何制作,所以很容易想到用两个元素嵌套</p>
-<p>第一步把外层的元素旋转并处理成菱形, 里面的元素反向旋转修正, 又因为拉伸之后图片的上下可能填不满,所以需要通过缩放填满外层元素</p>
-<figure class="highlight html"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><span class="line"><span class="tag">&lt;<span class="name">div</span> <span class="attr">id</span>=<span class="string">&#x27;box&#x27;</span>&gt;</span></span><br><span class="line">  <span class="tag">&lt;<span class="name">img</span> /&gt;</span></span><br><span class="line"><span class="tag">&lt;/<span class="name">div</span>&gt;</span></span><br></pre></td></tr></table></figure>
-
-<figure class="highlight css"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br></pre></td><td class="code"><pre><span class="line"><span class="selector-class">.box</span> &#123;</span><br><span class="line">  <span class="attribute">transform</span>: <span class="built_in">rotate</span>(-<span class="number">78deg</span>) <span class="built_in">skew</span>(-<span class="number">66.43deg</span>);</span><br><span class="line">  <span class="attribute">overflow</span>: hidden;</span><br><span class="line">&#125;</span><br><span class="line"><span class="selector-class">.box</span> <span class="selector-tag">img</span>&#123;</span><br><span class="line">  <span class="attribute">transform</span>: <span class="built_in">skew</span>(<span class="number">66.43deg</span>) <span class="built_in">scale</span>(<span class="number">3</span>);</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
-
-<p><img src="/posts/f50453852f11/0005.png"></p>
-<p>除了这种比较传统的方法, 现在我们有了一个新的属性可以完成这个效果 <code>clip-path</code>,  可以指定点的位置并链接成图形, 如果使用百分比会按照自身的尺寸解析</p>
-<figure class="highlight css"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br></pre></td><td class="code"><pre><span class="line"><span class="selector-tag">img</span>&#123;</span><br><span class="line">  <span class="attribute">width</span>: <span class="number">320px</span>;</span><br><span class="line">  <span class="attribute">height</span>: <span class="number">180px</span>;</span><br><span class="line">  <span class="attribute">clip-path</span>: <span class="built_in">polygon</span>(<span class="number">50%</span> <span class="number">0</span>,<span class="number">100%</span> <span class="number">50%</span>,<span class="number">50%</span> <span class="number">100%</span>,<span class="number">0</span> <span class="number">50%</span>);</span><br><span class="line">  <span class="attribute">transition</span>: <span class="number">1s</span> clip-path;</span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line"><span class="selector-tag">img</span><span class="selector-pseudo">:hover</span> &#123;</span><br><span class="line">  <span class="attribute">clip-path</span>: <span class="built_in">polygon</span>(<span class="number">0</span> <span class="number">0</span>,<span class="number">100%</span> <span class="number">0</span>,<span class="number">100%</span> <span class="number">100%</span>,<span class="number">0</span> <span class="number">100%</span>);</span><br><span class="line"></span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
-
-
-<h4 id="切角效果"><a href="#切角效果" class="headerlink" title="切角效果"></a>切角效果</h4><p>看过<a href="/posts/b24d034ad9f9/">背景与边框</a>一章之后,很容易会想到用渐变的方式是来实现,另外通常情况下会考虑使用scss来处理</p>
-<p><img src="/posts/f50453852f11/0006.png"></p>
-<figure class="highlight css"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br></pre></td><td class="code"><pre><span class="line"><span class="attribute">background</span>: <span class="number">#5a8</span>;</span><br><span class="line"><span class="attribute">background</span>: <span class="built_in">linear-gradient</span>(-<span class="number">45deg</span>, transparent <span class="number">20px</span>, <span class="number">#5a8</span> <span class="number">0</span>) right,</span><br><span class="line">  <span class="built_in">linear-gradient</span>(<span class="number">45deg</span>, transparent <span class="number">20px</span>, <span class="number">#fd2</span> <span class="number">0</span>) left;</span><br><span class="line"><span class="attribute">background-size</span>: <span class="number">50%</span> <span class="number">100%</span>;</span><br><span class="line"><span class="attribute">background-repeat</span>: no-repeat;</span><br></pre></td></tr></table></figure>
-
-
-<p><img src="/posts/f50453852f11/0007.png"></p>
-<figure class="highlight css"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment">/* hack */</span></span><br><span class="line"><span class="attribute">background</span>: <span class="number">#5a8</span>;</span><br><span class="line"><span class="attribute">background</span>: <span class="built_in">linear-gradient</span>(-<span class="number">135deg</span>, transparent <span class="number">20px</span>, <span class="number">#5a8</span> <span class="number">0</span>) top right,</span><br><span class="line">  <span class="built_in">linear-gradient</span>(<span class="number">135deg</span>, transparent <span class="number">20px</span>, <span class="number">#542</span> <span class="number">0</span>) top left,</span><br><span class="line">  <span class="built_in">linear-gradient</span>(-<span class="number">45deg</span>, transparent <span class="number">20px</span>, <span class="number">#fd2</span> <span class="number">0</span>) bottom right,</span><br><span class="line">  <span class="built_in">linear-gradient</span>(<span class="number">45deg</span>, transparent <span class="number">20px</span>, <span class="number">#e93</span> <span class="number">0</span>) bottom left;</span><br><span class="line"><span class="attribute">background-size</span>: <span class="number">50%</span> <span class="number">50%</span>;</span><br><span class="line"><span class="attribute">background-repeat</span>: no-repeat;</span><br></pre></td></tr></table></figure>
-
-<p><img src="/posts/f50453852f11/0008.png"></p>
-<figure class="highlight css"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br></pre></td><td class="code"><pre><span class="line"><span class="attribute">background</span>: <span class="number">#5a8</span>;</span><br><span class="line"><span class="attribute">background</span>: </span><br><span class="line">  <span class="built_in">radial-gradient</span>(circle at top right , transparent <span class="number">20px</span>, <span class="number">#5a8</span> <span class="number">0</span>) top right,</span><br><span class="line">  <span class="built_in">radial-gradient</span>(circle at top left,transparent <span class="number">20px</span>, <span class="number">#542</span> <span class="number">0</span>) top left,</span><br><span class="line">  <span class="built_in">radial-gradient</span>(circle at bottom right, transparent <span class="number">20px</span>, <span class="number">#fd2</span> <span class="number">0</span>) bottom right,</span><br><span class="line">  <span class="built_in">radial-gradient</span>(circle at bottom left, transparent <span class="number">20px</span>, <span class="number">#e93</span> <span class="number">0</span>) bottom left;</span><br><span class="line"><span class="attribute">background-size</span>: <span class="number">50%</span> <span class="number">50%</span>;</span><br><span class="line"><span class="attribute">background-repeat</span>: no-repeat;</span><br></pre></td></tr></table></figure>
-
-
-<p>上面的方法算是比较完美的解决了这个问题,其中有一点不足就是代码量比较多,可能难以维护</p>
-<p>还可以换一个思路,使用 svg + border-image 这种解决方案, svg 当作边框背景, 创造一个可以被九宫格分割的svg图片, 让九宫格的四个角为折角就能实现我们的需求</p>
-<p>有几个细节需要注意一下, fill 属性需要编码, 需要添加 background-clip 属性,否则背景颜色会延伸到边框区域, 添加一个 border 属性用于hack, 在 border-image 不支持的时候可以回退</p>
-<figure class="highlight css"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br></pre></td><td class="code"><pre><span class="line"><span class="attribute">border</span>: <span class="number">20px</span> solid <span class="number">#58a</span>;</span><br><span class="line"><span class="attribute">height</span>: <span class="number">140px</span>;</span><br><span class="line"><span class="attribute">background-clip</span>: padding-box;</span><br><span class="line"><span class="attribute">background</span>: <span class="number">#58a</span>;</span><br><span class="line"><span class="attribute">border-image</span>: <span class="number">1</span> <span class="built_in">url</span>(<span class="string">&#x27;data:image/svg+xml,\</span></span><br><span class="line"><span class="string">&lt;svg xmlns=&quot;http://www.w3.org/2000/svg&quot; width=&quot;3&quot; height=&quot;3&quot; fill=&quot;%2358a&quot;&gt;\</span></span><br><span class="line"><span class="string">  &lt;polygon points=&quot;0,1 1,0 2,0 3,1 3,2 2,3 1,3 0,2&quot;/&gt;\</span></span><br><span class="line"><span class="string">&lt;/svg&gt;&#x27;</span>);</span><br></pre></td></tr></table></figure>
-
-<h4 id="梯形"><a href="#梯形" class="headerlink" title="梯形"></a>梯形</h4><p>从上面的平行四边形中可能会受到一点启发,但实际上在二维变化中,没有一种办法可以将矩形或其他图形,转换成梯形.</p>
-<p>也许可以想到利用两个伪类实现梯形两边,但是一旦需要添加边框或圆角, 这种中方案立刻就没有了操作性.</p>
-<p>既然二维不行,可以思考一下三维中的实现办法, 可以利用透视让矩形的一条边远离我们,从而在视觉上实现梯形的效果.</p>
-<figure class="highlight css"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br></pre></td><td class="code"><pre><span class="line"><span class="selector-class">.box</span> &#123;</span><br><span class="line">  <span class="attribute">position</span>: relative;</span><br><span class="line">  <span class="attribute">width</span>: <span class="number">200px</span>;</span><br><span class="line">  <span class="attribute">height</span>: <span class="number">60px</span>;</span><br><span class="line">  <span class="attribute">line-height</span>:<span class="number">60px</span>;</span><br><span class="line">  <span class="attribute">font-size</span>: <span class="number">20px</span>;</span><br><span class="line">  <span class="attribute">color</span>: <span class="number">#fff</span>;</span><br><span class="line">  <span class="attribute">text-align</span>: center;</span><br><span class="line">&#125;</span><br><span class="line"><span class="selector-class">.box</span><span class="selector-pseudo">:after</span> &#123;</span><br><span class="line">  <span class="attribute">content</span>: <span class="string">&quot;&quot;</span>;</span><br><span class="line">  <span class="attribute">position</span>: absolute;</span><br><span class="line">  <span class="attribute">left</span>:<span class="number">0</span>;</span><br><span class="line">  <span class="attribute">top</span>:<span class="number">0</span>;</span><br><span class="line">  <span class="attribute">bottom</span>: <span class="number">0</span>;</span><br><span class="line">  <span class="attribute">right</span>: <span class="number">0</span>;</span><br><span class="line">  <span class="attribute">margin</span>: auto;</span><br><span class="line">  <span class="attribute">z-index</span>: -<span class="number">1</span>;</span><br><span class="line">  <span class="attribute">border-radius</span>: <span class="number">8px</span>;</span><br><span class="line">  <span class="attribute">border</span>: <span class="number">2px</span> solid darkorchid;</span><br><span class="line">  <span class="attribute">background</span>: <span class="number">#58a</span>;</span><br><span class="line">  <span class="comment">/* 保持底边固定,整个图形围绕底边旋转 */</span></span><br><span class="line">  <span class="attribute">transform-origin</span>: bottom;</span><br><span class="line">  <span class="comment">/* 第一个属性是景深, 用于表现出3D效果,经过空间旋转的矩形在视觉上高度会缩小, 所以通过放大高度来使变换后的图形和之前的图形,高度相同 */</span></span><br><span class="line">  <span class="attribute">transform</span>:<span class="built_in">perspective</span>(<span class="number">300px</span>) <span class="built_in">rotateX</span>(<span class="number">30deg</span>) <span class="built_in">scaleY</span>(<span class="number">1.25</span>);</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
-
-<p>当需要只有一边倾斜的梯形是,只需要修改修改变换中心. 这个中心可以理解为视觉中是一个直角坐标系, 这个中心点永远在你视线的正前方.<br>当变换中心设置为 bottom 的时候,相当于把这个元素的底边放在了视线中心上,但是左右两边会被视线中心平分, 所以元素绕 x 轴转动的时候,左右两边因为透视会向中间收缩.<br>当变换中心设置为 bottom ,left 的时候, 除了底边在视线中心上,左边也在视线中心, 所以旋转的时候,左边只有高度的变化,而不会因为透视,向中间收缩,因为这条边垂直与你的视线.</p>
-<figure class="highlight css"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br></pre></td><td class="code"><pre><span class="line"><span class="selector-class">.box</span><span class="selector-pseudo">:after</span> &#123;</span><br><span class="line">  <span class="attribute">transform-origin</span>: bottom left;</span><br><span class="line">  <span class="attribute">transform</span>: <span class="built_in">perspective</span>(<span class="number">91px</span>) <span class="built_in">rotateX</span>(<span class="number">18deg</span>) <span class="built_in">scaleY</span>(<span class="number">1.25</span>);</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
-
-<p><img src="/posts/f50453852f11/0009.png"></p>
-<h4 id="饼图"><a href="#饼图" class="headerlink" title="饼图"></a>饼图</h4><p>先思考一下实现一个双色的饼图需要几个元素, 其实两个元素就够了,其中一个是伪元素, 实现思路是把元素的背景色设置成渐变的两半,伪元素大小为元素的一半,这样就可以把底色漏出来,而显示进度的那一半颜色可以用伪元素覆盖住.</p>
-<p>通过旋转伪元素,并切换伪元素的颜色来显示饼图的大小, 说起来简单但是实现起来细节很多</p>
-<p>先来实现一个 20% 的饼图, 这里用到了 turn 这个表示圈的单位, 0.2turn 表示的就是 0.2 * 360deg, 可以让你免于计算角度</p>
-<figure class="highlight css"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br></pre></td><td class="code"><pre><span class="line"><span class="selector-class">.box</span>&#123;</span><br><span class="line">  <span class="attribute">position</span>: relative;</span><br><span class="line">  <span class="attribute">width</span>: <span class="number">200px</span>;</span><br><span class="line">  <span class="attribute">height</span>: <span class="number">200px</span>;</span><br><span class="line">  <span class="attribute">background</span>: yellowgreen;</span><br><span class="line">  <span class="attribute">background-image</span>: <span class="built_in">linear-gradient</span>(<span class="number">90deg</span>, transparent <span class="number">50%</span>,<span class="number">#655</span> <span class="number">0</span>);</span><br><span class="line">  <span class="attribute">border-radius</span>: <span class="number">50%</span>;</span><br><span class="line">  <span class="attribute">overflow</span>: hidden;</span><br><span class="line">&#125;</span><br><span class="line"><span class="selector-class">.box</span><span class="selector-pseudo">::after</span> &#123;</span><br><span class="line">  <span class="attribute">content</span>:<span class="string">&#x27;&#x27;</span>;</span><br><span class="line">  <span class="attribute">position</span>: absolute;</span><br><span class="line">  <span class="attribute">width</span>: <span class="number">50%</span>;</span><br><span class="line">  <span class="attribute">height</span>: <span class="number">100%</span>;</span><br><span class="line">  <span class="attribute">border-radius</span>: <span class="number">0</span> <span class="number">100%</span> <span class="number">100%</span> <span class="number">0</span> / <span class="number">50%</span>;</span><br><span class="line">  <span class="attribute">left</span>: <span class="number">50%</span>;</span><br><span class="line">  <span class="attribute">top</span>:<span class="number">0</span>;</span><br><span class="line">  <span class="attribute">background-color</span>: inherit;</span><br><span class="line">  <span class="attribute">transform-origin</span>: left center;</span><br><span class="line">  <span class="attribute">transform</span>: <span class="built_in">rotate</span>(<span class="number">0.2turn</span>);</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
-
-<p><img src="/posts/f50453852f11/0010.png"></p>
-<p>但是当角度超过 50% 就会有一些问题,因为伪类的颜色还是和没有占比区域的颜色相同,所以还没法表现超出 50% 的饼图, 第一步需要修改伪类的颜色</p>
-<p>但是伪类已经旋转了 180deg,仅仅改变颜色会和另一半颜色拼在一起显示出一个 100% 的饼图,所以需要减去半圈 0.5turn, 如果表示 70% 只需要旋转 (0.7turn - 0.5turn) &#x3D; 0.2turn 就够了</p>
-<figure class="highlight css"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br></pre></td><td class="code"><pre><span class="line"><span class="selector-class">.box</span>&#123;</span><br><span class="line">  <span class="attribute">position</span>: relative;</span><br><span class="line">  <span class="attribute">width</span>: <span class="number">200px</span>;</span><br><span class="line">  <span class="attribute">height</span>: <span class="number">200px</span>;</span><br><span class="line">  <span class="attribute">background</span>: yellowgreen;</span><br><span class="line">  <span class="attribute">background-image</span>: <span class="built_in">linear-gradient</span>(<span class="number">90deg</span>, transparent <span class="number">50%</span>,<span class="number">#655</span> <span class="number">0</span>);</span><br><span class="line">  <span class="attribute">border-radius</span>: <span class="number">50%</span>;</span><br><span class="line">  <span class="attribute">overflow</span>: hidden;</span><br><span class="line">&#125;</span><br><span class="line"><span class="selector-class">.box</span><span class="selector-pseudo">::after</span> &#123;</span><br><span class="line">  <span class="attribute">background-color</span>: <span class="number">#665</span>;</span><br><span class="line">  <span class="attribute">transform</span>: <span class="built_in">rotate</span>(<span class="number">0.2turn</span>);</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
-
-<p>到这里似乎已经可以实现饼图的效果了,但如果想修改一个比例,我们能会修改颜色,修改圈数,能不能只通过一个属性就控制为元素的颜色和角度,这里会用到很多 animation 相关的属性</p>
-<p>第一点需要解决如何让超过 50% 之后,颜色自动改变,可能只用 animation 有这个能力,因为没有什么选择器可以判断元素是不是旋转过了一半,而 animation 可以控制动画的执行位置</p>
-<figure class="highlight css"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br></pre></td><td class="code"><pre><span class="line"><span class="selector-class">.box</span>&#123;</span><br><span class="line">  <span class="attribute">position</span>: relative;</span><br><span class="line">  <span class="attribute">width</span>: <span class="number">200px</span>;</span><br><span class="line">  <span class="attribute">height</span>: <span class="number">200px</span>;</span><br><span class="line">  <span class="attribute">background</span>: yellowgreen;</span><br><span class="line">  <span class="attribute">background-image</span>: <span class="built_in">linear-gradient</span>(<span class="number">90deg</span>, transparent <span class="number">50%</span>,<span class="number">#655</span> <span class="number">0</span>);</span><br><span class="line">  <span class="attribute">border-radius</span>: <span class="number">50%</span>;</span><br><span class="line">  <span class="attribute">overflow</span>: hidden;</span><br><span class="line">&#125;</span><br><span class="line"><span class="selector-class">.box</span><span class="selector-pseudo">::after</span> &#123;</span><br><span class="line">  <span class="attribute">content</span>:<span class="string">&#x27;&#x27;</span>;</span><br><span class="line">  <span class="attribute">position</span>: absolute;</span><br><span class="line">  <span class="attribute">width</span>: <span class="number">50%</span>;</span><br><span class="line">  <span class="attribute">height</span>: <span class="number">100%</span>;</span><br><span class="line">  <span class="attribute">border-radius</span>: <span class="number">0</span> <span class="number">100%</span> <span class="number">100%</span> <span class="number">0</span> / <span class="number">50%</span>;</span><br><span class="line">  <span class="attribute">left</span>: <span class="number">50%</span>;</span><br><span class="line">  <span class="attribute">top</span>:<span class="number">0</span>;</span><br><span class="line">  <span class="attribute">background-color</span>: inherit;</span><br><span class="line">  <span class="attribute">transform-origin</span>: left center;</span><br><span class="line">  <span class="attribute">animation</span>: bg <span class="number">100s</span> step-end infinite,ani <span class="number">50s</span> linear infinite;</span><br><span class="line">  <span class="attribute">animation-delay</span>: -<span class="number">10s</span>;</span><br><span class="line">  <span class="attribute">animation-play-state</span>: paused;</span><br><span class="line">&#125;</span><br><span class="line"><span class="keyword">@keyframes</span> bg &#123;</span><br><span class="line">  <span class="number">50%</span> &#123;</span><br><span class="line">    <span class="attribute">background</span>: <span class="number">#655</span>;</span><br><span class="line">  &#125;</span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line"><span class="keyword">@keyframes</span> ani &#123;</span><br><span class="line">  <span class="selector-tag">to</span> &#123;</span><br><span class="line">    <span class="attribute">transform</span>: <span class="built_in">rotate</span>(<span class="number">0.5turn</span>);</span><br><span class="line">  &#125;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
-<p>step-end 的目的就是在动画指定到一半也就是 50s 的时候,颜色突然改变,而这时也恰好旋转了半圈因为 ani 动画的执行时间是 50s 旋转半圈, 另外需要使用 <code>animation-play-state: paused </code> 把动画暂停住,这样在一个合适的角度就能显示出比例</p>
-<p>这里用到了 <code>animation-delay</code> 很少使用到的属性, 一个负的延时时间,这是有意义的,它的行为与 0s 延时类似,都会立即执行动画,但是一个负值表示动画已经开始播放,并且持续了对应的时间,效果就是显示第一帧的时候,好像动画已经播放了这么长时间.所以指定一个负值来表示已经旋转过的角度. 如果是 70% 那可以设置为 <code>animation-delay: -70s</code></p>
- 
-      <!-- reward -->
-      
-    </div>
-    
-
-    <!-- copyright -->
-    
-    <footer class="article-footer">
-       
-  <ul class="article-tag-list" itemprop="keywords"><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/CSS/" rel="tag">CSS</a></li></ul>
-
-    </footer>
-  </div>
-
-   
-    
-</article>
-
-    
   </article>
   
 
   
   <nav class="page-nav">
     
-    <a class="extend prev" rel="prev" href="/page/6/">上一页</a><a class="page-number" href="/">1</a><span class="space">&hellip;</span><a class="page-number" href="/page/5/">5</a><a class="page-number" href="/page/6/">6</a><span class="page-number current">7</span><a class="page-number" href="/page/8/">8</a><a class="page-number" href="/page/9/">9</a><span class="space">&hellip;</span><a class="page-number" href="/page/27/">27</a><a class="extend next" rel="next" href="/page/8/">下一页</a>
+    <a class="extend prev" rel="prev" href="/page/6/">上一页</a><a class="page-number" href="/">1</a><span class="space">&hellip;</span><a class="page-number" href="/page/5/">5</a><a class="page-number" href="/page/6/">6</a><span class="page-number current">7</span><a class="page-number" href="/page/8/">8</a><a class="page-number" href="/page/9/">9</a><span class="space">&hellip;</span><a class="page-number" href="/page/28/">28</a><a class="extend next" rel="next" href="/page/8/">下一页</a>
   </nav>
   
 </section>
@@ -1198,10 +1104,6 @@
     
     <li class="nav-item">
       <a class="nav-item-link" href="/tags">标签</a>
-    </li>
-    
-    <li class="nav-item">
-      <a class="nav-item-link" href="/tags/Essay">随笔</a>
     </li>
     
   </ul>

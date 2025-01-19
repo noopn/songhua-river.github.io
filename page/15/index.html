@@ -112,6 +112,109 @@
     
     
     <article
+  id="post-react/应用/函数式组件与类组件有何不同"
+  class="article article-type-post"
+  itemscope
+  itemprop="blogPost"
+  data-scroll-reveal
+>
+  <div class="article-inner">
+    
+    <header class="article-header">
+       
+<h2 itemprop="name">
+  <a class="article-title" href="/posts/8133b19578e4/"
+    >函数式组件与类组件有何不同？</a> 
+</h2>
+ 
+
+      
+    </header>
+     
+    <div class="article-meta">
+      <a href="/posts/8133b19578e4/" class="article-date">
+  <time datetime="2021-05-13T01:57:44.000Z" itemprop="datePublished">2021-05-13</time>
+</a> 
+  <div class="article-category">
+    <a class="article-category-link" href="/categories/React/">React</a> / <a class="article-category-link" href="/categories/React/%E5%BA%94%E7%94%A8/">应用</a>
+  </div>
+   
+    </div>
+      
+    <div class="article-entry" itemprop="articleBody">
+       
+  <h4 id="性能问题可以忽略"><a href="#性能问题可以忽略" class="headerlink" title="性能问题可以忽略"></a>性能问题可以忽略</h4><p>性能主要取决于代码的作用，而不是选择函数式还是类组件。在我们的观察中，尽管优化策略各有略微不同，但性能差异可以忽略不计。</p>
+<p><a target="_blank" rel="noopener" href="https://reactjs.org/docs/hooks-faq.html#are-hooks-slow-because-of-creating-functions-in-render">hooks慢是因为在渲染中创建了函数么</a></p>
+<p>现在浏览器中闭包与类没有明显的性能差别，除非在极端的情况下，hooks在两点上更有效率</p>
+<ul>
+<li><p>避免了类组件实例化，和constructor中绑定时间处理函数的消耗</p>
+</li>
+<li><p>常规代码使用hooks不需要过深的组件树嵌套，在封装的基础库中使用高阶组建，渲染props和context很常见</p>
+</li>
+</ul>
+<p>传统上，React内联函数的性能问题主要与如何在子组件中为每个渲染断点shouldComponentUpdate传递新的回调有关。 </p>
+<p>Hooks 使用三个HooksApi来解决</p>
+<ul>
+<li><p>useCallback 在每次渲染中保持了相同的句柄引用，所以shouldComponentUpdate继续工作</p>
+</li>
+<li><p>useMemo 控制子组件何时渲染，不在需要prueCompnent</p>
+</li>
+<li><p>useReducer 避免了需要吧会掉函数传递过深</p>
+</li>
+</ul>
+<h4 id="类组件存在的问题"><a href="#类组件存在的问题" class="headerlink" title="类组件存在的问题"></a>类组件存在的问题</h4><p>下面模拟在点击一个按钮之后发送一个<a target="_blank" rel="noopener" href="https://codesandbox.io/s/pjqnl16lm7?file=/src/index.js:0-1119">关注请求</a></p>
+<p><strong>index.js</strong></p>
+<figure class="highlight javascript"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br><span class="line">35</span><br><span class="line">36</span><br><span class="line">37</span><br><span class="line">38</span><br><span class="line">39</span><br><span class="line">40</span><br><span class="line">41</span><br><span class="line">42</span><br><span class="line">43</span><br><span class="line">44</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">import</span> <span class="title class_">React</span> <span class="keyword">from</span> <span class="string">&quot;react&quot;</span>;</span><br><span class="line"><span class="keyword">import</span> <span class="title class_">ReactDOM</span> <span class="keyword">from</span> <span class="string">&quot;react-dom&quot;</span>;</span><br><span class="line"></span><br><span class="line"><span class="keyword">import</span> <span class="title class_">ProfilePageFunction</span> <span class="keyword">from</span> <span class="string">&#x27;./ProfilePageFunction&#x27;</span>;</span><br><span class="line"><span class="keyword">import</span> <span class="title class_">ProfilePageClass</span> <span class="keyword">from</span> <span class="string">&#x27;./ProfilePageClass&#x27;</span>;</span><br><span class="line"></span><br><span class="line"><span class="keyword">class</span> <span class="title class_">App</span> <span class="keyword">extends</span> <span class="title class_ inherited__">React.Component</span> &#123;</span><br><span class="line">  state = &#123;</span><br><span class="line">    <span class="attr">user</span>: <span class="string">&#x27;Dan&#x27;</span>,</span><br><span class="line">  &#125;;</span><br><span class="line">  <span class="title function_">render</span>(<span class="params"></span>) &#123;</span><br><span class="line">    <span class="keyword">return</span> (</span><br><span class="line">      <span class="language-xml"><span class="tag">&lt;&gt;</span></span></span><br><span class="line"><span class="language-xml">        <span class="tag">&lt;<span class="name">label</span>&gt;</span></span></span><br><span class="line"><span class="language-xml">          <span class="tag">&lt;<span class="name">b</span>&gt;</span>Choose profile to view: <span class="tag">&lt;/<span class="name">b</span>&gt;</span></span></span><br><span class="line"><span class="language-xml">          <span class="tag">&lt;<span class="name">select</span></span></span></span><br><span class="line"><span class="tag"><span class="language-xml">            <span class="attr">value</span>=<span class="string">&#123;this.state.user&#125;</span></span></span></span><br><span class="line"><span class="tag"><span class="language-xml">            <span class="attr">onChange</span>=<span class="string">&#123;e</span> =&gt;</span> this.setState(&#123; user: e.target.value &#125;)&#125;</span></span><br><span class="line"><span class="language-xml">          &gt;</span></span><br><span class="line"><span class="language-xml">            <span class="tag">&lt;<span class="name">option</span> <span class="attr">value</span>=<span class="string">&quot;Dan&quot;</span>&gt;</span>Dan<span class="tag">&lt;/<span class="name">option</span>&gt;</span></span></span><br><span class="line"><span class="language-xml">            <span class="tag">&lt;<span class="name">option</span> <span class="attr">value</span>=<span class="string">&quot;Sophie&quot;</span>&gt;</span>Sophie<span class="tag">&lt;/<span class="name">option</span>&gt;</span></span></span><br><span class="line"><span class="language-xml">            <span class="tag">&lt;<span class="name">option</span> <span class="attr">value</span>=<span class="string">&quot;Sunil&quot;</span>&gt;</span>Sunil<span class="tag">&lt;/<span class="name">option</span>&gt;</span></span></span><br><span class="line"><span class="language-xml">          <span class="tag">&lt;/<span class="name">select</span>&gt;</span></span></span><br><span class="line"><span class="language-xml">        <span class="tag">&lt;/<span class="name">label</span>&gt;</span></span></span><br><span class="line"><span class="language-xml">        <span class="tag">&lt;<span class="name">h1</span>&gt;</span>Welcome to &#123;this.state.user&#125;’s profile!<span class="tag">&lt;/<span class="name">h1</span>&gt;</span></span></span><br><span class="line"><span class="language-xml">        <span class="tag">&lt;<span class="name">p</span>&gt;</span></span></span><br><span class="line"><span class="language-xml">          <span class="tag">&lt;<span class="name">ProfilePageFunction</span> <span class="attr">user</span>=<span class="string">&#123;this.state.user&#125;</span> /&gt;</span></span></span><br><span class="line"><span class="language-xml">          <span class="tag">&lt;<span class="name">b</span>&gt;</span> (function)<span class="tag">&lt;/<span class="name">b</span>&gt;</span></span></span><br><span class="line"><span class="language-xml">        <span class="tag">&lt;/<span class="name">p</span>&gt;</span></span></span><br><span class="line"><span class="language-xml">        <span class="tag">&lt;<span class="name">p</span>&gt;</span></span></span><br><span class="line"><span class="language-xml">          <span class="tag">&lt;<span class="name">ProfilePageClass</span> <span class="attr">user</span>=<span class="string">&#123;this.state.user&#125;</span> /&gt;</span></span></span><br><span class="line"><span class="language-xml">          <span class="tag">&lt;<span class="name">b</span>&gt;</span> (class)<span class="tag">&lt;/<span class="name">b</span>&gt;</span></span></span><br><span class="line"><span class="language-xml">        <span class="tag">&lt;/<span class="name">p</span>&gt;</span></span></span><br><span class="line"><span class="language-xml">        <span class="tag">&lt;<span class="name">p</span>&gt;</span></span></span><br><span class="line"><span class="language-xml">          Can you spot the difference in the behavior?</span></span><br><span class="line"><span class="language-xml">        <span class="tag">&lt;/<span class="name">p</span>&gt;</span></span></span><br><span class="line"><span class="language-xml">      <span class="tag">&lt;/&gt;</span></span></span><br><span class="line">    )</span><br><span class="line">  &#125;</span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line"></span><br><span class="line"><span class="keyword">const</span> rootElement = <span class="variable language_">document</span>.<span class="title function_">getElementById</span>(<span class="string">&quot;root&quot;</span>);</span><br><span class="line"><span class="title class_">ReactDOM</span>.<span class="title function_">render</span>(<span class="language-xml"><span class="tag">&lt;<span class="name">App</span> /&gt;</span></span>, rootElement);</span><br></pre></td></tr></table></figure>
+
+<p><strong>ClassCompnent</strong></p>
+<figure class="highlight javascript"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">import</span> <span class="title class_">React</span> <span class="keyword">from</span> <span class="string">&#x27;react&#x27;</span>;</span><br><span class="line"></span><br><span class="line"><span class="keyword">class</span> <span class="title class_">ProfilePage</span> <span class="keyword">extends</span> <span class="title class_ inherited__">React.Component</span> &#123;</span><br><span class="line">  showMessage = <span class="function">() =&gt;</span> &#123;</span><br><span class="line">    <span class="title function_">alert</span>(<span class="string">&#x27;Followed &#x27;</span> + <span class="variable language_">this</span>.<span class="property">props</span>.<span class="property">user</span>);</span><br><span class="line">  &#125;;</span><br><span class="line"></span><br><span class="line">  handleClick = <span class="function">() =&gt;</span> &#123;</span><br><span class="line">    <span class="built_in">setTimeout</span>(<span class="variable language_">this</span>.<span class="property">showMessage</span>, <span class="number">3000</span>);</span><br><span class="line">  &#125;;</span><br><span class="line"></span><br><span class="line">  <span class="title function_">render</span>(<span class="params"></span>) &#123;</span><br><span class="line">    <span class="keyword">return</span> <span class="language-xml"><span class="tag">&lt;<span class="name">button</span> <span class="attr">onClick</span>=<span class="string">&#123;this.handleClick&#125;</span>&gt;</span>Follow<span class="tag">&lt;/<span class="name">button</span>&gt;</span></span>;</span><br><span class="line">  &#125;</span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line"><span class="keyword">export</span> <span class="keyword">default</span> <span class="title class_">ProfilePage</span>;</span><br></pre></td></tr></table></figure>
+
+<p>再点击按钮三秒之后会弹出关注的姓名，但是如果在点击之后马上修改下啦列表的值，那么三秒之后显示的是修改之后的值，这显然史有问题的</p>
+<p><img src="/posts/8133b19578e4/0001.gif"></p>
+<p>造成这个问题的原因就是this是不断在改变的，虽然在第一次渲染结束的时候，已经为setTimeout的回调函数传入了类方法showMessage，但是当点击按钮之后迅速切换下拉框，state的改变会导致组建重新加载，这时子组件会接受到一个过于新的props, 而setTimeout中的回调函数并没有与之前的旧的props绑定，而是直接读取了，this中较新的props</p>
+<p>也许你会想使bind，但是这并不起作用,当读取props的时候，this中的props已经被修改，bind只是绑定了类方法的执行上下文，但是并没有固定为上一次的this</p>
+<figure class="highlight javascript"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">class</span> <span class="title class_">ProfilePage</span> <span class="keyword">extends</span> <span class="title class_ inherited__">React.Component</span> &#123;</span><br><span class="line">  <span class="title function_">constructor</span>(<span class="params">props</span>) &#123;</span><br><span class="line">    <span class="variable language_">super</span>(props);</span><br><span class="line">    <span class="variable language_">this</span>.<span class="property">showMessage</span> = <span class="variable language_">this</span>.<span class="property">showMessage</span>.<span class="title function_">bind</span>(<span class="variable language_">this</span>);</span><br><span class="line">    <span class="variable language_">this</span>.<span class="property">handleClick</span> = <span class="variable language_">this</span>.<span class="property">handleClick</span>.<span class="title function_">bind</span>(<span class="variable language_">this</span>);</span><br><span class="line">  &#125;</span><br><span class="line"></span><br><span class="line">  <span class="title function_">showMessage</span>(<span class="params"></span>) &#123;</span><br><span class="line">    <span class="title function_">alert</span>(<span class="string">&#x27;Followed &#x27;</span> + <span class="variable language_">this</span>.<span class="property">props</span>.<span class="property">user</span>);</span><br><span class="line">  &#125;</span><br><span class="line"></span><br><span class="line">  <span class="title function_">handleClick</span>(<span class="params"></span>) &#123;</span><br><span class="line">    <span class="built_in">setTimeout</span>(<span class="variable language_">this</span>.<span class="property">showMessage</span>, <span class="number">3000</span>);</span><br><span class="line">  &#125;</span><br><span class="line"></span><br><span class="line">  <span class="title function_">render</span>(<span class="params"></span>) &#123;</span><br><span class="line">    <span class="keyword">return</span> <span class="language-xml"><span class="tag">&lt;<span class="name">button</span> <span class="attr">onClick</span>=<span class="string">&#123;this.handleClick&#125;</span>&gt;</span>Follow<span class="tag">&lt;/<span class="name">button</span>&gt;</span></span>;</span><br><span class="line">  &#125;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+<h4 id="类组件问题解决方法"><a href="#类组件问题解决方法" class="headerlink" title="类组件问题解决方法"></a>类组件问题解决方法</h4><p>也许你会想到绑定回调函数之前先把用到的props缓存起来</p>
+<figure class="highlight javascript"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">class</span> <span class="title class_">ProfilePage</span> <span class="keyword">extends</span> <span class="title class_ inherited__">React.Component</span> &#123;</span><br><span class="line">  showMessage = <span class="function">(<span class="params">user</span>) =&gt;</span> &#123;</span><br><span class="line">    <span class="title function_">alert</span>(<span class="string">&#x27;Followed &#x27;</span> + user);</span><br><span class="line">  &#125;;</span><br><span class="line"></span><br><span class="line">  handleClick = <span class="function">() =&gt;</span> &#123;</span><br><span class="line">    <span class="keyword">const</span> &#123;user&#125; = <span class="variable language_">this</span>.<span class="property">props</span>;</span><br><span class="line">    <span class="built_in">setTimeout</span>(<span class="function">() =&gt;</span> <span class="variable language_">this</span>.<span class="title function_">showMessage</span>(user), <span class="number">3000</span>);</span><br><span class="line">  &#125;;</span><br><span class="line"></span><br><span class="line">  <span class="title function_">render</span>(<span class="params"></span>) &#123;</span><br><span class="line">    <span class="keyword">return</span> <span class="language-xml"><span class="tag">&lt;<span class="name">button</span> <span class="attr">onClick</span>=<span class="string">&#123;this.handleClick&#125;</span>&gt;</span>Follow<span class="tag">&lt;/<span class="name">button</span>&gt;</span></span>;</span><br><span class="line">  &#125;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+<p>这种方法使得代码明显变得更加冗长，并且随着时间推移容易出错。如果我们需要的不止是一个props怎么办？如果我们还需要访问state怎么办？如果 showMessage 调用了另一个方法，然后那个方法中读取了 this.props.something 或者 this.state.something，我们又将遇到同样的问题。然后我们不得不将this.props和this.state以函数参数的形式在被showMessage调用的每个方法中一路传递下去。</p>
+<p>所以我们想到用闭包的方式解决props不能被保存的问题</p>
+<figure class="highlight javascript"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">class</span> <span class="title class_">ProfilePage</span> <span class="keyword">extends</span> <span class="title class_ inherited__">React.Component</span> &#123;</span><br><span class="line">  <span class="title function_">render</span>(<span class="params"></span>) &#123;</span><br><span class="line">    <span class="comment">// Capture the props!</span></span><br><span class="line">    <span class="keyword">const</span> props = <span class="variable language_">this</span>.<span class="property">props</span>;</span><br><span class="line"></span><br><span class="line">    <span class="comment">// Note: we are *inside render*.</span></span><br><span class="line">    <span class="comment">// These aren&#x27;t class methods.</span></span><br><span class="line">    <span class="keyword">const</span> <span class="title function_">showMessage</span> = (<span class="params"></span>) =&gt; &#123;</span><br><span class="line">      <span class="title function_">alert</span>(<span class="string">&#x27;Followed &#x27;</span> + props.<span class="property">user</span>);</span><br><span class="line">    &#125;;</span><br><span class="line"></span><br><span class="line">    <span class="keyword">const</span> <span class="title function_">handleClick</span> = (<span class="params"></span>) =&gt; &#123;</span><br><span class="line">      <span class="built_in">setTimeout</span>(showMessage, <span class="number">3000</span>);</span><br><span class="line">    &#125;;</span><br><span class="line"></span><br><span class="line">    <span class="keyword">return</span> <span class="language-xml"><span class="tag">&lt;<span class="name">button</span> <span class="attr">onClick</span>=<span class="string">&#123;handleClick&#125;</span>&gt;</span>Follow<span class="tag">&lt;/<span class="name">button</span>&gt;</span></span>;</span><br><span class="line">  &#125;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+<p>既然只需要在render函数中定义各种函数，所以自然想到，可以省略class,直接使用函数式组件</p>
+<figure class="highlight javascript"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">function</span> <span class="title function_">ProfilePage</span>(<span class="params">&#123; user &#125;</span>) &#123;</span><br><span class="line">  <span class="keyword">const</span> <span class="title function_">showMessage</span> = (<span class="params"></span>) =&gt; &#123;</span><br><span class="line">    <span class="title function_">alert</span>(<span class="string">&#x27;Followed &#x27;</span> + user);</span><br><span class="line">  &#125;;</span><br><span class="line"></span><br><span class="line">  <span class="keyword">const</span> <span class="title function_">handleClick</span> = (<span class="params"></span>) =&gt; &#123;</span><br><span class="line">    <span class="built_in">setTimeout</span>(showMessage, <span class="number">3000</span>);</span><br><span class="line">  &#125;;</span><br><span class="line"></span><br><span class="line">  <span class="keyword">return</span> (</span><br><span class="line">    <span class="language-xml"><span class="tag">&lt;<span class="name">button</span> <span class="attr">onClick</span>=<span class="string">&#123;handleClick&#125;</span>&gt;</span>Follow<span class="tag">&lt;/<span class="name">button</span>&gt;</span></span></span><br><span class="line">  );</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+<p>而hooks其实就是捕获了state中的值</p>
+<figure class="highlight javascript"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">function</span> <span class="title function_">MessageThread</span>(<span class="params"></span>) &#123;</span><br><span class="line">  <span class="keyword">const</span> [message, setMessage] = <span class="title function_">useState</span>(<span class="string">&#x27;&#x27;</span>);</span><br><span class="line"></span><br><span class="line">  <span class="keyword">const</span> <span class="title function_">showMessage</span> = (<span class="params"></span>) =&gt; &#123;</span><br><span class="line">    <span class="title function_">alert</span>(<span class="string">&#x27;You said: &#x27;</span> + message);</span><br><span class="line">  &#125;;</span><br><span class="line"></span><br><span class="line">  <span class="keyword">const</span> <span class="title function_">handleSendClick</span> = (<span class="params"></span>) =&gt; &#123;</span><br><span class="line">    <span class="built_in">setTimeout</span>(showMessage, <span class="number">3000</span>);</span><br><span class="line">  &#125;;</span><br><span class="line"></span><br><span class="line">  <span class="keyword">const</span> <span class="title function_">handleMessageChange</span> = (<span class="params">e</span>) =&gt; &#123;</span><br><span class="line">    <span class="title function_">setMessage</span>(e.<span class="property">target</span>.<span class="property">value</span>);</span><br><span class="line">  &#125;;</span><br><span class="line"></span><br><span class="line">  <span class="keyword">return</span> (</span><br><span class="line">    <span class="language-xml"><span class="tag">&lt;&gt;</span></span></span><br><span class="line"><span class="language-xml">      <span class="tag">&lt;<span class="name">input</span> <span class="attr">value</span>=<span class="string">&#123;message&#125;</span> <span class="attr">onChange</span>=<span class="string">&#123;handleMessageChange&#125;</span> /&gt;</span></span></span><br><span class="line"><span class="language-xml">      <span class="tag">&lt;<span class="name">button</span> <span class="attr">onClick</span>=<span class="string">&#123;handleSendClick&#125;</span>&gt;</span>Send<span class="tag">&lt;/<span class="name">button</span>&gt;</span></span></span><br><span class="line"><span class="language-xml">    <span class="tag">&lt;/&gt;</span></span></span><br><span class="line">  );</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+<h4 id="Hooks与未来值"><a href="#Hooks与未来值" class="headerlink" title="Hooks与未来值"></a>Hooks与未来值</h4><p>上面我们已经能拿到一个状态的过去值，但是如何能拿到一个状态的未来值</p>
+<p>我们在一个effect内部执行赋值操作以便让ref的值只会在DOM被更新后才会改变。这确保了我们的变量突变不会破坏依赖于可中断渲染的时间切片和 Suspense等特性。</p>
+<figure class="highlight javascript"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">function</span> <span class="title function_">ProfilePage</span>(<span class="params">props</span>) &#123;</span><br><span class="line">  <span class="keyword">const</span> ref = <span class="title function_">useRef</span>(<span class="literal">null</span>);</span><br><span class="line">  <span class="keyword">const</span> <span class="title function_">showMessage</span> = (<span class="params"></span>) =&gt; &#123;</span><br><span class="line">    <span class="title function_">alert</span>(<span class="string">&quot;Followed &quot;</span> + ref.<span class="property">current</span>.<span class="property">user</span>);</span><br><span class="line">  &#125;;</span><br><span class="line">  <span class="title function_">useEffect</span>(<span class="function">() =&gt;</span> &#123;</span><br><span class="line">    ref.<span class="property">current</span> =&#123;<span class="attr">user</span>:props.<span class="property">user</span>&#125;;</span><br><span class="line">  &#125;, [props,ref]);</span><br><span class="line">  <span class="keyword">const</span> <span class="title function_">handleClick</span> = (<span class="params"></span>) =&gt; &#123;</span><br><span class="line">    <span class="built_in">setTimeout</span>(showMessage, <span class="number">3000</span>);</span><br><span class="line">  &#125;;</span><br><span class="line"></span><br><span class="line">  <span class="keyword">return</span> <span class="language-xml"><span class="tag">&lt;<span class="name">button</span> <span class="attr">onClick</span>=<span class="string">&#123;handleClick&#125;</span>&gt;</span>Follow<span class="tag">&lt;/<span class="name">button</span>&gt;</span></span>;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+<h4 id="总结"><a href="#总结" class="headerlink" title="总结"></a>总结</h4><p>所谓的“陈旧的闭包”问题的出现多是由于错误的假设了“函数不会改变”或者“props永远是一样的”。事实并非如此。</p>
+<p>函数捕获了他们的props和state —— 因此它们的标识也同样重要。这不是一个bug，而是一个函数式组件的特性。例如，对于useEffect或者useCallback来说，函数不应该被排除在“依赖数组”之外。（正确的解决方案通常是使用上面说过的useReducer或者useRef）</p>
+ 
+      <!-- reward -->
+      
+    </div>
+    
+
+    <!-- copyright -->
+    
+    <footer class="article-footer">
+       
+  <ul class="article-tag-list" itemprop="keywords"><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/React/" rel="tag">React</a></li></ul>
+
+    </footer>
+  </div>
+
+   
+    
+</article>
+
+    
+    <article
   id="post-react/应用/react中的keep-alive"
   class="article article-type-post"
   itemscope
@@ -195,7 +298,7 @@
 
     
     <article
-  id="post-linux/question/ubuntu取消代理"
+  id="post-linux/ubuntu取消代理"
   class="article article-type-post"
   itemscope
   itemprop="blogPost"
@@ -206,7 +309,7 @@
     <header class="article-header">
        
 <h2 itemprop="name">
-  <a class="article-title" href="/posts/5716c4e42110/"
+  <a class="article-title" href="/posts/a7fed883bbc5/"
     >ubuntu取消代理</a> 
 </h2>
  
@@ -215,7 +318,7 @@
     </header>
      
     <div class="article-meta">
-      <a href="/posts/5716c4e42110/" class="article-date">
+      <a href="/posts/a7fed883bbc5/" class="article-date">
   <time datetime="2021-04-01T01:46:11.000Z" itemprop="datePublished">2021-04-01</time>
 </a> 
   <div class="article-category">
@@ -256,6 +359,111 @@
     <footer class="article-footer">
        
   <ul class="article-tag-list" itemprop="keywords"><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/Linux/" rel="tag">Linux</a></li></ul>
+
+    </footer>
+  </div>
+
+   
+    
+</article>
+
+    
+    <article
+  id="post-linux/Ubuntu_Server安装"
+  class="article article-type-post"
+  itemscope
+  itemprop="blogPost"
+  data-scroll-reveal
+>
+  <div class="article-inner">
+    
+    <header class="article-header">
+       
+<h2 itemprop="name">
+  <a class="article-title" href="/posts/65837ed3d57c/"
+    >Ubuntu Server 安装</a> 
+</h2>
+ 
+
+      
+    </header>
+     
+    <div class="article-meta">
+      <a href="/posts/65837ed3d57c/" class="article-date">
+  <time datetime="2021-03-09T13:07:30.000Z" itemprop="datePublished">2021-03-09</time>
+</a> 
+  <div class="article-category">
+    <a class="article-category-link" href="/categories/Linux/">Linux</a>
+  </div>
+   
+    </div>
+      
+    <div class="article-entry" itemprop="articleBody">
+       
+  <ul>
+<li><strong>选择语言</strong></li>
+</ul>
+<p><img src="/posts/65837ed3d57c/001.png"></p>
+<ul>
+<li><strong>是否版本更新</strong>，可以选择跳过</li>
+</ul>
+<p><img src="/posts/65837ed3d57c/002.png"></p>
+<ul>
+<li><strong>键盘配置选择英文</strong></li>
+</ul>
+<p><img src="/posts/65837ed3d57c/003.png"></p>
+<ul>
+<li><strong>选择安装方式</strong></li>
+</ul>
+<p><img src="/posts/65837ed3d57c/004.png"></p>
+<ul>
+<li><strong>网络配置，选择 DHCP</strong></li>
+</ul>
+<p><img src="/posts/65837ed3d57c/005.png"></p>
+<ul>
+<li><strong>代理配置,保持默认空</strong></li>
+</ul>
+<p><img src="/posts/65837ed3d57c/006.png"></p>
+<ul>
+<li><strong>镜像源配置，保持默认或填写国内镜像源</strong></li>
+</ul>
+<p><img src="/posts/65837ed3d57c/007.png"></p>
+<ul>
+<li><strong>存储配置，保持默认</strong></li>
+</ul>
+<p><img src="/posts/65837ed3d57c/008.png"></p>
+<p><img src="/posts/65837ed3d57c/009.png"></p>
+<ul>
+<li><strong>配置用户和密码</strong></li>
+</ul>
+<p><img src="/posts/65837ed3d57c/010.png"></p>
+<ul>
+<li><strong>是否升级到专业版</strong></li>
+</ul>
+<p><img src="/posts/65837ed3d57c/011.png"></p>
+<ul>
+<li><strong>SSH 配置， 勾选安装 OpenSSH Server</strong></li>
+</ul>
+<p><img src="/posts/65837ed3d57c/012.png"></p>
+<ul>
+<li><strong>额外的安装包，按情况勾选</strong></li>
+</ul>
+<p><img src="/posts/65837ed3d57c/013.png"></p>
+<ul>
+<li><strong>等待系统安装</strong></li>
+</ul>
+<p><img src="/posts/65837ed3d57c/014.png"></p>
+ 
+      <!-- reward -->
+      
+    </div>
+    
+
+    <!-- copyright -->
+    
+    <footer class="article-footer">
+       
+  <ul class="article-tag-list" itemprop="keywords"><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/Ubuntu/" rel="tag">Ubuntu</a></li></ul>
 
     </footer>
   </div>
@@ -449,7 +657,7 @@
 
     
     <article
-  id="post-ts/高级用法"
+  id="post-devops/Node项目部署"
   class="article article-type-post"
   itemscope
   itemprop="blogPost"
@@ -460,7 +668,132 @@
     <header class="article-header">
        
 <h2 itemprop="name">
-  <a class="article-title" href="/posts/6fcd8985833a/"
+  <a class="article-title" href="/posts/6661e67bf767/"
+    >简单Node部署</a> 
+</h2>
+ 
+
+      
+    </header>
+     
+    <div class="article-meta">
+      <a href="/posts/6661e67bf767/" class="article-date">
+  <time datetime="2021-03-01T13:38:19.000Z" itemprop="datePublished">2021-03-01</time>
+</a> 
+  <div class="article-category">
+    <a class="article-category-link" href="/categories/DevOps/">DevOps</a>
+  </div>
+   
+    </div>
+      
+    <div class="article-entry" itemprop="articleBody">
+       
+  <h4 id="创建非-root-账户"><a href="#创建非-root-账户" class="headerlink" title="创建非 root 账户"></a>创建非 root 账户</h4><p>有些云服务器会禁止 root 用户登录， 但是如果分发的服务器使用 root 登录，可以创建一个非 root 账号， 防止权限过高导致误操作。</p>
+<figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment"># root 用户下执行，添加一个 user1 用户</span></span><br><span class="line">adduser user1</span><br><span class="line"></span><br><span class="line">Adding user `user1<span class="string">&#x27; ...</span></span><br><span class="line"><span class="string">Adding new group `user1&#x27;</span> (1002) ...</span><br><span class="line">Adding new user `user1<span class="string">&#x27; (1002) with group `user1&#x27;</span> ...</span><br><span class="line">Creating home directory `/home/user1<span class="string">&#x27; ...</span></span><br><span class="line"><span class="string">Copying files from `/etc/skel&#x27;</span> ...</span><br><span class="line">New password:</span><br><span class="line">Retype new password:</span><br><span class="line">passwd: password updated successfully</span><br><span class="line">Changing the user information <span class="keyword">for</span> user1</span><br><span class="line">Enter the new value, or press ENTER <span class="keyword">for</span> the default</span><br><span class="line">        Full Name []: sunzhiqi</span><br><span class="line">        Room Number []:</span><br><span class="line">        Work Phone []:</span><br><span class="line">        Home Phone []:</span><br><span class="line">        Other []:</span><br><span class="line">Is the information correct? [Y/n]</span><br></pre></td></tr></table></figure>
+
+<p>将指定的用户（user）添加到 sudo 组中，从而授予该用户使用 sudo 命令的权限</p>
+<figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">gpasswd -a user1 sudo</span><br></pre></td></tr></table></figure>
+
+<p><strong>之前 root 用户登录的窗口不要关闭，如果新用户无法登录，可以使用 root 用户窗口重启 ssh 服务，再次尝试</strong></p>
+<figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">service ssh restart</span><br></pre></td></tr></table></figure>
+
+<h4 id="免密登录"><a href="#免密登录" class="headerlink" title="免密登录"></a>免密登录</h4><p>如果使用 ssh 工具可以记住登录密码，如果使用命令行需要配置 <a href="/posts/de11f04658e7/#%E5%85%8D%E5%AF%86%E7%99%BB%E9%99%86"><strong>免密登录</strong></a></p>
+<h4 id="修改默认端口"><a href="#修改默认端口" class="headerlink" title="修改默认端口"></a>修改默认端口</h4><p><strong>修改完成后需要同步修改本地的 config 免密登录配置文件，同时配置服务器防火墙放行端口</strong></p>
+<figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br></pre></td><td class="code"><pre><span class="line">vi /etc/ssh/sshd_config</span><br><span class="line"></span><br><span class="line"><span class="comment">#修改端口字段</span></span><br><span class="line"><span class="comment"># Port 22222</span></span><br></pre></td></tr></table></figure>
+
+<h4 id="禁用-root-登录"><a href="#禁用-root-登录" class="headerlink" title="禁用 root 登录"></a>禁用 root 登录</h4><figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br></pre></td><td class="code"><pre><span class="line">vi /etc/ssh/sshd_config</span><br><span class="line"></span><br><span class="line"><span class="comment"># 表示禁止密码登录，但是可以通过SSH登录</span></span><br><span class="line"><span class="comment"># 通常需要设置为no</span></span><br><span class="line"><span class="comment">#PermitRootLogin prohibit-password</span></span><br><span class="line"></span><br><span class="line"><span class="comment"># 使用密码登录，通常设置为no</span></span><br><span class="line"><span class="comment"># PasswordAuthentication yes</span></span><br><span class="line"></span><br></pre></td></tr></table></figure>
+
+<h4 id="iptables-配置"><a href="#iptables-配置" class="headerlink" title="iptables 配置"></a>iptables 配置</h4><figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">sudo <span class="built_in">touch</span> /etc/network/if-up.d/iptables.up</span><br></pre></td></tr></table></figure>
+
+<p>写入规则</p>
+<figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br><span class="line">35</span><br><span class="line">36</span><br><span class="line">37</span><br><span class="line">38</span><br><span class="line">39</span><br><span class="line">40</span><br><span class="line">41</span><br><span class="line">42</span><br><span class="line">43</span><br><span class="line">44</span><br><span class="line">45</span><br><span class="line">46</span><br><span class="line">47</span><br><span class="line">48</span><br><span class="line">49</span><br><span class="line">50</span><br><span class="line">51</span><br><span class="line">52</span><br><span class="line">53</span><br><span class="line">54</span><br><span class="line">55</span><br><span class="line">56</span><br><span class="line">57</span><br><span class="line">58</span><br><span class="line">59</span><br><span class="line">60</span><br><span class="line">61</span><br><span class="line">62</span><br><span class="line">63</span><br><span class="line">64</span><br><span class="line">65</span><br><span class="line">66</span><br><span class="line">67</span><br><span class="line">68</span><br><span class="line">69</span><br><span class="line">70</span><br><span class="line">71</span><br><span class="line">72</span><br><span class="line">73</span><br><span class="line">74</span><br><span class="line">75</span><br><span class="line">76</span><br><span class="line">77</span><br><span class="line">78</span><br><span class="line">79</span><br><span class="line">80</span><br><span class="line">81</span><br><span class="line">82</span><br><span class="line">83</span><br><span class="line">84</span><br><span class="line">85</span><br><span class="line">86</span><br><span class="line">87</span><br><span class="line">88</span><br><span class="line">89</span><br></pre></td><td class="code"><pre><span class="line">*filter</span><br><span class="line"></span><br><span class="line"><span class="comment"># -A INPUT：向 INPUT 链添加规则，用于处理进入系统的数据包。</span></span><br><span class="line"><span class="comment"># -m state：指定使用 state 模块，state 模块允许基于连接状态来过滤数据包。</span></span><br><span class="line"><span class="comment"># --state ESTABLISHED,RELATED：允许已建立连接（ESTABLISHED）和相关连接（RELATED）的数据包通过。简单来说，允许已经建立的连接的数据包通过，例如响应来自客户端的请求。</span></span><br><span class="line"><span class="comment"># -j ACCEPT：匹配此规则的数据包将被接受（允许通过）。</span></span><br><span class="line">-A INPUT -m state --state ESTABLISHED,RELATED -j ACCEPT</span><br><span class="line"></span><br><span class="line"></span><br><span class="line"><span class="comment"># -A OUTPUT：向 OUTPUT 链添加规则，用于处理从系统发送的数据包。</span></span><br><span class="line"><span class="comment"># -j ACCEPT：所有匹配此规则的数据包将被接受，即允许所有出站流量。</span></span><br><span class="line">-A OUTPUT -j ACCEPT</span><br><span class="line"></span><br><span class="line"></span><br><span class="line"><span class="comment"># -A INPUT：向 INPUT 链添加规则，处理进入系统的数据包。</span></span><br><span class="line"><span class="comment"># -p tcp：指定使用 TCP 协议。</span></span><br><span class="line"><span class="comment"># --dport 443：指定目标端口为 443，这通常用于 HTTPS 流量。</span></span><br><span class="line"><span class="comment"># -j ACCEPT：匹配此规则的 TCP 数据包将被接受，允许 HTTPS 流量进入系统。</span></span><br><span class="line">-A INPUT -p tcp --dport 443 -j ACCEPT</span><br><span class="line"></span><br><span class="line"></span><br><span class="line"><span class="comment"># -A INPUT：向 INPUT 链添加规则，处理进入系统的数据包。</span></span><br><span class="line"><span class="comment"># -p tcp：指定使用 TCP 协议。</span></span><br><span class="line"><span class="comment"># --dport 80：指定目标端口为 80，通常用于 HTTP 流量。</span></span><br><span class="line"><span class="comment"># -j ACCEPT：允许所有 HTTP 流量（目标端口 80）进入系统。</span></span><br><span class="line">-A INPUT -p tcp --dport 80 -j ACCEPT</span><br><span class="line"></span><br><span class="line"></span><br><span class="line"><span class="comment"># -A INPUT：向 INPUT 链添加规则，处理进入系统的数据包。</span></span><br><span class="line"><span class="comment"># -p tcp：指定使用 TCP 协议。</span></span><br><span class="line"><span class="comment"># -m state：使用 state 模块来匹配连接状态。</span></span><br><span class="line"><span class="comment"># --state NEW：只允许新的连接通过，即连接尚未建立的流量。</span></span><br><span class="line"><span class="comment"># --dport 39999：指定目标端口为 39999。</span></span><br><span class="line"><span class="comment"># -j ACCEPT：允许目标端口为 39999 的新连接通过。</span></span><br><span class="line">-A INPUT -p tcp -m state --state NEW --dport 22222 -j ACCEPT</span><br><span class="line"></span><br><span class="line"></span><br><span class="line"></span><br><span class="line"><span class="comment"># -A INPUT：向 INPUT 链添加规则，处理进入系统的数据包。</span></span><br><span class="line"><span class="comment"># -p icmp：指定使用 ICMP 协议，通常用于网络诊断，如 ping 命令。</span></span><br><span class="line"><span class="comment"># -m icmp：使用 ICMP 模块进行匹配。</span></span><br><span class="line"><span class="comment"># --icmp-type 8：指定 ICMP 类型为 8，这表示“回显请求”类型，通常是 ping 请求。</span></span><br><span class="line"><span class="comment"># -j ACCEPT：允许 ping 请求（ICMP 类型 8）进入系统。</span></span><br><span class="line">-A INPUT -p icmp -m icmp --icmp-type 8 -j ACCEPT</span><br><span class="line"></span><br><span class="line"></span><br><span class="line"><span class="comment"># -A INPUT：将规则添加到 INPUT 链，表示处理进入系统的流量。</span></span><br><span class="line"><span class="comment"># -m limit 5/min：使用 limit 模块来限制日志记录的频率。这里表示每分钟最多记录 5 次 拒绝的连接请求。这样可以避免日志记录过多导致磁盘空间不足。</span></span><br><span class="line"><span class="comment"># -j LOG：指示 iptables 执行日志记录操作。</span></span><br><span class="line"><span class="comment"># --log-prefix &quot;iptables denied: &quot;：为每个被记录的日志条目添加前缀。日志条目将以 iptables denied: 开头，便于区分其他日志。</span></span><br><span class="line"><span class="comment"># --log-level 7：设置日志级别为 7。日志级别越高，记录的详细信息越多。级别 7 是最高级别，通常用于调试。</span></span><br><span class="line"><span class="comment"># 这条规则的作用是：记录所有被拒绝的连接请求，并且每分钟最多记录 5 次，并将日志保存到系统的日志文件中（通常是 /var/log/syslog 或 /var/log/messages）。</span></span><br><span class="line">-A INPUT -m <span class="built_in">limit</span> 5/min -j LOG --log-prefix <span class="string">&quot;iptables denied: &quot;</span> --log-level 7</span><br><span class="line"></span><br><span class="line"><span class="comment"># 拒绝所有未被允许的入站流量，即如果流量没有匹配任何允许规则，则会被拒绝并发送一个拒绝消息。</span></span><br><span class="line">-A INPUT -j REJECT</span><br><span class="line"></span><br><span class="line"></span><br><span class="line"><span class="comment"># 拒绝所有经过路由的流量。通常这种配置用于禁止路由器或网关机器转发流量。</span></span><br><span class="line">-A FORWARD -j REJECT</span><br><span class="line"></span><br><span class="line"></span><br><span class="line"><span class="comment"># -A INPUT：将这条规则添加到 INPUT 链，表示处理进入系统的流量。</span></span><br><span class="line"><span class="comment"># -p tcp：指定协议为 TCP。</span></span><br><span class="line"><span class="comment"># --dport 80：指定目标端口为 80，即 HTTP 流量。</span></span><br><span class="line"><span class="comment"># -i eth0：表示该规则仅适用于 eth0 网络接口。也就是说，只有通过该接口的流量才会应用此规则。</span></span><br><span class="line"><span class="comment"># -m state：使用 state 模块来匹配数据包的连接状态。</span></span><br><span class="line"><span class="comment"># --state NEW：匹配所有 新的连接，即第一次尝试建立连接的流量。</span></span><br><span class="line"><span class="comment"># -m recent --set：使用 recent 模块，标记（--set）每个新连接的源 IP 地址。这会将源 IP 地址添加到一个最近连接的列表中。这个模块通常用于追踪和限制访问频率。</span></span><br><span class="line"><span class="comment"># 这条规则的作用是：对所有新的、来自 eth0 接口的 HTTP 请求进行标记，记录这些请求的源 IP 地址。</span></span><br><span class="line">-A INPUT -p tcp --dport 80 -i eth0 -m state --state NEW -m recent --<span class="built_in">set</span></span><br><span class="line"></span><br><span class="line"></span><br><span class="line"></span><br><span class="line"><span class="comment"># -A INPUT：将规则添加到 INPUT 链，处理进入的流量。</span></span><br><span class="line"><span class="comment"># -p tcp：使用 TCP 协议。</span></span><br><span class="line"><span class="comment"># --dport 80：指定目标端口为 80，即 HTTP 流量。</span></span><br><span class="line"><span class="comment"># -i eth0：指定网络接口为 eth0。</span></span><br><span class="line"><span class="comment"># -m state：使用 state 模块来匹配数据包的连接状态。</span></span><br><span class="line"><span class="comment"># --state NEW：匹配所有新的连接。</span></span><br><span class="line"><span class="comment"># -m recent --update：使用 recent 模块来更新连接源 IP 的记录。</span></span><br><span class="line"><span class="comment"># --seconds 60：指定检查时间窗口为 60 秒。即在过去 60 秒内的请求将被视为重复的请求。</span></span><br><span class="line"><span class="comment"># --hitcount 150：如果源 IP 在 60 秒内的请求次数超过 150 次，则触发 DROP 动作。</span></span><br><span class="line"><span class="comment"># -j DROP：如果源 IP 地址的请求次数超过 150 次，就会被 丢弃，即拒绝这个源 IP 地址的流量。</span></span><br><span class="line"><span class="comment"># 这条规则的作用是：如果一个源 IP 地址在 60 秒内对端口 80 发起超过 150 次新连接，则丢弃该 IP 的请求。这通常用于 防止 DoS（拒绝服务）攻击 或者 流量过载，限制某个 IP 在短时间内过多的连接请求。</span></span><br><span class="line">-A INPUT -p tcp --dport 80 -i eth0 -m state --state NEW -m recent --update --seconds 60 --hitcount 150 -j DROP</span><br><span class="line"></span><br><span class="line"></span><br><span class="line">COMMIT</span><br></pre></td></tr></table></figure>
+
+<p>使用 iptables-restore 从 &#x2F;etc&#x2F;network&#x2F;if-up.d&#x2F;iptables.up 文件中加载并恢复防火墙规则</p>
+<figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">sudo iptables-restore &lt; /etc/network/if-up.d/iptables.up</span><br></pre></td></tr></table></figure>
+
+<p>启动防火墙</p>
+<figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><span class="line">sudo ufw <span class="built_in">enable</span></span><br><span class="line"></span><br><span class="line">sudo ufw status</span><br></pre></td></tr></table></figure>
+
+<p>配置开机自动写入</p>
+<figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment"># 创建文件</span></span><br><span class="line"><span class="built_in">touch</span> /etc/network/if-up.d/iptables</span><br><span class="line"></span><br><span class="line"><span class="comment"># 写入配置</span></span><br><span class="line"></span><br><span class="line"><span class="comment">#!/bin/sh</span></span><br><span class="line">iptables-restore /etc/iptables.up</span><br><span class="line"></span><br></pre></td></tr></table></figure>
+
+<h4 id="fail2ban"><a href="#fail2ban" class="headerlink" title="fail2ban"></a>fail2ban</h4><p>Fail2ban 是一个开源的入侵防护工具，主要用于防止基于暴力破解的攻击（如 SSH、HTTP、FTP 等服务的暴力登录尝试）。它通过监控日志文件，检测可疑行为（如多次失败的登录尝试），然后根据配置的规则采取措施，例如暂时或永久禁止攻击者的 IP 地址。</p>
+<figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">sudo apt install fail2ban</span><br></pre></td></tr></table></figure>
+
+<p>修改配置</p>
+<figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br></pre></td><td class="code"><pre><span class="line">vi /etc</span><br><span class="line"></span><br><span class="line"><span class="comment"># 换成自己的邮箱</span></span><br><span class="line">destemail = root@localhost</span><br></pre></td></tr></table></figure>
+
+<p>启动服务</p>
+<figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">service fail2ban start</span><br></pre></td></tr></table></figure>
+
+<h4 id="配置-node-环境"><a href="#配置-node-环境" class="headerlink" title="配置 node 环境"></a>配置 node 环境</h4><p>安装必要依赖</p>
+<figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">sudo apt install vim openssl build-essential libssl-dev wget curl git</span><br></pre></td></tr></table></figure>
+
+<p>安装 <a target="_blank" rel="noopener" href="https://github.com/nvm-sh/nvm">nvm</a>,指定默认版本</p>
+<figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">nvm <span class="built_in">alias</span> default v20.xx</span><br></pre></td></tr></table></figure>
+
+<h4 id="设置系统文件参数"><a href="#设置系统文件参数" class="headerlink" title="设置系统文件参数"></a>设置系统文件参数</h4><p>修改了 fs.inotify.max_user_watches 参数，增加每个用户可以监控的文件数（即文件监控器的数量）。</p>
+<p>将此设置永久性地添加到 &#x2F;etc&#x2F;sysctl.conf 配置文件中，并应用该更改，使得新的文件监控数值生效。</p>
+<figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line"><span class="built_in">echo</span> fs.inotify.max_user_watches=524288 | sudo <span class="built_in">tee</span> -a /etc/sysctl.conf</span><br><span class="line">sudo sysctl -p</span><br></pre></td></tr></table></figure>
+
+<h4 id="强制同步-cnpm"><a href="#强制同步-cnpm" class="headerlink" title="强制同步 cnpm"></a>强制同步 cnpm</h4><p>如果使用了 cnpm 源，导致有些包不是最新的，使用以下命令强制同步</p>
+<figure class="highlight js"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">cnpm sync [package]</span><br></pre></td></tr></table></figure>
+
+<h4 id="nginx"><a href="#nginx" class="headerlink" title="nginx"></a>nginx</h4><p>如果服务器预装了 apache2 需要先删除</p>
+<figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment"># 删除 Apache2 服务的自动启动配置,它会删除 /etc/rc.d 目录下的相关启动链接。</span></span><br><span class="line">update-rc.d -f apache2 remove</span><br><span class="line"></span><br><span class="line"><span class="comment"># 卸载 Apache2 软件包</span></span><br><span class="line">sudo apt remove apache2</span><br></pre></td></tr></table></figure>
+
+<p>添加 nginx 配置文件</p>
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br><span class="line">35</span><br><span class="line">36</span><br><span class="line">37</span><br><span class="line">38</span><br><span class="line">39</span><br><span class="line">40</span><br><span class="line">41</span><br><span class="line">42</span><br><span class="line">43</span><br><span class="line">44</span><br><span class="line">45</span><br><span class="line">46</span><br><span class="line">47</span><br><span class="line">48</span><br><span class="line">49</span><br><span class="line">50</span><br><span class="line">51</span><br><span class="line">52</span><br><span class="line">53</span><br><span class="line">54</span><br><span class="line">55</span><br></pre></td><td class="code"><pre><span class="line">upstream node_learn &#123;</span><br><span class="line">    server 127.0.0.1:3000;  # 定义后端服务器</span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line">server &#123;</span><br><span class="line">    listen 80;</span><br><span class="line">    server_name site.iftrue.club;  # 配置服务器监听端口和域名</span><br><span class="line"></span><br><span class="line">    # 优化代理设置</span><br><span class="line">    location / &#123;</span><br><span class="line">        proxy_set_header X-Real-IP $remote_addr;  # 设置请求头，传递真实的客户端 IP 地址</span><br><span class="line">        proxy_set_header X-Forwarded-For $proxy_add_X_forwarded_for;  # 设置请求头，传递 X-Forwarded-For 头信息</span><br><span class="line">        proxy_set_header Host $http_host;  # 保留原始请求的 Host 头</span><br><span class="line">        proxy_set_header X-Nginx-Proxy true;  # 添加 X-Nginx-Proxy 头，标识请求是经过 Nginx 代理的</span><br><span class="line">        proxy_pass http://node_learn;  # 转发请求到后端应用</span><br><span class="line">        proxy_redirect off;  # 关闭代理重定向</span><br><span class="line">        proxy_cache my_cache;  # 启用缓存</span><br><span class="line">        proxy_cache_valid 200 1h;  # 缓存 200 状态的响应 1 小时</span><br><span class="line">        proxy_cache_use_stale error timeout updating;  # 使用过期的缓存响应来应对错误或超时</span><br><span class="line">    &#125;</span><br><span class="line"></span><br><span class="line">    # 静态资源代理和缓存</span><br><span class="line">    location /assets/ &#123;</span><br><span class="line">        # 将静态资源代理到 Node.js 应用或提供本地静态文件</span><br><span class="line">        proxy_pass http://node_learn/assets/;</span><br><span class="line">        proxy_set_header X-Real-IP $remote_addr;</span><br><span class="line">        proxy_set_header X-Forwarded-For $proxy_add_X_forwarded_for;</span><br><span class="line">        proxy_set_header Host $http_host;</span><br><span class="line">        proxy_set_header X-Nginx-Proxy true;</span><br><span class="line">        proxy_cache my_cache;</span><br><span class="line">        proxy_cache_valid 200 1d;  # 缓存静态资源 1 天</span><br><span class="line">    &#125;</span><br><span class="line"></span><br><span class="line">    # 如果静态文件已经存储在磁盘中，可以使用 root 或 alias 来提供静态文件</span><br><span class="line">    location /static/ &#123;</span><br><span class="line">        root /var/www/site.iftrue.club;  # 假设静态资源位于这个目录</span><br><span class="line">        try_files $uri $uri/ =404;  # 如果找不到文件返回 404</span><br><span class="line">    &#125;</span><br><span class="line"></span><br><span class="line">    # 你也可以为其他静态资源（如 CSS、JS）设置缓存</span><br><span class="line">    location ~* \.(css|js|jpg|jpeg|png|gif|ico|woff|woff2|ttf|svg)$ &#123;</span><br><span class="line">        root /var/www/site.iftrue.club;</span><br><span class="line">        try_files $uri $uri/ =404;</span><br><span class="line">        expires 30d;  # 设置静态资源缓存 30 天</span><br><span class="line">        add_header Cache-Control &quot;public, no-transform&quot;;  # 设置缓存控制头</span><br><span class="line">    &#125;</span><br><span class="line"></span><br><span class="line">    # 其他错误页面、重定向等配置</span><br><span class="line">    error_page 404 /404.html;</span><br><span class="line">    location = /404.html &#123;</span><br><span class="line">        root /usr/share/nginx/html;</span><br><span class="line">        internal;</span><br><span class="line">    &#125;</span><br><span class="line">&#125;</span><br><span class="line"></span><br></pre></td></tr></table></figure>
+
+<p>如果需要隐藏响应头中的 nginx 版本信息配置 nginx.conf</p>
+<figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment"># /etc/nginx/nginx.conf</span></span><br><span class="line"></span><br><span class="line"><span class="comment"># 取消此行注释</span></span><br><span class="line">server_tokens off;</span><br></pre></td></tr></table></figure>
+
+<h4 id="mysql"><a href="#mysql" class="headerlink" title="mysql"></a>mysql</h4><figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br><span class="line">35</span><br><span class="line">36</span><br><span class="line">37</span><br><span class="line">38</span><br><span class="line">39</span><br><span class="line">40</span><br><span class="line">41</span><br><span class="line">42</span><br><span class="line">43</span><br><span class="line">44</span><br><span class="line">45</span><br><span class="line">46</span><br><span class="line">47</span><br><span class="line">48</span><br><span class="line">49</span><br><span class="line">50</span><br><span class="line">51</span><br><span class="line">52</span><br><span class="line">53</span><br><span class="line">54</span><br><span class="line">55</span><br><span class="line">56</span><br><span class="line">57</span><br><span class="line">58</span><br><span class="line">59</span><br><span class="line">60</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment"># 安装服务</span></span><br><span class="line">sudo apt install -y mysql-server</span><br><span class="line"></span><br><span class="line"><span class="comment"># 检查服务是否启动</span></span><br><span class="line">systemctl status mysql</span><br><span class="line"></span><br><span class="line"><span class="comment"># 执行MySQL安全脚本mysql_secure_installation，提高MySQL的安全性</span></span><br><span class="line"><span class="comment"># 该脚本允许设置或更改root密码策略、移除匿名用户、禁止root远程登录、删除测试数据库等。</span></span><br><span class="line">sudo mysql_secure_installation</span><br><span class="line"></span><br><span class="line"><span class="comment"># 首次登录没有密码</span></span><br><span class="line">sudo mysql -u root -p</span><br><span class="line"></span><br><span class="line"><span class="comment">#给root用户设置密码</span></span><br><span class="line">ALTER USER <span class="string">&#x27;root&#x27;</span>@<span class="string">&#x27;localhost&#x27;</span> IDENTIFIED WITH mysql_native_password BY <span class="string">&#x27;your_password&#x27;</span>; FLUSH PRIVILEGES;EXIT;</span><br><span class="line"></span><br><span class="line"><span class="comment"># 创建对应的数据库</span></span><br><span class="line"></span><br><span class="line">CREATE DATABASE my_database</span><br><span class="line">CHARACTER SET utf8mb4</span><br><span class="line">COLLATE utf8mb4_general_ci;</span><br><span class="line"><span class="comment"># 查看所有数据库</span></span><br><span class="line">SHOW DATABASES;</span><br><span class="line"></span><br><span class="line"><span class="comment"># 删除数据库</span></span><br><span class="line">DROP DATABASE database_name;</span><br><span class="line"><span class="comment"># 修改字符集和排序</span></span><br><span class="line">ALTER DATABASE database_name</span><br><span class="line">CHARACTER SET utf8mb4</span><br><span class="line">COLLATE utf8mb4_general_ci;</span><br><span class="line"></span><br><span class="line"><span class="comment"># 创建新用户</span></span><br><span class="line"><span class="comment"># &#x27;localhost&#x27;：表示该用户只能从本地机器连接到数据库。如果希望该用户可以从任何主机连接，可以使用 &#x27;%&#x27;，如 &#x27;new_user&#x27;@&#x27;%&#x27;。</span></span><br><span class="line">CREATE USER <span class="string">&#x27;new_user&#x27;</span>@<span class="string">&#x27;localhost&#x27;</span> IDENTIFIED BY <span class="string">&#x27;your_password&#x27;</span>;</span><br><span class="line"><span class="comment"># 查看所有用户</span></span><br><span class="line">SELECT User, Host FROM mysql.user;</span><br><span class="line"></span><br><span class="line"></span><br><span class="line"><span class="comment">#ALL PRIVILEGES：赋予所有权限。</span></span><br><span class="line"><span class="comment"># my_database.*：指示该用户可以对 my_database 数据库中的所有表进行操作。</span></span><br><span class="line"><span class="comment"># &#x27;localhost&#x27;：表示该用户只能从本地连接。</span></span><br><span class="line">GRANT ALL PRIVILEGES ON my_database.* TO <span class="string">&#x27;new_user&#x27;</span>@<span class="string">&#x27;localhost&#x27;</span>;</span><br><span class="line"><span class="comment"># 如果希望用户只具备某些操作的权限（例如只读权限），可以单独授予特定权限</span></span><br><span class="line">GRANT SELECT ON my_database.* TO <span class="string">&#x27;new_user&#x27;</span>@<span class="string">&#x27;localhost&#x27;</span>;</span><br><span class="line">GRANT SELECT, INSERT ON my_database.* TO <span class="string">&#x27;new_user&#x27;</span>@<span class="string">&#x27;localhost&#x27;</span>;</span><br><span class="line"></span><br><span class="line"></span><br><span class="line"><span class="comment"># 可以访问所有数据库</span></span><br><span class="line"><span class="comment"># GRANT ALL PRIVILEGES ON *.* TO &#x27;new_user&#x27;@&#x27;localhost&#x27;;</span></span><br><span class="line"></span><br><span class="line"></span><br><span class="line"><span class="comment"># 刷新权限</span></span><br><span class="line">FLUSH PRIVILEGES;</span><br><span class="line"></span><br><span class="line"></span><br><span class="line"><span class="comment"># 查看端口</span></span><br><span class="line">SHOW VARIABLES LIKE <span class="string">&#x27;port&#x27;</span>;</span><br><span class="line"></span><br><span class="line"><span class="built_in">cat</span> /etc/mysql/mysql.conf.d/mysqld.cnf</span><br><span class="line"></span><br></pre></td></tr></table></figure>
+
+<h4 id="pm2"><a href="#pm2" class="headerlink" title="pm2"></a>pm2</h4><figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br></pre></td><td class="code"><pre><span class="line">npm install -g pm2</span><br><span class="line"></span><br><span class="line"><span class="comment"># 启动服务</span></span><br><span class="line">pm2 start server.js</span><br><span class="line"></span><br><span class="line"><span class="comment"># 应用列表</span></span><br><span class="line">pm2 list</span><br><span class="line"></span><br><span class="line"><span class="comment"># 应用详细信息</span></span><br><span class="line">pm2 show [appName]</span><br></pre></td></tr></table></figure>
+
+<h4 id="配置-pm2-ecosystem-json"><a href="#配置-pm2-ecosystem-json" class="headerlink" title="配置 pm2 ecosystem.json"></a>配置 pm2 ecosystem.json</h4><figure class="highlight json"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br><span class="line">35</span><br><span class="line">36</span><br><span class="line">37</span><br><span class="line">38</span><br><span class="line">39</span><br><span class="line">40</span><br><span class="line">41</span><br><span class="line">42</span><br><span class="line">43</span><br><span class="line">44</span><br><span class="line">45</span><br><span class="line">46</span><br><span class="line">47</span><br></pre></td><td class="code"><pre><span class="line"><span class="punctuation">&#123;</span></span><br><span class="line">  <span class="attr">&quot;apps&quot;</span><span class="punctuation">:</span> <span class="punctuation">[</span></span><br><span class="line">    <span class="punctuation">&#123;</span></span><br><span class="line">      <span class="attr">&quot;name&quot;</span><span class="punctuation">:</span> <span class="string">&quot;node-learn&quot;</span><span class="punctuation">,</span></span><br><span class="line">      <span class="attr">&quot;script&quot;</span><span class="punctuation">:</span> <span class="string">&quot;bin/www&quot;</span><span class="punctuation">,</span></span><br><span class="line">      <span class="attr">&quot;env&quot;</span><span class="punctuation">:</span> <span class="punctuation">&#123;</span></span><br><span class="line">        <span class="attr">&quot;NODE_ENV&quot;</span><span class="punctuation">:</span> <span class="string">&quot;development&quot;</span></span><br><span class="line">      <span class="punctuation">&#125;</span><span class="punctuation">,</span></span><br><span class="line">      <span class="attr">&quot;env_production&quot;</span><span class="punctuation">:</span> <span class="punctuation">&#123;</span></span><br><span class="line">        <span class="attr">&quot;NODE_ENV&quot;</span><span class="punctuation">:</span> <span class="string">&quot;production&quot;</span></span><br><span class="line">      <span class="punctuation">&#125;</span></span><br><span class="line">    <span class="punctuation">&#125;</span></span><br><span class="line">  <span class="punctuation">]</span><span class="punctuation">,</span></span><br><span class="line">  <span class="attr">&quot;deploy&quot;</span><span class="punctuation">:</span> <span class="punctuation">&#123;</span></span><br><span class="line">    <span class="attr">&quot;production&quot;</span><span class="punctuation">:</span> <span class="punctuation">&#123;</span></span><br><span class="line">      <span class="comment">// 远程服务器上用于执行部署的用户。这个用户将有权限操作目标服务器进行部署工作。</span></span><br><span class="line">      <span class="attr">&quot;user&quot;</span><span class="punctuation">:</span> <span class="string">&quot;ubuntu&quot;</span><span class="punctuation">,</span></span><br><span class="line">      <span class="comment">// 部署目标服务器的 IP 地址。这里设置了一个服务器的 IP 地址</span></span><br><span class="line">      <span class="comment">// 表示要将代码部署到这个服务器。</span></span><br><span class="line">      <span class="attr">&quot;host&quot;</span><span class="punctuation">:</span> <span class="punctuation">[</span><span class="string">&quot;192.168.48.171&quot;</span><span class="punctuation">]</span><span class="punctuation">,</span></span><br><span class="line">      <span class="comment">// 通过 SSH 连接远程服务器时使用的端口号</span></span><br><span class="line">      <span class="attr">&quot;port&quot;</span><span class="punctuation">:</span> <span class="string">&quot;22&quot;</span><span class="punctuation">,</span></span><br><span class="line">      <span class="comment">// 这是你要部署的 Git 分支。origin/master 表示远程仓库的 master 分支</span></span><br><span class="line">      <span class="attr">&quot;ref&quot;</span><span class="punctuation">:</span> <span class="string">&quot;origin/main&quot;</span><span class="punctuation">,</span></span><br><span class="line">      <span class="comment">// 这是 Git 仓库的 URL，表示从哪里拉取代码。</span></span><br><span class="line">      <span class="attr">&quot;repo&quot;</span><span class="punctuation">:</span> <span class="string">&quot;git@git.oschina.net:wolf18387/backend-website.git&quot;</span><span class="punctuation">,</span></span><br><span class="line">      <span class="comment">// 这是部署目标路径，代码将被拉取到这个路径下。</span></span><br><span class="line">      <span class="comment">// 所有应用文件将被放置在服务器的 /www/website/production 目录下。</span></span><br><span class="line">      <span class="attr">&quot;path&quot;</span><span class="punctuation">:</span> <span class="string">&quot;/www/node-learn&quot;</span><span class="punctuation">,</span></span><br><span class="line">      <span class="comment">// 这个选项用于 SSH 连接时禁用 SSH 主机密钥检查。</span></span><br><span class="line">      <span class="comment">// 这通常用于自动化部署，避免因首次连接服务器时需要确认主机密钥而中断部署。</span></span><br><span class="line">      <span class="attr">&quot;ssh_options&quot;</span><span class="punctuation">:</span> <span class="string">&quot;StrictHostKeyChecking=no&quot;</span><span class="punctuation">,</span></span><br><span class="line">      <span class="comment">// 部署前的准备脚本</span></span><br><span class="line">      <span class="attr">&quot;pre-setup&quot;</span><span class="punctuation">:</span> <span class="string">&quot;rm -rf /www/node-learn/*&quot;</span><span class="punctuation">,</span></span><br><span class="line">      <span class="comment">// 部署前的准备脚本，在拉取代码后执行</span></span><br><span class="line">      <span class="comment">// 在服务器上执行的脚本</span></span><br><span class="line">      <span class="comment">// 如果使用的是nvm安装的node需要加上 source ~/.nvm/nvm.sh</span></span><br><span class="line">      <span class="comment">// 需要指定环境变量 export NODE_ENV=production deploy.env 只会在 deploy 阶段加载</span></span><br><span class="line">      <span class="attr">&quot;post-setup&quot;</span><span class="punctuation">:</span> <span class="string">&quot;source ~/.nvm/nvm.sh &amp;&amp; npm install &amp;&amp; export NODE_ENV=production &amp;&amp; npx sequelize-cli db:migrate &amp;&amp; npx sequelize-cli db:seed:all&quot;</span><span class="punctuation">,</span></span><br><span class="line"></span><br><span class="line">      <span class="attr">&quot;post-deploy&quot;</span><span class="punctuation">:</span> <span class="string">&quot;source ~/.nvm/nvm.sh &amp;&amp; npm install &amp;&amp; pm2 startOrRestart ecosystem.json --env production&quot;</span><span class="punctuation">,</span></span><br><span class="line">      <span class="attr">&quot;env&quot;</span><span class="punctuation">:</span> <span class="punctuation">&#123;</span></span><br><span class="line">        <span class="attr">&quot;NODE_ENV&quot;</span><span class="punctuation">:</span> <span class="string">&quot;production&quot;</span></span><br><span class="line">      <span class="punctuation">&#125;</span></span><br><span class="line">    <span class="punctuation">&#125;</span></span><br><span class="line">  <span class="punctuation">&#125;</span></span><br><span class="line"><span class="punctuation">&#125;</span></span><br></pre></td></tr></table></figure>
+
+<h4 id="执行部署"><a href="#执行部署" class="headerlink" title="执行部署"></a>执行部署</h4><p><strong>部署前确认各个服务器之间可以互相免密访问，本地&#x3D;&gt;生产服务器&#x3D;&gt;git 服务器, 将主机加入目标主机的 known hosts 中</strong></p>
+<p><strong>确认服务器的目录是否有写入权限</strong></p>
+<p><strong>windows 环境会执行失败，需要在 linux 虚拟机中执行</strong></p>
+<figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment">#  设置远程环境,创建应用目录,初始化 Git 仓库,执行 pre-setup 钩子</span></span><br><span class="line"><span class="comment">#  current 当前服务运行的文件夹会软连接到source文件夹上</span></span><br><span class="line"><span class="comment">#  source clone下来的源代码</span></span><br><span class="line"><span class="comment">#  shared 配置文件等</span></span><br><span class="line"><span class="comment">#  只应该在初始化的时候执行一次</span></span><br><span class="line">npx pm2 deploy production setup</span><br><span class="line"></span><br></pre></td></tr></table></figure>
+
+<p>部署成功后可以登录服务器检查部署情况</p>
+<figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><span class="line">pm2 list</span><br><span class="line"></span><br><span class="line">pm2 logs</span><br></pre></td></tr></table></figure>
+ 
+      <!-- reward -->
+      
+    </div>
+    
+
+    <!-- copyright -->
+    
+    <footer class="article-footer">
+       
+  <ul class="article-tag-list" itemprop="keywords"><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/DevOps/" rel="tag">DevOps</a></li></ul>
+
+    </footer>
+  </div>
+
+   
+    
+</article>
+
+    
+    <article
+  id="post-javascript/高级用法"
+  class="article article-type-post"
+  itemscope
+  itemprop="blogPost"
+  data-scroll-reveal
+>
+  <div class="article-inner">
+    
+    <header class="article-header">
+       
+<h2 itemprop="name">
+  <a class="article-title" href="/posts/7042a9e618ec/"
     >高级用法</a> 
 </h2>
  
@@ -469,7 +802,7 @@
     </header>
      
     <div class="article-meta">
-      <a href="/posts/6fcd8985833a/" class="article-date">
+      <a href="/posts/7042a9e618ec/" class="article-date">
   <time datetime="2021-02-26T02:51:19.000Z" itemprop="datePublished">2021-02-26</time>
 </a> 
   <div class="article-category">
@@ -535,6 +868,58 @@
 <h4 id="条件类型"><a href="#条件类型" class="headerlink" title="条件类型"></a>条件类型</h4><figure class="highlight javascript"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br></pre></td><td class="code"><pre><span class="line">interface <span class="title class_">Bird</span> &#123;</span><br><span class="line">  <span class="attr">name1</span>:string</span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line">interface <span class="title class_">Fish</span> &#123;</span><br><span class="line">  <span class="attr">name2</span>:string</span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line">interface <span class="title class_">Water</span> &#123;</span><br><span class="line">  <span class="attr">name3</span>:string</span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line">interface <span class="title class_">Sky</span> &#123;</span><br><span class="line">  <span class="attr">name4</span>:string</span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line">type <span class="title class_">Combin</span>&lt;T&gt; = T <span class="keyword">extends</span> <span class="title class_">Bird</span> ? <span class="title class_">Sky</span> : <span class="title class_">Water</span>;</span><br><span class="line"></span><br><span class="line"><span class="keyword">const</span> <span class="attr">ins</span>:<span class="title class_">Combin</span>&lt;<span class="title class_">Fish</span> | <span class="title class_">Bird</span>&gt; = &#123;</span><br><span class="line">  <span class="attr">name4</span>: <span class="string">&#x27;123&#x27;</span>,</span><br><span class="line">  <span class="attr">name3</span>:<span class="string">&#x27;123&#x27;</span></span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
 
  
+      <!-- reward -->
+      
+    </div>
+    
+
+    <!-- copyright -->
+    
+    <footer class="article-footer">
+       
+  <ul class="article-tag-list" itemprop="keywords"><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/TypeScript/" rel="tag">TypeScript</a></li></ul>
+
+    </footer>
+  </div>
+
+   
+    
+</article>
+
+    
+    <article
+  id="post-javascript/TS案例总结"
+  class="article article-type-post"
+  itemscope
+  itemprop="blogPost"
+  data-scroll-reveal
+>
+  <div class="article-inner">
+    
+    <header class="article-header">
+       
+<h2 itemprop="name">
+  <a class="article-title" href="/posts/96901bc4898d/"
+    >TypeScript 案例汇总</a> 
+</h2>
+ 
+
+      
+    </header>
+     
+    <div class="article-meta">
+      <a href="/posts/96901bc4898d/" class="article-date">
+  <time datetime="2021-02-24T10:28:21.000Z" itemprop="datePublished">2021-02-24</time>
+</a> 
+  <div class="article-category">
+    <a class="article-category-link" href="/categories/TypeScript/">TypeScript</a>
+  </div>
+   
+    </div>
+      
+    <div class="article-entry" itemprop="articleBody">
+       
+  <h4 id=""><a href="#" class="headerlink" title=""></a></h4> 
       <!-- reward -->
       
     </div>
@@ -652,313 +1037,13 @@
 </article>
 
     
-    <article
-  id="post-react/redux源码"
-  class="article article-type-post"
-  itemscope
-  itemprop="blogPost"
-  data-scroll-reveal
->
-  <div class="article-inner">
-    
-    <header class="article-header">
-       
-<h2 itemprop="name">
-  <a class="article-title" href="/posts/ac2ad072d0c9/"
-    >redux实现原理</a> 
-</h2>
- 
-
-      
-    </header>
-     
-    <div class="article-meta">
-      <a href="/posts/ac2ad072d0c9/" class="article-date">
-  <time datetime="2021-02-20T00:06:18.000Z" itemprop="datePublished">2021-02-20</time>
-</a> 
-  <div class="article-category">
-    <a class="article-category-link" href="/categories/React/">React</a>
-  </div>
-   
-    </div>
-      
-    <div class="article-entry" itemprop="articleBody">
-       
-  <p>现有状态管理工具</p>
-<p>redux mobx mobx-state-tree redoil vuex</p>
-<p>redux flux 是一个工具，每一层分的清楚但是麻烦</p>
-<p>store -&gt; container<br>currentState -&gt; _value<br>action-&gt; f<br>currentReducer -&gt;map<br>middleware- io functor 异步问题</p>
-<p>store 是一个容器含有state 和reducer,reducer 是一个纯函数，他可以查看之前的状态，执行一个action并且返回一个新的状态</p>
-<p>mobx 强调的是轻量，去掉了Reducer.  只有action+state @observer(函数组件)</p>
-<p>mobx-state-lite &#x3D;&gt; provider  </p>
-<h4 id="原理图"><a href="#原理图" class="headerlink" title="原理图"></a>原理图</h4><p><img src="/posts/ac2ad072d0c9/0001.gif"></p>
-<h4 id="Action"><a href="#Action" class="headerlink" title="Action"></a>Action</h4><p>Action 是store数据的唯一来源， store.dispatch() 将 action 传到 store。</p>
-<p><strong>我们应该尽量减少在 action 中传递的数据。尽量传递数据标识或修改条件，如索引，过滤条件</strong>，而不是修改数据之后传入整个数据对象。</p>
-<p>通常Action是一个对象 </p>
-<figure class="highlight javascript"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br></pre></td><td class="code"><pre><span class="line">&#123;</span><br><span class="line">  <span class="attr">type</span>: <span class="variable constant_">SET_VISIBILITY_FILTER</span>,</span><br><span class="line">  <span class="attr">filter</span>: <span class="variable constant_">SHOW_COMPLETED</span></span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
-
-<p>可以用函数简单的包装</p>
-<figure class="highlight javascript"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">const</span> <span class="title function_">addTodo</span>  = (<span class="params">text</span>) =&gt; (&#123;</span><br><span class="line">    <span class="attr">type</span>: <span class="variable constant_">ADD_TODO</span>,</span><br><span class="line">    text</span><br><span class="line">&#125;)</span><br></pre></td></tr></table></figure>
-
-<p>因为action最终回传递到dispatch中，可以通过一个函数来自动实现这一步，也就是<strong>actionCreater</strong></p>
-<figure class="highlight javascript"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">const</span> <span class="title function_">boundTode</span> = (<span class="params">text</span>) =&gt; <span class="title function_">dispatch</span>(<span class="title function_">addTodo</span>(text))</span><br></pre></td></tr></table></figure>
-
-<h4 id="Reducer"><a href="#Reducer" class="headerlink" title="Reducer"></a>Reducer</h4><p>Reducers 指定了应用状态的变化如何响应 actions 并发送到 store 的，记住 actions 只是描述了有事情发生了这一事实，并没有描述应用如何更新 state。</p>
-<p>reducer 就是一个纯函数，接收旧的 state 和 action，返回新的 state。</p>
-<figure class="highlight javascript"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">(previousState, action) =&gt; newState</span><br></pre></td></tr></table></figure>
-
-
-<p>之所以将这样的函数称之为reducer，是因为这种函数与被传入 Array.prototype.reduce(reducer, ?initialValue) 里的回调函数属于相同的类型。保持 reducer 纯净非常重要。永远不要在 reducer 里做这些操作：</p>
-<p>1.修改传入参数；<br>2.执行有副作用的操作，如 API 请求和路由跳转；<br>3.调用非纯函数，如 Date.now() 或 Math.random()。</p>
-<p><strong>只要传入参数相同，返回计算得到的下一个 state 就一定相同。没有特殊情况、没有副作用，没有 API 请求、没有变量修改，单纯执行计算。</strong></p>
-<figure class="highlight javascript"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">function</span> <span class="title function_">todoApp</span>(<span class="params">state = initialState, action</span>) &#123;</span><br><span class="line">  <span class="keyword">switch</span> (action.<span class="property">type</span>) &#123;</span><br><span class="line">    <span class="keyword">case</span> <span class="attr">SET_VISIBILITY_FILTER</span>:</span><br><span class="line">      <span class="keyword">return</span> <span class="title class_">Object</span>.<span class="title function_">assign</span>(&#123;&#125;, state, &#123;</span><br><span class="line">        <span class="attr">visibilityFilter</span>: action.<span class="property">filter</span></span><br><span class="line">      &#125;)</span><br><span class="line">    <span class="attr">default</span>:</span><br><span class="line">      <span class="keyword">return</span> state</span><br><span class="line">  &#125;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
-
-<p>注意：</p>
-<ul>
-<li>不能直接修改state</li>
-<li>在 default 情况下返回旧的 state。遇到未知的 action 时，一定要返回旧的 state。</li>
-</ul>
-<p><strong>拆分Reducer</strong></p>
-<figure class="highlight javascript"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">function</span> <span class="title function_">todos</span>(<span class="params">state = [], action</span>) &#123;</span><br><span class="line">  <span class="keyword">switch</span> (action.<span class="property">type</span>) &#123;</span><br><span class="line">    <span class="keyword">case</span> <span class="attr">ADD_TODO</span>:</span><br><span class="line">      <span class="keyword">return</span> [</span><br><span class="line">        ...state,</span><br><span class="line">        &#123;</span><br><span class="line">          <span class="attr">text</span>: action.<span class="property">text</span>,</span><br><span class="line">          <span class="attr">completed</span>: <span class="literal">false</span></span><br><span class="line">        &#125;</span><br><span class="line">      ]</span><br><span class="line">    <span class="attr">default</span>:</span><br><span class="line">      <span class="keyword">return</span> state</span><br><span class="line">  &#125;</span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line"><span class="keyword">function</span> <span class="title function_">visibilityFilter</span>(<span class="params">state = SHOW_ALL, action</span>) &#123;</span><br><span class="line">  <span class="keyword">switch</span> (action.<span class="property">type</span>) &#123;</span><br><span class="line">    <span class="keyword">case</span> <span class="attr">SET_VISIBILITY_FILTER</span>:</span><br><span class="line">      <span class="keyword">return</span> action.<span class="property">filter</span></span><br><span class="line">    <span class="attr">default</span>:</span><br><span class="line">      <span class="keyword">return</span> state</span><br><span class="line">  &#125;</span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line"><span class="keyword">function</span> <span class="title function_">todoApp</span>(<span class="params">state = &#123;&#125;, action</span>) &#123;</span><br><span class="line">  <span class="keyword">return</span> &#123;</span><br><span class="line">    <span class="attr">visibilityFilter</span>: <span class="title function_">visibilityFilter</span>(state.<span class="property">visibilityFilter</span>, action),</span><br><span class="line">    <span class="attr">todos</span>: <span class="title function_">todos</span>(state.<span class="property">todos</span>, action)</span><br><span class="line">  &#125;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
-
-<p>redux 提供了合并reducer的方法与上面的完全等价，会按照不同的key值，把reducer分组</p>
-<figure class="highlight javascript"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">import</span> &#123; combineReducers &#125; <span class="keyword">from</span> <span class="string">&#x27;redux&#x27;</span></span><br><span class="line"></span><br><span class="line"><span class="keyword">const</span> todoApp = <span class="title function_">combineReducers</span>(&#123;</span><br><span class="line">  visibilityFilter,</span><br><span class="line">  todos</span><br><span class="line">&#125;)</span><br></pre></td></tr></table></figure>
-
-
-
-<h4 id="Store"><a href="#Store" class="headerlink" title="Store"></a>Store</h4><p>Store 就是把它们联系到一起的对象。</p>
-<p>维持应用的 state；<br>提供 getState() 方法获取 state；<br>提供 dispatch(action) 方法更新 state；<br>通过 subscribe(listener) 注册监听器;<br>通过 subscribe(listener) 返回的函数注销监听器。</p>
-<p>通过redux提供的createStore方法创建store</p>
-<p>.&#x2F;redux.js</p>
-<figure class="highlight javascript"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br><span class="line">35</span><br><span class="line">36</span><br><span class="line">37</span><br></pre></td><td class="code"><pre><span class="line"></span><br><span class="line"><span class="comment">// 接受reducer 和 初始化状态返回store对象</span></span><br><span class="line"><span class="keyword">function</span> <span class="title function_">createStore</span>(<span class="params">reducer,initState</span>)&#123;</span><br><span class="line">  <span class="keyword">let</span> currentreducer = reducer;</span><br><span class="line">  <span class="keyword">let</span> store = initState;</span><br><span class="line">  <span class="keyword">let</span> currentListen = [];</span><br><span class="line"></span><br><span class="line"></span><br><span class="line">  <span class="comment">// 直接返回store的引用</span></span><br><span class="line">  <span class="keyword">function</span> <span class="title function_">getState</span>(<span class="params"></span>)&#123;</span><br><span class="line">    <span class="keyword">return</span> store;</span><br><span class="line">  &#125;</span><br><span class="line"></span><br><span class="line">  <span class="comment">// 把事添加到监听队列中</span></span><br><span class="line">  <span class="keyword">function</span> <span class="title function_">subscribe</span>(<span class="params">listen</span>)&#123;</span><br><span class="line">    currentListen.<span class="title function_">push</span>(listen);</span><br><span class="line">  &#125;</span><br><span class="line">  </span><br><span class="line">  <span class="comment">//派发一个action,通过reducer处理，返回并保存新的state</span></span><br><span class="line">  <span class="keyword">function</span> <span class="title function_">dispatch</span>(<span class="params">action</span>)&#123;</span><br><span class="line">    store = <span class="title function_">currentreducer</span>(action,store);</span><br><span class="line">    <span class="comment">// 发布通知</span></span><br><span class="line">    <span class="keyword">for</span>(<span class="keyword">let</span> i=<span class="number">0</span>;i&lt;currentListen.<span class="property">length</span>;i++)&#123;</span><br><span class="line">      currentListen[i]();</span><br><span class="line">    &#125;</span><br><span class="line">  &#125;</span><br><span class="line"></span><br><span class="line">  <span class="comment">// 返回的store对象</span></span><br><span class="line">  <span class="keyword">return</span> &#123;</span><br><span class="line">    getState,</span><br><span class="line">    dispatch,</span><br><span class="line">    subscribe</span><br><span class="line">  &#125;</span><br><span class="line">&#125;</span><br><span class="line"><span class="keyword">export</span> &#123;</span><br><span class="line">  createStore,</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
-
-
-<h4 id="combineReducers"><a href="#combineReducers" class="headerlink" title="combineReducers"></a>combineReducers</h4><p>combineReducers用于合并reducer,需要注意的是reducer和combineReducers都是函数<br>所以combineReducers的实现是把，多个reducer循环执行并且按reducer拆分store</p>
-<figure class="highlight javascript"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">function</span> <span class="title function_">combineReducers</span>(<span class="params">reducers</span>)&#123;</span><br><span class="line">  <span class="comment">// 缓存keys,避免重复执行</span></span><br><span class="line">  <span class="keyword">const</span> keys = <span class="title class_">Object</span>.<span class="title function_">keys</span>(reducers);</span><br><span class="line">  <span class="keyword">return</span> <span class="keyword">function</span>(<span class="params">action,store</span>)&#123;</span><br><span class="line">    <span class="comment">// 初始化的store可能为undefined</span></span><br><span class="line">    store = store || &#123;&#125;;</span><br><span class="line">    <span class="keyword">for</span>(<span class="keyword">let</span> k <span class="keyword">of</span> keys)&#123;</span><br><span class="line">      store[k] = reducers[k](action,store[k])</span><br><span class="line">    &#125;</span><br><span class="line">    <span class="keyword">return</span> store;</span><br><span class="line">  &#125;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
-
-<p>因为第一次执行的时候,每个reducer如果有默认的state应该先合并一次</p>
-<p>需要在createrStore中自动执行一次<code>dispatch(&#123;type:Symbol(&#39;&#39;)&#125;)</code></p>
-<h4 id="Middleware"><a href="#Middleware" class="headerlink" title="Middleware"></a>Middleware</h4><p>有时希望能在状态改变前和改变后处理</p>
-<figure class="highlight javascript"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">function</span> <span class="title function_">dispatchAndLog</span>(<span class="params">store, action</span>) &#123;</span><br><span class="line">  <span class="variable language_">console</span>.<span class="title function_">log</span>(<span class="string">&#x27;dispatching&#x27;</span>, action)</span><br><span class="line">  store.<span class="title function_">dispatch</span>(action)</span><br><span class="line">  <span class="variable language_">console</span>.<span class="title function_">log</span>(<span class="string">&#x27;next state&#x27;</span>, store.<span class="title function_">getState</span>())</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
-
-<p>重写了dispatch函数，并保持了对老的dispatch的引用<br>新的dispatch是对老的dispatch的封装，可以在中间添加逻辑处理</p>
-<figure class="highlight javascript"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">function</span> <span class="title function_">patchStoreToAddLogging</span>(<span class="params">store</span>) &#123;</span><br><span class="line">  <span class="keyword">let</span> next = store.<span class="property">dispatch</span></span><br><span class="line">  store.<span class="property">dispatch</span> = <span class="keyword">function</span> <span class="title function_">dispatchAndLog</span>(<span class="params">action</span>) &#123;</span><br><span class="line">    <span class="variable language_">console</span>.<span class="title function_">log</span>(<span class="string">&#x27;dispatching&#x27;</span>, action)</span><br><span class="line">    <span class="keyword">let</span> result = <span class="title function_">next</span>(action)</span><br><span class="line">    <span class="variable language_">console</span>.<span class="title function_">log</span>(<span class="string">&#x27;next state&#x27;</span>, store.<span class="title function_">getState</span>())</span><br><span class="line">    <span class="keyword">return</span> result</span><br><span class="line">  &#125;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
-
-<p>由于不满足函数式编程的思想，这里通过直接返回一个函数来处理<br>并把老的dispatch方法通过next参数传入<br>传入的next需要在redux中实现</p>
-<figure class="highlight javascript"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">const</span> <span class="title function_">logger</span> = store =&gt; <span class="function"><span class="params">next</span> =&gt;</span> <span class="function"><span class="params">action</span> =&gt;</span> &#123;</span><br><span class="line">  <span class="variable language_">console</span>.<span class="title function_">log</span>(<span class="string">&#x27;dispatching&#x27;</span>, action)</span><br><span class="line">  <span class="keyword">let</span> result = <span class="title function_">next</span>(action)</span><br><span class="line">  <span class="variable language_">console</span>.<span class="title function_">log</span>(<span class="string">&#x27;next state&#x27;</span>, store.<span class="title function_">getState</span>())</span><br><span class="line">  <span class="keyword">return</span> result</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
-
-<p><strong>applyMiddleware</strong></p>
-<p>返回一个新的store对象，并提供通过middleware包装过的dispatch方法</p>
-<figure class="highlight javascript"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">function</span> <span class="title function_">applyMiddleware</span>(<span class="params">...middlewares</span>)&#123;</span><br><span class="line">  <span class="keyword">return</span> <span class="keyword">function</span>(<span class="params">createStore</span>)&#123;</span><br><span class="line">    <span class="comment">// 新的createStore方法传入 reducers 和 initstate</span></span><br><span class="line">    <span class="keyword">return</span> <span class="keyword">function</span>(<span class="params">...args</span>)&#123;</span><br><span class="line">    <span class="keyword">const</span> store = <span class="title function_">createStore</span>(...args);</span><br><span class="line">    <span class="comment">// 保留dispatch的引用</span></span><br><span class="line">    <span class="keyword">const</span> next = store.<span class="property">dispatch</span>;</span><br><span class="line">      <span class="comment">// 提供给middleware的第一个参数，如果直接调用dispatch回抛出错误</span></span><br><span class="line">      <span class="keyword">const</span> middlewareApi = &#123;</span><br><span class="line">        <span class="attr">getState</span>:store.<span class="property">getState</span>,</span><br><span class="line">        <span class="attr">dispatch</span>:<span class="function">()=&gt;</span> <span class="keyword">new</span> <span class="title class_">Error</span>()</span><br><span class="line">      &#125;</span><br><span class="line">      <span class="comment">//为每个middle提供getState方法</span></span><br><span class="line">      middlewares = middlewares.<span class="title function_">map</span>(<span class="function"><span class="params">middleware</span>=&gt;</span><span class="title function_">middleware</span>(middlewareApi));</span><br><span class="line"></span><br><span class="line">      <span class="comment">//重写dispatch方法，每一个middleware执行，都会触发传入的dispatch的引用</span></span><br><span class="line">      <span class="comment">//a(next) 返回middleware中最有一个函数，需要传入一个action</span></span><br><span class="line">      <span class="comment">//(action) =&gt;&#123;</span></span><br><span class="line">      <span class="comment">//   console.log(&#x27;error state&#x27;,store.getState());</span></span><br><span class="line">      <span class="comment">//   next(action);</span></span><br><span class="line">      <span class="comment">//   console.log(&#x27;action&#x27;);</span></span><br><span class="line">      <span class="comment">// &#125;</span></span><br><span class="line">      <span class="comment">// b函数传入的就是这个返回函数</span></span><br><span class="line">      <span class="comment">// 在最终调用的时候action回一级一级的被传下去</span></span><br><span class="line">      <span class="keyword">const</span> dispatch = middlewares.<span class="title function_">reduce</span>(<span class="function">(<span class="params">a,b</span>)=&gt;</span><span class="title function_">b</span>(<span class="title function_">a</span>(next)));</span><br><span class="line">      <span class="keyword">return</span> &#123;</span><br><span class="line">        ...store,</span><br><span class="line">        dispatch</span><br><span class="line">      &#125;</span><br><span class="line">    &#125;</span><br><span class="line">  &#125;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
-
-<p>同时<code>redux.js</code>中需要修改 </p>
-<figure class="highlight javascript"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">function</span> <span class="title function_">createStore</span>(<span class="params">reducer,initState,middleware</span>)&#123;</span><br><span class="line">  <span class="keyword">if</span>(middleware) &#123;</span><br><span class="line">    <span class="comment">// 重写create函数,相当于在外层添加一个拦截器</span></span><br><span class="line">   <span class="keyword">return</span>  <span class="title function_">middleware</span>(createStore)(reducer,initState)</span><br><span class="line">  &#125;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
-
-<p><strong>compose</strong></p>
-<p>把 reducer middlewares 的逻辑单独提取出来</p>
-<figure class="highlight javascript"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">export</span> <span class="keyword">default</span> <span class="keyword">function</span> <span class="title function_">compose</span>(<span class="params">...funcs</span>) &#123;</span><br><span class="line">  <span class="keyword">if</span> (funcs.<span class="property">length</span> === <span class="number">0</span>) &#123;</span><br><span class="line">    <span class="keyword">return</span> <span class="function"><span class="params">arg</span> =&gt;</span> arg</span><br><span class="line">  &#125;</span><br><span class="line"></span><br><span class="line">  <span class="keyword">if</span> (funcs.<span class="property">length</span> === <span class="number">1</span>) &#123;</span><br><span class="line">    <span class="keyword">return</span> funcs[<span class="number">0</span>]</span><br><span class="line">  &#125;</span><br><span class="line">  <span class="comment">//注意最后返回的时候包裹了一个函数，传入外部参数，也就是上面的store.dispatch</span></span><br><span class="line">  <span class="keyword">return</span> funcs.<span class="title function_">reduce</span>(<span class="function">(<span class="params">a, b</span>) =&gt;</span> <span class="function">(<span class="params">...args</span>) =&gt;</span> <span class="title function_">a</span>(<span class="title function_">b</span>(...args)))</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
-
-<p>最终完整的代码</p>
-<figure class="highlight javascript"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">const</span> applyMiddleware = <span class="keyword">function</span>(<span class="params">...middlewares</span>)&#123;</span><br><span class="line">  <span class="keyword">return</span> <span class="function">(<span class="params">createStore</span>)=&gt;</span><span class="function">(<span class="params">...args</span>) =&gt;</span>&#123;</span><br><span class="line">    <span class="keyword">const</span> store = <span class="title function_">createStore</span>(...args);</span><br><span class="line">    <span class="variable language_">console</span>.<span class="title function_">log</span>(middlewares);</span><br><span class="line"></span><br><span class="line">    <span class="keyword">let</span> <span class="title function_">dispatch</span> = (<span class="params"></span>) =&gt; &#123;</span><br><span class="line">      <span class="keyword">throw</span> <span class="keyword">new</span> <span class="title class_">Error</span>(</span><br><span class="line">        <span class="string">&#x27;Dispatching while constructing your middleware is not allowed. &#x27;</span> +</span><br><span class="line">          <span class="string">&#x27;Other middleware would not be applied to this dispatch.&#x27;</span></span><br><span class="line">      )</span><br><span class="line">    &#125;</span><br><span class="line"></span><br><span class="line">    <span class="keyword">const</span> middlewareAPI = &#123;</span><br><span class="line">      <span class="attr">getState</span>: store.<span class="property">getState</span>,</span><br><span class="line">      <span class="attr">dispatch</span>: <span class="function">(<span class="params">...args</span>) =&gt;</span> <span class="title function_">dispatch</span>(...args)</span><br><span class="line">    &#125;</span><br><span class="line"></span><br><span class="line">    <span class="keyword">const</span> chain = middlewares.<span class="title function_">map</span>(<span class="function"><span class="params">middleware</span> =&gt;</span> <span class="title function_">middleware</span>(middlewareAPI))</span><br><span class="line">    dispatch = <span class="title function_">compose</span>(...chain)(store.<span class="property">dispatch</span>)</span><br><span class="line">    <span class="keyword">return</span> &#123;</span><br><span class="line">      ...store,</span><br><span class="line">      dispatch</span><br><span class="line">    &#125;</span><br><span class="line">  &#125;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
-
-<h4 id="bindActionCreators"><a href="#bindActionCreators" class="headerlink" title="bindActionCreators"></a>bindActionCreators</h4><p>我们希望可以创建一个action对象，直接调用上面的方法，而忽略dispatch的步骤</p>
-<figure class="highlight javascript"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">const</span> <span class="title function_">actions1</span> =(<span class="params">payload</span>)=&gt;(&#123;</span><br><span class="line">  <span class="attr">type</span>: <span class="string">&quot;A&quot;</span>,</span><br><span class="line">  payload</span><br><span class="line">&#125;);</span><br><span class="line"><span class="keyword">const</span> <span class="title function_">actions2</span> =(<span class="params">payload</span>)=&gt;(&#123;</span><br><span class="line">  <span class="attr">type</span>: <span class="string">&quot;B&quot;</span>,</span><br><span class="line">  payload</span><br><span class="line">&#125;)</span><br><span class="line"><span class="keyword">const</span> <span class="title function_">actions3</span> =(<span class="params">payload</span>)=&gt;(&#123;</span><br><span class="line">  <span class="attr">type</span>: <span class="string">&quot;C&quot;</span>,</span><br><span class="line">  payload</span><br><span class="line">&#125;)</span><br><span class="line"></span><br><span class="line"><span class="keyword">const</span> actions = <span class="title function_">bindActionCreators</span>(&#123;</span><br><span class="line">  actions1,</span><br><span class="line">  actions2,</span><br><span class="line">  actions3,</span><br><span class="line">&#125;,store.<span class="property">dispatch</span>)</span><br><span class="line"></span><br><span class="line">actions.<span class="title function_">actions1</span>()</span><br><span class="line">actions.<span class="title function_">actions2</span>(&#123;<span class="attr">name</span>: <span class="string">&#x27;wefwegwekfl&#x27;</span>&#125;)</span><br><span class="line">actions.<span class="title function_">actions3</span>(&#123;<span class="attr">age</span>: <span class="string">&#x27;30&#x27;</span>&#125;)</span><br></pre></td></tr></table></figure>
-
-<p>需要实现一个bindActionCreators方法</p>
-<p>惟一会使用到 bindActionCreators 的场景是当你需要把 action creator 往下传到一个组件上</p>
-<p>却不想让这个组件觉察到 Redux 的存在，而且不希望把 dispatch 或 Redux store 传给它。</p>
-<figure class="highlight javascript"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">const</span> bindActionCreator = <span class="keyword">function</span>(<span class="params">actionCreator,dispatch</span>)&#123;</span><br><span class="line">  <span class="keyword">return</span> <span class="keyword">function</span>(<span class="params"></span>)&#123;</span><br><span class="line">    <span class="keyword">return</span> <span class="title function_">dispatch</span>(actionCreator.<span class="title function_">apply</span>(<span class="variable language_">this</span>,<span class="variable language_">arguments</span>))</span><br><span class="line">  &#125;</span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line"><span class="comment">// 接受的是一个action对象集合</span></span><br><span class="line"><span class="keyword">const</span> bindActionCreators = <span class="keyword">function</span>(<span class="params">actionCreators,dispatch</span>)&#123;</span><br><span class="line">  <span class="keyword">const</span> boundActionCreators = &#123;&#125;</span><br><span class="line">  <span class="keyword">for</span>(<span class="keyword">let</span> key <span class="keyword">in</span> actionCreators)&#123;</span><br><span class="line">    <span class="keyword">if</span>(<span class="keyword">typeof</span> actionCreators[key]===<span class="string">&#x27;function&#x27;</span>)&#123;</span><br><span class="line">      <span class="comment">// 最终返回一个以每个action名字为key的对象</span></span><br><span class="line">      <span class="comment">// 每个key对应的值为一个可以触发dispatch方法的函数</span></span><br><span class="line">      <span class="comment">// 相当于为每个actio自动绑定了dispatch 方法</span></span><br><span class="line">      boundActionCreators[key] = <span class="title function_">bindActionCreator</span>(actionCreators[key],dispatch)</span><br><span class="line">    &#125;</span><br><span class="line">  &#125;</span><br><span class="line">  <span class="keyword">return</span> boundActionCreators;</span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line"></span><br><span class="line"><span class="keyword">export</span> <span class="keyword">default</span> bindActionCreators</span><br></pre></td></tr></table></figure> 
-      <!-- reward -->
-      
-    </div>
-    
-
-    <!-- copyright -->
-    
-    <footer class="article-footer">
-       
-  <ul class="article-tag-list" itemprop="keywords"><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/Redux/" rel="tag">Redux</a></li></ul>
-
-    </footer>
-  </div>
-
-   
-    
-</article>
-
-    
-    <article
-  id="post-react/更新/updateLane"
-  class="article article-type-post"
-  itemscope
-  itemprop="blogPost"
-  data-scroll-reveal
->
-  <div class="article-inner">
-    
-    <header class="article-header">
-       
-<h2 itemprop="name">
-  <a class="article-title" href="/posts/106d9f1839c3/"
-    >updateLane</a> 
-</h2>
- 
-
-      
-    </header>
-     
-    <div class="article-meta">
-      <a href="/posts/106d9f1839c3/" class="article-date">
-  <time datetime="2021-02-14T09:51:27.000Z" itemprop="datePublished">2021-02-14</time>
-</a> 
-  <div class="article-category">
-    <a class="article-category-link" href="/categories/React/">React</a> / <a class="article-category-link" href="/categories/React/%E6%9B%B4%E6%96%B0/">更新</a>
-  </div>
-   
-    </div>
-      
-    <div class="article-entry" itemprop="articleBody">
-       
-  <h4 id="updateLane"><a href="#updateLane" class="headerlink" title="updateLane"></a>updateLane</h4><p><a href="/posts/a51eed6a/#updateContainer">用于调度更新的优先级</a> 通过 <code>requestUpdateLane</code> 创建</p>
-<figure class="highlight javascript"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br><span class="line">35</span><br><span class="line">36</span><br><span class="line">37</span><br><span class="line">38</span><br><span class="line">39</span><br><span class="line">40</span><br><span class="line">41</span><br><span class="line">42</span><br><span class="line">43</span><br><span class="line">44</span><br><span class="line">45</span><br><span class="line">46</span><br><span class="line">47</span><br><span class="line">48</span><br><span class="line">49</span><br><span class="line">50</span><br><span class="line">51</span><br><span class="line">52</span><br><span class="line">53</span><br><span class="line">54</span><br><span class="line">55</span><br><span class="line">56</span><br><span class="line">57</span><br><span class="line">58</span><br><span class="line">59</span><br><span class="line">60</span><br><span class="line">61</span><br><span class="line">62</span><br><span class="line">63</span><br><span class="line">64</span><br><span class="line">65</span><br><span class="line">66</span><br><span class="line">67</span><br><span class="line">68</span><br><span class="line">69</span><br><span class="line">70</span><br><span class="line">71</span><br><span class="line">72</span><br><span class="line">73</span><br><span class="line">74</span><br><span class="line">75</span><br><span class="line">76</span><br><span class="line">77</span><br><span class="line">78</span><br><span class="line">79</span><br><span class="line">80</span><br><span class="line">81</span><br><span class="line">82</span><br><span class="line">83</span><br><span class="line">84</span><br><span class="line">85</span><br><span class="line">86</span><br><span class="line">87</span><br><span class="line">88</span><br><span class="line">89</span><br><span class="line">90</span><br><span class="line">91</span><br><span class="line">92</span><br><span class="line">93</span><br><span class="line">94</span><br><span class="line">95</span><br><span class="line">96</span><br><span class="line">97</span><br><span class="line">98</span><br><span class="line">99</span><br><span class="line">100</span><br><span class="line">101</span><br><span class="line">102</span><br><span class="line">103</span><br><span class="line">104</span><br><span class="line">105</span><br><span class="line">106</span><br><span class="line">107</span><br><span class="line">108</span><br><span class="line">109</span><br><span class="line">110</span><br><span class="line">111</span><br><span class="line">112</span><br><span class="line">113</span><br><span class="line">114</span><br><span class="line">115</span><br><span class="line">116</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">export</span> <span class="keyword">function</span> <span class="title function_">requestUpdateLane</span>(<span class="params">fiber: Fiber</span>): <span class="title class_">Lane</span> &#123;</span><br><span class="line">  <span class="keyword">const</span> mode = fiber.<span class="property">mode</span>;</span><br><span class="line">  <span class="keyword">if</span> ((mode &amp; <span class="title class_">BlockingMode</span>) === <span class="title class_">NoMode</span>) &#123;</span><br><span class="line">    <span class="comment">// 初次加载时为SyncLane</span></span><br><span class="line">    <span class="keyword">return</span> (<span class="title class_">SyncLane</span>: <span class="title class_">Lane</span>);</span><br><span class="line">  &#125; <span class="keyword">else</span> <span class="keyword">if</span> ((mode &amp; <span class="title class_">ConcurrentMode</span>) === <span class="title class_">NoMode</span>) &#123;</span><br><span class="line">    <span class="keyword">return</span> <span class="title function_">getCurrentPriorityLevel</span>() === <span class="title class_">ImmediateSchedulerPriority</span></span><br><span class="line">      ? (<span class="title class_">SyncLane</span>: <span class="title class_">Lane</span>)</span><br><span class="line">      : (<span class="title class_">SyncBatchedLane</span>: <span class="title class_">Lane</span>);</span><br><span class="line">  &#125; <span class="keyword">else</span> <span class="keyword">if</span> (</span><br><span class="line">    !deferRenderPhaseUpdateToNextBatch &amp;&amp;</span><br><span class="line">    (executionContext &amp; <span class="title class_">RenderContext</span>) !== <span class="title class_">NoContext</span> &amp;&amp;</span><br><span class="line">    workInProgressRootRenderLanes !== <span class="title class_">NoLanes</span></span><br><span class="line">  ) &#123;</span><br><span class="line">    <span class="comment">// This is a render phase update. These are not officially supported. The</span></span><br><span class="line">    <span class="comment">// 这是一个渲染阶段的更新，这些都没有得到官方的支持</span></span><br><span class="line">    <span class="comment">// old behavior is to give this the same &quot;thread&quot; (expiration time) as</span></span><br><span class="line">    <span class="comment">// 原来的方案是赋予它与当前渲染相同的过期时间</span></span><br><span class="line">    <span class="comment">// whatever is currently rendering. So if you call `setState` on a component</span></span><br><span class="line">    <span class="comment">// 如果你在一个组件上调用setState，他们会在相同的渲染中稍后生效， </span></span><br><span class="line">    <span class="comment">// that happens later in the same render, it will flush. Ideally, we want to</span></span><br><span class="line">    <span class="comment">// 会发生闪屏</span></span><br><span class="line">    <span class="comment">// remove the special case and treat them as if they came from an</span></span><br><span class="line">    <span class="comment">// 理想情况下，我们希望删除特例，并将它们视为来插入的事件</span></span><br><span class="line">    <span class="comment">// interleaved event. Regardless, this pattern is not officially supported.</span></span><br><span class="line">    <span class="comment">// 无论如何，这种模式并没有得到官方的支持。</span></span><br><span class="line">    <span class="comment">// This behavior is only a fallback. The flag only exists until we can roll</span></span><br><span class="line">    <span class="comment">// 这种行为值是一个回退机制，标识只存存在于我们可以离开setState警告之前</span></span><br><span class="line">    <span class="comment">// out the setState warning, since existing code might accidentally rely on</span></span><br><span class="line">    <span class="comment">// 因为现有代码可能意外地依赖于当前行为。</span></span><br><span class="line">    <span class="comment">// the current behavior.</span></span><br><span class="line">    <span class="keyword">return</span> <span class="title function_">pickArbitraryLane</span>(workInProgressRootRenderLanes);</span><br><span class="line">  &#125;</span><br><span class="line"></span><br><span class="line">  <span class="comment">// The algorithm for assigning an update to a lane should be stable for all</span></span><br><span class="line">  <span class="comment">// updates at the same priority within the same event. To do this, the inputs</span></span><br><span class="line">  <span class="comment">// 对于同一事件中具有相同优先级的所有更新，为车道分配更新的算法应该是稳定的（幂等的）。</span></span><br><span class="line">  <span class="comment">// to the algorithm must be the same. For example, we use the `renderLanes`</span></span><br><span class="line">  <span class="comment">// 为此，算法的输入必须相同。 </span></span><br><span class="line">  <span class="comment">// to avoid choosing a lane that is already in the middle of rendering.</span></span><br><span class="line">  <span class="comment">// 我们使用“renderLanes”来避免选择已经在渲染过程中的车道。</span></span><br><span class="line">  <span class="comment">// However, the &quot;included&quot; lanes could be mutated in between updates in the</span></span><br><span class="line">  <span class="comment">// 然而 included 车道可能在两次相同事件中的更新被改变</span></span><br><span class="line">  <span class="comment">// same event, like if you perform an update inside `flushSync`. Or any other</span></span><br><span class="line">  <span class="comment">// 就像在“flushSync”中执行更新一样</span></span><br><span class="line">  <span class="comment">// code path that might call `prepareFreshStack`.</span></span><br><span class="line">  <span class="comment">// 或者任何其他可能调用“prepareFreshStack”的代码。</span></span><br><span class="line">  <span class="comment">// The trick we use is to cache the first of each of these inputs within an</span></span><br><span class="line">  <span class="comment">// 我们使用的技巧是在事件中缓存这些输入中的第一个</span></span><br><span class="line">  <span class="comment">// event. Then reset the cached values once we can be sure the event is over.</span></span><br><span class="line">  <span class="comment">// 然后在确定事件结束后重置缓存的值。</span></span><br><span class="line">  <span class="comment">// Our heuristic for that is whenever we enter a concurrent work loop.</span></span><br><span class="line">  <span class="comment">// 启发式方法是，每当我们进入一个并发工作循环时</span></span><br><span class="line">  <span class="comment">// We&#x27;ll do the same for `currentEventPendingLanes` below.</span></span><br><span class="line">  <span class="keyword">if</span> (currentEventWipLanes === <span class="title class_">NoLanes</span>) &#123;</span><br><span class="line">    currentEventWipLanes = workInProgressRootIncludedLanes;</span><br><span class="line">  &#125;</span><br><span class="line"></span><br><span class="line">  <span class="keyword">const</span> isTransition = <span class="title function_">requestCurrentTransition</span>() !== <span class="title class_">NoTransition</span>;</span><br><span class="line">  <span class="keyword">if</span> (isTransition) &#123;</span><br><span class="line">    <span class="keyword">if</span> (currentEventPendingLanes !== <span class="title class_">NoLanes</span>) &#123;</span><br><span class="line">      currentEventPendingLanes =</span><br><span class="line">        mostRecentlyUpdatedRoot !== <span class="literal">null</span></span><br><span class="line">          ? mostRecentlyUpdatedRoot.<span class="property">pendingLanes</span></span><br><span class="line">          : <span class="title class_">NoLanes</span>;</span><br><span class="line">    &#125;</span><br><span class="line">    <span class="keyword">return</span> <span class="title function_">findTransitionLane</span>(currentEventWipLanes, currentEventPendingLanes);</span><br><span class="line">  &#125;</span><br><span class="line"></span><br><span class="line">  <span class="comment">// <span class="doctag">TODO:</span> Remove this dependency on the Scheduler priority.</span></span><br><span class="line">  <span class="comment">// To do that, we&#x27;re replacing it with an update lane priority.</span></span><br><span class="line">  <span class="keyword">const</span> schedulerPriority = <span class="title function_">getCurrentPriorityLevel</span>();</span><br><span class="line"></span><br><span class="line">  <span class="comment">// The old behavior was using the priority level of the Scheduler.</span></span><br><span class="line">  <span class="comment">// This couples React to the Scheduler internals, so we&#x27;re replacing it</span></span><br><span class="line">  <span class="comment">// with the currentUpdateLanePriority above. As an example of how this</span></span><br><span class="line">  <span class="comment">// could be problematic, if we&#x27;re not inside `Scheduler.runWithPriority`,</span></span><br><span class="line">  <span class="comment">// then we&#x27;ll get the priority of the current running Scheduler task,</span></span><br><span class="line">  <span class="comment">// which is probably not what we want.</span></span><br><span class="line">  <span class="keyword">let</span> lane;</span><br><span class="line">  <span class="keyword">if</span> (</span><br><span class="line">    <span class="comment">// <span class="doctag">TODO:</span> Temporary. We&#x27;re removing the concept of discrete updates.</span></span><br><span class="line">    (executionContext &amp; <span class="title class_">DiscreteEventContext</span>) !== <span class="title class_">NoContext</span> &amp;&amp;</span><br><span class="line">    schedulerPriority === <span class="title class_">UserBlockingSchedulerPriority</span></span><br><span class="line">  ) &#123;</span><br><span class="line">    lane = <span class="title function_">findUpdateLane</span>(<span class="title class_">InputDiscreteLanePriority</span>, currentEventWipLanes);</span><br><span class="line">  &#125; <span class="keyword">else</span> &#123;</span><br><span class="line">    <span class="keyword">const</span> schedulerLanePriority = <span class="title function_">schedulerPriorityToLanePriority</span>(</span><br><span class="line">      schedulerPriority,</span><br><span class="line">    );</span><br><span class="line"></span><br><span class="line">    <span class="keyword">if</span> (decoupleUpdatePriorityFromScheduler) &#123;</span><br><span class="line">      <span class="comment">// In the new strategy, we will track the current update lane priority</span></span><br><span class="line">      <span class="comment">// inside React and use that priority to select a lane for this update.</span></span><br><span class="line">      <span class="comment">// For now, we&#x27;re just logging when they&#x27;re different so we can assess.</span></span><br><span class="line">      <span class="keyword">const</span> currentUpdateLanePriority = <span class="title function_">getCurrentUpdateLanePriority</span>();</span><br><span class="line"></span><br><span class="line">      <span class="keyword">if</span> (</span><br><span class="line">        schedulerLanePriority !== currentUpdateLanePriority &amp;&amp;</span><br><span class="line">        currentUpdateLanePriority !== <span class="title class_">NoLanePriority</span></span><br><span class="line">      ) &#123;</span><br><span class="line">        <span class="keyword">if</span> (__DEV__) &#123;</span><br><span class="line">          <span class="variable language_">console</span>.<span class="title function_">error</span>(</span><br><span class="line">            <span class="string">&#x27;Expected current scheduler lane priority %s to match current update lane priority %s&#x27;</span>,</span><br><span class="line">            schedulerLanePriority,</span><br><span class="line">            currentUpdateLanePriority,</span><br><span class="line">          );</span><br><span class="line">        &#125;</span><br><span class="line">      &#125;</span><br><span class="line">    &#125;</span><br><span class="line"></span><br><span class="line">    lane = <span class="title function_">findUpdateLane</span>(schedulerLanePriority, currentEventWipLanes);</span><br><span class="line">  &#125;</span><br><span class="line"></span><br><span class="line">  <span class="keyword">return</span> lane;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure> 
-      <!-- reward -->
-      
-    </div>
-    
-
-    <!-- copyright -->
-    
-    <footer class="article-footer">
-       
-  <ul class="article-tag-list" itemprop="keywords"><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/React/" rel="tag">React</a></li></ul>
-
-    </footer>
-  </div>
-
-   
-    
-</article>
-
-    
-    <article
-  id="post-react/更新/eventTime"
-  class="article article-type-post"
-  itemscope
-  itemprop="blogPost"
-  data-scroll-reveal
->
-  <div class="article-inner">
-    
-    <header class="article-header">
-       
-<h2 itemprop="name">
-  <a class="article-title" href="/posts/24cbc56f5973/"
-    >eventTime</a> 
-</h2>
- 
-
-      
-    </header>
-     
-    <div class="article-meta">
-      <a href="/posts/24cbc56f5973/" class="article-date">
-  <time datetime="2021-02-14T08:08:57.000Z" itemprop="datePublished">2021-02-14</time>
-</a> 
-  <div class="article-category">
-    <a class="article-category-link" href="/categories/React/">React</a> / <a class="article-category-link" href="/categories/React/%E6%9B%B4%E6%96%B0/">更新</a>
-  </div>
-   
-    </div>
-      
-    <div class="article-entry" itemprop="articleBody">
-       
-  <h4 id="eventTime"><a href="#eventTime" class="headerlink" title="eventTime"></a>eventTime</h4><p><a href="/posts/a51eed6a/#updateContainer">用于的调度更新的时间戳</a> 通过 <code>requestEventTime</code> 创建</p>
-<figure class="highlight javascript"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment">// 用二进制来表示所处的上下文状态</span></span><br><span class="line"><span class="keyword">export</span> <span class="keyword">const</span> <span class="title class_">NoContext</span> = <span class="comment">/*             */</span> <span class="number">0b0000000</span>;</span><br><span class="line"><span class="keyword">const</span> <span class="title class_">BatchedContext</span> = <span class="comment">/*               */</span> <span class="number">0b0000001</span>;</span><br><span class="line"><span class="keyword">const</span> <span class="title class_">EventContext</span> = <span class="comment">/*                 */</span> <span class="number">0b0000010</span>;</span><br><span class="line"><span class="keyword">const</span> <span class="title class_">DiscreteEventContext</span> = <span class="comment">/*         */</span> <span class="number">0b0000100</span>;</span><br><span class="line"><span class="keyword">const</span> <span class="title class_">LegacyUnbatchedContext</span> = <span class="comment">/*       */</span> <span class="number">0b0001000</span>;</span><br><span class="line"><span class="keyword">const</span> <span class="title class_">RenderContext</span> = <span class="comment">/*                */</span> <span class="number">0b0010000</span>;</span><br><span class="line"><span class="keyword">const</span> <span class="title class_">CommitContext</span> = <span class="comment">/*                */</span> <span class="number">0b0100000</span>;</span><br><span class="line"><span class="keyword">export</span> <span class="keyword">const</span> <span class="title class_">RetryAfterError</span> = <span class="comment">/*       */</span> <span class="number">0b1000000</span>;</span><br><span class="line"></span><br><span class="line"><span class="keyword">var</span> currentEventTime = <span class="title class_">NoTimestamp</span> = -<span class="number">1</span>;;</span><br><span class="line"><span class="comment">// executionContext = NoContext</span></span><br><span class="line"><span class="keyword">export</span> <span class="keyword">function</span> <span class="title function_">requestEventTime</span>(<span class="params"></span>) &#123;</span><br><span class="line">  <span class="keyword">if</span> ((executionContext &amp; (<span class="title class_">RenderContext</span> | <span class="title class_">CommitContext</span>)) !== <span class="title class_">NoContext</span>) &#123;</span><br><span class="line">    <span class="comment">// We&#x27;re inside React, so it&#x27;s fine to read the actual time.</span></span><br><span class="line">    <span class="keyword">return</span> <span class="title function_">now</span>();</span><br><span class="line">  &#125;</span><br><span class="line">  <span class="comment">// 不在react中，可能在浏览器的事件中</span></span><br><span class="line">  <span class="keyword">if</span> (currentEventTime !== <span class="title class_">NoTimestamp</span>) &#123;</span><br><span class="line">    <span class="comment">// 对所有更新使用相同的开始时间，直到再次进入react中</span></span><br><span class="line">    <span class="keyword">return</span> currentEventTime;</span><br><span class="line">  &#125;</span><br><span class="line">  <span class="comment">// 这是React运行后后的第一次更新。计算新的开始时间。</span></span><br><span class="line">  currentEventTime = <span class="title function_">now</span>();</span><br><span class="line">  <span class="keyword">return</span> currentEventTime;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
-
-<p>获取时间戳的时候，如果Date对象初始化的时间过长，在使用的时候还需要把初始化的时间减去</p>
-<figure class="highlight javascript"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">let</span> getCurrentTime;</span><br><span class="line"><span class="keyword">const</span> hasPerformanceNow =</span><br><span class="line">  <span class="keyword">typeof</span> performance === <span class="string">&#x27;object&#x27;</span> &amp;&amp; <span class="keyword">typeof</span> performance.<span class="property">now</span> === <span class="string">&#x27;function&#x27;</span>;</span><br><span class="line"></span><br><span class="line"><span class="keyword">if</span> (hasPerformanceNow) &#123;</span><br><span class="line">  <span class="keyword">const</span> localPerformance = performance;</span><br><span class="line">  getCurrentTime = <span class="function">() =&gt;</span> localPerformance.<span class="title function_">now</span>();</span><br><span class="line">&#125; <span class="keyword">else</span> &#123;</span><br><span class="line">  <span class="keyword">const</span> localDate = <span class="title class_">Date</span>;</span><br><span class="line">  <span class="keyword">const</span> initialTime = localDate.<span class="title function_">now</span>();</span><br><span class="line">  getCurrentTime = <span class="function">() =&gt;</span> localDate.<span class="title function_">now</span>() - initialTime;</span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line"><span class="keyword">var</span> <span class="title class_">Scheduler</span>_now = <span class="title class_">Scheduler</span>.<span class="property">unstable_now</span> = getCurrentTime;</span><br><span class="line"><span class="keyword">var</span> initialTimeMs$<span class="number">1</span> = <span class="title class_">Scheduler</span>_now<span class="title function_">$1</span>(); </span><br><span class="line"><span class="comment">// 如果初始化的事件戳非常小，直接使用 initialTimeMs，对于现代浏览器直接使用performance.now</span></span><br><span class="line"><span class="comment">// 在老的浏览器中回退使用Date.now, 返回Unix事件戳，这时需要减去模块初始化的时间来模拟 performance.now</span></span><br><span class="line"><span class="comment">// 并把时间控制在32位以内</span></span><br><span class="line"></span><br><span class="line"><span class="keyword">var</span> now = initialTimeMs$<span class="number">1</span> &lt; <span class="number">10000</span> ? <span class="title class_">Scheduler</span>_now$<span class="number">1</span> : <span class="keyword">function</span> (<span class="params"></span>) &#123;</span><br><span class="line">  <span class="keyword">return</span> <span class="title class_">Scheduler</span>_now<span class="title function_">$1</span>() - initialTimeMs$<span class="number">1</span>;</span><br><span class="line">&#125;;</span><br></pre></td></tr></table></figure> 
-      <!-- reward -->
-      
-    </div>
-    
-
-    <!-- copyright -->
-    
-    <footer class="article-footer">
-       
-  <ul class="article-tag-list" itemprop="keywords"><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/React/" rel="tag">React</a></li></ul>
-
-    </footer>
-  </div>
-
-   
-    
-</article>
-
-    
-    <article
-  id="post-react/更新/createUpdate"
-  class="article article-type-post"
-  itemscope
-  itemprop="blogPost"
-  data-scroll-reveal
->
-  <div class="article-inner">
-    
-    <header class="article-header">
-       
-<h2 itemprop="name">
-  <a class="article-title" href="/posts/c4d75bef1f2e/"
-    >createUpdate</a> 
-</h2>
- 
-
-      
-    </header>
-     
-    <div class="article-meta">
-      <a href="/posts/c4d75bef1f2e/" class="article-date">
-  <time datetime="2021-02-14T06:33:17.000Z" itemprop="datePublished">2021-02-14</time>
-</a> 
-  <div class="article-category">
-    <a class="article-category-link" href="/categories/React/">React</a> / <a class="article-category-link" href="/categories/React/%E6%9B%B4%E6%96%B0/">更新</a>
-  </div>
-   
-    </div>
-      
-    <div class="article-entry" itemprop="articleBody">
-       
-  <h4 id="Update"><a href="#Update" class="headerlink" title="Update"></a>Update</h4><p><a href="/posts/a51eed6a/#updateContainer">用于记录组件状态的改变，保存到UpdateQueue中</a>，多个Update可以同时存在</p>
-<p>&#x2F;packages&#x2F;react-reconciler&#x2F;src&#x2F;ReactUpdateQueue.new.js </p>
-<figure class="highlight javascript"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">export</span> <span class="keyword">function</span> <span class="title function_">createUpdate</span>(<span class="params">eventTime: number, lane: Lane</span>): <span class="title class_">Update</span>&lt;*&gt; &#123;</span><br><span class="line">  <span class="keyword">const</span> <span class="attr">update</span>: <span class="title class_">Update</span>&lt;*&gt; = &#123;</span><br><span class="line">    eventTime,</span><br><span class="line">    lane,</span><br><span class="line">    <span class="comment">// export const UpdateState = 0; 更新</span></span><br><span class="line">    <span class="comment">// export const ReplaceState = 1; 替换更新</span></span><br><span class="line">    <span class="comment">// export const ForceUpdate = 2; 强制更新</span></span><br><span class="line">    <span class="comment">// export const CaptureUpdate = 3; 捕获哦错误后更新</span></span><br><span class="line">    <span class="attr">tag</span>: <span class="title class_">UpdateState</span>,</span><br><span class="line">    <span class="attr">payload</span>: <span class="literal">null</span>, <span class="comment">// 更新内容，比如`setState`接收的第一个参数</span></span><br><span class="line">    <span class="attr">callback</span>: <span class="literal">null</span>, <span class="comment">// 对应的回调，`setState`，`render`都有</span></span><br><span class="line">    <span class="attr">next</span>: <span class="literal">null</span>, <span class="comment">// 指向下一个更新</span></span><br><span class="line">  &#125;;</span><br><span class="line">  <span class="keyword">return</span> update;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
-
-<h4 id="enqueueUpdate"><a href="#enqueueUpdate" class="headerlink" title="enqueueUpdate"></a>enqueueUpdate</h4><figure class="highlight javascript"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">export</span> <span class="keyword">function</span> enqueueUpdate&lt;<span class="title class_">State</span>&gt;(<span class="attr">fiber</span>: <span class="title class_">Fiber</span>, <span class="attr">update</span>: <span class="title class_">Update</span>&lt;<span class="title class_">State</span>&gt;) &#123;</span><br><span class="line">  <span class="comment">// fiber 节点中的updateQueue,默认是null</span></span><br><span class="line">  <span class="keyword">const</span> updateQueue = fiber.<span class="property">updateQueue</span>;</span><br><span class="line">  <span class="keyword">if</span> (updateQueue === <span class="literal">null</span>) &#123;</span><br><span class="line">    <span class="comment">// 只在未挂载时执行</span></span><br><span class="line">    <span class="keyword">return</span>;</span><br><span class="line">  &#125;</span><br><span class="line"></span><br><span class="line">  <span class="keyword">const</span> <span class="attr">sharedQueue</span>: <span class="title class_">SharedQueue</span>&lt;<span class="title class_">State</span>&gt; = (<span class="attr">updateQueue</span>: any).<span class="property">shared</span>;</span><br><span class="line">  <span class="comment">// pending update链表，最新的更新在链表的顶端</span></span><br><span class="line">  <span class="comment">// pending = 3-&gt;2-&gt;1-&gt;3....</span></span><br><span class="line">  <span class="keyword">const</span> pending = sharedQueue.<span class="property">pending</span>;</span><br><span class="line">  <span class="keyword">if</span> (pending === <span class="literal">null</span>) &#123;</span><br><span class="line">    <span class="comment">// 只有一个update时候，循环引用</span></span><br><span class="line">    update.<span class="property">next</span> = update;</span><br><span class="line">  &#125; <span class="keyword">else</span> &#123;</span><br><span class="line">    update.<span class="property">next</span> = pending.<span class="property">next</span>;</span><br><span class="line">    pending.<span class="property">next</span> = update;</span><br><span class="line">  &#125;</span><br><span class="line">  sharedQueue.<span class="property">pending</span> = update;</span><br><span class="line"></span><br></pre></td></tr></table></figure> 
-      <!-- reward -->
-      
-    </div>
-    
-
-    <!-- copyright -->
-    
-    <footer class="article-footer">
-       
-  <ul class="article-tag-list" itemprop="keywords"><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/React/" rel="tag">React</a></li></ul>
-
-    </footer>
-  </div>
-
-   
-    
-</article>
-
-    
   </article>
   
 
   
   <nav class="page-nav">
     
-    <a class="extend prev" rel="prev" href="/page/14/">上一页</a><a class="page-number" href="/">1</a><span class="space">&hellip;</span><a class="page-number" href="/page/13/">13</a><a class="page-number" href="/page/14/">14</a><span class="page-number current">15</span><a class="page-number" href="/page/16/">16</a><a class="page-number" href="/page/17/">17</a><span class="space">&hellip;</span><a class="page-number" href="/page/27/">27</a><a class="extend next" rel="next" href="/page/16/">下一页</a>
+    <a class="extend prev" rel="prev" href="/page/14/">上一页</a><a class="page-number" href="/">1</a><span class="space">&hellip;</span><a class="page-number" href="/page/13/">13</a><a class="page-number" href="/page/14/">14</a><span class="page-number current">15</span><a class="page-number" href="/page/16/">16</a><a class="page-number" href="/page/17/">17</a><span class="space">&hellip;</span><a class="page-number" href="/page/28/">28</a><a class="extend next" rel="next" href="/page/16/">下一页</a>
   </nav>
   
 </section>
@@ -1028,10 +1113,6 @@
     
     <li class="nav-item">
       <a class="nav-item-link" href="/tags">标签</a>
-    </li>
-    
-    <li class="nav-item">
-      <a class="nav-item-link" href="/tags/Essay">随笔</a>
     </li>
     
   </ul>

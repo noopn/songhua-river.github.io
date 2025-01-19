@@ -1,0 +1,615 @@
+<!DOCTYPE html>
+
+
+<html lang="zh-CN">
+  
+
+    <head>
+      <meta charset="utf-8" />
+       
+      <meta name="keywords" content="前端 web react" />
+       
+      <meta name="description" content="前端技术与生活。" />
+      
+      <meta
+        name="viewport"
+        content="width=device-width, initial-scale=1, maximum-scale=1"
+      />
+      <title>npm-lock的作用 |  四月八日</title>
+  <meta name="generator" content="hexo-theme-ayer">
+      
+      <link rel="shortcut icon" href="/favicon.ico" />
+       
+<link rel="stylesheet" href="/dist/main.css">
+ 
+<link rel="stylesheet" href="/css/fonts/remixicon.css">
+ 
+<link rel="stylesheet" href="/css/custom.css">
+ 
+      <script src="/js/pace.min.js"></script>
+       
+ 
+
+      <link rel="stylesheet" href="/css/bulma.min.css" />
+      <script src="/js/sweetalert2.min.js"></script>
+
+      <!-- mermaid -->
+      
+      <script src="https://cdn.staticfile.org/mermaid/8.14.0/mermaid.min.js"></script>
+      
+      <style>
+        .swal2-styled.swal2-confirm {
+          font-size: 1.6rem;
+        }
+      </style>
+    <!-- hexo injector head_end start -->
+<link rel="stylesheet" href="/css/katex.min.css">
+
+<link rel="stylesheet" href="/css/style.css">
+<!-- hexo injector head_end end --></head>
+  </html>
+</html>
+
+
+<body>
+  <div id="app">
+    
+      
+    <main class="content on">
+      <section class="outer">
+  <article
+  id="post-devops/npm-lock的作用"
+  class="article article-type-post"
+  itemscope
+  itemprop="blogPost"
+  data-scroll-reveal
+>
+  <div class="article-inner">
+    
+    <header class="article-header">
+       
+<h1 class="article-title sea-center" style="border-left:0" itemprop="name">
+  npm-lock的作用
+</h1>
+ 
+
+      
+    </header>
+     
+    <div class="article-meta">
+      <a href="/posts/02cd2292635b/" class="article-date">
+  <time datetime="2021-09-13T15:07:08.000Z" itemprop="datePublished">2021-09-13</time>
+</a> 
+  <div class="article-category">
+    <a class="article-category-link" href="/categories/DevOps/">DevOps</a>
+  </div>
+  
+<div class="word_count">
+    <span class="post-time">
+        <span class="post-meta-item-icon">
+            <i class="ri-quill-pen-line"></i>
+            <span class="post-meta-item-text"> 字数统计:</span>
+            <span class="post-count">1.2k</span>
+        </span>
+    </span>
+
+    <span class="post-time">
+        &nbsp; | &nbsp;
+        <span class="post-meta-item-icon">
+            <i class="ri-book-open-line"></i>
+            <span class="post-meta-item-text"> 阅读时长≈</span>
+            <span class="post-count">4 分钟</span>
+        </span>
+    </span>
+</div>
+ 
+    </div>
+      
+    <div class="tocbot"></div>
+
+
+
+
+  
+    <div class="article-entry" itemprop="articleBody">
+       
+  <h4 id="版本被修改了？"><a href="#版本被修改了？" class="headerlink" title="版本被修改了？"></a>版本被修改了？</h4><p>很久很久以前，你创建了一个项目叫做 ProjectA, 并且引入了 <code>jquery</code></p>
+<p><strong>用 <code>npm view jquery versions</code> 查看了jquery版本</strong> ,考虑许久之后，决定安装最新版，当时的最新版本是 <code>2.1.0</code>,执行了 <code>npm install -S jquery</code> 之后，在两个文件中生成了版本信息 </p>
+<p><code>package.json</code></p>
+<figure class="highlight json"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br></pre></td><td class="code"><pre><span class="line"><span class="punctuation">&#123;</span></span><br><span class="line">  <span class="attr">&quot;dependencies&quot;</span><span class="punctuation">:</span> <span class="punctuation">&#123;</span></span><br><span class="line">    <span class="attr">&quot;jquery&quot;</span><span class="punctuation">:</span> <span class="string">&quot;^2.1.0&quot;</span></span><br><span class="line">  <span class="punctuation">&#125;</span></span><br><span class="line"><span class="punctuation">&#125;</span></span><br><span class="line"></span><br></pre></td></tr></table></figure>
+
+<p><code>package-lock.json</code></p>
+<figure class="highlight json"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br></pre></td><td class="code"><pre><span class="line"><span class="punctuation">&#123;</span></span><br><span class="line">  <span class="attr">&quot;dependencies&quot;</span><span class="punctuation">:</span> <span class="punctuation">&#123;</span></span><br><span class="line">    <span class="attr">&quot;jquery&quot;</span><span class="punctuation">:</span> <span class="punctuation">&#123;</span></span><br><span class="line">      <span class="attr">&quot;version&quot;</span><span class="punctuation">:</span> <span class="string">&quot;2.1.0&quot;</span><span class="punctuation">,</span></span><br><span class="line">      <span class="attr">&quot;resolved&quot;</span><span class="punctuation">:</span> <span class="string">&quot;https://registry.npmjs.org/jquery/-/jquery-2.1.0.tgz&quot;</span><span class="punctuation">,</span></span><br><span class="line">      <span class="attr">&quot;integrity&quot;</span><span class="punctuation">:</span> <span class="string">&quot;sha1-HJqMlx0rU9rhDXLhbLtaHfFqSs4=&quot;</span></span><br><span class="line">    <span class="punctuation">&#125;</span></span><br><span class="line">  <span class="punctuation">&#125;</span></span><br><span class="line"><span class="punctuation">&#125;</span></span><br></pre></td></tr></table></figure>
+
+<p>时光飞逝，虽然看不懂这两个文件的意思，项目圆满的结束了。</p>
+<p>多年以后，一个新项目的经理想到了你曾经做过的项目，让你把项目拿过来参考一下。</p>
+<p>于是你拉取了项目，发现项目里只用到了一个依赖就是 <code>jquery</code>, 于是你在命令行输入了 <code>npm install jquery</code></p>
+<p>安装成功之后，你惊讶的发现安装的版本为什么和拉取代码的版本不是同一个，而是拉取的代码版本号中，大版本中的最后一个版本呢</p>
+<blockquote>
+<p>~ 会匹配最近的小版本依赖包，比如~1.2.3会匹配所有1.2.x版本，但是不包括1.3.0<br>^ 会匹配最新的大版本依赖包，比如^1.2.3会匹配所有1.x.x的包，包括1.3.0，但是不包括2.0.0<br>* 这意味着安装最新版本的依赖包</p>
+</blockquote>
+<p>这时的 <code>package.json</code> 文件变成：</p>
+<figure class="highlight json"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br></pre></td><td class="code"><pre><span class="line"><span class="punctuation">&#123;</span></span><br><span class="line">  <span class="attr">&quot;dependencies&quot;</span><span class="punctuation">:</span> <span class="punctuation">&#123;</span></span><br><span class="line">    <span class="attr">&quot;jquery&quot;</span><span class="punctuation">:</span> <span class="string">&quot;^2.2.4&quot;</span></span><br><span class="line">  <span class="punctuation">&#125;</span></span><br><span class="line"><span class="punctuation">&#125;</span></span><br></pre></td></tr></table></figure>
+
+<p><code>package-lock.json</code></p>
+<figure class="highlight json"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br></pre></td><td class="code"><pre><span class="line"><span class="punctuation">&#123;</span></span><br><span class="line">  <span class="attr">&quot;dependencies&quot;</span><span class="punctuation">:</span> <span class="punctuation">&#123;</span></span><br><span class="line">    <span class="attr">&quot;jquery&quot;</span><span class="punctuation">:</span> <span class="punctuation">&#123;</span></span><br><span class="line">      <span class="attr">&quot;version&quot;</span><span class="punctuation">:</span> <span class="string">&quot;2.2.4&quot;</span><span class="punctuation">,</span></span><br><span class="line">      <span class="attr">&quot;resolved&quot;</span><span class="punctuation">:</span> <span class="string">&quot;https://registry.npmjs.org/jquery/-/jquery-2.2.4.tgz&quot;</span><span class="punctuation">,</span></span><br><span class="line">      <span class="attr">&quot;integrity&quot;</span><span class="punctuation">:</span> <span class="string">&quot;sha1-HJqMlx0rU9rhDXLhbLtaHfFqSs4=&quot;</span></span><br><span class="line">    <span class="punctuation">&#125;</span></span><br><span class="line">  <span class="punctuation">&#125;</span></span><br><span class="line"><span class="punctuation">&#125;</span></span><br></pre></td></tr></table></figure>
+
+<p>你查阅了资料之后发现这是 npm 有意为之，因为 <code>package.json</code> 中 jquery 的版本是 <code>^2.1.0</code>, 当使用 <code>npm install</code> 安装时会安装大版本相同的最新版本， 也就解释了为什么版本号会变成 <code>2.2.4</code></p>
+<h4 id="lock文件解决的问题"><a href="#lock文件解决的问题" class="headerlink" title="lock文件解决的问题"></a>lock文件解决的问题</h4><p>那这个lock文件的版本又表示什么呢？简单说就是锁住你曾经安装过的包的版本</p>
+<p>当通过 <code>npm install xxx@xx.xx.xx</code> 安装某个包时(如果没有指定版本则安装最新版本呢)， 会在 <code>package.json</code> 中生成安装的包的版本信息，也会在 <code>package-lock.json</code> 中生成相同的版本信息</p>
+<p>但是 <code>package.json</code> 中的版本前面会带着一个符号，它表示的是一个版本范围，以上面的<code>^2.1.0</code> 为例，表示的大版本为2的,高于或等于<code>2.1.0</code>的其他版本</p>
+<p>当你想通过 <code>npm install</code> 初始化项目依赖的时候，他会去找 <code>package-lock.json</code>中锁住的版本，如果锁住的版本恰好在 <code>package.json</code> 指定的范围内，就会安装锁住的版本，否则安装版本范围内的最新版本，并且覆盖原有的版本信息</p>
+<p><code>package.json</code></p>
+<figure class="highlight json"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br></pre></td><td class="code"><pre><span class="line"><span class="punctuation">&#123;</span></span><br><span class="line">  <span class="attr">&quot;dependencies&quot;</span><span class="punctuation">:</span> <span class="punctuation">&#123;</span></span><br><span class="line">    <span class="attr">&quot;jquery&quot;</span><span class="punctuation">:</span> <span class="string">&quot;^2.1.0&quot;</span></span><br><span class="line">  <span class="punctuation">&#125;</span></span><br><span class="line"><span class="punctuation">&#125;</span></span><br><span class="line"></span><br></pre></td></tr></table></figure>
+
+<p><code>package-lock.json</code></p>
+<figure class="highlight json"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br></pre></td><td class="code"><pre><span class="line"><span class="punctuation">&#123;</span></span><br><span class="line">  <span class="attr">&quot;dependencies&quot;</span><span class="punctuation">:</span> <span class="punctuation">&#123;</span></span><br><span class="line">    <span class="attr">&quot;jquery&quot;</span><span class="punctuation">:</span> <span class="punctuation">&#123;</span></span><br><span class="line">      <span class="attr">&quot;version&quot;</span><span class="punctuation">:</span> <span class="string">&quot;2.2.1&quot;</span><span class="punctuation">,</span></span><br><span class="line">      <span class="attr">&quot;resolved&quot;</span><span class="punctuation">:</span> <span class="string">&quot;https://registry.npmjs.org/jquery/-/jquery-3.6.0.tgz&quot;</span><span class="punctuation">,</span></span><br><span class="line">      <span class="attr">&quot;integrity&quot;</span><span class="punctuation">:</span> <span class="string">&quot;sha512-JVzAR/AjBvVt2BmYhxRCSYysDsPcssdmTFnzyLEts9qNwmjmu4JTAMYubEfwVOSwpQ1I1sKKFcxhZCI2buerfw==&quot;</span></span><br><span class="line">    <span class="punctuation">&#125;</span></span><br><span class="line">  <span class="punctuation">&#125;</span></span><br><span class="line"><span class="punctuation">&#125;</span></span><br><span class="line"></span><br></pre></td></tr></table></figure>
+
+<p>因为 <code>package-lock.json</code> 的版本在 <code>package.json</code> 指定范围内，所以会安装 <code>2.2.1</code> 版本</p>
+<p><code>package.json</code></p>
+<figure class="highlight json"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br></pre></td><td class="code"><pre><span class="line"><span class="punctuation">&#123;</span></span><br><span class="line">  <span class="attr">&quot;dependencies&quot;</span><span class="punctuation">:</span> <span class="punctuation">&#123;</span></span><br><span class="line">    <span class="attr">&quot;jquery&quot;</span><span class="punctuation">:</span> <span class="string">&quot;^3.0.0&quot;</span></span><br><span class="line">  <span class="punctuation">&#125;</span></span><br><span class="line"><span class="punctuation">&#125;</span></span><br><span class="line"></span><br></pre></td></tr></table></figure>
+
+<p><code>package-lock.json</code></p>
+<figure class="highlight json"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br></pre></td><td class="code"><pre><span class="line"><span class="punctuation">&#123;</span></span><br><span class="line">  <span class="attr">&quot;dependencies&quot;</span><span class="punctuation">:</span> <span class="punctuation">&#123;</span></span><br><span class="line">    <span class="attr">&quot;jquery&quot;</span><span class="punctuation">:</span> <span class="punctuation">&#123;</span></span><br><span class="line">      <span class="attr">&quot;version&quot;</span><span class="punctuation">:</span> <span class="string">&quot;2.2.1&quot;</span><span class="punctuation">,</span></span><br><span class="line">      <span class="comment">// 被重写为</span></span><br><span class="line">      <span class="attr">&quot;version&quot;</span><span class="punctuation">:</span> <span class="string">&quot;3.6.0&quot;</span><span class="punctuation">,</span></span><br><span class="line">      <span class="attr">&quot;resolved&quot;</span><span class="punctuation">:</span> <span class="string">&quot;https://registry.npmjs.org/jquery/-/jquery-3.6.0.tgz&quot;</span><span class="punctuation">,</span></span><br><span class="line">      <span class="attr">&quot;integrity&quot;</span><span class="punctuation">:</span> <span class="string">&quot;sha512-JVzAR/AjBvVt2BmYhxRCSYysDsPcssdmTFnzyLEts9qNwmjmu4JTAMYubEfwVOSwpQ1I1sKKFcxhZCI2buerfw==&quot;</span></span><br><span class="line">    <span class="punctuation">&#125;</span></span><br><span class="line">  <span class="punctuation">&#125;</span></span><br><span class="line"><span class="punctuation">&#125;</span></span><br><span class="line"></span><br></pre></td></tr></table></figure>
+
+<p>因为不在版本范围内，所以安装了版本范围中的最新版本 <code>3.6.0</code></p>
+<h4 id="不想改变版本"><a href="#不想改变版本" class="headerlink" title="不想改变版本"></a>不想改变版本</h4><p>那有没有一种办法可以只安装当时的版本呢？ 让我们更好的固定版本</p>
+<p>npm 提供了 <code>npm ci</code> 的命令， 当通过<code>npm ci xxx</code> 安装包时，如果锁住的版本在版本范围内，就会安装锁住的版本，否则就会抛出错误停止安装</p>
+<p><code>npm ci</code> 命令必须依赖于 <code>package-lock.json</code> 如果没有这个文件就会报错，可以使用 <code>npm install</code> 代替</p>
+<h4 id="注意"><a href="#注意" class="headerlink" title="注意"></a>注意</h4><p>在没有  <code>package-lock.json</code> 文件的时候，通过<code>npm install</code> 初始化项目依赖，会安装版本范围内的最新版本， 在生成的 <code>package-lock.json</code> 会记录版本信息，而且会覆盖<code>package.json</code> 中的版本</p>
+ 
+      <!-- reward -->
+      
+      <div id="reword-out">
+        <div id="reward-btn">
+          打赏
+        </div>
+      </div>
+      
+    </div>
+    
+
+    <!-- copyright -->
+    
+    <div class="declare">
+      <ul class="post-copyright">
+        <li>
+          <i class="ri-copyright-line"></i>
+          <strong>版权声明： </strong>
+          
+          本博客所有文章除特别声明外，著作权归作者所有。转载请注明出处！
+          
+        </li>
+      </ul>
+    </div>
+    
+    <footer class="article-footer">
+       
+  <ul class="article-tag-list" itemprop="keywords"><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/DevOps/" rel="tag">DevOps</a></li></ul>
+
+    </footer>
+  </div>
+
+   
+  <nav class="article-nav">
+    
+      <a href="/posts/a73e3518930a/" class="article-nav-link">
+        <strong class="article-nav-caption">上一篇</strong>
+        <div class="article-nav-title">
+          
+            实现一个CLI工具
+          
+        </div>
+      </a>
+    
+    
+      <a href="/posts/d81239d4645c/" class="article-nav-link">
+        <strong class="article-nav-caption">下一篇</strong>
+        <div class="article-nav-title">StyleLint配置指南</div>
+      </a>
+    
+  </nav>
+
+  
+   
+<div class="gitalk" id="gitalk-container"></div>
+
+<link rel="stylesheet" href="https://cdn.staticfile.org/gitalk/1.7.2/gitalk.min.css">
+
+
+<script src="https://cdn.staticfile.org/gitalk/1.7.2/gitalk.min.js"></script>
+
+
+<script src="https://cdn.staticfile.org/blueimp-md5/2.19.0/js/md5.min.js"></script>
+
+<script type="text/javascript">
+  var gitalk = new Gitalk({
+    clientID: 'bce2317b25da7c3c18f6',
+    clientSecret: 'e0ab868ca9054234798be82c2b1c0c9dd8632307',
+    repo: 'noopn.github.io',
+    owner: 'noopn',
+    admin: ['noopn'],
+    // id: location.pathname,      // Ensure uniqueness and length less than 50
+    id: md5(location.pathname),
+    distractionFreeMode: false,  // Facebook-like distraction free mode
+    pagerDirection: 'last'
+  })
+
+  gitalk.render('gitalk-container')
+</script>
+
+     
+</article>
+
+</section>
+      <footer class="footer">
+  <div class="outer">
+    <ul>
+      <li>
+        Copyrights &copy;
+        2015-2025
+        <i class="ri-heart-fill heart_icon"></i> SunZhiqi
+      </li>
+    </ul>
+    <ul>
+      <li>
+        
+      </li>
+    </ul>
+    <ul>
+      <li>
+        
+      </li>
+    </ul>
+    <ul>
+      
+    </ul>
+    <ul>
+      
+    </ul>
+    <ul>
+      <li>
+        <!-- cnzz统计 -->
+        
+      </li>
+    </ul>
+  </div>
+</footer>    
+    </main>
+    <div class="float_btns">
+      <div class="totop" id="totop">
+  <i class="ri-arrow-up-line"></i>
+</div>
+
+    </div>
+    <aside class="sidebar on">
+      <button class="navbar-toggle"></button>
+<nav class="navbar">
+  
+  <div class="logo">
+    <a href="/"><img src="/images/ayer-side.png" alt="四月八日"></a>
+  </div>
+  
+  <ul class="nav nav-main">
+    
+    <li class="nav-item">
+      <a class="nav-item-link" href="/">主页</a>
+    </li>
+    
+    <li class="nav-item">
+      <a class="nav-item-link" href="/archives">归档</a>
+    </li>
+    
+    <li class="nav-item">
+      <a class="nav-item-link" href="/categories">分类</a>
+    </li>
+    
+    <li class="nav-item">
+      <a class="nav-item-link" href="/tags">标签</a>
+    </li>
+    
+  </ul>
+</nav>
+<nav class="navbar navbar-bottom">
+  <ul class="nav">
+    <li class="nav-item">
+      
+      <a class="nav-item-link nav-item-search"  title="搜索">
+        <i class="ri-search-line"></i>
+      </a>
+      
+      
+    </li>
+  </ul>
+</nav>
+<div class="search-form-wrap">
+  <div class="local-search local-search-plugin">
+  <input type="search" id="local-search-input" class="local-search-input" placeholder="Search...">
+  <div id="local-search-result" class="local-search-result"></div>
+</div>
+</div>
+    </aside>
+    <div id="mask"></div>
+
+<!-- #reward -->
+<div id="reward">
+  <span class="close"><i class="ri-close-line"></i></span>
+  <p class="reward-p"><i class="ri-cup-line"></i>此时无声胜有声！</p>
+  <div class="reward-box">
+    
+    <div class="reward-item">
+      <img class="reward-img" src="/images/alipay.jpg">
+      <span class="reward-type">支付宝</span>
+    </div>
+    
+    
+    <div class="reward-item">
+      <img class="reward-img" src="/images/wechat.jpg">
+      <span class="reward-type">微信</span>
+    </div>
+    
+  </div>
+</div>
+    
+<script src="/js/jquery-3.6.0.min.js"></script>
+ 
+<script src="/js/lazyload.min.js"></script>
+
+<!-- Tocbot -->
+ 
+<script src="/js/tocbot.min.js"></script>
+
+<script>
+  tocbot.init({
+    tocSelector: ".tocbot",
+    contentSelector: ".article-entry",
+    headingSelector: "h1, h2, h3, h4, h5, h6",
+    hasInnerContainers: true,
+    scrollSmooth: true,
+    scrollContainer: "main",
+    positionFixedSelector: ".tocbot",
+    positionFixedClass: "is-position-fixed",
+    fixedSidebarOffset: "auto",
+  });
+</script>
+
+<script src="/js/jquery.modal.min.js"></script>
+<link rel="stylesheet" href="/css/jquery.modal.min.css" />
+<script src="/js/jquery.justifiedGallery.min.js"></script>
+
+<script src="/dist/main.js"></script>
+
+<!-- ImageViewer -->
+ <!-- Root element of PhotoSwipe. Must have class pswp. -->
+<div class="pswp" tabindex="-1" role="dialog" aria-hidden="true">
+  <!-- Background of PhotoSwipe. 
+         It's a separate element as animating opacity is faster than rgba(). -->
+  <div class="pswp__bg"></div>
+
+  <!-- Slides wrapper with overflow:hidden. -->
+  <div class="pswp__scroll-wrap">
+    <!-- Container that holds slides. 
+            PhotoSwipe keeps only 3 of them in the DOM to save memory.
+            Don't modify these 3 pswp__item elements, data is added later on. -->
+    <div class="pswp__container">
+      <div class="pswp__item"></div>
+      <div class="pswp__item"></div>
+      <div class="pswp__item"></div>
+    </div>
+
+    <!-- Default (PhotoSwipeUI_Default) interface on top of sliding area. Can be changed. -->
+    <div class="pswp__ui pswp__ui--hidden">
+      <div class="pswp__top-bar">
+        <!--  Controls are self-explanatory. Order can be changed. -->
+
+        <div class="pswp__counter"></div>
+
+        <button
+          class="pswp__button pswp__button--close"
+          title="Close (Esc)"
+        ></button>
+
+        <button
+          class="pswp__button pswp__button--share"
+          style="display: none"
+          title="Share"
+        ></button>
+
+        <button
+          class="pswp__button pswp__button--fs"
+          title="Toggle fullscreen"
+        ></button>
+
+        <button
+          class="pswp__button pswp__button--zoom"
+          title="Zoom in/out"
+        ></button>
+
+        <!-- Preloader demo http://codepen.io/dimsemenov/pen/yyBWoR -->
+        <!-- element will get class pswp__preloader--active when preloader is running -->
+        <div class="pswp__preloader">
+          <div class="pswp__preloader__icn">
+            <div class="pswp__preloader__cut">
+              <div class="pswp__preloader__donut"></div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <div class="pswp__share-modal pswp__share-modal--hidden pswp__single-tap">
+        <div class="pswp__share-tooltip"></div>
+      </div>
+
+      <button
+        class="pswp__button pswp__button--arrow--left"
+        title="Previous (arrow left)"
+      ></button>
+
+      <button
+        class="pswp__button pswp__button--arrow--right"
+        title="Next (arrow right)"
+      ></button>
+
+      <div class="pswp__caption">
+        <div class="pswp__caption__center"></div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<link rel="stylesheet" href="/css/photoswipe.min.css" />
+<link rel="stylesheet" href="/css/default-skin.min.css" />
+<script src="/js/photoswipe.min.js"></script>
+<script src="/js/photoswipe-ui-default.min.js"></script>
+
+<script>
+  function viewer_init() {
+    let pswpElement = document.querySelectorAll(".pswp")[0];
+    let $imgArr = document.querySelectorAll(
+      ".article-entry img:not(.reward-img)"
+    );
+
+    $imgArr.forEach(($em, i) => {
+      $em.onclick = () => {
+        // slider展开状态
+        // todo: 这样不好，后面改成状态
+        if (document.querySelector(".left-col.show")) return;
+        let items = [];
+        $imgArr.forEach(($em2, i2) => {
+          let img = $em2.getAttribute("data-idx", i2);
+          let src =
+            $em2.getAttribute("data-target") || $em2.getAttribute("src");
+          let title = $em2.getAttribute("alt");
+          // 获得原图尺寸
+          const image = new Image();
+          image.src = src;
+          items.push({
+            src: src,
+            w: image.width || $em2.width,
+            h: image.height || $em2.height,
+            title: title,
+          });
+        });
+        var gallery = new PhotoSwipe(pswpElement, PhotoSwipeUI_Default, items, {
+          index: parseInt(i),
+        });
+        gallery.init();
+      };
+    });
+  }
+  viewer_init();
+</script>
+ 
+<!-- MathJax -->
+ <script type="text/x-mathjax-config">
+  MathJax.Hub.Config({
+      tex2jax: {
+          inlineMath: [ ['$','$'], ["\\(","\\)"]  ],
+          processEscapes: true,
+          skipTags: ['script', 'noscript', 'style', 'textarea', 'pre', 'code']
+      }
+  });
+
+  MathJax.Hub.Queue(function() {
+      var all = MathJax.Hub.getAllJax(), i;
+      for(i=0; i < all.length; i += 1) {
+          all[i].SourceElement().parentNode.className += ' has-jax';
+      }
+  });
+</script>
+
+<script src="/js/MathJax.js"></script>
+<script src="/js/TeX-AMS-MML_HTMLorMML-full.js"></script>
+
+<script>
+  var ayerConfig = {
+    mathjax: true,
+  };
+</script>
+
+<!-- Katex -->
+
+<!-- busuanzi  -->
+
+<!-- ClickLove -->
+
+<!-- ClickBoom1 -->
+
+<!-- ClickBoom2 -->
+
+<!-- CodeCopy -->
+ 
+<link rel="stylesheet" href="/css/clipboard.css">
+ <script src="/js/clipboard.min.js"></script>
+<script>
+  function wait(callback, seconds) {
+    var timelag = null;
+    timelag = window.setTimeout(callback, seconds);
+  }
+  !(function (e, t, a) {
+    var initCopyCode = function () {
+      var copyHtml = "";
+      copyHtml += '<button class="btn-copy" data-clipboard-snippet="">';
+      copyHtml += '<i class="ri-file-copy-2-line"></i><span>COPY</span>';
+      copyHtml += "</button>";
+      $(".highlight .code pre").before(copyHtml);
+      $(".article pre code").before(copyHtml);
+      var clipboard = new ClipboardJS(".btn-copy", {
+        target: function (trigger) {
+          return trigger.nextElementSibling;
+        },
+      });
+      clipboard.on("success", function (e) {
+        let $btn = $(e.trigger);
+        $btn.addClass("copied");
+        let $icon = $($btn.find("i"));
+        $icon.removeClass("ri-file-copy-2-line");
+        $icon.addClass("ri-checkbox-circle-line");
+        let $span = $($btn.find("span"));
+        $span[0].innerText = "COPIED";
+
+        wait(function () {
+          // 等待两秒钟后恢复
+          $icon.removeClass("ri-checkbox-circle-line");
+          $icon.addClass("ri-file-copy-2-line");
+          $span[0].innerText = "COPY";
+        }, 2000);
+      });
+      clipboard.on("error", function (e) {
+        e.clearSelection();
+        let $btn = $(e.trigger);
+        $btn.addClass("copy-failed");
+        let $icon = $($btn.find("i"));
+        $icon.removeClass("ri-file-copy-2-line");
+        $icon.addClass("ri-time-line");
+        let $span = $($btn.find("span"));
+        $span[0].innerText = "COPY FAILED";
+
+        wait(function () {
+          // 等待两秒钟后恢复
+          $icon.removeClass("ri-time-line");
+          $icon.addClass("ri-file-copy-2-line");
+          $span[0].innerText = "COPY";
+        }, 2000);
+      });
+    };
+    initCopyCode();
+  })(window, document);
+</script>
+ 
+<!-- CanvasBackground -->
+
+<script>
+  if (window.mermaid) {
+    mermaid.initialize({ theme: "default" });
+  }
+</script>
+
+
+    
+    
+
+  </div>
+</body>
+
+</html>

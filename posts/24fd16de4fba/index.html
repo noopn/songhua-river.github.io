@@ -1,0 +1,593 @@
+<!DOCTYPE html>
+
+
+<html lang="zh-CN">
+  
+
+    <head>
+      <meta charset="utf-8" />
+       
+      <meta name="keywords" content="前端 web react" />
+       
+      <meta name="description" content="前端技术与生活。" />
+      
+      <meta
+        name="viewport"
+        content="width=device-width, initial-scale=1, maximum-scale=1"
+      />
+      <title>编码思路-工程化 |  四月八日</title>
+  <meta name="generator" content="hexo-theme-ayer">
+      
+      <link rel="shortcut icon" href="/favicon.ico" />
+       
+<link rel="stylesheet" href="/dist/main.css">
+ 
+<link rel="stylesheet" href="/css/fonts/remixicon.css">
+ 
+<link rel="stylesheet" href="/css/custom.css">
+ 
+      <script src="/js/pace.min.js"></script>
+       
+ 
+
+      <link rel="stylesheet" href="/css/bulma.min.css" />
+      <script src="/js/sweetalert2.min.js"></script>
+
+      <!-- mermaid -->
+      
+      <script src="https://cdn.staticfile.org/mermaid/8.14.0/mermaid.min.js"></script>
+      
+      <style>
+        .swal2-styled.swal2-confirm {
+          font-size: 1.6rem;
+        }
+      </style>
+    <!-- hexo injector head_end start -->
+<link rel="stylesheet" href="/css/katex.min.css">
+
+<link rel="stylesheet" href="/css/style.css">
+<!-- hexo injector head_end end --></head>
+  </html>
+</html>
+
+
+<body>
+  <div id="app">
+    
+      
+    <main class="content on">
+      <section class="outer">
+  <article
+  id="posts-devops/编码思路-工程化"
+  class="article article-type-posts"
+  itemscope
+  itemprop="blogPost"
+  data-scroll-reveal
+>
+  <div class="article-inner">
+    
+    <header class="article-header">
+       
+<h1 class="article-title sea-center" style="border-left:0" itemprop="name">
+  编码思路-工程化
+</h1>
+ 
+
+      
+    </header>
+     
+    <div class="article-meta">
+      <a href="/posts/24fd16de4fba/" class="article-date">
+  <time datetime="2023-10-15T01:06:07.000Z" itemprop="datePublished">2023-10-15</time>
+</a> 
+  <div class="article-category">
+    <a class="article-category-link" href="/categories/DevOps/">DevOps</a>
+  </div>
+  
+<div class="word_count">
+    <span class="post-time">
+        <span class="post-meta-item-icon">
+            <i class="ri-quill-pen-line"></i>
+            <span class="post-meta-item-text"> 字数统计:</span>
+            <span class="post-count">1k</span>
+        </span>
+    </span>
+
+    <span class="post-time">
+        &nbsp; | &nbsp;
+        <span class="post-meta-item-icon">
+            <i class="ri-book-open-line"></i>
+            <span class="post-meta-item-text"> 阅读时长≈</span>
+            <span class="post-count">4 分钟</span>
+        </span>
+    </span>
+</div>
+ 
+    </div>
+      
+    <div class="tocbot"></div>
+
+
+
+
+  
+    <div class="article-entry" itemprop="articleBody">
+       
+  <h4 id="检查包是否安装"><a href="#检查包是否安装" class="headerlink" title="检查包是否安装"></a>检查包是否安装</h4><figure class="highlight js"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">let</span> dir = __dirname;</span><br><span class="line"></span><br><span class="line"><span class="keyword">do</span> &#123;</span><br><span class="line">  <span class="keyword">if</span> (fs.<span class="title function_">statSync</span>(path.<span class="title function_">join</span>(dir, <span class="string">&quot;node_modules&quot;</span>, packageName)).<span class="title function_">isDirectory</span>()) &#123;</span><br><span class="line">    <span class="keyword">return</span> <span class="literal">true</span>;</span><br><span class="line">  &#125;</span><br><span class="line">&#125; <span class="keyword">while</span> (dir !== (dir = path.<span class="title function_">dirname</span>(dir)));</span><br><span class="line"></span><br><span class="line"><span class="comment">//require(&quot;module&quot;) 用于管理模块的接口</span></span><br><span class="line"><span class="keyword">for</span> (<span class="keyword">const</span> internalPath <span class="keyword">of</span> <span class="built_in">require</span>(<span class="string">&quot;module&quot;</span>).<span class="property">globalPaths</span>) &#123;</span><br><span class="line">  <span class="keyword">if</span> (fs.<span class="title function_">statSync</span>(path.<span class="title function_">join</span>(internalPath, packageName)).<span class="title function_">isDirectory</span>()) &#123;</span><br><span class="line">    <span class="keyword">return</span> <span class="literal">true</span>;</span><br><span class="line">  &#125;</span><br><span class="line">&#125;</span><br><span class="line"><span class="keyword">return</span> <span class="literal">false</span>;</span><br></pre></td></tr></table></figure>
+
+<h4 id="区分使用的是那种包管理器"><a href="#区分使用的是那种包管理器" class="headerlink" title="区分使用的是那种包管理器"></a>区分使用的是那种包管理器</h4><figure class="highlight js"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">if</span> (fs.<span class="title function_">existsSync</span>(path.<span class="title function_">resolve</span>(process.<span class="title function_">cwd</span>(), <span class="string">&quot;yarn.lock&quot;</span>))) &#123;</span><br><span class="line">  packageManager = <span class="string">&quot;yarn&quot;</span>;</span><br><span class="line">&#125; <span class="keyword">else</span> <span class="keyword">if</span> (fs.<span class="title function_">existsSync</span>(path.<span class="title function_">resolve</span>(process.<span class="title function_">cwd</span>(), <span class="string">&quot;pnpm-lock.yaml&quot;</span>))) &#123;</span><br><span class="line">  packageManager = <span class="string">&quot;pnpm&quot;</span>;</span><br><span class="line">&#125; <span class="keyword">else</span> &#123;</span><br><span class="line">  packageManager = <span class="string">&quot;npm&quot;</span>;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+<h4 id="原生的命令行交互-readLine"><a href="#原生的命令行交互-readLine" class="headerlink" title="原生的命令行交互 readLine"></a>原生的命令行交互 readLine</h4><figure class="highlight js"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">const</span> readLine = <span class="built_in">require</span>(<span class="string">&quot;readline&quot;</span>);</span><br><span class="line"></span><br><span class="line"><span class="keyword">const</span> questionInterface = readLine.<span class="title function_">createInterface</span>(&#123;</span><br><span class="line">  <span class="attr">input</span>: process.<span class="property">stdin</span>,</span><br><span class="line">  <span class="attr">output</span>: process.<span class="property">stderr</span>,</span><br><span class="line">&#125;);</span><br><span class="line"></span><br><span class="line">questionInterface.<span class="title function_">question</span>(<span class="string">&quot;question one (yes/no):&quot;</span>, <span class="function">(<span class="params">answer</span>) =&gt;</span> &#123;</span><br><span class="line">  <span class="keyword">if</span> (answer.<span class="title function_">startsWith</span>(<span class="string">&quot;y&quot;</span>)) &#123;</span><br><span class="line">  &#125;</span><br><span class="line">&#125;);</span><br></pre></td></tr></table></figure>
+
+<h2 id="子进程的-spawn-和-exec-函数之间的区别"><a href="#子进程的-spawn-和-exec-函数之间的区别" class="headerlink" title="子进程的 spawn 和 exec 函数之间的区别"></a>子进程的 spawn 和 exec 函数之间的区别</h2><p>Node.js 的子进程模块（child_process）有两个函数 spawn 和 exec，使用这两个函数，我们可以启动一个子进程来执行系统中的其他程序。刚接触 child_process 的人可能会问，为什么做同一件事会有两个函数，以及应该使用哪个函数。我将解释 spawn 和 exec 之间的区别，以帮助你决定何时使用哪个函数。</p>
+<p>child_process.spawn 和 child_process.exec 的最大区别在于它们的返回值–spawn 返回一个流，而 exec 返回一个缓冲区。</p>
+<p>child_process.spawn 返回一个包含 stdout 和 stderr 流的对象。您可以点击 stdout 流来读取子进程发回 Node 的数据。作为一个流，stdout 具有流所具有的 “data”（数据）、”end”（结束）和其他事件。当您希望子进程向 Node 返回大量数据（如图像处理、读取二进制数据等）时，最好使用 spawn。</p>
+<p>child_process.spawn 是 “异步 asynchronous”（异步不同步）的，这意味着一旦子进程开始执行，它就会以流的形式从子进程发回数据。</p>
+<p>这里有一个例子，我用 spawn 读取了 Node 的 curl 请求结果。</p>
+<p>child_process.exec 返回子进程输出的整个缓冲区。默认情况下，缓冲区大小为 200k。如果子进程返回的数据超过该值，程序就会崩溃，并显示错误信息 “Error: maxBuffer exceeded”（错误：超过最大缓冲区）。你可以在执行选项中设置更大的缓冲区大小来解决这个问题。但你不应该这样做，因为 exec 并不适合向 Node 返回巨大缓冲区的进程。你应该使用 spawn 来解决这个问题。那么，exec 用来做什么呢？用它来运行返回结果状态而不是数据的程序。</p>
+<p>child_process.exec 是 “同步异步 “的，也就是说，虽然 exec 是异步的，但它会等待子进程结束，并尝试一次性返回所有缓冲数据。如果 exec 的缓冲区大小设置得不够大，就会出现 “maxBuffer exceeded”（超过最大缓冲区）错误，导致执行失败。</p>
+<p>请看这里的一个示例，我使用 exec 执行 wget 下载文件，并向 Node 更新执行状态。</p>
+<p>这就是 Node 的子进程 span 和 exec 之间的区别。当你希望子进程向 Node 返回大量二进制数据时，请使用 spawn；当你希望子进程返回简单的状态信息时，请使用 exec。</p>
+<figure class="highlight js"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">const</span> cp = <span class="built_in">require</span>(<span class="string">&quot;child_process&quot;</span>);</span><br><span class="line"><span class="keyword">new</span> <span class="title class_">Promise</span>(<span class="function">(<span class="params">resolve, reject</span>) =&gt;</span> &#123;</span><br><span class="line">  <span class="keyword">const</span> executedCommand = cp.<span class="title function_">spawn</span>(<span class="string">&quot;echo 1&quot;</span>, [], &#123;</span><br><span class="line">    <span class="attr">stdio</span>: <span class="string">&quot;inherit&quot;</span>,</span><br><span class="line">    <span class="attr">shell</span>: <span class="literal">true</span>,</span><br><span class="line">  &#125;);</span><br><span class="line"></span><br><span class="line">  executedCommand.<span class="title function_">on</span>(<span class="string">&quot;error&quot;</span>, reject);</span><br><span class="line"></span><br><span class="line">  executedCommand.<span class="title function_">on</span>(<span class="string">&quot;exit&quot;</span>, <span class="function">(<span class="params">code</span>) =&gt;</span> &#123;</span><br><span class="line">    <span class="keyword">if</span> (code === <span class="number">0</span>) <span class="title function_">resolve</span>();</span><br><span class="line">  &#125;);</span><br><span class="line">&#125;).<span class="title function_">then</span>(<span class="function">() =&gt;</span> &#123;&#125;);</span><br></pre></td></tr></table></figure>
+
+<h4 id="区分包的模块化方案"><a href="#区分包的模块化方案" class="headerlink" title="区分包的模块化方案"></a>区分包的模块化方案</h4><figure class="highlight js"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">const</span> pkgPath = <span class="built_in">require</span>.<span class="title function_">resolve</span>(<span class="string">`<span class="subst">$&#123;packageName&#125;</span>/package.json`</span>);</span><br><span class="line"><span class="keyword">const</span> pkg = <span class="built_in">require</span>(pkgPath);</span><br><span class="line"><span class="keyword">if</span> (pkg.<span class="property">type</span> === <span class="string">&quot;module&quot;</span> || <span class="regexp">/\.mjs/i</span>.<span class="title function_">test</span>(pkg.<span class="property">bin</span>[name])) &#123;</span><br><span class="line">  <span class="title function_">import</span>(path.<span class="title function_">resolve</span>(path.<span class="title function_">dirname</span>(pkgPath), pkg.<span class="property">bin</span>[name])).<span class="title function_">catch</span>();</span><br><span class="line">&#125; <span class="keyword">else</span> &#123;</span><br><span class="line">  <span class="built_in">require</span>(path.<span class="title function_">resolve</span>(path.<span class="title function_">dirname</span>(pkgPath), pkg.<span class="property">bin</span>[name]));</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+<h4 id="检查两个命令是否相似"><a href="#检查两个命令是否相似" class="headerlink" title="检查两个命令是否相似"></a>检查两个命令是否相似</h4><p>(莱文斯坦距离)[<a target="_blank" rel="noopener" href="https://zh.wikipedia.org/wiki/%E8%90%8A%E6%96%87%E6%96%AF%E5%9D%A6%E8%B7%9D%E9%9B%A2]">https://zh.wikipedia.org/wiki/%E8%90%8A%E6%96%87%E6%96%AF%E5%9D%A6%E8%B7%9D%E9%9B%A2]</a> (fastest-levenshtein)[<a target="_blank" rel="noopener" href="https://github.com/ka-weihe/fastest-levenshtein]">https://github.com/ka-weihe/fastest-levenshtein]</a></p>
+<h4 id="获取某个包的最新版本"><a href="#获取某个包的最新版本" class="headerlink" title="获取某个包的最新版本"></a>获取某个包的最新版本</h4><p>推荐使用 cross-spawn</p>
+<figure class="highlight js"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">const</span> cp = <span class="built_in">require</span>(<span class="string">&quot;child_process&quot;</span>);</span><br><span class="line"></span><br><span class="line"><span class="keyword">const</span> &#123; output &#125; = cp.<span class="title function_">spawnSync</span>(</span><br><span class="line">  <span class="string">&quot;npm.cmd&quot;</span>,</span><br><span class="line">  [<span class="string">&quot;view&quot;</span>, <span class="string">&quot;react@latest&quot;</span>, <span class="string">&quot;version&quot;</span>],</span><br><span class="line">  &#123;</span><br><span class="line">    <span class="attr">stdio</span>: <span class="string">&quot;pipe&quot;</span>,</span><br><span class="line">  &#125;</span><br><span class="line">);</span><br><span class="line"><span class="variable language_">console</span>.<span class="title function_">log</span>(output.<span class="title function_">toString</span>());</span><br></pre></td></tr></table></figure>
+ 
+      <!-- reward -->
+      
+      <div id="reword-out">
+        <div id="reward-btn">
+          打赏
+        </div>
+      </div>
+      
+    </div>
+    
+
+    <!-- copyright -->
+    
+    <div class="declare">
+      <ul class="post-copyright">
+        <li>
+          <i class="ri-copyright-line"></i>
+          <strong>版权声明： </strong>
+          
+          本博客所有文章除特别声明外，著作权归作者所有。转载请注明出处！
+          
+        </li>
+      </ul>
+    </div>
+    
+    <footer class="article-footer">
+       
+  <ul class="article-tag-list" itemprop="keywords"><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/DevOps/" rel="tag">DevOps</a></li></ul>
+
+    </footer>
+  </div>
+
+   
+  <nav class="article-nav">
+    
+      <a href="/posts/042375f2ced5/" class="article-nav-link">
+        <strong class="article-nav-caption">上一篇</strong>
+        <div class="article-nav-title">
+          
+            web中的拦截技巧
+          
+        </div>
+      </a>
+    
+    
+      <a href="/posts/fcb40a9ae42d/" class="article-nav-link">
+        <strong class="article-nav-caption">下一篇</strong>
+        <div class="article-nav-title">v8引擎相关知识</div>
+      </a>
+    
+  </nav>
+
+  
+   
+<div class="gitalk" id="gitalk-container"></div>
+
+<link rel="stylesheet" href="https://cdn.staticfile.org/gitalk/1.7.2/gitalk.min.css">
+
+
+<script src="https://cdn.staticfile.org/gitalk/1.7.2/gitalk.min.js"></script>
+
+
+<script src="https://cdn.staticfile.org/blueimp-md5/2.19.0/js/md5.min.js"></script>
+
+<script type="text/javascript">
+  var gitalk = new Gitalk({
+    clientID: 'bce2317b25da7c3c18f6',
+    clientSecret: 'e0ab868ca9054234798be82c2b1c0c9dd8632307',
+    repo: 'noopn.github.io',
+    owner: 'noopn',
+    admin: ['noopn'],
+    // id: location.pathname,      // Ensure uniqueness and length less than 50
+    id: md5(location.pathname),
+    distractionFreeMode: false,  // Facebook-like distraction free mode
+    pagerDirection: 'last'
+  })
+
+  gitalk.render('gitalk-container')
+</script>
+
+     
+</article>
+
+</section>
+      <footer class="footer">
+  <div class="outer">
+    <ul>
+      <li>
+        Copyrights &copy;
+        2015-2025
+        <i class="ri-heart-fill heart_icon"></i> SunZhiqi
+      </li>
+    </ul>
+    <ul>
+      <li>
+        
+      </li>
+    </ul>
+    <ul>
+      <li>
+        
+      </li>
+    </ul>
+    <ul>
+      
+    </ul>
+    <ul>
+      
+    </ul>
+    <ul>
+      <li>
+        <!-- cnzz统计 -->
+        
+      </li>
+    </ul>
+  </div>
+</footer>    
+    </main>
+    <div class="float_btns">
+      <div class="totop" id="totop">
+  <i class="ri-arrow-up-line"></i>
+</div>
+
+    </div>
+    <aside class="sidebar on">
+      <button class="navbar-toggle"></button>
+<nav class="navbar">
+  
+  <div class="logo">
+    <a href="/"><img src="/images/ayer-side.png" alt="四月八日"></a>
+  </div>
+  
+  <ul class="nav nav-main">
+    
+    <li class="nav-item">
+      <a class="nav-item-link" href="/">主页</a>
+    </li>
+    
+    <li class="nav-item">
+      <a class="nav-item-link" href="/archives">归档</a>
+    </li>
+    
+    <li class="nav-item">
+      <a class="nav-item-link" href="/categories">分类</a>
+    </li>
+    
+    <li class="nav-item">
+      <a class="nav-item-link" href="/tags">标签</a>
+    </li>
+    
+  </ul>
+</nav>
+<nav class="navbar navbar-bottom">
+  <ul class="nav">
+    <li class="nav-item">
+      
+      <a class="nav-item-link nav-item-search"  title="搜索">
+        <i class="ri-search-line"></i>
+      </a>
+      
+      
+    </li>
+  </ul>
+</nav>
+<div class="search-form-wrap">
+  <div class="local-search local-search-plugin">
+  <input type="search" id="local-search-input" class="local-search-input" placeholder="Search...">
+  <div id="local-search-result" class="local-search-result"></div>
+</div>
+</div>
+    </aside>
+    <div id="mask"></div>
+
+<!-- #reward -->
+<div id="reward">
+  <span class="close"><i class="ri-close-line"></i></span>
+  <p class="reward-p"><i class="ri-cup-line"></i>此时无声胜有声！</p>
+  <div class="reward-box">
+    
+    <div class="reward-item">
+      <img class="reward-img" src="/images/alipay.jpg">
+      <span class="reward-type">支付宝</span>
+    </div>
+    
+    
+    <div class="reward-item">
+      <img class="reward-img" src="/images/wechat.jpg">
+      <span class="reward-type">微信</span>
+    </div>
+    
+  </div>
+</div>
+    
+<script src="/js/jquery-3.6.0.min.js"></script>
+ 
+<script src="/js/lazyload.min.js"></script>
+
+<!-- Tocbot -->
+ 
+<script src="/js/tocbot.min.js"></script>
+
+<script>
+  tocbot.init({
+    tocSelector: ".tocbot",
+    contentSelector: ".article-entry",
+    headingSelector: "h1, h2, h3, h4, h5, h6",
+    hasInnerContainers: true,
+    scrollSmooth: true,
+    scrollContainer: "main",
+    positionFixedSelector: ".tocbot",
+    positionFixedClass: "is-position-fixed",
+    fixedSidebarOffset: "auto",
+  });
+</script>
+
+<script src="/js/jquery.modal.min.js"></script>
+<link rel="stylesheet" href="/css/jquery.modal.min.css" />
+<script src="/js/jquery.justifiedGallery.min.js"></script>
+
+<script src="/dist/main.js"></script>
+
+<!-- ImageViewer -->
+ <!-- Root element of PhotoSwipe. Must have class pswp. -->
+<div class="pswp" tabindex="-1" role="dialog" aria-hidden="true">
+  <!-- Background of PhotoSwipe. 
+         It's a separate element as animating opacity is faster than rgba(). -->
+  <div class="pswp__bg"></div>
+
+  <!-- Slides wrapper with overflow:hidden. -->
+  <div class="pswp__scroll-wrap">
+    <!-- Container that holds slides. 
+            PhotoSwipe keeps only 3 of them in the DOM to save memory.
+            Don't modify these 3 pswp__item elements, data is added later on. -->
+    <div class="pswp__container">
+      <div class="pswp__item"></div>
+      <div class="pswp__item"></div>
+      <div class="pswp__item"></div>
+    </div>
+
+    <!-- Default (PhotoSwipeUI_Default) interface on top of sliding area. Can be changed. -->
+    <div class="pswp__ui pswp__ui--hidden">
+      <div class="pswp__top-bar">
+        <!--  Controls are self-explanatory. Order can be changed. -->
+
+        <div class="pswp__counter"></div>
+
+        <button
+          class="pswp__button pswp__button--close"
+          title="Close (Esc)"
+        ></button>
+
+        <button
+          class="pswp__button pswp__button--share"
+          style="display: none"
+          title="Share"
+        ></button>
+
+        <button
+          class="pswp__button pswp__button--fs"
+          title="Toggle fullscreen"
+        ></button>
+
+        <button
+          class="pswp__button pswp__button--zoom"
+          title="Zoom in/out"
+        ></button>
+
+        <!-- Preloader demo http://codepen.io/dimsemenov/pen/yyBWoR -->
+        <!-- element will get class pswp__preloader--active when preloader is running -->
+        <div class="pswp__preloader">
+          <div class="pswp__preloader__icn">
+            <div class="pswp__preloader__cut">
+              <div class="pswp__preloader__donut"></div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <div class="pswp__share-modal pswp__share-modal--hidden pswp__single-tap">
+        <div class="pswp__share-tooltip"></div>
+      </div>
+
+      <button
+        class="pswp__button pswp__button--arrow--left"
+        title="Previous (arrow left)"
+      ></button>
+
+      <button
+        class="pswp__button pswp__button--arrow--right"
+        title="Next (arrow right)"
+      ></button>
+
+      <div class="pswp__caption">
+        <div class="pswp__caption__center"></div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<link rel="stylesheet" href="/css/photoswipe.min.css" />
+<link rel="stylesheet" href="/css/default-skin.min.css" />
+<script src="/js/photoswipe.min.js"></script>
+<script src="/js/photoswipe-ui-default.min.js"></script>
+
+<script>
+  function viewer_init() {
+    let pswpElement = document.querySelectorAll(".pswp")[0];
+    let $imgArr = document.querySelectorAll(
+      ".article-entry img:not(.reward-img)"
+    );
+
+    $imgArr.forEach(($em, i) => {
+      $em.onclick = () => {
+        // slider展开状态
+        // todo: 这样不好，后面改成状态
+        if (document.querySelector(".left-col.show")) return;
+        let items = [];
+        $imgArr.forEach(($em2, i2) => {
+          let img = $em2.getAttribute("data-idx", i2);
+          let src =
+            $em2.getAttribute("data-target") || $em2.getAttribute("src");
+          let title = $em2.getAttribute("alt");
+          // 获得原图尺寸
+          const image = new Image();
+          image.src = src;
+          items.push({
+            src: src,
+            w: image.width || $em2.width,
+            h: image.height || $em2.height,
+            title: title,
+          });
+        });
+        var gallery = new PhotoSwipe(pswpElement, PhotoSwipeUI_Default, items, {
+          index: parseInt(i),
+        });
+        gallery.init();
+      };
+    });
+  }
+  viewer_init();
+</script>
+ 
+<!-- MathJax -->
+ <script type="text/x-mathjax-config">
+  MathJax.Hub.Config({
+      tex2jax: {
+          inlineMath: [ ['$','$'], ["\\(","\\)"]  ],
+          processEscapes: true,
+          skipTags: ['script', 'noscript', 'style', 'textarea', 'pre', 'code']
+      }
+  });
+
+  MathJax.Hub.Queue(function() {
+      var all = MathJax.Hub.getAllJax(), i;
+      for(i=0; i < all.length; i += 1) {
+          all[i].SourceElement().parentNode.className += ' has-jax';
+      }
+  });
+</script>
+
+<script src="/js/MathJax.js"></script>
+<script src="/js/TeX-AMS-MML_HTMLorMML-full.js"></script>
+
+<script>
+  var ayerConfig = {
+    mathjax: true,
+  };
+</script>
+
+<!-- Katex -->
+
+<!-- busuanzi  -->
+
+<!-- ClickLove -->
+
+<!-- ClickBoom1 -->
+
+<!-- ClickBoom2 -->
+
+<!-- CodeCopy -->
+ 
+<link rel="stylesheet" href="/css/clipboard.css">
+ <script src="/js/clipboard.min.js"></script>
+<script>
+  function wait(callback, seconds) {
+    var timelag = null;
+    timelag = window.setTimeout(callback, seconds);
+  }
+  !(function (e, t, a) {
+    var initCopyCode = function () {
+      var copyHtml = "";
+      copyHtml += '<button class="btn-copy" data-clipboard-snippet="">';
+      copyHtml += '<i class="ri-file-copy-2-line"></i><span>COPY</span>';
+      copyHtml += "</button>";
+      $(".highlight .code pre").before(copyHtml);
+      $(".article pre code").before(copyHtml);
+      var clipboard = new ClipboardJS(".btn-copy", {
+        target: function (trigger) {
+          return trigger.nextElementSibling;
+        },
+      });
+      clipboard.on("success", function (e) {
+        let $btn = $(e.trigger);
+        $btn.addClass("copied");
+        let $icon = $($btn.find("i"));
+        $icon.removeClass("ri-file-copy-2-line");
+        $icon.addClass("ri-checkbox-circle-line");
+        let $span = $($btn.find("span"));
+        $span[0].innerText = "COPIED";
+
+        wait(function () {
+          // 等待两秒钟后恢复
+          $icon.removeClass("ri-checkbox-circle-line");
+          $icon.addClass("ri-file-copy-2-line");
+          $span[0].innerText = "COPY";
+        }, 2000);
+      });
+      clipboard.on("error", function (e) {
+        e.clearSelection();
+        let $btn = $(e.trigger);
+        $btn.addClass("copy-failed");
+        let $icon = $($btn.find("i"));
+        $icon.removeClass("ri-file-copy-2-line");
+        $icon.addClass("ri-time-line");
+        let $span = $($btn.find("span"));
+        $span[0].innerText = "COPY FAILED";
+
+        wait(function () {
+          // 等待两秒钟后恢复
+          $icon.removeClass("ri-time-line");
+          $icon.addClass("ri-file-copy-2-line");
+          $span[0].innerText = "COPY";
+        }, 2000);
+      });
+    };
+    initCopyCode();
+  })(window, document);
+</script>
+ 
+<!-- CanvasBackground -->
+
+<script>
+  if (window.mermaid) {
+    mermaid.initialize({ theme: "default" });
+  }
+</script>
+
+
+    
+    
+
+  </div>
+</body>
+
+</html>

@@ -112,6 +112,80 @@
     
     
     <article
+  id="posts-devops/编码思路-工程化"
+  class="article article-type-posts"
+  itemscope
+  itemprop="blogPost"
+  data-scroll-reveal
+>
+  <div class="article-inner">
+    
+    <header class="article-header">
+       
+<h2 itemprop="name">
+  <a class="article-title" href="/posts/24fd16de4fba/"
+    >编码思路-工程化</a> 
+</h2>
+ 
+
+      
+    </header>
+     
+    <div class="article-meta">
+      <a href="/posts/24fd16de4fba/" class="article-date">
+  <time datetime="2023-10-15T01:06:07.000Z" itemprop="datePublished">2023-10-15</time>
+</a> 
+  <div class="article-category">
+    <a class="article-category-link" href="/categories/DevOps/">DevOps</a>
+  </div>
+   
+    </div>
+      
+    <div class="article-entry" itemprop="articleBody">
+       
+  <h4 id="检查包是否安装"><a href="#检查包是否安装" class="headerlink" title="检查包是否安装"></a>检查包是否安装</h4><figure class="highlight js"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">let</span> dir = __dirname;</span><br><span class="line"></span><br><span class="line"><span class="keyword">do</span> &#123;</span><br><span class="line">  <span class="keyword">if</span> (fs.<span class="title function_">statSync</span>(path.<span class="title function_">join</span>(dir, <span class="string">&quot;node_modules&quot;</span>, packageName)).<span class="title function_">isDirectory</span>()) &#123;</span><br><span class="line">    <span class="keyword">return</span> <span class="literal">true</span>;</span><br><span class="line">  &#125;</span><br><span class="line">&#125; <span class="keyword">while</span> (dir !== (dir = path.<span class="title function_">dirname</span>(dir)));</span><br><span class="line"></span><br><span class="line"><span class="comment">//require(&quot;module&quot;) 用于管理模块的接口</span></span><br><span class="line"><span class="keyword">for</span> (<span class="keyword">const</span> internalPath <span class="keyword">of</span> <span class="built_in">require</span>(<span class="string">&quot;module&quot;</span>).<span class="property">globalPaths</span>) &#123;</span><br><span class="line">  <span class="keyword">if</span> (fs.<span class="title function_">statSync</span>(path.<span class="title function_">join</span>(internalPath, packageName)).<span class="title function_">isDirectory</span>()) &#123;</span><br><span class="line">    <span class="keyword">return</span> <span class="literal">true</span>;</span><br><span class="line">  &#125;</span><br><span class="line">&#125;</span><br><span class="line"><span class="keyword">return</span> <span class="literal">false</span>;</span><br></pre></td></tr></table></figure>
+
+<h4 id="区分使用的是那种包管理器"><a href="#区分使用的是那种包管理器" class="headerlink" title="区分使用的是那种包管理器"></a>区分使用的是那种包管理器</h4><figure class="highlight js"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">if</span> (fs.<span class="title function_">existsSync</span>(path.<span class="title function_">resolve</span>(process.<span class="title function_">cwd</span>(), <span class="string">&quot;yarn.lock&quot;</span>))) &#123;</span><br><span class="line">  packageManager = <span class="string">&quot;yarn&quot;</span>;</span><br><span class="line">&#125; <span class="keyword">else</span> <span class="keyword">if</span> (fs.<span class="title function_">existsSync</span>(path.<span class="title function_">resolve</span>(process.<span class="title function_">cwd</span>(), <span class="string">&quot;pnpm-lock.yaml&quot;</span>))) &#123;</span><br><span class="line">  packageManager = <span class="string">&quot;pnpm&quot;</span>;</span><br><span class="line">&#125; <span class="keyword">else</span> &#123;</span><br><span class="line">  packageManager = <span class="string">&quot;npm&quot;</span>;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+<h4 id="原生的命令行交互-readLine"><a href="#原生的命令行交互-readLine" class="headerlink" title="原生的命令行交互 readLine"></a>原生的命令行交互 readLine</h4><figure class="highlight js"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">const</span> readLine = <span class="built_in">require</span>(<span class="string">&quot;readline&quot;</span>);</span><br><span class="line"></span><br><span class="line"><span class="keyword">const</span> questionInterface = readLine.<span class="title function_">createInterface</span>(&#123;</span><br><span class="line">  <span class="attr">input</span>: process.<span class="property">stdin</span>,</span><br><span class="line">  <span class="attr">output</span>: process.<span class="property">stderr</span>,</span><br><span class="line">&#125;);</span><br><span class="line"></span><br><span class="line">questionInterface.<span class="title function_">question</span>(<span class="string">&quot;question one (yes/no):&quot;</span>, <span class="function">(<span class="params">answer</span>) =&gt;</span> &#123;</span><br><span class="line">  <span class="keyword">if</span> (answer.<span class="title function_">startsWith</span>(<span class="string">&quot;y&quot;</span>)) &#123;</span><br><span class="line">  &#125;</span><br><span class="line">&#125;);</span><br></pre></td></tr></table></figure>
+
+<h2 id="子进程的-spawn-和-exec-函数之间的区别"><a href="#子进程的-spawn-和-exec-函数之间的区别" class="headerlink" title="子进程的 spawn 和 exec 函数之间的区别"></a>子进程的 spawn 和 exec 函数之间的区别</h2><p>Node.js 的子进程模块（child_process）有两个函数 spawn 和 exec，使用这两个函数，我们可以启动一个子进程来执行系统中的其他程序。刚接触 child_process 的人可能会问，为什么做同一件事会有两个函数，以及应该使用哪个函数。我将解释 spawn 和 exec 之间的区别，以帮助你决定何时使用哪个函数。</p>
+<p>child_process.spawn 和 child_process.exec 的最大区别在于它们的返回值–spawn 返回一个流，而 exec 返回一个缓冲区。</p>
+<p>child_process.spawn 返回一个包含 stdout 和 stderr 流的对象。您可以点击 stdout 流来读取子进程发回 Node 的数据。作为一个流，stdout 具有流所具有的 “data”（数据）、”end”（结束）和其他事件。当您希望子进程向 Node 返回大量数据（如图像处理、读取二进制数据等）时，最好使用 spawn。</p>
+<p>child_process.spawn 是 “异步 asynchronous”（异步不同步）的，这意味着一旦子进程开始执行，它就会以流的形式从子进程发回数据。</p>
+<p>这里有一个例子，我用 spawn 读取了 Node 的 curl 请求结果。</p>
+<p>child_process.exec 返回子进程输出的整个缓冲区。默认情况下，缓冲区大小为 200k。如果子进程返回的数据超过该值，程序就会崩溃，并显示错误信息 “Error: maxBuffer exceeded”（错误：超过最大缓冲区）。你可以在执行选项中设置更大的缓冲区大小来解决这个问题。但你不应该这样做，因为 exec 并不适合向 Node 返回巨大缓冲区的进程。你应该使用 spawn 来解决这个问题。那么，exec 用来做什么呢？用它来运行返回结果状态而不是数据的程序。</p>
+<p>child_process.exec 是 “同步异步 “的，也就是说，虽然 exec 是异步的，但它会等待子进程结束，并尝试一次性返回所有缓冲数据。如果 exec 的缓冲区大小设置得不够大，就会出现 “maxBuffer exceeded”（超过最大缓冲区）错误，导致执行失败。</p>
+<p>请看这里的一个示例，我使用 exec 执行 wget 下载文件，并向 Node 更新执行状态。</p>
+<p>这就是 Node 的子进程 span 和 exec 之间的区别。当你希望子进程向 Node 返回大量二进制数据时，请使用 spawn；当你希望子进程返回简单的状态信息时，请使用 exec。</p>
+<figure class="highlight js"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">const</span> cp = <span class="built_in">require</span>(<span class="string">&quot;child_process&quot;</span>);</span><br><span class="line"><span class="keyword">new</span> <span class="title class_">Promise</span>(<span class="function">(<span class="params">resolve, reject</span>) =&gt;</span> &#123;</span><br><span class="line">  <span class="keyword">const</span> executedCommand = cp.<span class="title function_">spawn</span>(<span class="string">&quot;echo 1&quot;</span>, [], &#123;</span><br><span class="line">    <span class="attr">stdio</span>: <span class="string">&quot;inherit&quot;</span>,</span><br><span class="line">    <span class="attr">shell</span>: <span class="literal">true</span>,</span><br><span class="line">  &#125;);</span><br><span class="line"></span><br><span class="line">  executedCommand.<span class="title function_">on</span>(<span class="string">&quot;error&quot;</span>, reject);</span><br><span class="line"></span><br><span class="line">  executedCommand.<span class="title function_">on</span>(<span class="string">&quot;exit&quot;</span>, <span class="function">(<span class="params">code</span>) =&gt;</span> &#123;</span><br><span class="line">    <span class="keyword">if</span> (code === <span class="number">0</span>) <span class="title function_">resolve</span>();</span><br><span class="line">  &#125;);</span><br><span class="line">&#125;).<span class="title function_">then</span>(<span class="function">() =&gt;</span> &#123;&#125;);</span><br></pre></td></tr></table></figure>
+
+<h4 id="区分包的模块化方案"><a href="#区分包的模块化方案" class="headerlink" title="区分包的模块化方案"></a>区分包的模块化方案</h4><figure class="highlight js"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">const</span> pkgPath = <span class="built_in">require</span>.<span class="title function_">resolve</span>(<span class="string">`<span class="subst">$&#123;packageName&#125;</span>/package.json`</span>);</span><br><span class="line"><span class="keyword">const</span> pkg = <span class="built_in">require</span>(pkgPath);</span><br><span class="line"><span class="keyword">if</span> (pkg.<span class="property">type</span> === <span class="string">&quot;module&quot;</span> || <span class="regexp">/\.mjs/i</span>.<span class="title function_">test</span>(pkg.<span class="property">bin</span>[name])) &#123;</span><br><span class="line">  <span class="title function_">import</span>(path.<span class="title function_">resolve</span>(path.<span class="title function_">dirname</span>(pkgPath), pkg.<span class="property">bin</span>[name])).<span class="title function_">catch</span>();</span><br><span class="line">&#125; <span class="keyword">else</span> &#123;</span><br><span class="line">  <span class="built_in">require</span>(path.<span class="title function_">resolve</span>(path.<span class="title function_">dirname</span>(pkgPath), pkg.<span class="property">bin</span>[name]));</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+<h4 id="检查两个命令是否相似"><a href="#检查两个命令是否相似" class="headerlink" title="检查两个命令是否相似"></a>检查两个命令是否相似</h4><p>(莱文斯坦距离)[<a target="_blank" rel="noopener" href="https://zh.wikipedia.org/wiki/%E8%90%8A%E6%96%87%E6%96%AF%E5%9D%A6%E8%B7%9D%E9%9B%A2]">https://zh.wikipedia.org/wiki/%E8%90%8A%E6%96%87%E6%96%AF%E5%9D%A6%E8%B7%9D%E9%9B%A2]</a> (fastest-levenshtein)[<a target="_blank" rel="noopener" href="https://github.com/ka-weihe/fastest-levenshtein]">https://github.com/ka-weihe/fastest-levenshtein]</a></p>
+<h4 id="获取某个包的最新版本"><a href="#获取某个包的最新版本" class="headerlink" title="获取某个包的最新版本"></a>获取某个包的最新版本</h4><p>推荐使用 cross-spawn</p>
+<figure class="highlight js"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">const</span> cp = <span class="built_in">require</span>(<span class="string">&quot;child_process&quot;</span>);</span><br><span class="line"></span><br><span class="line"><span class="keyword">const</span> &#123; output &#125; = cp.<span class="title function_">spawnSync</span>(</span><br><span class="line">  <span class="string">&quot;npm.cmd&quot;</span>,</span><br><span class="line">  [<span class="string">&quot;view&quot;</span>, <span class="string">&quot;react@latest&quot;</span>, <span class="string">&quot;version&quot;</span>],</span><br><span class="line">  &#123;</span><br><span class="line">    <span class="attr">stdio</span>: <span class="string">&quot;pipe&quot;</span>,</span><br><span class="line">  &#125;</span><br><span class="line">);</span><br><span class="line"><span class="variable language_">console</span>.<span class="title function_">log</span>(output.<span class="title function_">toString</span>());</span><br></pre></td></tr></table></figure>
+ 
+      <!-- reward -->
+      
+    </div>
+    
+
+    <!-- copyright -->
+    
+    <footer class="article-footer">
+       
+  <ul class="article-tag-list" itemprop="keywords"><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/DevOps/" rel="tag">DevOps</a></li></ul>
+
+    </footer>
+  </div>
+
+   
+    
+</article>
+
+    
+    <article
   id="posts-broswer/v8引擎相关知识"
   class="article article-type-posts"
   itemscope
@@ -1075,80 +1149,13 @@ sequenceDiagram
 </article>
 
     
-    <article
-  id="posts-javascript/canvas画板"
-  class="article article-type-posts"
-  itemscope
-  itemprop="blogPost"
-  data-scroll-reveal
->
-  <div class="article-inner">
-    
-    <header class="article-header">
-       
-<h2 itemprop="name">
-  <a class="article-title" href="/posts/35b9815417e8/"
-    >canvas 画板</a> 
-</h2>
- 
-
-      
-    </header>
-     
-    <div class="article-meta">
-      <a href="/posts/35b9815417e8/" class="article-date">
-  <time datetime="2023-01-31T13:51:37.000Z" itemprop="datePublished">2023-01-31</time>
-</a> 
-  <div class="article-category">
-    <a class="article-category-link" href="/categories/JavaScript/">JavaScript</a>
-  </div>
-   
-    </div>
-      
-    <div class="article-entry" itemprop="articleBody">
-       
-  <h4 id="橡皮擦"><a href="#橡皮擦" class="headerlink" title="橡皮擦"></a>橡皮擦</h4><p>依赖于 ctx.globalCompositeOperation 配置，有以下可选项</p>
-<p>source-over（默认值）：新图形绘制在现有图形上方。<br>source-in：新图形仅在与现有图形重叠的区域内绘制。<br>source-out：新图形仅在与现有图形不重叠的区域内绘制。<br>source-atop：新图形绘制在现有图形上方，但只在它们重叠的区域内可见。<br>destination-over：新图形绘制在现有图形下方。<br>destination-in：现有图形仅保留与新图形重叠的部分。<br>destination-out：现有图形中与新图形不重叠的部分保留。<br>destination-atop：现有图形绘制在新图形上方，但只在它们重叠的区域内可见。<br>lighter：重叠区域的颜色通过加法混合。<br>copy：只有新图形可见，现有内容被清除。<br>xor：重叠区域变透明。</p>
-<figure class="highlight js"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br></pre></td><td class="code"><pre><span class="line">ctx.<span class="property">globalCompositeOperation</span> = <span class="string">&quot;destination-out&quot;</span>;</span><br><span class="line"><span class="comment">// 线宽影响橡皮擦大小</span></span><br><span class="line">ctx.<span class="property">lineWidth</span> = <span class="number">10</span>;</span><br><span class="line">ctx.<span class="property">strokeStyle</span> = <span class="string">&quot;red&quot;</span>;</span><br><span class="line">ctx.<span class="title function_">lineTo</span>(x, y);</span><br><span class="line">ctx.<span class="title function_">stroke</span>();</span><br></pre></td></tr></table></figure>
-
-<h4 id="使用-rfa-逐帧绘制"><a href="#使用-rfa-逐帧绘制" class="headerlink" title="使用 rfa 逐帧绘制"></a>使用 rfa 逐帧绘制</h4><figure class="highlight ts"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">const</span> queue = [];</span><br><span class="line"><span class="keyword">const</span> <span class="title function_">draw</span> = (<span class="params"></span>) =&gt; &#123;</span><br><span class="line">  <span class="title function_">requestAnimationFrame</span>(<span class="function">() =&gt;</span> &#123;</span><br><span class="line">    <span class="keyword">let</span> len = queue.<span class="property">length</span>;</span><br><span class="line">    <span class="keyword">for</span> (<span class="keyword">var</span> i = <span class="number">0</span>; i &lt; len; i++) &#123;</span><br><span class="line">      <span class="keyword">const</span> a = queue[i];</span><br><span class="line">      ctx.<span class="title function_">lineTo</span>(a[<span class="number">0</span>], a[<span class="number">1</span>]);</span><br><span class="line">    &#125;</span><br><span class="line">    <span class="keyword">if</span> (len) &#123;</span><br><span class="line">      ctx.<span class="title function_">stroke</span>();</span><br><span class="line">    &#125;</span><br><span class="line">    queue = [];</span><br><span class="line">    <span class="keyword">if</span> (mark) <span class="title function_">draw</span>();</span><br><span class="line">  &#125;);</span><br><span class="line">&#125;;</span><br><span class="line"></span><br><span class="line">canvas?.<span class="title function_">addEventListener</span>(<span class="string">&quot;pointerdown&quot;</span>, <span class="function">() =&gt;</span> &#123;</span><br><span class="line">  mark = <span class="literal">true</span>;</span><br><span class="line">  <span class="comment">// 取整数减少浮点运算</span></span><br><span class="line">  queue.<span class="title function_">push</span>([</span><br><span class="line">    <span class="title class_">Math</span>.<span class="title function_">floor</span>(e.<span class="property">clientX</span> * <span class="variable language_">window</span>.<span class="property">devicePixelRatio</span>),</span><br><span class="line">    <span class="title class_">Math</span>.<span class="title function_">floor</span>(e.<span class="property">clientY</span> * <span class="variable language_">window</span>.<span class="property">devicePixelRatio</span>),</span><br><span class="line">  ]);</span><br><span class="line">  ctx.<span class="title function_">beginPath</span>();</span><br><span class="line">  <span class="title function_">draw</span>();</span><br><span class="line">&#125;);</span><br></pre></td></tr></table></figure>
-
-<h4 id="平滑曲线"><a href="#平滑曲线" class="headerlink" title="平滑曲线"></a>平滑曲线</h4><p>使用贝塞尔曲线拟合</p>
-<ul>
-<li>取 B C 中点 B1, A 为起点，B 为控制点，B1 为终点</li>
-<li>取 C D 中点 C1, B1 为起点，C 为控制点，C1 为终点</li>
-</ul>
-<p><img src="/posts/35b9815417e8/001.png"></p>
-<figure class="highlight js"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">let</span> rfa = <span class="number">0</span>;</span><br><span class="line"><span class="keyword">const</span> <span class="title function_">draw</span> = (<span class="params">index = <span class="number">0</span></span>) =&gt; &#123;</span><br><span class="line">  <span class="keyword">if</span> (!index &amp;&amp; rfa) <span class="keyword">return</span>;</span><br><span class="line">  rfa = <span class="title function_">requestAnimationFrame</span>(<span class="function">() =&gt;</span> &#123;</span><br><span class="line">    <span class="keyword">let</span> len = queue.<span class="property">length</span>;</span><br><span class="line">    <span class="keyword">if</span> (len &amp;&amp; !index) &#123;</span><br><span class="line">      <span class="keyword">const</span> a = queue[index];</span><br><span class="line">      ctx.<span class="title function_">lineTo</span>(a[<span class="number">0</span>], a[<span class="number">1</span>]);</span><br><span class="line">      index++;</span><br><span class="line">    &#125;</span><br><span class="line">    <span class="keyword">while</span> (len &gt;= <span class="number">3</span> &amp;&amp; index &lt; len - <span class="number">1</span>) &#123;</span><br><span class="line">      <span class="keyword">const</span> cur = queue[index];</span><br><span class="line">      <span class="keyword">const</span> next = queue[index + <span class="number">1</span>];</span><br><span class="line">      <span class="keyword">const</span> cx = (cur[<span class="number">0</span>] + next[<span class="number">0</span>]) &gt;&gt; <span class="number">1</span>;</span><br><span class="line">      <span class="keyword">const</span> cy = (cur[<span class="number">1</span>] + next[<span class="number">1</span>]) &gt;&gt; <span class="number">1</span>;</span><br><span class="line">      ctx.<span class="title function_">quadraticCurveTo</span>(cur[<span class="number">0</span>], cur[<span class="number">1</span>], cx, cy);</span><br><span class="line">      index += <span class="number">1</span>;</span><br><span class="line">    &#125;</span><br><span class="line"></span><br><span class="line">    <span class="keyword">if</span> (len) &#123;</span><br><span class="line">      ctx.<span class="title function_">stroke</span>();</span><br><span class="line">    &#125;</span><br><span class="line">    <span class="keyword">if</span> (mark) &#123;</span><br><span class="line">      <span class="title function_">draw</span>(index);</span><br><span class="line">    &#125; <span class="keyword">else</span> &#123;</span><br><span class="line">      rfa = <span class="number">0</span>;</span><br><span class="line">    &#125;</span><br><span class="line">  &#125;);</span><br><span class="line">&#125;;</span><br></pre></td></tr></table></figure>
-
-<h4 id="离屏-canvas-模拟粉笔效果"><a href="#离屏-canvas-模拟粉笔效果" class="headerlink" title="离屏 canvas 模拟粉笔效果"></a>离屏 canvas 模拟粉笔效果</h4><figure class="highlight ts"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br><span class="line">35</span><br><span class="line">36</span><br><span class="line">37</span><br><span class="line">38</span><br><span class="line">39</span><br><span class="line">40</span><br><span class="line">41</span><br><span class="line">42</span><br><span class="line">43</span><br><span class="line">44</span><br><span class="line">45</span><br><span class="line">46</span><br><span class="line">47</span><br><span class="line">48</span><br><span class="line">49</span><br><span class="line">50</span><br><span class="line">51</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">let</span> <span class="attr">queue</span>: <span class="built_in">any</span>[] = [];</span><br><span class="line"><span class="keyword">const</span> offScreen = <span class="keyword">new</span> <span class="title class_">OffscreenCanvas</span>(dimension.<span class="property">width</span>, dimension.<span class="property">height</span>);</span><br><span class="line"><span class="keyword">const</span> offCtx = offScreen.<span class="title function_">getContext</span>(<span class="string">&quot;2d&quot;</span>) <span class="keyword">as</span> <span class="title class_">OffscreenCanvasRenderingContext2D</span>;</span><br><span class="line">offCtx.<span class="title function_">scale</span>(width / dimension.<span class="property">width</span>, height / dimension.<span class="property">height</span>);</span><br><span class="line">offCtx.<span class="property">strokeStyle</span> = <span class="string">&quot;red&quot;</span>;</span><br><span class="line">offCtx.<span class="property">lineWidth</span> = <span class="number">6</span>;</span><br><span class="line">offCtx.<span class="property">lineCap</span> = <span class="string">&quot;round&quot;</span>;</span><br><span class="line"></span><br><span class="line"><span class="keyword">const</span> <span class="title function_">draw</span> = (<span class="params"></span>) =&gt; &#123;</span><br><span class="line">  <span class="title function_">requestAnimationFrame</span>(<span class="function">() =&gt;</span> &#123;</span><br><span class="line">    <span class="keyword">let</span> len = queue.<span class="property">length</span>;</span><br><span class="line">    offCtx.<span class="title function_">clearRect</span>(<span class="number">0</span>, <span class="number">0</span>, dimension.<span class="property">width</span>, dimension.<span class="property">height</span>);</span><br><span class="line">    <span class="comment">// 在清除画布之后必须使用 beginPath</span></span><br><span class="line">    offCtx.<span class="title function_">beginPath</span>();</span><br><span class="line">    <span class="keyword">for</span> (<span class="keyword">var</span> i = <span class="number">0</span>; i &lt; len; i++) &#123;</span><br><span class="line">      <span class="keyword">const</span> a = queue[i];</span><br><span class="line">      offCtx.<span class="title function_">lineTo</span>(a[<span class="number">0</span>], a[<span class="number">1</span>]);</span><br><span class="line">    &#125;</span><br><span class="line">    <span class="keyword">if</span> (len) &#123;</span><br><span class="line">      offCtx.<span class="title function_">stroke</span>();</span><br><span class="line">    &#125;</span><br><span class="line"></span><br><span class="line">    <span class="keyword">for</span> (<span class="keyword">let</span> i = <span class="number">1</span>; i &lt; len; i++) &#123;</span><br><span class="line">      <span class="keyword">const</span> pre = queue[i - <span class="number">1</span>];</span><br><span class="line">      <span class="keyword">const</span> cur = queue[i];</span><br><span class="line">      <span class="keyword">const</span> length = <span class="title class_">Math</span>.<span class="title function_">round</span>(</span><br><span class="line">        <span class="title class_">Math</span>.<span class="title function_">sqrt</span>(<span class="title class_">Math</span>.<span class="title function_">pow</span>(pre[<span class="number">0</span>] - cur[<span class="number">0</span>], <span class="number">2</span>) + <span class="title class_">Math</span>.<span class="title function_">pow</span>(pre[<span class="number">1</span>] - cur[<span class="number">1</span>], <span class="number">2</span>))</span><br><span class="line">      );</span><br><span class="line">      <span class="keyword">const</span> xUnit = (cur[<span class="number">0</span>] - pre[<span class="number">0</span>]) / length;</span><br><span class="line">      <span class="keyword">const</span> yUnit = (cur[<span class="number">1</span>] - pre[<span class="number">1</span>]) / length;</span><br><span class="line">      <span class="keyword">for</span> (<span class="keyword">let</span> i = <span class="number">0</span>; i &lt; length; i++) &#123;</span><br><span class="line">        <span class="keyword">const</span> xCurrent = pre[<span class="number">0</span>] + i * xUnit;</span><br><span class="line">        <span class="keyword">const</span> yCurrent = pre[<span class="number">1</span>] + i * yUnit;</span><br><span class="line">        <span class="keyword">const</span> xRandom = xCurrent + (<span class="title class_">Math</span>.<span class="title function_">random</span>() - <span class="number">0.5</span>) * <span class="number">6</span> * <span class="number">1.2</span>;</span><br><span class="line">        <span class="keyword">const</span> yRandom = yCurrent + (<span class="title class_">Math</span>.<span class="title function_">random</span>() - <span class="number">0.5</span>) * <span class="number">6</span> * <span class="number">1.2</span>;</span><br><span class="line">        offCtx.<span class="title function_">clearRect</span>(</span><br><span class="line">          xRandom,</span><br><span class="line">          yRandom,</span><br><span class="line">          <span class="title class_">Math</span>.<span class="title function_">random</span>() * <span class="number">2</span> + <span class="number">2</span>,</span><br><span class="line">          <span class="title class_">Math</span>.<span class="title function_">random</span>() + <span class="number">1</span></span><br><span class="line">        );</span><br><span class="line">      &#125;</span><br><span class="line">    &#125;</span><br><span class="line"></span><br><span class="line">    queue = [];</span><br><span class="line"></span><br><span class="line">    ctx.<span class="property">globalCompositeOperation</span> = <span class="string">&quot;source-over&quot;</span>;</span><br><span class="line">    ctx.<span class="title function_">drawImage</span>(offScreen, <span class="number">0</span>, <span class="number">0</span>, dimension.<span class="property">width</span>, dimension.<span class="property">height</span>);</span><br><span class="line">    <span class="keyword">if</span> (mark) <span class="title function_">draw</span>();</span><br><span class="line">  &#125;);</span><br><span class="line">&#125;;</span><br></pre></td></tr></table></figure>
- 
-      <!-- reward -->
-      
-    </div>
-    
-
-    <!-- copyright -->
-    
-    <footer class="article-footer">
-       
-  <ul class="article-tag-list" itemprop="keywords"><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/canvas/" rel="tag">canvas</a></li></ul>
-
-    </footer>
-  </div>
-
-   
-    
-</article>
-
-    
   </article>
   
 
   
   <nav class="page-nav">
     
-    <a class="extend prev" rel="prev" href="/page/2/">上一页</a><a class="page-number" href="/">1</a><a class="page-number" href="/page/2/">2</a><span class="page-number current">3</span><a class="page-number" href="/page/4/">4</a><a class="page-number" href="/page/5/">5</a><span class="space">&hellip;</span><a class="page-number" href="/page/27/">27</a><a class="extend next" rel="next" href="/page/4/">下一页</a>
+    <a class="extend prev" rel="prev" href="/page/2/">上一页</a><a class="page-number" href="/">1</a><a class="page-number" href="/page/2/">2</a><span class="page-number current">3</span><a class="page-number" href="/page/4/">4</a><a class="page-number" href="/page/5/">5</a><span class="space">&hellip;</span><a class="page-number" href="/page/28/">28</a><a class="extend next" rel="next" href="/page/4/">下一页</a>
   </nav>
   
 </section>
@@ -1218,10 +1225,6 @@ sequenceDiagram
     
     <li class="nav-item">
       <a class="nav-item-link" href="/tags">标签</a>
-    </li>
-    
-    <li class="nav-item">
-      <a class="nav-item-link" href="/tags/Essay">随笔</a>
     </li>
     
   </ul>

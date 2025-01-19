@@ -89,7 +89,7 @@
         <span class="post-meta-item-icon">
             <i class="ri-quill-pen-line"></i>
             <span class="post-meta-item-text"> 字数统计:</span>
-            <span class="post-count">1.4k</span>
+            <span class="post-count">1.8k</span>
         </span>
     </span>
 
@@ -98,7 +98,7 @@
         <span class="post-meta-item-icon">
             <i class="ri-book-open-line"></i>
             <span class="post-meta-item-text"> 阅读时长≈</span>
-            <span class="post-count">5 分钟</span>
+            <span class="post-count">7 分钟</span>
         </span>
     </span>
 </div>
@@ -148,15 +148,19 @@
 
 <p>但是在不同的位置写代码，获取到的信息是不同的，所谓的前中后，是相对于根节点的先后。</p>
 <ul>
-<li><p>前序遍历： 根节点 &#x3D;&gt; 左节点 &#x3D;&gt; 右节点， 代码位置写在接入左树之前，因此先访问根节点，在访问左树的根节点。对于一个子树，只有左子树遍历完成后，才回去处理右子树。</p>
+<li><p>前序遍历： 根节点 &#x3D;&gt; 左节点 &#x3D;&gt; 右节点， 代码位置写在接入左树之前，因此先访问根节点，在访问左树的根节点。对于一个子树，只有左子树遍历完成后，才回去处理右子树，可以看作是进入一个二叉树节点的时候执行</p>
 </li>
-<li><p>中序遍历： 左节点 &#x3D;&gt; 根节点 &#x3D;&gt; 右节点，代码会一直递归调用到左子树的左叶子节点，当左叶子节点访问完毕后，会弹出当前的调用栈，而上一个调用栈正是左节点的父节点，也就是根节点。</p>
+<li><p>中序遍历： 左节点 &#x3D;&gt; 根节点 &#x3D;&gt; 右节点，代码会一直递归调用到左子树的左叶子节点，当左叶子节点访问完毕后，会弹出当前的调用栈，而上一个调用栈正是左节点的父节点，也就是根节点,可以看作是二叉树节点左子树都遍历完，即将开始遍历右子树的时候执行。</p>
 </li>
-<li><p>后序遍历： 左节点 &#x3D;&gt; 右节点 &#x3D;&gt; 根节点，代码会一直递归调用到左子树的右叶子节点，当左右子节点访问完毕后，会弹出当前的调用栈，而上一个调用栈正是右节点的父节点，也就是根节点。</p>
+<li><p>后序遍历： 左节点 &#x3D;&gt; 右节点 &#x3D;&gt; 根节点，代码会一直递归调用到左子树的右叶子节点，当左右子节点访问完毕后，会弹出当前的调用栈，而上一个调用栈正是右节点的父节点，也就是根节点,可以看作是离开一个二叉树节点的时候执行。</p>
 </li>
 </ul>
-<p>而递归遍历常用于寻找最短路径， <a href="/posts/8e3fe34f62a9/"><strong>[二叉树最小深度]</strong></a></p>
- 
+<p>而递归遍历常用于寻找最短路径， <a href="/posts/8e3fe34f62a9/"><strong>[二叉树最小&#x2F;大深度]</strong></a>, <a href="/posts/6a338e4e2cab/"><strong>[二叉树直径]</strong></a>,递归和遍历各有优势，遍历的思想是配合外部变量，递归则是将问题分解为子问题。</p>
+<p>有一些问题虽然是在二叉树的遍历模型下，但是需要根据条件进入不同的分支处理，并在其中穿插其他的逻辑代码。 <a href="/posts/13ae1e52470a/"><strong>[二叉树展开为链表]</strong></a> <a href="/posts/0d16fafcd38e/"><strong>[填充每个节点的下一个右侧节点指针]</strong></a></p>
+<h4 id="二叉树的序列化"><a href="#二叉树的序列化" class="headerlink" title="二叉树的序列化"></a>二叉树的序列化</h4><h5 id="层序遍历-1"><a href="#层序遍历-1" class="headerlink" title="层序遍历"></a>层序遍历</h5><p>这应该是最容易想到的一种方法，就像 LeetCode 题目给出的可视化数据一样，将每一层的数据依次放入到数组中，就可以对二叉树序列化，但是需要注意的是要保留空节点，这样才能描述每一层节点之间的关系</p>
+<figure class="highlight js"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">var</span> serialize = <span class="keyword">function</span> (<span class="params">root</span>) &#123;</span><br><span class="line">  <span class="keyword">if</span> (root === <span class="literal">null</span>) <span class="keyword">return</span> [];</span><br><span class="line">  <span class="keyword">const</span> queue = [root];</span><br><span class="line">  <span class="keyword">const</span> res = [];</span><br><span class="line">  <span class="keyword">while</span> (queue.<span class="property">length</span>) &#123;</span><br><span class="line">    <span class="keyword">const</span> first = queue.<span class="title function_">shift</span>();</span><br><span class="line">    res.<span class="title function_">push</span>(first === <span class="literal">null</span> ? first : first.<span class="property">val</span>);</span><br><span class="line">    <span class="keyword">if</span> (first !== <span class="literal">null</span>) queue.<span class="title function_">push</span>(first.<span class="property">left</span>, first.<span class="property">right</span>);</span><br><span class="line">  &#125;</span><br><span class="line">  <span class="keyword">return</span> res;</span><br><span class="line">&#125;;</span><br><span class="line"></span><br><span class="line"><span class="keyword">var</span> deserialize = <span class="keyword">function</span> (<span class="params">data</span>) &#123;</span><br><span class="line">  <span class="keyword">if</span> (data.<span class="property">length</span> === <span class="number">0</span>) <span class="keyword">return</span> <span class="literal">null</span>;</span><br><span class="line">  <span class="keyword">let</span> index = <span class="number">0</span>;</span><br><span class="line">  <span class="keyword">let</span> root = <span class="keyword">new</span> <span class="title class_">TreeNode</span>(data[index++]);</span><br><span class="line">  <span class="keyword">let</span> queue = [root];</span><br><span class="line"></span><br><span class="line">  <span class="keyword">while</span> (data[index] !== <span class="literal">undefined</span>) &#123;</span><br><span class="line">    <span class="keyword">const</span> node = queue.<span class="title function_">shift</span>();</span><br><span class="line">    <span class="keyword">const</span> left = data[index++];</span><br><span class="line">    <span class="keyword">const</span> right = data[index++];</span><br><span class="line"></span><br><span class="line">    node.<span class="property">left</span> = left === <span class="literal">null</span> ? left : <span class="keyword">new</span> <span class="title class_">TreeNode</span>(left);</span><br><span class="line">    node.<span class="property">right</span> = right === <span class="literal">null</span> ? right : <span class="keyword">new</span> <span class="title class_">TreeNode</span>(right);</span><br><span class="line">    <span class="keyword">if</span> (left !== <span class="literal">null</span>) queue.<span class="title function_">push</span>(node.<span class="property">left</span>);</span><br><span class="line">    <span class="keyword">if</span> (right !== <span class="literal">null</span>) queue.<span class="title function_">push</span>(node.<span class="property">right</span>);</span><br><span class="line">  &#125;</span><br><span class="line">  <span class="keyword">return</span> root;</span><br><span class="line">&#125;;</span><br></pre></td></tr></table></figure>
+
+<h5 id="二叉树的唯一性"><a href="#二叉树的唯一性" class="headerlink" title="二叉树的唯一性"></a>二叉树的唯一性</h5> 
       <!-- reward -->
       
       <div id="reword-out">
@@ -202,7 +206,7 @@
       </a>
     
     
-      <a href="/posts/b1416cdd1ff6/" class="article-nav-link">
+      <a href="/posts/61c0760886e4/" class="article-nav-link">
         <strong class="article-nav-caption">下一篇</strong>
         <div class="article-nav-title">调试npm包</div>
       </a>
@@ -305,10 +309,6 @@
     
     <li class="nav-item">
       <a class="nav-item-link" href="/tags">标签</a>
-    </li>
-    
-    <li class="nav-item">
-      <a class="nav-item-link" href="/tags/Essay">随笔</a>
     </li>
     
   </ul>

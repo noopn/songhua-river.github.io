@@ -112,6 +112,97 @@
     
     
     <article
+  id="post-react/②(SSR)最简单的同构"
+  class="article article-type-post"
+  itemscope
+  itemprop="blogPost"
+  data-scroll-reveal
+>
+  <div class="article-inner">
+    
+    <header class="article-header">
+       
+<h2 itemprop="name">
+  <a class="article-title" href="/posts/6192ec0d02ae/"
+    >② ReactSSR 最简单的同构</a> 
+</h2>
+ 
+
+      
+    </header>
+     
+    <div class="article-meta">
+      <a href="/posts/6192ec0d02ae/" class="article-date">
+  <time datetime="2021-10-15T01:42:38.000Z" itemprop="datePublished">2021-10-15</time>
+</a> 
+  <div class="article-category">
+    <a class="article-category-link" href="/categories/React/">React</a> / <a class="article-category-link" href="/categories/React/SSR/">SSR</a>
+  </div>
+   
+    </div>
+      
+    <div class="article-entry" itemprop="articleBody">
+       
+  <h4 id="什么是同构"><a href="#什么是同构" class="headerlink" title="什么是同构"></a>什么是同构</h4><p>简单说同构就是前后端公用一套代码。</p>
+<p>首先需要明确的是同构是SSR的一种实现方式，同构也是通过服务端渲染，将生成的HTML返回给浏览器展示，但是在React组件中绑定的事件会丢失，因为同构只返回了HTML字符串，并没有返回JavaScript文件。</p>
+<p>所以可以把组件打包成JavaScript文件浏览器中在执行一次，用于绑定交互事件。真实的场景中还会有路由，和数据状态管理工具（redux等）的同步。</p>
+<p>打包的组件也用于在服务端生成HTML字符串，它们公用一套代码这也是同构的本质。</p>
+<h4 id="打包组件"><a href="#打包组件" class="headerlink" title="打包组件"></a>打包组件</h4><p>把组件打包成一个单独的文件，放在static静态资源目录下面，当浏览器访问的时候会从静态资源文件夹读取文件</p>
+<blockquote>
+<p>webpack.config.ts</p>
+</blockquote>
+<figure class="highlight javascript"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">import</span> * <span class="keyword">as</span> path <span class="keyword">from</span> <span class="string">&#x27;path&#x27;</span>;</span><br><span class="line"><span class="keyword">import</span> * <span class="keyword">as</span> webpack <span class="keyword">from</span> <span class="string">&#x27;webpack&#x27;</span>;</span><br><span class="line"></span><br><span class="line"><span class="keyword">const</span> <span class="attr">config</span>: webpack.<span class="property">Configuration</span> = &#123;</span><br><span class="line">    <span class="attr">entry</span>:<span class="string">&#x27;./src/components/hello.tsx&#x27;</span>,</span><br><span class="line">    <span class="attr">output</span>:&#123;</span><br><span class="line">        <span class="attr">filename</span>:<span class="string">&#x27;index.js&#x27;</span>,</span><br><span class="line">        <span class="attr">path</span>:path.<span class="title function_">resolve</span>(__dirname,<span class="string">&#x27;static&#x27;</span>)</span><br><span class="line">    &#125;,</span><br><span class="line">    <span class="attr">module</span>:&#123;</span><br><span class="line">        <span class="attr">rules</span>:[</span><br><span class="line">            &#123;</span><br><span class="line">                <span class="attr">test</span>:<span class="regexp">/\.tsx?$/</span>,</span><br><span class="line">                <span class="attr">use</span>:[<span class="string">&#x27;babel-loader&#x27;</span>]</span><br><span class="line">            &#125;</span><br><span class="line">        ]</span><br><span class="line">    &#125;,</span><br><span class="line">    <span class="attr">resolve</span>: &#123;</span><br><span class="line">        <span class="attr">extensions</span>: [<span class="string">&#x27;.tsx&#x27;</span>, <span class="string">&#x27;.ts&#x27;</span>, <span class="string">&#x27;.js&#x27;</span>],</span><br><span class="line">    &#125;,</span><br><span class="line">    <span class="attr">mode</span>:<span class="string">&#x27;development&#x27;</span>,</span><br><span class="line">&#125;</span><br><span class="line"><span class="keyword">export</span> <span class="keyword">default</span> config;</span><br></pre></td></tr></table></figure>
+
+<h4 id="静态资源访问"><a href="#静态资源访问" class="headerlink" title="静态资源访问"></a>静态资源访问</h4><p>koa提供了一个中间件 <code>koa-static</code> 用于静态资源访问</p>
+<p>注意路径是否正确，如果是在打包好的文件夹中执行，可以通过PWD获取Node进程执行时候的位置</p>
+<p>static 用于指定静态资源文件夹的名称，如果想访问static中的文件不需要在路径中添加static, 例如静态资源路径为 <code>static/js/index.js</code>,script 标签中的src路径为 <code>/js/index.js</code></p>
+<p>最后在返回的HTML中添加打包好的JS文件</p>
+<blockquote>
+<p>src&#x2F;server.ts</p>
+</blockquote>
+<figure class="highlight javascript"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">import</span> koaStatic <span class="keyword">from</span> <span class="string">&#x27;koa-static&#x27;</span>;</span><br><span class="line"></span><br><span class="line">router.<span class="title function_">get</span>(<span class="string">&#x27;/&#x27;</span>,<span class="keyword">async</span> (ctx,next)=&gt;&#123;</span><br><span class="line">    ctx.<span class="property">body</span>=<span class="string">`</span></span><br><span class="line"><span class="string">        &lt;html lang=&quot;en&quot;&gt;</span></span><br><span class="line"><span class="string">            &lt;body&gt;</span></span><br><span class="line"><span class="string">                <span class="subst">$&#123;ReactDOMServer.renderToString(&lt;Home /&gt;)&#125;</span></span></span><br><span class="line"><span class="string">                &lt;script src=&#x27;/index.js&#x27;&gt;&lt;/script&gt;</span></span><br><span class="line"><span class="string">            &lt;/body&gt;</span></span><br><span class="line"><span class="string">        &lt;/html&gt;</span></span><br><span class="line"><span class="string">    `</span></span><br><span class="line">&#125;)</span><br><span class="line"></span><br><span class="line">app</span><br><span class="line">.<span class="title function_">use</span>(<span class="title function_">koaStatic</span>(path.<span class="title function_">join</span>((process.<span class="property">env</span> <span class="keyword">as</span> any).<span class="property">PWD</span>,<span class="string">&#x27;./static&#x27;</span>)))</span><br><span class="line">.<span class="title function_">use</span>(router.<span class="title function_">routes</span>())</span><br><span class="line">.<span class="title function_">use</span>(router.<span class="title function_">allowedMethods</span>())</span><br><span class="line"></span><br><span class="line">app.<span class="title function_">listen</span>(conf.<span class="property">PORT</span>,<span class="function">()=&gt;</span>&#123;</span><br><span class="line">    <span class="string">`server is running in port 3000`</span></span><br><span class="line">&#125;);</span><br></pre></td></tr></table></figure>
+
+<h4 id="点击无效？-请把组件放在root中"><a href="#点击无效？-请把组件放在root中" class="headerlink" title="点击无效？ 请把组件放在root中"></a>点击无效？ 请把组件放在root中</h4><p>按照上面的步骤已经可以在页面中加载 <code>index.js</code> 的文件，但是点击事件并没有生效,这是因为还没有将组件插入到root节点中</p>
+<p>虽然服务端通过HTML直接返回给浏览器可以展示组件，但是在浏览器中执行React打包好的文件的时候需要将节点挂载在元素上，通常为 <code>&lt;div id=&#39;root&#39;&gt;&lt;/div&gt;</code></p>
+<p>所以尝试添加这样的逻辑</p>
+<blockquote>
+<p>src&#x2F;components&#x2F;hello.ts</p>
+</blockquote>
+<figure class="highlight javascript"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">import</span> <span class="title class_">React</span> <span class="keyword">from</span> <span class="string">&#x27;react&#x27;</span>;</span><br><span class="line"></span><br><span class="line"><span class="keyword">const</span> <span class="title class_">Hello</span>:<span class="title class_">React</span>.<span class="property">FC</span> = <span class="function">() =&gt;</span>&#123;</span><br><span class="line">    <span class="keyword">return</span> <span class="language-xml"><span class="tag">&lt;<span class="name">div</span> <span class="attr">onClick</span>=<span class="string">&#123;()</span>=&gt;</span>&#123;alert(&quot;hello&quot;)&#125;&#125;&gt;Hello<span class="tag">&lt;/<span class="name">div</span>&gt;</span></span></span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line"><span class="title class_">ReactDom</span>.<span class="title function_">render</span>(<span class="language-xml"><span class="tag">&lt;<span class="name">Hello</span>/&gt;</span></span>, <span class="variable language_">document</span>.<span class="title function_">getElementById</span>(<span class="string">&#x27;root&#x27;</span>));</span><br><span class="line"><span class="keyword">export</span> <span class="keyword">default</span> <span class="title class_">Hello</span>;</span><br></pre></td></tr></table></figure>
+
+<p>很不幸会提示一个错误，<code>document</code>没有定义，因为这个组件用于生成HTML字符串，当他被执行的时候node环境中并没有<code>document</code> 这个全局变量</p>
+<p>所以我们把他放到一个新的文件中</p>
+<blockquote>
+<p>src&#x2F;component&#x2F;index.ts</p>
+</blockquote>
+<figure class="highlight javascript"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">import</span> <span class="title class_">ReactDom</span> <span class="keyword">from</span> <span class="string">&#x27;react-dom&#x27;</span>;</span><br><span class="line"><span class="keyword">import</span> <span class="title class_">React</span> <span class="keyword">from</span> <span class="string">&#x27;react&#x27;</span>;</span><br><span class="line"><span class="keyword">import</span> <span class="title class_">Home</span> <span class="keyword">from</span> <span class="string">&#x27;./home&#x27;</span></span><br><span class="line"></span><br><span class="line"><span class="title class_">ReactDom</span>.<span class="title function_">render</span>(<span class="language-xml"><span class="tag">&lt;<span class="name">Home</span>/&gt;</span></span>, <span class="variable language_">document</span>.<span class="title function_">getElementById</span>(<span class="string">&#x27;root&#x27;</span>));</span><br></pre></td></tr></table></figure>
+
+<p>这时没有再报错，但是收到了一个警告 </p>
+<blockquote>
+<p>Warning: render(): Calling ReactDOM.render() to hydrate server-rendered markup will stop working in React v18. Replace the ReactDOM.render() call with ReactDOM.hydrate() if you want React to attach to the server HTML</p>
+</blockquote>
+<p>需要把<code>ReactDOM.render()</code> 替换为 <code>ReactDOM.hydrate()</code></p>
+<figure class="highlight javascript"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line"><span class="title class_">ReactDom</span>.<span class="title function_">hydrate</span>(<span class="language-xml"><span class="tag">&lt;<span class="name">Home</span>/&gt;</span></span>, <span class="variable language_">document</span>.<span class="title function_">getElementById</span>(<span class="string">&#x27;root&#x27;</span>));</span><br></pre></td></tr></table></figure> 
+      <!-- reward -->
+      
+    </div>
+    
+
+    <!-- copyright -->
+    
+    <footer class="article-footer">
+       
+  <ul class="article-tag-list" itemprop="keywords"><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/React/" rel="tag">React</a></li><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/SSR/" rel="tag">SSR</a></li></ul>
+
+    </footer>
+  </div>
+
+   
+    
+</article>
+
+    
+    <article
   id="post-react/①(SSR)渲染一个简单组件"
   class="article article-type-post"
   itemscope
@@ -890,7 +981,7 @@
 
     
     <article
-  id="post-engg/实现一个CLI工具"
+  id="post-devops/实现一个CLI工具"
   class="article article-type-post"
   itemscope
   itemprop="blogPost"
@@ -901,7 +992,7 @@
     <header class="article-header">
        
 <h2 itemprop="name">
-  <a class="article-title" href="/posts/67c7fa0211cb/"
+  <a class="article-title" href="/posts/a73e3518930a/"
     >实现一个CLI工具</a> 
 </h2>
  
@@ -910,7 +1001,7 @@
     </header>
      
     <div class="article-meta">
-      <a href="/posts/67c7fa0211cb/" class="article-date">
+      <a href="/posts/a73e3518930a/" class="article-date">
   <time datetime="2021-09-14T05:08:51.000Z" itemprop="datePublished">2021-09-14</time>
 </a> 
   <div class="article-category">
@@ -984,7 +1075,7 @@
 
     
     <article
-  id="post-engg/npm-lock的作用"
+  id="post-devops/npm-lock的作用"
   class="article article-type-post"
   itemscope
   itemprop="blogPost"
@@ -995,7 +1086,7 @@
     <header class="article-header">
        
 <h2 itemprop="name">
-  <a class="article-title" href="/posts/d836a52e8e0a/"
+  <a class="article-title" href="/posts/02cd2292635b/"
     >npm-lock的作用</a> 
 </h2>
  
@@ -1004,7 +1095,7 @@
     </header>
      
     <div class="article-meta">
-      <a href="/posts/d836a52e8e0a/" class="article-date">
+      <a href="/posts/02cd2292635b/" class="article-date">
   <time datetime="2021-09-13T15:07:08.000Z" itemprop="datePublished">2021-09-13</time>
 </a> 
   <div class="article-category">
@@ -1079,101 +1170,13 @@
 </article>
 
     
-    <article
-  id="post-engg/StyleLint配置指南"
-  class="article article-type-post"
-  itemscope
-  itemprop="blogPost"
-  data-scroll-reveal
->
-  <div class="article-inner">
-    
-    <header class="article-header">
-       
-<h2 itemprop="name">
-  <a class="article-title" href="/posts/ec69663dcf48/"
-    >StyleLint配置指南</a> 
-</h2>
- 
-
-      
-    </header>
-     
-    <div class="article-meta">
-      <a href="/posts/ec69663dcf48/" class="article-date">
-  <time datetime="2021-09-13T03:02:29.000Z" itemprop="datePublished">2021-09-13</time>
-</a> 
-  <div class="article-category">
-    <a class="article-category-link" href="/categories/DevOps/">DevOps</a>
-  </div>
-   
-    </div>
-      
-    <div class="article-entry" itemprop="articleBody">
-       
-  <h4 id="基础包"><a href="#基础包" class="headerlink" title="基础包"></a>基础包</h4><p><a target="_blank" rel="noopener" href="https://stylelint.io/user-guide/get-started">stylelint</a> 有力的，现代的 lint 工具，帮助你在 style 中避免错误， 按照约定转换会规则。</p>
-<p><a target="_blank" rel="noopener" href="https://github.com/stylelint/stylelint-config-standard">stylelint-config-standard</a> stylelint 配置共享库，可以通过 rules 覆盖规则</p>
-<p><a target="_blank" rel="noopener" href="https://github.com/hudochenkov/stylelint-order">stylelint-order</a> 一个为 stylelint 规则排序的插件包</p>
-<p><a target="_blank" rel="noopener" href="https://github.com/bjankord/stylelint-config-sass-guidelines">stylelint-config-sass-guidelines</a> 如果你写 SCSS 可以用这个包</p>
-<p><a target="_blank" rel="noopener" href="https://github.com/kristerkari/stylelint-scss">stylelint-scss</a> 一个SCSS的规则集合</p>
-<h4 id="配置文件"><a href="#配置文件" class="headerlink" title="配置文件"></a>配置文件</h4><figure class="highlight javascript"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br><span class="line">35</span><br><span class="line">36</span><br><span class="line">37</span><br><span class="line">38</span><br><span class="line">39</span><br><span class="line">40</span><br><span class="line">41</span><br><span class="line">42</span><br><span class="line">43</span><br><span class="line">44</span><br><span class="line">45</span><br><span class="line">46</span><br><span class="line">47</span><br><span class="line">48</span><br><span class="line">49</span><br><span class="line">50</span><br><span class="line">51</span><br><span class="line">52</span><br><span class="line">53</span><br><span class="line">54</span><br><span class="line">55</span><br><span class="line">56</span><br><span class="line">57</span><br><span class="line">58</span><br><span class="line">59</span><br><span class="line">60</span><br><span class="line">61</span><br><span class="line">62</span><br><span class="line">63</span><br><span class="line">64</span><br><span class="line">65</span><br><span class="line">66</span><br><span class="line">67</span><br><span class="line">68</span><br><span class="line">69</span><br><span class="line">70</span><br><span class="line">71</span><br><span class="line">72</span><br><span class="line">73</span><br><span class="line">74</span><br><span class="line">75</span><br><span class="line">76</span><br><span class="line">77</span><br><span class="line">78</span><br><span class="line">79</span><br><span class="line">80</span><br><span class="line">81</span><br><span class="line">82</span><br><span class="line">83</span><br><span class="line">84</span><br><span class="line">85</span><br><span class="line">86</span><br><span class="line">87</span><br><span class="line">88</span><br></pre></td><td class="code"><pre><span class="line">&#123;</span><br><span class="line">  <span class="string">&quot;extends&quot;</span>: <span class="string">&quot;stylelint-config-sass-guidelines&quot;</span>,</span><br><span class="line">  <span class="string">&quot;plugins&quot;</span>: [</span><br><span class="line">    <span class="string">&quot;stylelint-scss&quot;</span>,</span><br><span class="line">    <span class="string">&quot;stylelint-order&quot;</span></span><br><span class="line">  ],</span><br><span class="line">  <span class="string">&quot;rules&quot;</span>: &#123;</span><br><span class="line">    <span class="string">&quot;order/properties-order&quot;</span>: [</span><br><span class="line">      <span class="string">&quot;position&quot;</span>,</span><br><span class="line">      <span class="string">&quot;top&quot;</span>,</span><br><span class="line">      <span class="string">&quot;right&quot;</span>,</span><br><span class="line">      <span class="string">&quot;bottom&quot;</span>,</span><br><span class="line">      <span class="string">&quot;left&quot;</span>,</span><br><span class="line">      <span class="string">&quot;z-index&quot;</span>,</span><br><span class="line">      <span class="string">&quot;display&quot;</span>,</span><br><span class="line">      <span class="string">&quot;justify-content&quot;</span>,</span><br><span class="line">      <span class="string">&quot;align-items&quot;</span>,</span><br><span class="line">      <span class="string">&quot;float&quot;</span>,</span><br><span class="line">      <span class="string">&quot;clear&quot;</span>,</span><br><span class="line">      <span class="string">&quot;overflow&quot;</span>,</span><br><span class="line">      <span class="string">&quot;overflow-x&quot;</span>,</span><br><span class="line">      <span class="string">&quot;overflow-y&quot;</span>,</span><br><span class="line">      <span class="string">&quot;margin&quot;</span>,</span><br><span class="line">      <span class="string">&quot;margin&quot;</span>,</span><br><span class="line">      <span class="string">&quot;margin-top&quot;</span>,</span><br><span class="line">      <span class="string">&quot;margin-right&quot;</span>,</span><br><span class="line">      <span class="string">&quot;margin-bottom&quot;</span>,</span><br><span class="line">      <span class="string">&quot;margin-left&quot;</span>,</span><br><span class="line">      <span class="string">&quot;border&quot;</span>,</span><br><span class="line">      <span class="string">&quot;border-style&quot;</span>,</span><br><span class="line">      <span class="string">&quot;border-width&quot;</span>,</span><br><span class="line">      <span class="string">&quot;border-color&quot;</span>,</span><br><span class="line">      <span class="string">&quot;border-top&quot;</span>,</span><br><span class="line">      <span class="string">&quot;border-top-style&quot;</span>,</span><br><span class="line">      <span class="string">&quot;border-top-width&quot;</span>,</span><br><span class="line">      <span class="string">&quot;border-top-color&quot;</span>,</span><br><span class="line">      <span class="string">&quot;border-right&quot;</span>,</span><br><span class="line">      <span class="string">&quot;border-right-style&quot;</span>,</span><br><span class="line">      <span class="string">&quot;border-right-width&quot;</span>,</span><br><span class="line">      <span class="string">&quot;border-right-color&quot;</span>,</span><br><span class="line">      <span class="string">&quot;border-bottom&quot;</span>,</span><br><span class="line">      <span class="string">&quot;border-bottom-style&quot;</span>,</span><br><span class="line">      <span class="string">&quot;border-bottom-width&quot;</span>,</span><br><span class="line">      <span class="string">&quot;border-bottom-color&quot;</span>,</span><br><span class="line">      <span class="string">&quot;border-left&quot;</span>,</span><br><span class="line">      <span class="string">&quot;border-left-style&quot;</span>,</span><br><span class="line">      <span class="string">&quot;border-left-width&quot;</span>,</span><br><span class="line">      <span class="string">&quot;border-left-color&quot;</span>,</span><br><span class="line">      <span class="string">&quot;border-radius&quot;</span>,</span><br><span class="line">      <span class="string">&quot;padding&quot;</span>,</span><br><span class="line">      <span class="string">&quot;padding-top&quot;</span>,</span><br><span class="line">      <span class="string">&quot;padding-right&quot;</span>,</span><br><span class="line">      <span class="string">&quot;padding-bottom&quot;</span>,</span><br><span class="line">      <span class="string">&quot;padding-left&quot;</span>,</span><br><span class="line">      <span class="string">&quot;width&quot;</span>,</span><br><span class="line">      <span class="string">&quot;min-width&quot;</span>,</span><br><span class="line">      <span class="string">&quot;max-width&quot;</span>,</span><br><span class="line">      <span class="string">&quot;height&quot;</span>,</span><br><span class="line">      <span class="string">&quot;min-height&quot;</span>,</span><br><span class="line">      <span class="string">&quot;max-height&quot;</span>,</span><br><span class="line">      <span class="string">&quot;font-size&quot;</span>,</span><br><span class="line">      <span class="string">&quot;font-family&quot;</span>,</span><br><span class="line">      <span class="string">&quot;font-weight&quot;</span>,</span><br><span class="line">      <span class="string">&quot;text-align&quot;</span>,</span><br><span class="line">      <span class="string">&quot;text-justify&quot;</span>,</span><br><span class="line">      <span class="string">&quot;text-indent&quot;</span>,</span><br><span class="line">      <span class="string">&quot;text-overflow&quot;</span>,</span><br><span class="line">      <span class="string">&quot;text-decoration&quot;</span>,</span><br><span class="line">      <span class="string">&quot;white-space&quot;</span>,</span><br><span class="line">      <span class="string">&quot;color&quot;</span>,</span><br><span class="line">      <span class="string">&quot;background&quot;</span>,</span><br><span class="line">      <span class="string">&quot;background-position&quot;</span>,</span><br><span class="line">      <span class="string">&quot;background-repeat&quot;</span>,</span><br><span class="line">      <span class="string">&quot;background-size&quot;</span>,</span><br><span class="line">      <span class="string">&quot;background-color&quot;</span>,</span><br><span class="line">      <span class="string">&quot;background-clip&quot;</span>,</span><br><span class="line">      <span class="string">&quot;opacity&quot;</span>,</span><br><span class="line">      <span class="string">&quot;filter&quot;</span>,</span><br><span class="line">      <span class="string">&quot;list-style&quot;</span>,</span><br><span class="line">      <span class="string">&quot;outline&quot;</span>,</span><br><span class="line">      <span class="string">&quot;visibility&quot;</span>,</span><br><span class="line">      <span class="string">&quot;box-shadow&quot;</span>,</span><br><span class="line">      <span class="string">&quot;text-shadow&quot;</span>,</span><br><span class="line">      <span class="string">&quot;resize&quot;</span>,</span><br><span class="line">      <span class="string">&quot;transition&quot;</span></span><br><span class="line">    ]</span><br><span class="line">  &#125;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
-
-<h4 id="忽略配置"><a href="#忽略配置" class="headerlink" title="忽略配置"></a>忽略配置</h4><ul>
-<li>忽略整个文件，在首行加入 <code>/* stylelint-disable */</code></li>
-</ul>
-<figure class="highlight html"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line">/* stylelint-disable */</span><br><span class="line">html &#123;&#125;</span><br></pre></td></tr></table></figure>
-
-<ul>
-<li>忽略多行</li>
-</ul>
-<figure class="highlight html"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br></pre></td><td class="code"><pre><span class="line">/* stylelint-disable */</span><br><span class="line">html &#123;&#125;</span><br><span class="line">.div &#123;</span><br><span class="line">    color: red;</span><br><span class="line">&#125;</span><br><span class="line">/* stylelint-enable */</span><br></pre></td></tr></table></figure>
-
-<ul>
-<li>忽略一行， 在样式前加入 <code>/* stylelint-disable-next-line */</code> 以忽略该行</li>
-</ul>
-<figure class="highlight html"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br></pre></td><td class="code"><pre><span class="line">#id &#123;</span><br><span class="line">  /* stylelint-disable-next-line */</span><br><span class="line">  color: pink !important;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
-
-<ul>
-<li><code>.stylelintrc.json</code> 配置文件</li>
-</ul>
-<h4 id="自动格式化"><a href="#自动格式化" class="headerlink" title="自动格式化"></a>自动格式化</h4><ul>
-<li><p>安裝 StyleLint</p>
-</li>
-<li><p>在 settings.json 文件设置</p>
-</li>
-</ul>
-<figure class="highlight javascript"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br></pre></td><td class="code"><pre><span class="line">&#123;</span><br><span class="line">  <span class="string">&quot;editor.codeActionsOnSave&quot;</span>: &#123;</span><br><span class="line">    <span class="string">&quot;source.fixAll.stylelint&quot;</span>: <span class="literal">true</span></span><br><span class="line">  &#125;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
-
-<h4 id="与-Prettier-结合"><a href="#与-Prettier-结合" class="headerlink" title="与 Prettier 结合"></a>与 Prettier 结合</h4><p><a target="_blank" rel="noopener" href="https://github.com/prettier/stylelint-prettier">stylelint-prettier</a> 让 Prettier 作为 StyleLint 的规则，并让 StyleLint 统一报错</p>
-<p><a target="_blank" rel="noopener" href="https://github.com/prettier/stylelint-config-prettier">stylelint-config-prettier</a> 关闭所有可能冲突的配置</p>
-<p>配置文件</p>
-<figure class="highlight javascript"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br></pre></td><td class="code"><pre><span class="line">&#123;</span><br><span class="line">  <span class="string">&quot;extends&quot;</span>: [</span><br><span class="line">    <span class="string">&quot;stylelint-config-sass-guidelines&quot;</span>,</span><br><span class="line">    <span class="string">&quot;stylelint-prettier/recommended&quot;</span></span><br><span class="line">  ],</span><br><span class="line">  <span class="string">&quot;plugins&quot;</span>: [</span><br><span class="line">    <span class="string">&quot;stylelint-scss&quot;</span></span><br><span class="line">  ]</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure> 
-      <!-- reward -->
-      
-    </div>
-    
-
-    <!-- copyright -->
-    
-    <footer class="article-footer">
-       
-  <ul class="article-tag-list" itemprop="keywords"><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/DevOps/" rel="tag">DevOps</a></li></ul>
-
-    </footer>
-  </div>
-
-   
-    
-</article>
-
-    
   </article>
   
 
   
   <nav class="page-nav">
     
-    <a class="extend prev" rel="prev" href="/page/9/">上一页</a><a class="page-number" href="/">1</a><span class="space">&hellip;</span><a class="page-number" href="/page/8/">8</a><a class="page-number" href="/page/9/">9</a><span class="page-number current">10</span><a class="page-number" href="/page/11/">11</a><a class="page-number" href="/page/12/">12</a><span class="space">&hellip;</span><a class="page-number" href="/page/27/">27</a><a class="extend next" rel="next" href="/page/11/">下一页</a>
+    <a class="extend prev" rel="prev" href="/page/9/">上一页</a><a class="page-number" href="/">1</a><span class="space">&hellip;</span><a class="page-number" href="/page/8/">8</a><a class="page-number" href="/page/9/">9</a><span class="page-number current">10</span><a class="page-number" href="/page/11/">11</a><a class="page-number" href="/page/12/">12</a><span class="space">&hellip;</span><a class="page-number" href="/page/28/">28</a><a class="extend next" rel="next" href="/page/11/">下一页</a>
   </nav>
   
 </section>
@@ -1243,10 +1246,6 @@
     
     <li class="nav-item">
       <a class="nav-item-link" href="/tags">标签</a>
-    </li>
-    
-    <li class="nav-item">
-      <a class="nav-item-link" href="/tags/Essay">随笔</a>
     </li>
     
   </ul>

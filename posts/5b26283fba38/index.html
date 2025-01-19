@@ -1,0 +1,627 @@
+<!DOCTYPE html>
+
+
+<html lang="zh-CN">
+  
+
+    <head>
+      <meta charset="utf-8" />
+       
+      <meta name="keywords" content="前端 web react" />
+       
+      <meta name="description" content="前端技术与生活。" />
+      
+      <meta
+        name="viewport"
+        content="width=device-width, initial-scale=1, maximum-scale=1"
+      />
+      <title>Express实践 ② 完善核心功能 |  四月八日</title>
+  <meta name="generator" content="hexo-theme-ayer">
+      
+      <link rel="shortcut icon" href="/favicon.ico" />
+       
+<link rel="stylesheet" href="/dist/main.css">
+ 
+<link rel="stylesheet" href="/css/fonts/remixicon.css">
+ 
+<link rel="stylesheet" href="/css/custom.css">
+ 
+      <script src="/js/pace.min.js"></script>
+       
+ 
+
+      <link rel="stylesheet" href="/css/bulma.min.css" />
+      <script src="/js/sweetalert2.min.js"></script>
+
+      <!-- mermaid -->
+      
+      <script src="https://cdn.staticfile.org/mermaid/8.14.0/mermaid.min.js"></script>
+      
+      <style>
+        .swal2-styled.swal2-confirm {
+          font-size: 1.6rem;
+        }
+      </style>
+    <!-- hexo injector head_end start -->
+<link rel="stylesheet" href="/css/katex.min.css">
+
+<link rel="stylesheet" href="/css/style.css">
+<!-- hexo injector head_end end --></head>
+  </html>
+</html>
+
+
+<body>
+  <div id="app">
+    
+      
+    <main class="content on">
+      <section class="outer">
+  <article
+  id="post-node/express学习项目2"
+  class="article article-type-post"
+  itemscope
+  itemprop="blogPost"
+  data-scroll-reveal
+>
+  <div class="article-inner">
+    
+    <header class="article-header">
+       
+<h1 class="article-title sea-center" style="border-left:0" itemprop="name">
+  Express实践 ② 完善核心功能
+</h1>
+ 
+
+      
+    </header>
+     
+    <div class="article-meta">
+      <a href="/posts/5b26283fba38/" class="article-date">
+  <time datetime="2021-02-10T02:03:12.000Z" itemprop="datePublished">2021-02-10</time>
+</a> 
+  <div class="article-category">
+    <a class="article-category-link" href="/categories/NodeJS/">NodeJS</a>
+  </div>
+  
+<div class="word_count">
+    <span class="post-time">
+        <span class="post-meta-item-icon">
+            <i class="ri-quill-pen-line"></i>
+            <span class="post-meta-item-text"> 字数统计:</span>
+            <span class="post-count">2k</span>
+        </span>
+    </span>
+
+    <span class="post-time">
+        &nbsp; | &nbsp;
+        <span class="post-meta-item-icon">
+            <i class="ri-book-open-line"></i>
+            <span class="post-meta-item-text"> 阅读时长≈</span>
+            <span class="post-count">9 分钟</span>
+        </span>
+    </span>
+</div>
+ 
+    </div>
+      
+    <div class="tocbot"></div>
+
+
+
+
+  
+    <div class="article-entry" itemprop="articleBody">
+       
+  <h4 id="密码加密-x2F-校验"><a href="#密码加密-x2F-校验" class="headerlink" title="密码加密&#x2F;校验"></a>密码加密&#x2F;校验</h4><ul>
+<li><p>密码不可以明文存储，需要生成 hash,在模型文件中，可以使用 <a target="_blank" rel="noopener" href="https://sequelize.org/docs/v6/core-concepts/getters-setters-virtuals/">Getters, Setters &amp; Virtuals</a> 方法并配合 <a target="_blank" rel="noopener" href="https://github.com/kelektiv/node.bcrypt.js">bcrypt 模块</a> 实现</p>
+<figure class="highlight js"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment">// models\user.js</span></span><br><span class="line"></span><br><span class="line"><span class="keyword">const</span> &#123; <span class="title class_">Model</span>, <span class="title class_">Op</span> &#125; = <span class="built_in">require</span>(<span class="string">&quot;sequelize&quot;</span>);</span><br><span class="line"><span class="keyword">const</span> bcrypt = <span class="built_in">require</span>(<span class="string">&quot;bcrypt&quot;</span>);</span><br><span class="line"><span class="variable language_">module</span>.<span class="property">exports</span> = <span class="function">(<span class="params">sequelize, DataTypes</span>) =&gt;</span> &#123;</span><br><span class="line">  <span class="keyword">class</span> <span class="title class_">User</span> <span class="keyword">extends</span> <span class="title class_ inherited__">Model</span> &#123;&#125;</span><br><span class="line">  <span class="title class_">User</span>.<span class="title function_">init</span>(</span><br><span class="line">    &#123;</span><br><span class="line">      <span class="attr">password</span>: &#123;</span><br><span class="line">        <span class="attr">type</span>: <span class="title class_">DataTypes</span>.<span class="property">STRING</span>,</span><br><span class="line">        <span class="title function_">set</span>(<span class="params">value</span>) &#123;</span><br><span class="line">          <span class="comment">// 在设置值或更新值得时候会执行这个方法</span></span><br><span class="line">          <span class="variable language_">this</span>.<span class="title function_">setDataValue</span>(<span class="string">&quot;password&quot;</span>, bcrypt.<span class="title function_">hashSync</span>(value, <span class="number">10</span>));</span><br><span class="line">        &#125;,</span><br><span class="line">      &#125;,</span><br><span class="line">    &#125;,</span><br><span class="line">    &#123;</span><br><span class="line">      sequelize,</span><br><span class="line">      <span class="attr">modelName</span>: <span class="string">&quot;User&quot;</span>,</span><br><span class="line">    &#125;</span><br><span class="line">  );</span><br><span class="line">  <span class="keyword">return</span> <span class="title class_">User</span>;</span><br><span class="line">&#125;;</span><br></pre></td></tr></table></figure>
+</li>
+<li><p>密码校验，<strong>模型校验方法只有设置或更新数据时触发，所以可以考虑将验证方法写在模型的类上，或是在路由中实现</strong></p>
+<figure class="highlight js"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment">// routes\user.js</span></span><br><span class="line"><span class="comment">// 路由中校验数据</span></span><br><span class="line"></span><br><span class="line">router.<span class="title function_">post</span>(<span class="string">&quot;/login&quot;</span>, <span class="keyword">async</span> <span class="keyword">function</span> (<span class="params">req, res, next</span>) &#123;</span><br><span class="line">  <span class="keyword">try</span> &#123;</span><br><span class="line">    <span class="keyword">const</span> data = <span class="keyword">await</span> <span class="title class_">User</span>.<span class="title function_">findOne</span>(&#123;</span><br><span class="line">      <span class="attr">where</span>: &#123;</span><br><span class="line">        <span class="attr">username</span>: req.<span class="property">body</span>.<span class="property">username</span>,</span><br><span class="line">        <span class="attr">email</span>: req.<span class="property">body</span>.<span class="property">email</span>,</span><br><span class="line">      &#125;,</span><br><span class="line">    &#125;);</span><br><span class="line"></span><br><span class="line">    <span class="keyword">if</span> (!bcrypt.<span class="title function_">compareSync</span>(req.<span class="property">body</span>.<span class="property">password</span>, data.<span class="property">password</span>)) &#123;</span><br><span class="line">      <span class="keyword">throw</span> <span class="keyword">new</span> <span class="title class_">Error</span>(<span class="string">&quot;密码错误&quot;</span>);</span><br><span class="line"></span><br><span class="line">      res.<span class="title function_">status</span>(<span class="number">401</span>);</span><br><span class="line">      <span class="keyword">return</span>;</span><br><span class="line">    &#125;</span><br><span class="line"></span><br><span class="line">    res.<span class="title function_">end</span>();</span><br><span class="line">  &#125; <span class="keyword">catch</span> (err) &#123;&#125;</span><br><span class="line">&#125;);</span><br></pre></td></tr></table></figure>
+</li>
+<li><p>生成 jwt，用户保存用户的登录状态, 需要依赖 <a target="_blank" rel="noopener" href="https://www.npmjs.com/package/jsonwebtoken">jsonwebtoken</a></p>
+<figure class="highlight js"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment">// routes\user.js</span></span><br><span class="line"></span><br><span class="line"><span class="keyword">const</span> bcrypt = <span class="built_in">require</span>(<span class="string">&quot;bcrypt&quot;</span>);</span><br><span class="line"><span class="keyword">const</span> jwt = <span class="built_in">require</span>(<span class="string">&quot;jsonwebtoken&quot;</span>);</span><br><span class="line"></span><br><span class="line">router.<span class="title function_">post</span>(<span class="string">&quot;/login&quot;</span>, <span class="keyword">async</span> <span class="keyword">function</span> (<span class="params">req, res, next</span>) &#123;</span><br><span class="line">  <span class="keyword">try</span> &#123;</span><br><span class="line">    <span class="keyword">const</span> data = <span class="keyword">await</span> <span class="title class_">User</span>.<span class="title function_">findOne</span>(&#123;</span><br><span class="line">      <span class="comment">// ...</span></span><br><span class="line">    &#125;);</span><br><span class="line">    <span class="keyword">const</span> token = jwt.<span class="title function_">sign</span>(</span><br><span class="line">      &#123;</span><br><span class="line">        <span class="attr">data</span>: <span class="string">&quot;foobar&quot;</span>,</span><br><span class="line">      &#125;,</span><br><span class="line">      process.<span class="property">env</span>.<span class="property">SECRET</span>,</span><br><span class="line">      &#123; <span class="attr">expiresIn</span>: <span class="string">&quot;30d&quot;</span> &#125;</span><br><span class="line">    );</span><br><span class="line">    res.<span class="title function_">end</span>(token);</span><br><span class="line">  &#125; <span class="keyword">catch</span> (err) &#123;&#125;</span><br><span class="line">&#125;);</span><br></pre></td></tr></table></figure>
+</li>
+<li><p>SECRET 通常作为环境变量，<strong>且禁止提交到仓库</strong>, 可以使用 crypto 生成随机密钥</p>
+<figure class="highlight js"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">crypto.<span class="title function_">randomBytes</span>(<span class="number">64</span>).<span class="title function_">toString</span>(<span class="string">&quot;hex&quot;</span>);</span><br></pre></td></tr></table></figure></li>
+</ul>
+<h4 id="中间件-x2F-校验-jwt"><a href="#中间件-x2F-校验-jwt" class="headerlink" title="中间件&#x2F;校验 jwt"></a>中间件&#x2F;校验 jwt</h4><p>对接口的校验权限的校验不止一个，所以不会再每个路由文件中实现一边逻辑，这就是用到了 <a target="_blank" rel="noopener" href="https://expressjs.com/en/guide/using-middleware.html"><strong>中间件</strong></a></p>
+<p>下面是一个路由级别的中间件，用于处理用户的 token 是否有效</p>
+<figure class="highlight js"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment">// middleware\auth.js</span></span><br><span class="line"></span><br><span class="line"><span class="keyword">const</span> jwt = <span class="built_in">require</span>(<span class="string">&quot;jsonwebtoken&quot;</span>);</span><br><span class="line"><span class="keyword">const</span> &#123; <span class="title class_">User</span> &#125; = <span class="built_in">require</span>(<span class="string">&quot;../models&quot;</span>);</span><br><span class="line"></span><br><span class="line"><span class="variable language_">module</span>.<span class="property">exports</span> = <span class="keyword">async</span> <span class="keyword">function</span> (<span class="params">req, res, next</span>) &#123;</span><br><span class="line">  <span class="keyword">try</span> &#123;</span><br><span class="line">    <span class="keyword">const</span> &#123; token &#125; = req.<span class="property">headers</span>;</span><br><span class="line">    <span class="keyword">if</span> (!token) &#123;</span><br><span class="line">      <span class="keyword">throw</span> <span class="keyword">new</span> <span class="title class_">Error</span>(<span class="string">&quot;用户未登录&quot;</span>);</span><br><span class="line">    &#125;</span><br><span class="line"></span><br><span class="line">    <span class="keyword">const</span> &#123; userId &#125; = jwt.<span class="title function_">verify</span>(token, process.<span class="property">env</span>.<span class="property">SECRET</span>);</span><br><span class="line"></span><br><span class="line">    <span class="keyword">const</span> user = <span class="keyword">await</span> <span class="title class_">User</span>.<span class="title function_">findByPk</span>(userId);</span><br><span class="line"></span><br><span class="line">    <span class="keyword">if</span> (!user) <span class="keyword">throw</span> <span class="keyword">new</span> <span class="title class_">Error</span>(<span class="string">&quot;用户不存在&quot;</span>);</span><br><span class="line"></span><br><span class="line">    <span class="keyword">if</span> (user.<span class="property">role</span> === <span class="string">&quot;[some role]&quot;</span>) <span class="keyword">throw</span> <span class="keyword">new</span> <span class="title class_">Error</span>(<span class="string">&quot;用户权限错误&quot;</span>);</span><br><span class="line"></span><br><span class="line">    <span class="comment">// 可以直接再路由的req上获取用户信息</span></span><br><span class="line">    req.<span class="property">user</span> = user;</span><br><span class="line">    <span class="title function_">next</span>();</span><br><span class="line">  &#125; <span class="keyword">catch</span> (err) &#123;</span><br><span class="line">    <span class="comment">// 客户端需要处理token失效的情况</span></span><br><span class="line"></span><br><span class="line">    res.<span class="title function_">status</span>(<span class="number">500</span>).<span class="title function_">json</span>(&#123;</span><br><span class="line">      <span class="attr">err</span>: err.<span class="property">message</span>,</span><br><span class="line">    &#125;);</span><br><span class="line">  &#125;</span><br><span class="line">&#125;;</span><br></pre></td></tr></table></figure>
+
+<h4 id="嵌套关联查询"><a href="#嵌套关联查询" class="headerlink" title="嵌套关联查询"></a>嵌套关联查询</h4><p>上一章讲解了一对多的关联查询，但是关联字段中可能还需要关联另一张表，也就是嵌套关联查询</p>
+<figure class="highlight js"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br><span class="line">35</span><br><span class="line">36</span><br></pre></td><td class="code"><pre><span class="line">router.<span class="title function_">get</span>(<span class="string">&quot;/&quot;</span>, <span class="keyword">async</span> <span class="keyword">function</span> (<span class="params">req, res, next</span>) &#123;</span><br><span class="line">  <span class="keyword">try</span> &#123;</span><br><span class="line">    <span class="keyword">const</span> condition = &#123;</span><br><span class="line">      <span class="attr">order</span>: [[<span class="string">&quot;id&quot;</span>, <span class="string">&quot;DESC&quot;</span>]],</span><br><span class="line">      <span class="comment">// 全局过滤 两个关联的外键</span></span><br><span class="line">      <span class="attr">attributes</span>: &#123;</span><br><span class="line">        <span class="attr">exclude</span>: [<span class="string">&quot;categoryId&quot;</span>, <span class="string">&quot;userId&quot;</span>],</span><br><span class="line">      &#125;,</span><br><span class="line">      <span class="attr">include</span>: [</span><br><span class="line">        <span class="comment">// as 关联字段别名，需要和model中的对应</span></span><br><span class="line">        <span class="comment">// attributes 用于过滤关联模型中的字段</span></span><br><span class="line">        &#123; <span class="attr">model</span>: <span class="title class_">User</span>, <span class="attr">as</span>: <span class="string">&quot;user&quot;</span>, <span class="attr">attributes</span>: [<span class="string">&quot;id&quot;</span>, <span class="string">&quot;username&quot;</span>] &#125;,</span><br><span class="line">        &#123;</span><br><span class="line">          <span class="attr">model</span>: <span class="title class_">Category</span>,</span><br><span class="line">          <span class="attr">as</span>: <span class="string">&quot;category&quot;</span>,</span><br><span class="line">          <span class="attr">attributes</span>: [<span class="string">&quot;id&quot;</span>, <span class="string">&quot;name&quot;</span>],</span><br><span class="line"></span><br><span class="line">          <span class="comment">// 通过嵌套 include 关联查询</span></span><br><span class="line">          <span class="attr">include</span>: &#123;</span><br><span class="line">            <span class="attr">model</span>: <span class="title class_">Article</span>,</span><br><span class="line">            <span class="attr">as</span>: <span class="string">&quot;article&quot;</span>,</span><br><span class="line">            <span class="attr">attributes</span>: [<span class="string">&quot;id&quot;</span>, <span class="string">&quot;title&quot;</span>],</span><br><span class="line">          &#125;,</span><br><span class="line">        &#125;,</span><br><span class="line">      ],</span><br><span class="line">    &#125;;</span><br><span class="line">    <span class="keyword">const</span> page = req.<span class="property">query</span>.<span class="property">page</span> || <span class="number">1</span>;</span><br><span class="line">    <span class="keyword">const</span> pageSize = req.<span class="property">query</span>.<span class="property">pageSize</span> || <span class="number">10</span>;</span><br><span class="line"></span><br><span class="line">    condition.<span class="property">limit</span> = pageSize;</span><br><span class="line">    condition.<span class="property">offset</span> = (page - <span class="number">1</span>) * pageSize;</span><br><span class="line"></span><br><span class="line">    <span class="keyword">const</span> &#123; count, rows &#125; = <span class="keyword">await</span> <span class="title class_">Course</span>.<span class="title function_">findAndCountAll</span>(condition);</span><br><span class="line">    res.<span class="title function_">json</span>(rows);</span><br><span class="line">  &#125; <span class="keyword">catch</span> (err) &#123;&#125;</span><br><span class="line">&#125;);</span><br></pre></td></tr></table></figure>
+
+<p>这会查出来如下嵌套的返回格式， 他们的关系是</p>
+<ul>
+<li>一个课程数据多个用户，也属于多个分类。或者说一个用户有多个课程，一个分类包含多个课程。</li>
+<li>一个分类属于多篇文章。或者说一个文章有多个分类。</li>
+</ul>
+<figure class="highlight json"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br><span class="line">35</span><br><span class="line">36</span><br><span class="line">37</span><br><span class="line">38</span><br></pre></td><td class="code"><pre><span class="line"><span class="punctuation">&#123;</span></span><br><span class="line">  <span class="attr">&quot;status&quot;</span><span class="punctuation">:</span> <span class="keyword">true</span><span class="punctuation">,</span></span><br><span class="line">  <span class="attr">&quot;message&quot;</span><span class="punctuation">:</span> <span class="keyword">null</span><span class="punctuation">,</span></span><br><span class="line">  <span class="attr">&quot;data&quot;</span><span class="punctuation">:</span> <span class="punctuation">&#123;</span></span><br><span class="line">    <span class="attr">&quot;course&quot;</span><span class="punctuation">:</span> <span class="punctuation">[</span></span><br><span class="line">      <span class="punctuation">&#123;</span></span><br><span class="line">        <span class="attr">&quot;id&quot;</span><span class="punctuation">:</span> <span class="number">12</span><span class="punctuation">,</span></span><br><span class="line">        <span class="attr">&quot;name&quot;</span><span class="punctuation">:</span> <span class="string">&quot;后端课程2&quot;</span><span class="punctuation">,</span></span><br><span class="line">        <span class="attr">&quot;image&quot;</span><span class="punctuation">:</span> <span class="string">&quot;xxx&quot;</span><span class="punctuation">,</span></span><br><span class="line">        <span class="attr">&quot;recommended&quot;</span><span class="punctuation">:</span> <span class="keyword">true</span><span class="punctuation">,</span></span><br><span class="line">        <span class="attr">&quot;introductory&quot;</span><span class="punctuation">:</span> <span class="keyword">false</span><span class="punctuation">,</span></span><br><span class="line">        <span class="attr">&quot;content&quot;</span><span class="punctuation">:</span> <span class="string">&quot;后端课程1,描述&quot;</span><span class="punctuation">,</span></span><br><span class="line">        <span class="attr">&quot;likesCount&quot;</span><span class="punctuation">:</span> <span class="number">10</span><span class="punctuation">,</span></span><br><span class="line">        <span class="attr">&quot;chaptersCount&quot;</span><span class="punctuation">:</span> <span class="number">10</span><span class="punctuation">,</span></span><br><span class="line">        <span class="attr">&quot;createdAt&quot;</span><span class="punctuation">:</span> <span class="string">&quot;2025-01-17T12:48:54.000Z&quot;</span><span class="punctuation">,</span></span><br><span class="line">        <span class="attr">&quot;updatedAt&quot;</span><span class="punctuation">:</span> <span class="string">&quot;2025-01-17T12:48:54.000Z&quot;</span><span class="punctuation">,</span></span><br><span class="line">        <span class="attr">&quot;user&quot;</span><span class="punctuation">:</span> <span class="punctuation">&#123;</span></span><br><span class="line">          <span class="attr">&quot;id&quot;</span><span class="punctuation">:</span> <span class="number">7</span><span class="punctuation">,</span></span><br><span class="line">          <span class="attr">&quot;username&quot;</span><span class="punctuation">:</span> <span class="string">&quot;user1&quot;</span></span><br><span class="line">        <span class="punctuation">&#125;</span><span class="punctuation">,</span></span><br><span class="line">        <span class="attr">&quot;category&quot;</span><span class="punctuation">:</span> <span class="punctuation">&#123;</span></span><br><span class="line">          <span class="attr">&quot;id&quot;</span><span class="punctuation">:</span> <span class="number">2</span><span class="punctuation">,</span></span><br><span class="line">          <span class="attr">&quot;name&quot;</span><span class="punctuation">:</span> <span class="string">&quot;后端课程&quot;</span><span class="punctuation">,</span></span><br><span class="line">          <span class="attr">&quot;article&quot;</span><span class="punctuation">:</span> <span class="punctuation">&#123;</span></span><br><span class="line">            <span class="attr">&quot;id&quot;</span><span class="punctuation">:</span> <span class="number">16</span><span class="punctuation">,</span></span><br><span class="line">            <span class="attr">&quot;title&quot;</span><span class="punctuation">:</span> <span class="string">&quot;标题100&quot;</span></span><br><span class="line">          <span class="punctuation">&#125;</span></span><br><span class="line">        <span class="punctuation">&#125;</span></span><br><span class="line">      <span class="punctuation">&#125;</span></span><br><span class="line">      <span class="comment">// ...剩余7条数据</span></span><br><span class="line">    <span class="punctuation">]</span><span class="punctuation">,</span></span><br><span class="line">    <span class="attr">&quot;pagination&quot;</span><span class="punctuation">:</span> <span class="punctuation">&#123;</span></span><br><span class="line">      <span class="attr">&quot;total&quot;</span><span class="punctuation">:</span> <span class="number">8</span><span class="punctuation">,</span></span><br><span class="line">      <span class="attr">&quot;page&quot;</span><span class="punctuation">:</span> <span class="number">1</span><span class="punctuation">,</span></span><br><span class="line">      <span class="attr">&quot;pageSize&quot;</span><span class="punctuation">:</span> <span class="number">10</span></span><br><span class="line">    <span class="punctuation">&#125;</span></span><br><span class="line">  <span class="punctuation">&#125;</span></span><br><span class="line"><span class="punctuation">&#125;</span></span><br></pre></td></tr></table></figure>
+
+<p>但是其我们是以课程的视角去查询，用户，分类，以及文章都属于当前课程的附属属性，并不需要用层级关系去体现。会希望他们以同级的字段展示。这也是 sequelize 中 <a target="_blank" rel="noopener" href="https://sequelize.org/docs/v6/core-concepts/assocs/#fetching-associations---eager-loading-vs-lazy-loading">Eager Loading vs Lazy Loading</a> 的概念。</p>
+<p>include 关联字段表示 Eager Loading, 会直接把数据返回。而 Lazy Loading 允许用方法调用的方式，选择哪些数据需要，而这种方式正好处理数据的层级问题。</p>
+<p><strong>上面的 findAndCountAll 是无法使用 Lazy 关联查询的，因为它查询的是整个列表，必须明确用数据结构说面关联关系，并不是针对某个课程的关联查询</strong></p>
+<p>下面是查询单独一个课程的关联信息， <strong>需要查询出关联的字段</strong></p>
+<figure class="highlight js"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br></pre></td><td class="code"><pre><span class="line">router.<span class="title function_">get</span>(<span class="string">&quot;/:id&quot;</span>, <span class="keyword">async</span> <span class="keyword">function</span> (<span class="params">req, res, next</span>) &#123;</span><br><span class="line">  <span class="keyword">try</span> &#123;</span><br><span class="line">    <span class="keyword">const</span> condition = &#123;</span><br><span class="line">      <span class="attr">order</span>: [[<span class="string">&quot;id&quot;</span>, <span class="string">&quot;DESC&quot;</span>]],</span><br><span class="line">      <span class="comment">//  注意不要排除了关联 ID, 否则查询不到</span></span><br><span class="line">      <span class="comment">//   attributes: &#123;</span></span><br><span class="line">      <span class="comment">//     exclude: [&quot;categoryId&quot;, &quot;userId&quot;],</span></span><br><span class="line">      <span class="comment">//   &#125;,</span></span><br><span class="line">    &#125;;</span><br><span class="line"></span><br><span class="line">    <span class="keyword">const</span> course = <span class="keyword">await</span> <span class="title class_">Course</span>.<span class="title function_">findByPk</span>(req.<span class="property">params</span>.<span class="property">id</span>, condition);</span><br><span class="line"></span><br><span class="line">    <span class="comment">// 通过课程查询分类，注意要带上关联的 articleId</span></span><br><span class="line">    <span class="keyword">const</span> category = <span class="keyword">await</span> course.<span class="title function_">getCategory</span>(&#123;</span><br><span class="line">      <span class="attr">attributes</span>: [<span class="string">&quot;id&quot;</span>, <span class="string">&quot;name&quot;</span>, <span class="string">&quot;articleId&quot;</span>],</span><br><span class="line">    &#125;);</span><br><span class="line"></span><br><span class="line">    <span class="comment">// 通过分类查询文章</span></span><br><span class="line">    <span class="keyword">const</span> article = <span class="keyword">await</span> category.<span class="title function_">getArticle</span>(&#123;</span><br><span class="line">      <span class="attr">attributes</span>: [<span class="string">&quot;id&quot;</span>, <span class="string">&quot;title&quot;</span>],</span><br><span class="line">    &#125;);</span><br><span class="line"></span><br><span class="line">    res.<span class="title function_">json</span>(&#123;</span><br><span class="line">      <span class="attr">status</span>: <span class="literal">true</span>,</span><br><span class="line">      <span class="attr">message</span>: <span class="literal">null</span>,</span><br><span class="line">      <span class="attr">data</span>: &#123;</span><br><span class="line">        course,</span><br><span class="line">        category,</span><br><span class="line">        article,</span><br><span class="line">      &#125;,</span><br><span class="line">    &#125;);</span><br><span class="line">  &#125; <span class="keyword">catch</span> (err) &#123;&#125;</span><br><span class="line">&#125;);</span><br></pre></td></tr></table></figure>
+
+<h4 id="多对多的查询"><a href="#多对多的查询" class="headerlink" title="多对多的查询"></a>多对多的查询</h4><p>实现一个点赞的功能：</p>
+<ul>
+<li>一个用户可以可以给多个课程点赞</li>
+<li>一个课程也可以被多个用户点赞</li>
+</ul>
+<p>虽然可以直接在用户表中储存点赞课程，但不是一个好的做法, 存在以下问题：</p>
+<p>无法保证数据一致性：难以通过外键验证课程是否存在。<br>查询复杂：查找特定课程的所有学生需要额外的解析逻辑。<br>扩展性差：不适合大规模、多条件查询的场景。</p>
+<p>最佳实践是使用中间表：</p>
+<p>数据一致性：中间表中的外键可以确保关联数据的完整性。<br>灵活性：中间表允许添加额外的信息（如时间戳、状态等）。<br>查询效率：数据库的索引可以优化多对多查询性能。<br>扩展性：关系较复杂时，可以轻松扩展中间表的结构。</p>
+<p>修改模型，通过点赞中间表建立课程表和用户之间的关系</p>
+<figure class="highlight js"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment">// models\user.js</span></span><br><span class="line"></span><br><span class="line"><span class="keyword">class</span> <span class="title class_">User</span> <span class="keyword">extends</span> <span class="title class_ inherited__">Model</span> &#123;</span><br><span class="line">  <span class="keyword">static</span> <span class="title function_">associate</span>(<span class="params">models</span>) &#123;</span><br><span class="line">    models.<span class="property">User</span>.<span class="title function_">belongsToMany</span>(models.<span class="property">Course</span>, &#123;</span><br><span class="line">      <span class="attr">through</span>: models.<span class="property">Like</span>,</span><br><span class="line">      <span class="attr">as</span>: <span class="string">&quot;likeCourse&quot;</span>,</span><br><span class="line">    &#125;);</span><br><span class="line">  &#125;</span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line"><span class="comment">// models\course.js</span></span><br><span class="line"><span class="keyword">class</span> <span class="title class_">User</span> <span class="keyword">extends</span> <span class="title class_ inherited__">Model</span> &#123;</span><br><span class="line">  <span class="keyword">static</span> <span class="title function_">associate</span>(<span class="params">models</span>) &#123;</span><br><span class="line">    models.<span class="property">Course</span>.<span class="title function_">belongsToMany</span>(models.<span class="property">User</span>, &#123;</span><br><span class="line">      <span class="attr">through</span>: models.<span class="property">Like</span>,</span><br><span class="line">      <span class="attr">as</span>: <span class="string">&quot;courseWithUsers&quot;</span>,</span><br><span class="line">    &#125;);</span><br><span class="line">  &#125;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+<p>查询某个用户喜欢的课程， <strong>如果使用 include 做查询在多对多的关系中无法实现分页,在 include 中无法对关联查询的数据分页，且模型中的 foreignKey 是必填的，否则会报错</strong></p>
+<figure class="highlight js"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br></pre></td><td class="code"><pre><span class="line">router.<span class="title function_">get</span>(<span class="string">&quot;/:id&quot;</span>, <span class="keyword">async</span> <span class="keyword">function</span> (<span class="params">req, res, next</span>) &#123;</span><br><span class="line">  <span class="keyword">try</span> &#123;</span><br><span class="line">    <span class="comment">// 获取user实例</span></span><br><span class="line">    <span class="keyword">const</span> user = <span class="keyword">await</span> <span class="title class_">User</span>.<span class="title function_">findByPk</span>(req.<span class="property">params</span>.<span class="property">id</span>, &#123;</span><br><span class="line">      <span class="attr">include</span>: [</span><br><span class="line">        &#123;</span><br><span class="line">          <span class="attr">model</span>: <span class="title class_">Course</span>,</span><br><span class="line">          <span class="attr">as</span>: <span class="string">&quot;likeCourses&quot;</span>,</span><br><span class="line">          <span class="comment">// 无法使用分页</span></span><br><span class="line">          <span class="comment">// limit: pageSize,</span></span><br><span class="line">          <span class="comment">// offset: (page - 1) * pageSize,</span></span><br><span class="line">        &#125;,</span><br><span class="line">      ],</span><br><span class="line">    &#125;);</span><br><span class="line"></span><br><span class="line">    res.<span class="title function_">json</span>(&#123;</span><br><span class="line">      <span class="comment">//...</span></span><br><span class="line">    &#125;);</span><br><span class="line">  &#125; <span class="keyword">catch</span> (err) &#123;&#125;</span><br><span class="line">&#125;);</span><br></pre></td></tr></table></figure>
+
+<p>所以可以使用 Lazy Loading 手动请求数据, 模型中提供了内置的方法，可以用于获取分页数据</p>
+<p>另外需要控制 <a target="_blank" rel="noopener" href="https://sequelize.org/docs/v6/core-concepts/assocs/#foobelongstomanybar--through-baz-">不显示中间表的数据</a></p>
+<figure class="highlight js"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br></pre></td><td class="code"><pre><span class="line">router.<span class="title function_">get</span>(<span class="string">&quot;/:id&quot;</span>, <span class="keyword">async</span> <span class="keyword">function</span> (<span class="params">req, res, next</span>) &#123;</span><br><span class="line">  <span class="keyword">try</span> &#123;</span><br><span class="line">    <span class="keyword">const</span> page = req.<span class="property">query</span>.<span class="property">page</span> || <span class="number">1</span>;</span><br><span class="line">    <span class="keyword">const</span> pageSize = req.<span class="property">query</span>.<span class="property">pageSize</span> || <span class="number">10</span>;</span><br><span class="line"></span><br><span class="line">    <span class="keyword">const</span> limit = pageSize;</span><br><span class="line">    <span class="keyword">const</span> offset = (page - <span class="number">1</span>) * pageSize;</span><br><span class="line">    <span class="keyword">const</span> user = <span class="keyword">await</span> <span class="title class_">User</span>.<span class="title function_">findByPk</span>(req.<span class="property">params</span>.<span class="property">id</span>);</span><br><span class="line"></span><br><span class="line">    <span class="comment">// getLikeCourses 是模型内部映射的方法，通过 get + as别名 命名</span></span><br><span class="line">    <span class="keyword">const</span> course = <span class="keyword">await</span> user.<span class="title function_">getLikeCourses</span>(&#123;</span><br><span class="line">      <span class="comment">// 不显示中间表的数据</span></span><br><span class="line">      <span class="attr">joinTableAttributes</span>: [],</span><br><span class="line">      <span class="attr">attributes</span>: [<span class="string">&quot;id&quot;</span>, <span class="string">&quot;name&quot;</span>],</span><br><span class="line">      limit,</span><br><span class="line">      offset,</span><br><span class="line">    &#125;);</span><br><span class="line"></span><br><span class="line">    <span class="comment">// 另一个映射方法用于获取总条数</span></span><br><span class="line">    <span class="keyword">const</span> total = <span class="keyword">await</span> user.<span class="title function_">countLikeCourses</span>();</span><br><span class="line"></span><br><span class="line">    res.<span class="title function_">json</span>(&#123;</span><br><span class="line">      <span class="comment">//...</span></span><br><span class="line">    &#125;);</span><br><span class="line">  &#125; <span class="keyword">catch</span> (err) &#123;&#125;</span><br><span class="line">&#125;);</span><br></pre></td></tr></table></figure>
+
+<h4 id="处理跨域"><a href="#处理跨域" class="headerlink" title="处理跨域"></a>处理跨域</h4><ul>
+<li>nginx</li>
+<li>cors</li>
+</ul>
+ 
+      <!-- reward -->
+      
+      <div id="reword-out">
+        <div id="reward-btn">
+          打赏
+        </div>
+      </div>
+      
+    </div>
+    
+
+    <!-- copyright -->
+    
+    <div class="declare">
+      <ul class="post-copyright">
+        <li>
+          <i class="ri-copyright-line"></i>
+          <strong>版权声明： </strong>
+          
+          本博客所有文章除特别声明外，著作权归作者所有。转载请注明出处！
+          
+        </li>
+      </ul>
+    </div>
+    
+    <footer class="article-footer">
+       
+  <ul class="article-tag-list" itemprop="keywords"><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/NodeJS/" rel="tag">NodeJS</a></li></ul>
+
+    </footer>
+  </div>
+
+   
+  <nav class="article-nav">
+    
+      <a href="/posts/e9424d0753a9/" class="article-nav-link">
+        <strong class="article-nav-caption">上一篇</strong>
+        <div class="article-nav-title">
+          
+            ReactDOM.render
+          
+        </div>
+      </a>
+    
+    
+      <a href="/posts/f43388a8eda0/" class="article-nav-link">
+        <strong class="article-nav-caption">下一篇</strong>
+        <div class="article-nav-title">Express实践 ① 用 sequelize 实现 CRUD</div>
+      </a>
+    
+  </nav>
+
+  
+   
+<div class="gitalk" id="gitalk-container"></div>
+
+<link rel="stylesheet" href="https://cdn.staticfile.org/gitalk/1.7.2/gitalk.min.css">
+
+
+<script src="https://cdn.staticfile.org/gitalk/1.7.2/gitalk.min.js"></script>
+
+
+<script src="https://cdn.staticfile.org/blueimp-md5/2.19.0/js/md5.min.js"></script>
+
+<script type="text/javascript">
+  var gitalk = new Gitalk({
+    clientID: 'bce2317b25da7c3c18f6',
+    clientSecret: 'e0ab868ca9054234798be82c2b1c0c9dd8632307',
+    repo: 'noopn.github.io',
+    owner: 'noopn',
+    admin: ['noopn'],
+    // id: location.pathname,      // Ensure uniqueness and length less than 50
+    id: md5(location.pathname),
+    distractionFreeMode: false,  // Facebook-like distraction free mode
+    pagerDirection: 'last'
+  })
+
+  gitalk.render('gitalk-container')
+</script>
+
+     
+</article>
+
+</section>
+      <footer class="footer">
+  <div class="outer">
+    <ul>
+      <li>
+        Copyrights &copy;
+        2015-2025
+        <i class="ri-heart-fill heart_icon"></i> SunZhiqi
+      </li>
+    </ul>
+    <ul>
+      <li>
+        
+      </li>
+    </ul>
+    <ul>
+      <li>
+        
+      </li>
+    </ul>
+    <ul>
+      
+    </ul>
+    <ul>
+      
+    </ul>
+    <ul>
+      <li>
+        <!-- cnzz统计 -->
+        
+      </li>
+    </ul>
+  </div>
+</footer>    
+    </main>
+    <div class="float_btns">
+      <div class="totop" id="totop">
+  <i class="ri-arrow-up-line"></i>
+</div>
+
+    </div>
+    <aside class="sidebar on">
+      <button class="navbar-toggle"></button>
+<nav class="navbar">
+  
+  <div class="logo">
+    <a href="/"><img src="/images/ayer-side.png" alt="四月八日"></a>
+  </div>
+  
+  <ul class="nav nav-main">
+    
+    <li class="nav-item">
+      <a class="nav-item-link" href="/">主页</a>
+    </li>
+    
+    <li class="nav-item">
+      <a class="nav-item-link" href="/archives">归档</a>
+    </li>
+    
+    <li class="nav-item">
+      <a class="nav-item-link" href="/categories">分类</a>
+    </li>
+    
+    <li class="nav-item">
+      <a class="nav-item-link" href="/tags">标签</a>
+    </li>
+    
+  </ul>
+</nav>
+<nav class="navbar navbar-bottom">
+  <ul class="nav">
+    <li class="nav-item">
+      
+      <a class="nav-item-link nav-item-search"  title="搜索">
+        <i class="ri-search-line"></i>
+      </a>
+      
+      
+    </li>
+  </ul>
+</nav>
+<div class="search-form-wrap">
+  <div class="local-search local-search-plugin">
+  <input type="search" id="local-search-input" class="local-search-input" placeholder="Search...">
+  <div id="local-search-result" class="local-search-result"></div>
+</div>
+</div>
+    </aside>
+    <div id="mask"></div>
+
+<!-- #reward -->
+<div id="reward">
+  <span class="close"><i class="ri-close-line"></i></span>
+  <p class="reward-p"><i class="ri-cup-line"></i>此时无声胜有声！</p>
+  <div class="reward-box">
+    
+    <div class="reward-item">
+      <img class="reward-img" src="/images/alipay.jpg">
+      <span class="reward-type">支付宝</span>
+    </div>
+    
+    
+    <div class="reward-item">
+      <img class="reward-img" src="/images/wechat.jpg">
+      <span class="reward-type">微信</span>
+    </div>
+    
+  </div>
+</div>
+    
+<script src="/js/jquery-3.6.0.min.js"></script>
+ 
+<script src="/js/lazyload.min.js"></script>
+
+<!-- Tocbot -->
+ 
+<script src="/js/tocbot.min.js"></script>
+
+<script>
+  tocbot.init({
+    tocSelector: ".tocbot",
+    contentSelector: ".article-entry",
+    headingSelector: "h1, h2, h3, h4, h5, h6",
+    hasInnerContainers: true,
+    scrollSmooth: true,
+    scrollContainer: "main",
+    positionFixedSelector: ".tocbot",
+    positionFixedClass: "is-position-fixed",
+    fixedSidebarOffset: "auto",
+  });
+</script>
+
+<script src="/js/jquery.modal.min.js"></script>
+<link rel="stylesheet" href="/css/jquery.modal.min.css" />
+<script src="/js/jquery.justifiedGallery.min.js"></script>
+
+<script src="/dist/main.js"></script>
+
+<!-- ImageViewer -->
+ <!-- Root element of PhotoSwipe. Must have class pswp. -->
+<div class="pswp" tabindex="-1" role="dialog" aria-hidden="true">
+  <!-- Background of PhotoSwipe. 
+         It's a separate element as animating opacity is faster than rgba(). -->
+  <div class="pswp__bg"></div>
+
+  <!-- Slides wrapper with overflow:hidden. -->
+  <div class="pswp__scroll-wrap">
+    <!-- Container that holds slides. 
+            PhotoSwipe keeps only 3 of them in the DOM to save memory.
+            Don't modify these 3 pswp__item elements, data is added later on. -->
+    <div class="pswp__container">
+      <div class="pswp__item"></div>
+      <div class="pswp__item"></div>
+      <div class="pswp__item"></div>
+    </div>
+
+    <!-- Default (PhotoSwipeUI_Default) interface on top of sliding area. Can be changed. -->
+    <div class="pswp__ui pswp__ui--hidden">
+      <div class="pswp__top-bar">
+        <!--  Controls are self-explanatory. Order can be changed. -->
+
+        <div class="pswp__counter"></div>
+
+        <button
+          class="pswp__button pswp__button--close"
+          title="Close (Esc)"
+        ></button>
+
+        <button
+          class="pswp__button pswp__button--share"
+          style="display: none"
+          title="Share"
+        ></button>
+
+        <button
+          class="pswp__button pswp__button--fs"
+          title="Toggle fullscreen"
+        ></button>
+
+        <button
+          class="pswp__button pswp__button--zoom"
+          title="Zoom in/out"
+        ></button>
+
+        <!-- Preloader demo http://codepen.io/dimsemenov/pen/yyBWoR -->
+        <!-- element will get class pswp__preloader--active when preloader is running -->
+        <div class="pswp__preloader">
+          <div class="pswp__preloader__icn">
+            <div class="pswp__preloader__cut">
+              <div class="pswp__preloader__donut"></div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <div class="pswp__share-modal pswp__share-modal--hidden pswp__single-tap">
+        <div class="pswp__share-tooltip"></div>
+      </div>
+
+      <button
+        class="pswp__button pswp__button--arrow--left"
+        title="Previous (arrow left)"
+      ></button>
+
+      <button
+        class="pswp__button pswp__button--arrow--right"
+        title="Next (arrow right)"
+      ></button>
+
+      <div class="pswp__caption">
+        <div class="pswp__caption__center"></div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<link rel="stylesheet" href="/css/photoswipe.min.css" />
+<link rel="stylesheet" href="/css/default-skin.min.css" />
+<script src="/js/photoswipe.min.js"></script>
+<script src="/js/photoswipe-ui-default.min.js"></script>
+
+<script>
+  function viewer_init() {
+    let pswpElement = document.querySelectorAll(".pswp")[0];
+    let $imgArr = document.querySelectorAll(
+      ".article-entry img:not(.reward-img)"
+    );
+
+    $imgArr.forEach(($em, i) => {
+      $em.onclick = () => {
+        // slider展开状态
+        // todo: 这样不好，后面改成状态
+        if (document.querySelector(".left-col.show")) return;
+        let items = [];
+        $imgArr.forEach(($em2, i2) => {
+          let img = $em2.getAttribute("data-idx", i2);
+          let src =
+            $em2.getAttribute("data-target") || $em2.getAttribute("src");
+          let title = $em2.getAttribute("alt");
+          // 获得原图尺寸
+          const image = new Image();
+          image.src = src;
+          items.push({
+            src: src,
+            w: image.width || $em2.width,
+            h: image.height || $em2.height,
+            title: title,
+          });
+        });
+        var gallery = new PhotoSwipe(pswpElement, PhotoSwipeUI_Default, items, {
+          index: parseInt(i),
+        });
+        gallery.init();
+      };
+    });
+  }
+  viewer_init();
+</script>
+ 
+<!-- MathJax -->
+ <script type="text/x-mathjax-config">
+  MathJax.Hub.Config({
+      tex2jax: {
+          inlineMath: [ ['$','$'], ["\\(","\\)"]  ],
+          processEscapes: true,
+          skipTags: ['script', 'noscript', 'style', 'textarea', 'pre', 'code']
+      }
+  });
+
+  MathJax.Hub.Queue(function() {
+      var all = MathJax.Hub.getAllJax(), i;
+      for(i=0; i < all.length; i += 1) {
+          all[i].SourceElement().parentNode.className += ' has-jax';
+      }
+  });
+</script>
+
+<script src="/js/MathJax.js"></script>
+<script src="/js/TeX-AMS-MML_HTMLorMML-full.js"></script>
+
+<script>
+  var ayerConfig = {
+    mathjax: true,
+  };
+</script>
+
+<!-- Katex -->
+
+<!-- busuanzi  -->
+
+<!-- ClickLove -->
+
+<!-- ClickBoom1 -->
+
+<!-- ClickBoom2 -->
+
+<!-- CodeCopy -->
+ 
+<link rel="stylesheet" href="/css/clipboard.css">
+ <script src="/js/clipboard.min.js"></script>
+<script>
+  function wait(callback, seconds) {
+    var timelag = null;
+    timelag = window.setTimeout(callback, seconds);
+  }
+  !(function (e, t, a) {
+    var initCopyCode = function () {
+      var copyHtml = "";
+      copyHtml += '<button class="btn-copy" data-clipboard-snippet="">';
+      copyHtml += '<i class="ri-file-copy-2-line"></i><span>COPY</span>';
+      copyHtml += "</button>";
+      $(".highlight .code pre").before(copyHtml);
+      $(".article pre code").before(copyHtml);
+      var clipboard = new ClipboardJS(".btn-copy", {
+        target: function (trigger) {
+          return trigger.nextElementSibling;
+        },
+      });
+      clipboard.on("success", function (e) {
+        let $btn = $(e.trigger);
+        $btn.addClass("copied");
+        let $icon = $($btn.find("i"));
+        $icon.removeClass("ri-file-copy-2-line");
+        $icon.addClass("ri-checkbox-circle-line");
+        let $span = $($btn.find("span"));
+        $span[0].innerText = "COPIED";
+
+        wait(function () {
+          // 等待两秒钟后恢复
+          $icon.removeClass("ri-checkbox-circle-line");
+          $icon.addClass("ri-file-copy-2-line");
+          $span[0].innerText = "COPY";
+        }, 2000);
+      });
+      clipboard.on("error", function (e) {
+        e.clearSelection();
+        let $btn = $(e.trigger);
+        $btn.addClass("copy-failed");
+        let $icon = $($btn.find("i"));
+        $icon.removeClass("ri-file-copy-2-line");
+        $icon.addClass("ri-time-line");
+        let $span = $($btn.find("span"));
+        $span[0].innerText = "COPY FAILED";
+
+        wait(function () {
+          // 等待两秒钟后恢复
+          $icon.removeClass("ri-time-line");
+          $icon.addClass("ri-file-copy-2-line");
+          $span[0].innerText = "COPY";
+        }, 2000);
+      });
+    };
+    initCopyCode();
+  })(window, document);
+</script>
+ 
+<!-- CanvasBackground -->
+
+<script>
+  if (window.mermaid) {
+    mermaid.initialize({ theme: "default" });
+  }
+</script>
+
+
+    
+    
+
+  </div>
+</body>
+
+</html>

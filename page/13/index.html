@@ -112,6 +112,83 @@
     
     
     <article
+  id="post-react/Recoil状态管理库"
+  class="article article-type-post"
+  itemscope
+  itemprop="blogPost"
+  data-scroll-reveal
+>
+  <div class="article-inner">
+    
+    <header class="article-header">
+       
+<h2 itemprop="name">
+  <a class="article-title" href="/posts/e94b90efdf77/"
+    >Recoil状态管理库</a> 
+</h2>
+ 
+
+      
+    </header>
+     
+    <div class="article-meta">
+      <a href="/posts/e94b90efdf77/" class="article-date">
+  <time datetime="2021-07-28T02:01:29.000Z" itemprop="datePublished">2021-07-28</time>
+</a> 
+  <div class="article-category">
+    <a class="article-category-link" href="/categories/React/">React</a>
+  </div>
+   
+    </div>
+      
+    <div class="article-entry" itemprop="articleBody">
+       
+  <h4 id="Recoil-产生背景"><a href="#Recoil-产生背景" class="headerlink" title="Recoil 产生背景"></a>Recoil 产生背景</h4><p>前端的应用越来越复杂，诸如常见的 Web 监控面板，包含各类的性能数据、节点信息、分类聚合用来进行应用分析。可以想象得到面板中包含各类的交互行为，编辑、删除、添加、将一个数据源绑定多个面板等等。除此之外，还需要对数据持久化，这样就能把 url 分享给其他人，并要确保被分享的人看到的是一致的。</p>
+<p>因此开发过程中要尽量做到页面最小化更新达到高性能的目的，需要对数据流的操作更加精细。</p>
+<p>面对这样的挑战，一般会想到用一些状态管理的函数或者库，如 React 内置的 state 管理，或者 Redux。</p>
+<p>Recoil 想通过一个不一样的方式来解决这些问题，主要分为 3 个方面：</p>
+<p>Flexible shared state: 在 react tree 任意的地方都能灵活共享 state，并保持高性能<br>Derived data and queries: 高效可靠地根据变化的 state 进行计算<br>App-wide state observation: time travel debugging, 支持 undo, 日志持久化</p>
+<h4 id="Recoil-主要设计"><a href="#Recoil-主要设计" class="headerlink" title="Recoil 主要设计"></a>Recoil 主要设计</h4><p>有一个应用基于这样一个场景，将 List 中更新一个节点，然后对应 Canvas 中的节点也更新</p>
+<p><img src="/posts/e94b90efdf77/0001.jpg"></p>
+<h5 id="第-1-种方式"><a href="#第-1-种方式" class="headerlink" title="第 1 种方式"></a>第 1 种方式</h5><p>把 state 传到公共的父节点转发给 canvas 子节点，这样显然会全量 re-render</p>
+<h5 id="第-2-种方式"><a href="#第-2-种方式" class="headerlink" title="第 2 种方式"></a>第 2 种方式</h5><p>给父节点加 Provider 在子节点加 Consumer，不过每多加一个 item 就要多一层 Provider</p>
+<p><img src="/posts/e94b90efdf77/0002.jpg"></p>
+<h5 id="第-3-种方式"><a href="#第-3-种方式" class="headerlink" title="第 3 种方式"></a>第 3 种方式</h5><p>在 react tree 上创建另一个正交的 tree，把每片 item 的 state 抽出来。每个 component 都有对应单独的一片 state，当数据更新的时候对应的组件也会更新。Recoil 把 这每一片的数据称为 Atom，Atom 是可订阅可变的 state 单元。</p>
+<p><img src="/posts/e94b90efdf77/0003.jpg"></p>
+<p>配合 useRecoilState 可以使用这些 Atom，实践上对多个 item 的 Atom 可以用 memorize 进行优化，具体可以在官方文档查看</p>
+<h4 id="Derived-Data"><a href="#Derived-Data" class="headerlink" title="Derived Data"></a>Derived Data</h4><p>有这么一个场景需要根据多个 Item Box 计算 Bounding Box</p>
+<p><img src="/posts/e94b90efdf77/0004.jpg"></p>
+<p>如果你是 Vue 的爱好者，你可能想到了计算属性。Derived Data 确实有 computed props 的味道，具体思路是选取多个 Atom 进行计算，然后返回一个新的 state。因此在 Recoil 中设计了 select 这样的 API 来选取多个 Atom 进行计算。</p>
+<p><img src="/posts/e94b90efdf77/0005.jpg"></p>
+<p>select 的设计和 Proxy 挺像的，属性上有 get 进行读取，有 set 进行设置，函数内部又有 get， set 操作 state</p>
+<figure class="highlight javascript"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">import</span> &#123;atom, selector, useRecoilState&#125; <span class="keyword">from</span> <span class="string">&#x27;recoil&#x27;</span>;</span><br><span class="line"></span><br><span class="line"><span class="keyword">const</span> tempFahrenheit = <span class="title function_">atom</span>(&#123;</span><br><span class="line">  <span class="attr">key</span>: <span class="string">&#x27;tempFahrenheit&#x27;</span>,</span><br><span class="line">  <span class="attr">default</span>: <span class="number">32</span>,</span><br><span class="line">&#125;);</span><br><span class="line"></span><br><span class="line"><span class="keyword">const</span> tempCelcius = <span class="title function_">selector</span>(&#123;</span><br><span class="line">  <span class="attr">key</span>: <span class="string">&#x27;tempCelcius&#x27;</span>,</span><br><span class="line">  <span class="attr">get</span>: <span class="function">(<span class="params">&#123;get&#125;</span>) =&gt;</span> ((<span class="title function_">get</span>(tempFahrenheit) - <span class="number">32</span>) * <span class="number">5</span>) / <span class="number">9</span>,</span><br><span class="line">  <span class="attr">set</span>: <span class="function">(<span class="params">&#123;set&#125;, newValue</span>) =&gt;</span> <span class="title function_">set</span>(tempFahrenheit, (newValue * <span class="number">9</span>) / <span class="number">5</span> + <span class="number">32</span>),</span><br><span class="line">&#125;);</span><br><span class="line"></span><br></pre></td></tr></table></figure>
+
+<h4 id="App-wide-observation"><a href="#App-wide-observation" class="headerlink" title="App-wide observation"></a>App-wide observation</h4><p>这个场景下需要把 url 分享给其他人，别人打开相同的链接也能看到一样的页面。</p>
+<p>那么就需要 observe Atom 的变更，Recoil 使用 useTransactionObservation 进行订阅</p>
+<figure class="highlight javascript"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line"><span class="title function_">useTransactionObservation</span>((&#123;atomValues,modifiedAtoms,...&#125; =&gt; &#123;&#125;))</span><br></pre></td></tr></table></figure>
+
+<p>另一方面，打开链接的时候也需要对输入的数据进行校验</p>
+<figure class="highlight javascript"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">const</span> counter = <span class="title function_">atom</span>(&#123;</span><br><span class="line">  <span class="attr">key</span>: <span class="string">&#x27;myCounter&#x27;</span>,</span><br><span class="line">  <span class="attr">default</span>: <span class="number">0</span>,</span><br><span class="line">  <span class="attr">validator</span>: (untrustedInput),</span><br><span class="line">  <span class="attr">metadata</span>: ...</span><br><span class="line">&#125;)</span><br></pre></td></tr></table></figure> 
+      <!-- reward -->
+      
+    </div>
+    
+
+    <!-- copyright -->
+    
+    <footer class="article-footer">
+       
+  <ul class="article-tag-list" itemprop="keywords"><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/Recoil/" rel="tag">Recoil</a></li></ul>
+
+    </footer>
+  </div>
+
+   
+    
+</article>
+
+    
+    <article
   id="post-other/Ubuntu20.04安装utorrent"
   class="article article-type-post"
   itemscope
@@ -797,72 +874,13 @@
 </article>
 
     
-    <article
-  id="post-nginx/负载均衡"
-  class="article article-type-post"
-  itemscope
-  itemprop="blogPost"
-  data-scroll-reveal
->
-  <div class="article-inner">
-    
-    <header class="article-header">
-       
-<h2 itemprop="name">
-  <a class="article-title" href="/posts/830ecdc6d0af/"
-    >负载均衡</a> 
-</h2>
- 
-
-      
-    </header>
-     
-    <div class="article-meta">
-      <a href="/posts/830ecdc6d0af/" class="article-date">
-  <time datetime="2021-06-15T10:35:22.000Z" itemprop="datePublished">2021-06-15</time>
-</a> 
-  <div class="article-category">
-    <a class="article-category-link" href="/categories/Nginx/">Nginx</a>
-  </div>
-   
-    </div>
-      
-    <div class="article-entry" itemprop="articleBody">
-       
-  <h4 id="配置"><a href="#配置" class="headerlink" title="配置"></a>配置</h4><figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br></pre></td><td class="code"><pre><span class="line">http &#123;</span><br><span class="line">  upstream myServer&#123;</span><br><span class="line">      ip_hash;</span><br><span class="line">      server localhost:1111 weight=10;</span><br><span class="line">      server localhost:2222;</span><br><span class="line">      fair;</span><br><span class="line">  &#125;</span><br><span class="line">  listen       port;</span><br><span class="line">  server_name  xxx.xxx.xxx.xx;</span><br><span class="line"></span><br><span class="line">  #charset koi8-r;</span><br><span class="line"></span><br><span class="line">  #access_log  logs/host.access.log  main;</span><br><span class="line"></span><br><span class="line">  location / &#123;</span><br><span class="line">      proxy_pass http://myServer; </span><br><span class="line">  &#125;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
-
-
-<h4 id="轮询策略"><a href="#轮询策略" class="headerlink" title="轮询策略"></a>轮询策略</h4><p>每个请求按时间的顺序逐一分配到不同德尔服务器中，如果服务器挂了，可以自动剔除。</p>
-<h4 id="权重策略"><a href="#权重策略" class="headerlink" title="权重策略"></a>权重策略</h4><p>权重越高，被分配的请求越多</p>
-<h4 id="ip-hash"><a href="#ip-hash" class="headerlink" title="ip hash"></a>ip hash</h4><p>每个请求按访问ip的hash结果分配，这样每个访客固定访问一个服务器后，可以解决session问题。</p>
-<h4 id="fair-第三方"><a href="#fair-第三方" class="headerlink" title="fair 第三方"></a>fair 第三方</h4><p>根据请求的响应时间来分配，响应时间短的先分配</p>
- 
-      <!-- reward -->
-      
-    </div>
-    
-
-    <!-- copyright -->
-    
-    <footer class="article-footer">
-       
-  <ul class="article-tag-list" itemprop="keywords"><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/Nginx/" rel="tag">Nginx</a></li></ul>
-
-    </footer>
-  </div>
-
-   
-    
-</article>
-
-    
   </article>
   
 
   
   <nav class="page-nav">
     
-    <a class="extend prev" rel="prev" href="/page/12/">上一页</a><a class="page-number" href="/">1</a><span class="space">&hellip;</span><a class="page-number" href="/page/11/">11</a><a class="page-number" href="/page/12/">12</a><span class="page-number current">13</span><a class="page-number" href="/page/14/">14</a><a class="page-number" href="/page/15/">15</a><span class="space">&hellip;</span><a class="page-number" href="/page/27/">27</a><a class="extend next" rel="next" href="/page/14/">下一页</a>
+    <a class="extend prev" rel="prev" href="/page/12/">上一页</a><a class="page-number" href="/">1</a><span class="space">&hellip;</span><a class="page-number" href="/page/11/">11</a><a class="page-number" href="/page/12/">12</a><span class="page-number current">13</span><a class="page-number" href="/page/14/">14</a><a class="page-number" href="/page/15/">15</a><span class="space">&hellip;</span><a class="page-number" href="/page/28/">28</a><a class="extend next" rel="next" href="/page/14/">下一页</a>
   </nav>
   
 </section>
@@ -932,10 +950,6 @@
     
     <li class="nav-item">
       <a class="nav-item-link" href="/tags">标签</a>
-    </li>
-    
-    <li class="nav-item">
-      <a class="nav-item-link" href="/tags/Essay">随笔</a>
     </li>
     
   </ul>

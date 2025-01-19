@@ -1,0 +1,644 @@
+<!DOCTYPE html>
+
+
+<html lang="zh-CN">
+  
+
+    <head>
+      <meta charset="utf-8" />
+       
+      <meta name="keywords" content="前端 web react" />
+       
+      <meta name="description" content="前端技术与生活。" />
+      
+      <meta
+        name="viewport"
+        content="width=device-width, initial-scale=1, maximum-scale=1"
+      />
+      <title>简单Node部署 |  四月八日</title>
+  <meta name="generator" content="hexo-theme-ayer">
+      
+      <link rel="shortcut icon" href="/favicon.ico" />
+       
+<link rel="stylesheet" href="/dist/main.css">
+ 
+<link rel="stylesheet" href="/css/fonts/remixicon.css">
+ 
+<link rel="stylesheet" href="/css/custom.css">
+ 
+      <script src="/js/pace.min.js"></script>
+       
+ 
+
+      <link rel="stylesheet" href="/css/bulma.min.css" />
+      <script src="/js/sweetalert2.min.js"></script>
+
+      <!-- mermaid -->
+      
+      <script src="https://cdn.staticfile.org/mermaid/8.14.0/mermaid.min.js"></script>
+      
+      <style>
+        .swal2-styled.swal2-confirm {
+          font-size: 1.6rem;
+        }
+      </style>
+    <!-- hexo injector head_end start -->
+<link rel="stylesheet" href="/css/katex.min.css">
+
+<link rel="stylesheet" href="/css/style.css">
+<!-- hexo injector head_end end --></head>
+  </html>
+</html>
+
+
+<body>
+  <div id="app">
+    
+      
+    <main class="content on">
+      <section class="outer">
+  <article
+  id="post-devops/Node项目部署"
+  class="article article-type-post"
+  itemscope
+  itemprop="blogPost"
+  data-scroll-reveal
+>
+  <div class="article-inner">
+    
+    <header class="article-header">
+       
+<h1 class="article-title sea-center" style="border-left:0" itemprop="name">
+  简单Node部署
+</h1>
+ 
+
+      
+    </header>
+     
+    <div class="article-meta">
+      <a href="/posts/6661e67bf767/" class="article-date">
+  <time datetime="2021-03-01T13:38:19.000Z" itemprop="datePublished">2021-03-01</time>
+</a> 
+  <div class="article-category">
+    <a class="article-category-link" href="/categories/DevOps/">DevOps</a>
+  </div>
+  
+<div class="word_count">
+    <span class="post-time">
+        <span class="post-meta-item-icon">
+            <i class="ri-quill-pen-line"></i>
+            <span class="post-meta-item-text"> 字数统计:</span>
+            <span class="post-count">3.7k</span>
+        </span>
+    </span>
+
+    <span class="post-time">
+        &nbsp; | &nbsp;
+        <span class="post-meta-item-icon">
+            <i class="ri-book-open-line"></i>
+            <span class="post-meta-item-text"> 阅读时长≈</span>
+            <span class="post-count">15 分钟</span>
+        </span>
+    </span>
+</div>
+ 
+    </div>
+      
+    <div class="tocbot"></div>
+
+
+
+
+  
+    <div class="article-entry" itemprop="articleBody">
+       
+  <h4 id="创建非-root-账户"><a href="#创建非-root-账户" class="headerlink" title="创建非 root 账户"></a>创建非 root 账户</h4><p>有些云服务器会禁止 root 用户登录， 但是如果分发的服务器使用 root 登录，可以创建一个非 root 账号， 防止权限过高导致误操作。</p>
+<figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment"># root 用户下执行，添加一个 user1 用户</span></span><br><span class="line">adduser user1</span><br><span class="line"></span><br><span class="line">Adding user `user1<span class="string">&#x27; ...</span></span><br><span class="line"><span class="string">Adding new group `user1&#x27;</span> (1002) ...</span><br><span class="line">Adding new user `user1<span class="string">&#x27; (1002) with group `user1&#x27;</span> ...</span><br><span class="line">Creating home directory `/home/user1<span class="string">&#x27; ...</span></span><br><span class="line"><span class="string">Copying files from `/etc/skel&#x27;</span> ...</span><br><span class="line">New password:</span><br><span class="line">Retype new password:</span><br><span class="line">passwd: password updated successfully</span><br><span class="line">Changing the user information <span class="keyword">for</span> user1</span><br><span class="line">Enter the new value, or press ENTER <span class="keyword">for</span> the default</span><br><span class="line">        Full Name []: sunzhiqi</span><br><span class="line">        Room Number []:</span><br><span class="line">        Work Phone []:</span><br><span class="line">        Home Phone []:</span><br><span class="line">        Other []:</span><br><span class="line">Is the information correct? [Y/n]</span><br></pre></td></tr></table></figure>
+
+<p>将指定的用户（user）添加到 sudo 组中，从而授予该用户使用 sudo 命令的权限</p>
+<figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">gpasswd -a user1 sudo</span><br></pre></td></tr></table></figure>
+
+<p><strong>之前 root 用户登录的窗口不要关闭，如果新用户无法登录，可以使用 root 用户窗口重启 ssh 服务，再次尝试</strong></p>
+<figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">service ssh restart</span><br></pre></td></tr></table></figure>
+
+<h4 id="免密登录"><a href="#免密登录" class="headerlink" title="免密登录"></a>免密登录</h4><p>如果使用 ssh 工具可以记住登录密码，如果使用命令行需要配置 <a href="/posts/de11f04658e7/#%E5%85%8D%E5%AF%86%E7%99%BB%E9%99%86"><strong>免密登录</strong></a></p>
+<h4 id="修改默认端口"><a href="#修改默认端口" class="headerlink" title="修改默认端口"></a>修改默认端口</h4><p><strong>修改完成后需要同步修改本地的 config 免密登录配置文件，同时配置服务器防火墙放行端口</strong></p>
+<figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br></pre></td><td class="code"><pre><span class="line">vi /etc/ssh/sshd_config</span><br><span class="line"></span><br><span class="line"><span class="comment">#修改端口字段</span></span><br><span class="line"><span class="comment"># Port 22222</span></span><br></pre></td></tr></table></figure>
+
+<h4 id="禁用-root-登录"><a href="#禁用-root-登录" class="headerlink" title="禁用 root 登录"></a>禁用 root 登录</h4><figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br></pre></td><td class="code"><pre><span class="line">vi /etc/ssh/sshd_config</span><br><span class="line"></span><br><span class="line"><span class="comment"># 表示禁止密码登录，但是可以通过SSH登录</span></span><br><span class="line"><span class="comment"># 通常需要设置为no</span></span><br><span class="line"><span class="comment">#PermitRootLogin prohibit-password</span></span><br><span class="line"></span><br><span class="line"><span class="comment"># 使用密码登录，通常设置为no</span></span><br><span class="line"><span class="comment"># PasswordAuthentication yes</span></span><br><span class="line"></span><br></pre></td></tr></table></figure>
+
+<h4 id="iptables-配置"><a href="#iptables-配置" class="headerlink" title="iptables 配置"></a>iptables 配置</h4><figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">sudo <span class="built_in">touch</span> /etc/network/if-up.d/iptables.up</span><br></pre></td></tr></table></figure>
+
+<p>写入规则</p>
+<figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br><span class="line">35</span><br><span class="line">36</span><br><span class="line">37</span><br><span class="line">38</span><br><span class="line">39</span><br><span class="line">40</span><br><span class="line">41</span><br><span class="line">42</span><br><span class="line">43</span><br><span class="line">44</span><br><span class="line">45</span><br><span class="line">46</span><br><span class="line">47</span><br><span class="line">48</span><br><span class="line">49</span><br><span class="line">50</span><br><span class="line">51</span><br><span class="line">52</span><br><span class="line">53</span><br><span class="line">54</span><br><span class="line">55</span><br><span class="line">56</span><br><span class="line">57</span><br><span class="line">58</span><br><span class="line">59</span><br><span class="line">60</span><br><span class="line">61</span><br><span class="line">62</span><br><span class="line">63</span><br><span class="line">64</span><br><span class="line">65</span><br><span class="line">66</span><br><span class="line">67</span><br><span class="line">68</span><br><span class="line">69</span><br><span class="line">70</span><br><span class="line">71</span><br><span class="line">72</span><br><span class="line">73</span><br><span class="line">74</span><br><span class="line">75</span><br><span class="line">76</span><br><span class="line">77</span><br><span class="line">78</span><br><span class="line">79</span><br><span class="line">80</span><br><span class="line">81</span><br><span class="line">82</span><br><span class="line">83</span><br><span class="line">84</span><br><span class="line">85</span><br><span class="line">86</span><br><span class="line">87</span><br><span class="line">88</span><br><span class="line">89</span><br></pre></td><td class="code"><pre><span class="line">*filter</span><br><span class="line"></span><br><span class="line"><span class="comment"># -A INPUT：向 INPUT 链添加规则，用于处理进入系统的数据包。</span></span><br><span class="line"><span class="comment"># -m state：指定使用 state 模块，state 模块允许基于连接状态来过滤数据包。</span></span><br><span class="line"><span class="comment"># --state ESTABLISHED,RELATED：允许已建立连接（ESTABLISHED）和相关连接（RELATED）的数据包通过。简单来说，允许已经建立的连接的数据包通过，例如响应来自客户端的请求。</span></span><br><span class="line"><span class="comment"># -j ACCEPT：匹配此规则的数据包将被接受（允许通过）。</span></span><br><span class="line">-A INPUT -m state --state ESTABLISHED,RELATED -j ACCEPT</span><br><span class="line"></span><br><span class="line"></span><br><span class="line"><span class="comment"># -A OUTPUT：向 OUTPUT 链添加规则，用于处理从系统发送的数据包。</span></span><br><span class="line"><span class="comment"># -j ACCEPT：所有匹配此规则的数据包将被接受，即允许所有出站流量。</span></span><br><span class="line">-A OUTPUT -j ACCEPT</span><br><span class="line"></span><br><span class="line"></span><br><span class="line"><span class="comment"># -A INPUT：向 INPUT 链添加规则，处理进入系统的数据包。</span></span><br><span class="line"><span class="comment"># -p tcp：指定使用 TCP 协议。</span></span><br><span class="line"><span class="comment"># --dport 443：指定目标端口为 443，这通常用于 HTTPS 流量。</span></span><br><span class="line"><span class="comment"># -j ACCEPT：匹配此规则的 TCP 数据包将被接受，允许 HTTPS 流量进入系统。</span></span><br><span class="line">-A INPUT -p tcp --dport 443 -j ACCEPT</span><br><span class="line"></span><br><span class="line"></span><br><span class="line"><span class="comment"># -A INPUT：向 INPUT 链添加规则，处理进入系统的数据包。</span></span><br><span class="line"><span class="comment"># -p tcp：指定使用 TCP 协议。</span></span><br><span class="line"><span class="comment"># --dport 80：指定目标端口为 80，通常用于 HTTP 流量。</span></span><br><span class="line"><span class="comment"># -j ACCEPT：允许所有 HTTP 流量（目标端口 80）进入系统。</span></span><br><span class="line">-A INPUT -p tcp --dport 80 -j ACCEPT</span><br><span class="line"></span><br><span class="line"></span><br><span class="line"><span class="comment"># -A INPUT：向 INPUT 链添加规则，处理进入系统的数据包。</span></span><br><span class="line"><span class="comment"># -p tcp：指定使用 TCP 协议。</span></span><br><span class="line"><span class="comment"># -m state：使用 state 模块来匹配连接状态。</span></span><br><span class="line"><span class="comment"># --state NEW：只允许新的连接通过，即连接尚未建立的流量。</span></span><br><span class="line"><span class="comment"># --dport 39999：指定目标端口为 39999。</span></span><br><span class="line"><span class="comment"># -j ACCEPT：允许目标端口为 39999 的新连接通过。</span></span><br><span class="line">-A INPUT -p tcp -m state --state NEW --dport 22222 -j ACCEPT</span><br><span class="line"></span><br><span class="line"></span><br><span class="line"></span><br><span class="line"><span class="comment"># -A INPUT：向 INPUT 链添加规则，处理进入系统的数据包。</span></span><br><span class="line"><span class="comment"># -p icmp：指定使用 ICMP 协议，通常用于网络诊断，如 ping 命令。</span></span><br><span class="line"><span class="comment"># -m icmp：使用 ICMP 模块进行匹配。</span></span><br><span class="line"><span class="comment"># --icmp-type 8：指定 ICMP 类型为 8，这表示“回显请求”类型，通常是 ping 请求。</span></span><br><span class="line"><span class="comment"># -j ACCEPT：允许 ping 请求（ICMP 类型 8）进入系统。</span></span><br><span class="line">-A INPUT -p icmp -m icmp --icmp-type 8 -j ACCEPT</span><br><span class="line"></span><br><span class="line"></span><br><span class="line"><span class="comment"># -A INPUT：将规则添加到 INPUT 链，表示处理进入系统的流量。</span></span><br><span class="line"><span class="comment"># -m limit 5/min：使用 limit 模块来限制日志记录的频率。这里表示每分钟最多记录 5 次 拒绝的连接请求。这样可以避免日志记录过多导致磁盘空间不足。</span></span><br><span class="line"><span class="comment"># -j LOG：指示 iptables 执行日志记录操作。</span></span><br><span class="line"><span class="comment"># --log-prefix &quot;iptables denied: &quot;：为每个被记录的日志条目添加前缀。日志条目将以 iptables denied: 开头，便于区分其他日志。</span></span><br><span class="line"><span class="comment"># --log-level 7：设置日志级别为 7。日志级别越高，记录的详细信息越多。级别 7 是最高级别，通常用于调试。</span></span><br><span class="line"><span class="comment"># 这条规则的作用是：记录所有被拒绝的连接请求，并且每分钟最多记录 5 次，并将日志保存到系统的日志文件中（通常是 /var/log/syslog 或 /var/log/messages）。</span></span><br><span class="line">-A INPUT -m <span class="built_in">limit</span> 5/min -j LOG --log-prefix <span class="string">&quot;iptables denied: &quot;</span> --log-level 7</span><br><span class="line"></span><br><span class="line"><span class="comment"># 拒绝所有未被允许的入站流量，即如果流量没有匹配任何允许规则，则会被拒绝并发送一个拒绝消息。</span></span><br><span class="line">-A INPUT -j REJECT</span><br><span class="line"></span><br><span class="line"></span><br><span class="line"><span class="comment"># 拒绝所有经过路由的流量。通常这种配置用于禁止路由器或网关机器转发流量。</span></span><br><span class="line">-A FORWARD -j REJECT</span><br><span class="line"></span><br><span class="line"></span><br><span class="line"><span class="comment"># -A INPUT：将这条规则添加到 INPUT 链，表示处理进入系统的流量。</span></span><br><span class="line"><span class="comment"># -p tcp：指定协议为 TCP。</span></span><br><span class="line"><span class="comment"># --dport 80：指定目标端口为 80，即 HTTP 流量。</span></span><br><span class="line"><span class="comment"># -i eth0：表示该规则仅适用于 eth0 网络接口。也就是说，只有通过该接口的流量才会应用此规则。</span></span><br><span class="line"><span class="comment"># -m state：使用 state 模块来匹配数据包的连接状态。</span></span><br><span class="line"><span class="comment"># --state NEW：匹配所有 新的连接，即第一次尝试建立连接的流量。</span></span><br><span class="line"><span class="comment"># -m recent --set：使用 recent 模块，标记（--set）每个新连接的源 IP 地址。这会将源 IP 地址添加到一个最近连接的列表中。这个模块通常用于追踪和限制访问频率。</span></span><br><span class="line"><span class="comment"># 这条规则的作用是：对所有新的、来自 eth0 接口的 HTTP 请求进行标记，记录这些请求的源 IP 地址。</span></span><br><span class="line">-A INPUT -p tcp --dport 80 -i eth0 -m state --state NEW -m recent --<span class="built_in">set</span></span><br><span class="line"></span><br><span class="line"></span><br><span class="line"></span><br><span class="line"><span class="comment"># -A INPUT：将规则添加到 INPUT 链，处理进入的流量。</span></span><br><span class="line"><span class="comment"># -p tcp：使用 TCP 协议。</span></span><br><span class="line"><span class="comment"># --dport 80：指定目标端口为 80，即 HTTP 流量。</span></span><br><span class="line"><span class="comment"># -i eth0：指定网络接口为 eth0。</span></span><br><span class="line"><span class="comment"># -m state：使用 state 模块来匹配数据包的连接状态。</span></span><br><span class="line"><span class="comment"># --state NEW：匹配所有新的连接。</span></span><br><span class="line"><span class="comment"># -m recent --update：使用 recent 模块来更新连接源 IP 的记录。</span></span><br><span class="line"><span class="comment"># --seconds 60：指定检查时间窗口为 60 秒。即在过去 60 秒内的请求将被视为重复的请求。</span></span><br><span class="line"><span class="comment"># --hitcount 150：如果源 IP 在 60 秒内的请求次数超过 150 次，则触发 DROP 动作。</span></span><br><span class="line"><span class="comment"># -j DROP：如果源 IP 地址的请求次数超过 150 次，就会被 丢弃，即拒绝这个源 IP 地址的流量。</span></span><br><span class="line"><span class="comment"># 这条规则的作用是：如果一个源 IP 地址在 60 秒内对端口 80 发起超过 150 次新连接，则丢弃该 IP 的请求。这通常用于 防止 DoS（拒绝服务）攻击 或者 流量过载，限制某个 IP 在短时间内过多的连接请求。</span></span><br><span class="line">-A INPUT -p tcp --dport 80 -i eth0 -m state --state NEW -m recent --update --seconds 60 --hitcount 150 -j DROP</span><br><span class="line"></span><br><span class="line"></span><br><span class="line">COMMIT</span><br></pre></td></tr></table></figure>
+
+<p>使用 iptables-restore 从 &#x2F;etc&#x2F;network&#x2F;if-up.d&#x2F;iptables.up 文件中加载并恢复防火墙规则</p>
+<figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">sudo iptables-restore &lt; /etc/network/if-up.d/iptables.up</span><br></pre></td></tr></table></figure>
+
+<p>启动防火墙</p>
+<figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><span class="line">sudo ufw <span class="built_in">enable</span></span><br><span class="line"></span><br><span class="line">sudo ufw status</span><br></pre></td></tr></table></figure>
+
+<p>配置开机自动写入</p>
+<figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment"># 创建文件</span></span><br><span class="line"><span class="built_in">touch</span> /etc/network/if-up.d/iptables</span><br><span class="line"></span><br><span class="line"><span class="comment"># 写入配置</span></span><br><span class="line"></span><br><span class="line"><span class="comment">#!/bin/sh</span></span><br><span class="line">iptables-restore /etc/iptables.up</span><br><span class="line"></span><br></pre></td></tr></table></figure>
+
+<h4 id="fail2ban"><a href="#fail2ban" class="headerlink" title="fail2ban"></a>fail2ban</h4><p>Fail2ban 是一个开源的入侵防护工具，主要用于防止基于暴力破解的攻击（如 SSH、HTTP、FTP 等服务的暴力登录尝试）。它通过监控日志文件，检测可疑行为（如多次失败的登录尝试），然后根据配置的规则采取措施，例如暂时或永久禁止攻击者的 IP 地址。</p>
+<figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">sudo apt install fail2ban</span><br></pre></td></tr></table></figure>
+
+<p>修改配置</p>
+<figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br></pre></td><td class="code"><pre><span class="line">vi /etc</span><br><span class="line"></span><br><span class="line"><span class="comment"># 换成自己的邮箱</span></span><br><span class="line">destemail = root@localhost</span><br></pre></td></tr></table></figure>
+
+<p>启动服务</p>
+<figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">service fail2ban start</span><br></pre></td></tr></table></figure>
+
+<h4 id="配置-node-环境"><a href="#配置-node-环境" class="headerlink" title="配置 node 环境"></a>配置 node 环境</h4><p>安装必要依赖</p>
+<figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">sudo apt install vim openssl build-essential libssl-dev wget curl git</span><br></pre></td></tr></table></figure>
+
+<p>安装 <a target="_blank" rel="noopener" href="https://github.com/nvm-sh/nvm">nvm</a>,指定默认版本</p>
+<figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">nvm <span class="built_in">alias</span> default v20.xx</span><br></pre></td></tr></table></figure>
+
+<h4 id="设置系统文件参数"><a href="#设置系统文件参数" class="headerlink" title="设置系统文件参数"></a>设置系统文件参数</h4><p>修改了 fs.inotify.max_user_watches 参数，增加每个用户可以监控的文件数（即文件监控器的数量）。</p>
+<p>将此设置永久性地添加到 &#x2F;etc&#x2F;sysctl.conf 配置文件中，并应用该更改，使得新的文件监控数值生效。</p>
+<figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line"><span class="built_in">echo</span> fs.inotify.max_user_watches=524288 | sudo <span class="built_in">tee</span> -a /etc/sysctl.conf</span><br><span class="line">sudo sysctl -p</span><br></pre></td></tr></table></figure>
+
+<h4 id="强制同步-cnpm"><a href="#强制同步-cnpm" class="headerlink" title="强制同步 cnpm"></a>强制同步 cnpm</h4><p>如果使用了 cnpm 源，导致有些包不是最新的，使用以下命令强制同步</p>
+<figure class="highlight js"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">cnpm sync [package]</span><br></pre></td></tr></table></figure>
+
+<h4 id="nginx"><a href="#nginx" class="headerlink" title="nginx"></a>nginx</h4><p>如果服务器预装了 apache2 需要先删除</p>
+<figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment"># 删除 Apache2 服务的自动启动配置,它会删除 /etc/rc.d 目录下的相关启动链接。</span></span><br><span class="line">update-rc.d -f apache2 remove</span><br><span class="line"></span><br><span class="line"><span class="comment"># 卸载 Apache2 软件包</span></span><br><span class="line">sudo apt remove apache2</span><br></pre></td></tr></table></figure>
+
+<p>添加 nginx 配置文件</p>
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br><span class="line">35</span><br><span class="line">36</span><br><span class="line">37</span><br><span class="line">38</span><br><span class="line">39</span><br><span class="line">40</span><br><span class="line">41</span><br><span class="line">42</span><br><span class="line">43</span><br><span class="line">44</span><br><span class="line">45</span><br><span class="line">46</span><br><span class="line">47</span><br><span class="line">48</span><br><span class="line">49</span><br><span class="line">50</span><br><span class="line">51</span><br><span class="line">52</span><br><span class="line">53</span><br><span class="line">54</span><br><span class="line">55</span><br></pre></td><td class="code"><pre><span class="line">upstream node_learn &#123;</span><br><span class="line">    server 127.0.0.1:3000;  # 定义后端服务器</span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line">server &#123;</span><br><span class="line">    listen 80;</span><br><span class="line">    server_name site.iftrue.club;  # 配置服务器监听端口和域名</span><br><span class="line"></span><br><span class="line">    # 优化代理设置</span><br><span class="line">    location / &#123;</span><br><span class="line">        proxy_set_header X-Real-IP $remote_addr;  # 设置请求头，传递真实的客户端 IP 地址</span><br><span class="line">        proxy_set_header X-Forwarded-For $proxy_add_X_forwarded_for;  # 设置请求头，传递 X-Forwarded-For 头信息</span><br><span class="line">        proxy_set_header Host $http_host;  # 保留原始请求的 Host 头</span><br><span class="line">        proxy_set_header X-Nginx-Proxy true;  # 添加 X-Nginx-Proxy 头，标识请求是经过 Nginx 代理的</span><br><span class="line">        proxy_pass http://node_learn;  # 转发请求到后端应用</span><br><span class="line">        proxy_redirect off;  # 关闭代理重定向</span><br><span class="line">        proxy_cache my_cache;  # 启用缓存</span><br><span class="line">        proxy_cache_valid 200 1h;  # 缓存 200 状态的响应 1 小时</span><br><span class="line">        proxy_cache_use_stale error timeout updating;  # 使用过期的缓存响应来应对错误或超时</span><br><span class="line">    &#125;</span><br><span class="line"></span><br><span class="line">    # 静态资源代理和缓存</span><br><span class="line">    location /assets/ &#123;</span><br><span class="line">        # 将静态资源代理到 Node.js 应用或提供本地静态文件</span><br><span class="line">        proxy_pass http://node_learn/assets/;</span><br><span class="line">        proxy_set_header X-Real-IP $remote_addr;</span><br><span class="line">        proxy_set_header X-Forwarded-For $proxy_add_X_forwarded_for;</span><br><span class="line">        proxy_set_header Host $http_host;</span><br><span class="line">        proxy_set_header X-Nginx-Proxy true;</span><br><span class="line">        proxy_cache my_cache;</span><br><span class="line">        proxy_cache_valid 200 1d;  # 缓存静态资源 1 天</span><br><span class="line">    &#125;</span><br><span class="line"></span><br><span class="line">    # 如果静态文件已经存储在磁盘中，可以使用 root 或 alias 来提供静态文件</span><br><span class="line">    location /static/ &#123;</span><br><span class="line">        root /var/www/site.iftrue.club;  # 假设静态资源位于这个目录</span><br><span class="line">        try_files $uri $uri/ =404;  # 如果找不到文件返回 404</span><br><span class="line">    &#125;</span><br><span class="line"></span><br><span class="line">    # 你也可以为其他静态资源（如 CSS、JS）设置缓存</span><br><span class="line">    location ~* \.(css|js|jpg|jpeg|png|gif|ico|woff|woff2|ttf|svg)$ &#123;</span><br><span class="line">        root /var/www/site.iftrue.club;</span><br><span class="line">        try_files $uri $uri/ =404;</span><br><span class="line">        expires 30d;  # 设置静态资源缓存 30 天</span><br><span class="line">        add_header Cache-Control &quot;public, no-transform&quot;;  # 设置缓存控制头</span><br><span class="line">    &#125;</span><br><span class="line"></span><br><span class="line">    # 其他错误页面、重定向等配置</span><br><span class="line">    error_page 404 /404.html;</span><br><span class="line">    location = /404.html &#123;</span><br><span class="line">        root /usr/share/nginx/html;</span><br><span class="line">        internal;</span><br><span class="line">    &#125;</span><br><span class="line">&#125;</span><br><span class="line"></span><br></pre></td></tr></table></figure>
+
+<p>如果需要隐藏响应头中的 nginx 版本信息配置 nginx.conf</p>
+<figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment"># /etc/nginx/nginx.conf</span></span><br><span class="line"></span><br><span class="line"><span class="comment"># 取消此行注释</span></span><br><span class="line">server_tokens off;</span><br></pre></td></tr></table></figure>
+
+<h4 id="mysql"><a href="#mysql" class="headerlink" title="mysql"></a>mysql</h4><figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br><span class="line">35</span><br><span class="line">36</span><br><span class="line">37</span><br><span class="line">38</span><br><span class="line">39</span><br><span class="line">40</span><br><span class="line">41</span><br><span class="line">42</span><br><span class="line">43</span><br><span class="line">44</span><br><span class="line">45</span><br><span class="line">46</span><br><span class="line">47</span><br><span class="line">48</span><br><span class="line">49</span><br><span class="line">50</span><br><span class="line">51</span><br><span class="line">52</span><br><span class="line">53</span><br><span class="line">54</span><br><span class="line">55</span><br><span class="line">56</span><br><span class="line">57</span><br><span class="line">58</span><br><span class="line">59</span><br><span class="line">60</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment"># 安装服务</span></span><br><span class="line">sudo apt install -y mysql-server</span><br><span class="line"></span><br><span class="line"><span class="comment"># 检查服务是否启动</span></span><br><span class="line">systemctl status mysql</span><br><span class="line"></span><br><span class="line"><span class="comment"># 执行MySQL安全脚本mysql_secure_installation，提高MySQL的安全性</span></span><br><span class="line"><span class="comment"># 该脚本允许设置或更改root密码策略、移除匿名用户、禁止root远程登录、删除测试数据库等。</span></span><br><span class="line">sudo mysql_secure_installation</span><br><span class="line"></span><br><span class="line"><span class="comment"># 首次登录没有密码</span></span><br><span class="line">sudo mysql -u root -p</span><br><span class="line"></span><br><span class="line"><span class="comment">#给root用户设置密码</span></span><br><span class="line">ALTER USER <span class="string">&#x27;root&#x27;</span>@<span class="string">&#x27;localhost&#x27;</span> IDENTIFIED WITH mysql_native_password BY <span class="string">&#x27;your_password&#x27;</span>; FLUSH PRIVILEGES;EXIT;</span><br><span class="line"></span><br><span class="line"><span class="comment"># 创建对应的数据库</span></span><br><span class="line"></span><br><span class="line">CREATE DATABASE my_database</span><br><span class="line">CHARACTER SET utf8mb4</span><br><span class="line">COLLATE utf8mb4_general_ci;</span><br><span class="line"><span class="comment"># 查看所有数据库</span></span><br><span class="line">SHOW DATABASES;</span><br><span class="line"></span><br><span class="line"><span class="comment"># 删除数据库</span></span><br><span class="line">DROP DATABASE database_name;</span><br><span class="line"><span class="comment"># 修改字符集和排序</span></span><br><span class="line">ALTER DATABASE database_name</span><br><span class="line">CHARACTER SET utf8mb4</span><br><span class="line">COLLATE utf8mb4_general_ci;</span><br><span class="line"></span><br><span class="line"><span class="comment"># 创建新用户</span></span><br><span class="line"><span class="comment"># &#x27;localhost&#x27;：表示该用户只能从本地机器连接到数据库。如果希望该用户可以从任何主机连接，可以使用 &#x27;%&#x27;，如 &#x27;new_user&#x27;@&#x27;%&#x27;。</span></span><br><span class="line">CREATE USER <span class="string">&#x27;new_user&#x27;</span>@<span class="string">&#x27;localhost&#x27;</span> IDENTIFIED BY <span class="string">&#x27;your_password&#x27;</span>;</span><br><span class="line"><span class="comment"># 查看所有用户</span></span><br><span class="line">SELECT User, Host FROM mysql.user;</span><br><span class="line"></span><br><span class="line"></span><br><span class="line"><span class="comment">#ALL PRIVILEGES：赋予所有权限。</span></span><br><span class="line"><span class="comment"># my_database.*：指示该用户可以对 my_database 数据库中的所有表进行操作。</span></span><br><span class="line"><span class="comment"># &#x27;localhost&#x27;：表示该用户只能从本地连接。</span></span><br><span class="line">GRANT ALL PRIVILEGES ON my_database.* TO <span class="string">&#x27;new_user&#x27;</span>@<span class="string">&#x27;localhost&#x27;</span>;</span><br><span class="line"><span class="comment"># 如果希望用户只具备某些操作的权限（例如只读权限），可以单独授予特定权限</span></span><br><span class="line">GRANT SELECT ON my_database.* TO <span class="string">&#x27;new_user&#x27;</span>@<span class="string">&#x27;localhost&#x27;</span>;</span><br><span class="line">GRANT SELECT, INSERT ON my_database.* TO <span class="string">&#x27;new_user&#x27;</span>@<span class="string">&#x27;localhost&#x27;</span>;</span><br><span class="line"></span><br><span class="line"></span><br><span class="line"><span class="comment"># 可以访问所有数据库</span></span><br><span class="line"><span class="comment"># GRANT ALL PRIVILEGES ON *.* TO &#x27;new_user&#x27;@&#x27;localhost&#x27;;</span></span><br><span class="line"></span><br><span class="line"></span><br><span class="line"><span class="comment"># 刷新权限</span></span><br><span class="line">FLUSH PRIVILEGES;</span><br><span class="line"></span><br><span class="line"></span><br><span class="line"><span class="comment"># 查看端口</span></span><br><span class="line">SHOW VARIABLES LIKE <span class="string">&#x27;port&#x27;</span>;</span><br><span class="line"></span><br><span class="line"><span class="built_in">cat</span> /etc/mysql/mysql.conf.d/mysqld.cnf</span><br><span class="line"></span><br></pre></td></tr></table></figure>
+
+<h4 id="pm2"><a href="#pm2" class="headerlink" title="pm2"></a>pm2</h4><figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br></pre></td><td class="code"><pre><span class="line">npm install -g pm2</span><br><span class="line"></span><br><span class="line"><span class="comment"># 启动服务</span></span><br><span class="line">pm2 start server.js</span><br><span class="line"></span><br><span class="line"><span class="comment"># 应用列表</span></span><br><span class="line">pm2 list</span><br><span class="line"></span><br><span class="line"><span class="comment"># 应用详细信息</span></span><br><span class="line">pm2 show [appName]</span><br></pre></td></tr></table></figure>
+
+<h4 id="配置-pm2-ecosystem-json"><a href="#配置-pm2-ecosystem-json" class="headerlink" title="配置 pm2 ecosystem.json"></a>配置 pm2 ecosystem.json</h4><figure class="highlight json"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br><span class="line">35</span><br><span class="line">36</span><br><span class="line">37</span><br><span class="line">38</span><br><span class="line">39</span><br><span class="line">40</span><br><span class="line">41</span><br><span class="line">42</span><br><span class="line">43</span><br><span class="line">44</span><br><span class="line">45</span><br><span class="line">46</span><br><span class="line">47</span><br></pre></td><td class="code"><pre><span class="line"><span class="punctuation">&#123;</span></span><br><span class="line">  <span class="attr">&quot;apps&quot;</span><span class="punctuation">:</span> <span class="punctuation">[</span></span><br><span class="line">    <span class="punctuation">&#123;</span></span><br><span class="line">      <span class="attr">&quot;name&quot;</span><span class="punctuation">:</span> <span class="string">&quot;node-learn&quot;</span><span class="punctuation">,</span></span><br><span class="line">      <span class="attr">&quot;script&quot;</span><span class="punctuation">:</span> <span class="string">&quot;bin/www&quot;</span><span class="punctuation">,</span></span><br><span class="line">      <span class="attr">&quot;env&quot;</span><span class="punctuation">:</span> <span class="punctuation">&#123;</span></span><br><span class="line">        <span class="attr">&quot;NODE_ENV&quot;</span><span class="punctuation">:</span> <span class="string">&quot;development&quot;</span></span><br><span class="line">      <span class="punctuation">&#125;</span><span class="punctuation">,</span></span><br><span class="line">      <span class="attr">&quot;env_production&quot;</span><span class="punctuation">:</span> <span class="punctuation">&#123;</span></span><br><span class="line">        <span class="attr">&quot;NODE_ENV&quot;</span><span class="punctuation">:</span> <span class="string">&quot;production&quot;</span></span><br><span class="line">      <span class="punctuation">&#125;</span></span><br><span class="line">    <span class="punctuation">&#125;</span></span><br><span class="line">  <span class="punctuation">]</span><span class="punctuation">,</span></span><br><span class="line">  <span class="attr">&quot;deploy&quot;</span><span class="punctuation">:</span> <span class="punctuation">&#123;</span></span><br><span class="line">    <span class="attr">&quot;production&quot;</span><span class="punctuation">:</span> <span class="punctuation">&#123;</span></span><br><span class="line">      <span class="comment">// 远程服务器上用于执行部署的用户。这个用户将有权限操作目标服务器进行部署工作。</span></span><br><span class="line">      <span class="attr">&quot;user&quot;</span><span class="punctuation">:</span> <span class="string">&quot;ubuntu&quot;</span><span class="punctuation">,</span></span><br><span class="line">      <span class="comment">// 部署目标服务器的 IP 地址。这里设置了一个服务器的 IP 地址</span></span><br><span class="line">      <span class="comment">// 表示要将代码部署到这个服务器。</span></span><br><span class="line">      <span class="attr">&quot;host&quot;</span><span class="punctuation">:</span> <span class="punctuation">[</span><span class="string">&quot;192.168.48.171&quot;</span><span class="punctuation">]</span><span class="punctuation">,</span></span><br><span class="line">      <span class="comment">// 通过 SSH 连接远程服务器时使用的端口号</span></span><br><span class="line">      <span class="attr">&quot;port&quot;</span><span class="punctuation">:</span> <span class="string">&quot;22&quot;</span><span class="punctuation">,</span></span><br><span class="line">      <span class="comment">// 这是你要部署的 Git 分支。origin/master 表示远程仓库的 master 分支</span></span><br><span class="line">      <span class="attr">&quot;ref&quot;</span><span class="punctuation">:</span> <span class="string">&quot;origin/main&quot;</span><span class="punctuation">,</span></span><br><span class="line">      <span class="comment">// 这是 Git 仓库的 URL，表示从哪里拉取代码。</span></span><br><span class="line">      <span class="attr">&quot;repo&quot;</span><span class="punctuation">:</span> <span class="string">&quot;git@git.oschina.net:wolf18387/backend-website.git&quot;</span><span class="punctuation">,</span></span><br><span class="line">      <span class="comment">// 这是部署目标路径，代码将被拉取到这个路径下。</span></span><br><span class="line">      <span class="comment">// 所有应用文件将被放置在服务器的 /www/website/production 目录下。</span></span><br><span class="line">      <span class="attr">&quot;path&quot;</span><span class="punctuation">:</span> <span class="string">&quot;/www/node-learn&quot;</span><span class="punctuation">,</span></span><br><span class="line">      <span class="comment">// 这个选项用于 SSH 连接时禁用 SSH 主机密钥检查。</span></span><br><span class="line">      <span class="comment">// 这通常用于自动化部署，避免因首次连接服务器时需要确认主机密钥而中断部署。</span></span><br><span class="line">      <span class="attr">&quot;ssh_options&quot;</span><span class="punctuation">:</span> <span class="string">&quot;StrictHostKeyChecking=no&quot;</span><span class="punctuation">,</span></span><br><span class="line">      <span class="comment">// 部署前的准备脚本</span></span><br><span class="line">      <span class="attr">&quot;pre-setup&quot;</span><span class="punctuation">:</span> <span class="string">&quot;rm -rf /www/node-learn/*&quot;</span><span class="punctuation">,</span></span><br><span class="line">      <span class="comment">// 部署前的准备脚本，在拉取代码后执行</span></span><br><span class="line">      <span class="comment">// 在服务器上执行的脚本</span></span><br><span class="line">      <span class="comment">// 如果使用的是nvm安装的node需要加上 source ~/.nvm/nvm.sh</span></span><br><span class="line">      <span class="comment">// 需要指定环境变量 export NODE_ENV=production deploy.env 只会在 deploy 阶段加载</span></span><br><span class="line">      <span class="attr">&quot;post-setup&quot;</span><span class="punctuation">:</span> <span class="string">&quot;source ~/.nvm/nvm.sh &amp;&amp; npm install &amp;&amp; export NODE_ENV=production &amp;&amp; npx sequelize-cli db:migrate &amp;&amp; npx sequelize-cli db:seed:all&quot;</span><span class="punctuation">,</span></span><br><span class="line"></span><br><span class="line">      <span class="attr">&quot;post-deploy&quot;</span><span class="punctuation">:</span> <span class="string">&quot;source ~/.nvm/nvm.sh &amp;&amp; npm install &amp;&amp; pm2 startOrRestart ecosystem.json --env production&quot;</span><span class="punctuation">,</span></span><br><span class="line">      <span class="attr">&quot;env&quot;</span><span class="punctuation">:</span> <span class="punctuation">&#123;</span></span><br><span class="line">        <span class="attr">&quot;NODE_ENV&quot;</span><span class="punctuation">:</span> <span class="string">&quot;production&quot;</span></span><br><span class="line">      <span class="punctuation">&#125;</span></span><br><span class="line">    <span class="punctuation">&#125;</span></span><br><span class="line">  <span class="punctuation">&#125;</span></span><br><span class="line"><span class="punctuation">&#125;</span></span><br></pre></td></tr></table></figure>
+
+<h4 id="执行部署"><a href="#执行部署" class="headerlink" title="执行部署"></a>执行部署</h4><p><strong>部署前确认各个服务器之间可以互相免密访问，本地&#x3D;&gt;生产服务器&#x3D;&gt;git 服务器, 将主机加入目标主机的 known hosts 中</strong></p>
+<p><strong>确认服务器的目录是否有写入权限</strong></p>
+<p><strong>windows 环境会执行失败，需要在 linux 虚拟机中执行</strong></p>
+<figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment">#  设置远程环境,创建应用目录,初始化 Git 仓库,执行 pre-setup 钩子</span></span><br><span class="line"><span class="comment">#  current 当前服务运行的文件夹会软连接到source文件夹上</span></span><br><span class="line"><span class="comment">#  source clone下来的源代码</span></span><br><span class="line"><span class="comment">#  shared 配置文件等</span></span><br><span class="line"><span class="comment">#  只应该在初始化的时候执行一次</span></span><br><span class="line">npx pm2 deploy production setup</span><br><span class="line"></span><br></pre></td></tr></table></figure>
+
+<p>部署成功后可以登录服务器检查部署情况</p>
+<figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><span class="line">pm2 list</span><br><span class="line"></span><br><span class="line">pm2 logs</span><br></pre></td></tr></table></figure>
+ 
+      <!-- reward -->
+      
+      <div id="reword-out">
+        <div id="reward-btn">
+          打赏
+        </div>
+      </div>
+      
+    </div>
+    
+
+    <!-- copyright -->
+    
+    <div class="declare">
+      <ul class="post-copyright">
+        <li>
+          <i class="ri-copyright-line"></i>
+          <strong>版权声明： </strong>
+          
+          本博客所有文章除特别声明外，著作权归作者所有。转载请注明出处！
+          
+        </li>
+      </ul>
+    </div>
+    
+    <footer class="article-footer">
+       
+  <ul class="article-tag-list" itemprop="keywords"><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/DevOps/" rel="tag">DevOps</a></li></ul>
+
+    </footer>
+  </div>
+
+   
+  <nav class="article-nav">
+    
+      <a href="/posts/6e1045ca8489/" class="article-nav-link">
+        <strong class="article-nav-caption">上一篇</strong>
+        <div class="article-nav-title">
+          
+            vuex原理
+          
+        </div>
+      </a>
+    
+    
+      <a href="/posts/7042a9e618ec/" class="article-nav-link">
+        <strong class="article-nav-caption">下一篇</strong>
+        <div class="article-nav-title">高级用法</div>
+      </a>
+    
+  </nav>
+
+  
+   
+<div class="gitalk" id="gitalk-container"></div>
+
+<link rel="stylesheet" href="https://cdn.staticfile.org/gitalk/1.7.2/gitalk.min.css">
+
+
+<script src="https://cdn.staticfile.org/gitalk/1.7.2/gitalk.min.js"></script>
+
+
+<script src="https://cdn.staticfile.org/blueimp-md5/2.19.0/js/md5.min.js"></script>
+
+<script type="text/javascript">
+  var gitalk = new Gitalk({
+    clientID: 'bce2317b25da7c3c18f6',
+    clientSecret: 'e0ab868ca9054234798be82c2b1c0c9dd8632307',
+    repo: 'noopn.github.io',
+    owner: 'noopn',
+    admin: ['noopn'],
+    // id: location.pathname,      // Ensure uniqueness and length less than 50
+    id: md5(location.pathname),
+    distractionFreeMode: false,  // Facebook-like distraction free mode
+    pagerDirection: 'last'
+  })
+
+  gitalk.render('gitalk-container')
+</script>
+
+     
+</article>
+
+</section>
+      <footer class="footer">
+  <div class="outer">
+    <ul>
+      <li>
+        Copyrights &copy;
+        2015-2025
+        <i class="ri-heart-fill heart_icon"></i> SunZhiqi
+      </li>
+    </ul>
+    <ul>
+      <li>
+        
+      </li>
+    </ul>
+    <ul>
+      <li>
+        
+      </li>
+    </ul>
+    <ul>
+      
+    </ul>
+    <ul>
+      
+    </ul>
+    <ul>
+      <li>
+        <!-- cnzz统计 -->
+        
+      </li>
+    </ul>
+  </div>
+</footer>    
+    </main>
+    <div class="float_btns">
+      <div class="totop" id="totop">
+  <i class="ri-arrow-up-line"></i>
+</div>
+
+    </div>
+    <aside class="sidebar on">
+      <button class="navbar-toggle"></button>
+<nav class="navbar">
+  
+  <div class="logo">
+    <a href="/"><img src="/images/ayer-side.png" alt="四月八日"></a>
+  </div>
+  
+  <ul class="nav nav-main">
+    
+    <li class="nav-item">
+      <a class="nav-item-link" href="/">主页</a>
+    </li>
+    
+    <li class="nav-item">
+      <a class="nav-item-link" href="/archives">归档</a>
+    </li>
+    
+    <li class="nav-item">
+      <a class="nav-item-link" href="/categories">分类</a>
+    </li>
+    
+    <li class="nav-item">
+      <a class="nav-item-link" href="/tags">标签</a>
+    </li>
+    
+  </ul>
+</nav>
+<nav class="navbar navbar-bottom">
+  <ul class="nav">
+    <li class="nav-item">
+      
+      <a class="nav-item-link nav-item-search"  title="搜索">
+        <i class="ri-search-line"></i>
+      </a>
+      
+      
+    </li>
+  </ul>
+</nav>
+<div class="search-form-wrap">
+  <div class="local-search local-search-plugin">
+  <input type="search" id="local-search-input" class="local-search-input" placeholder="Search...">
+  <div id="local-search-result" class="local-search-result"></div>
+</div>
+</div>
+    </aside>
+    <div id="mask"></div>
+
+<!-- #reward -->
+<div id="reward">
+  <span class="close"><i class="ri-close-line"></i></span>
+  <p class="reward-p"><i class="ri-cup-line"></i>此时无声胜有声！</p>
+  <div class="reward-box">
+    
+    <div class="reward-item">
+      <img class="reward-img" src="/images/alipay.jpg">
+      <span class="reward-type">支付宝</span>
+    </div>
+    
+    
+    <div class="reward-item">
+      <img class="reward-img" src="/images/wechat.jpg">
+      <span class="reward-type">微信</span>
+    </div>
+    
+  </div>
+</div>
+    
+<script src="/js/jquery-3.6.0.min.js"></script>
+ 
+<script src="/js/lazyload.min.js"></script>
+
+<!-- Tocbot -->
+ 
+<script src="/js/tocbot.min.js"></script>
+
+<script>
+  tocbot.init({
+    tocSelector: ".tocbot",
+    contentSelector: ".article-entry",
+    headingSelector: "h1, h2, h3, h4, h5, h6",
+    hasInnerContainers: true,
+    scrollSmooth: true,
+    scrollContainer: "main",
+    positionFixedSelector: ".tocbot",
+    positionFixedClass: "is-position-fixed",
+    fixedSidebarOffset: "auto",
+  });
+</script>
+
+<script src="/js/jquery.modal.min.js"></script>
+<link rel="stylesheet" href="/css/jquery.modal.min.css" />
+<script src="/js/jquery.justifiedGallery.min.js"></script>
+
+<script src="/dist/main.js"></script>
+
+<!-- ImageViewer -->
+ <!-- Root element of PhotoSwipe. Must have class pswp. -->
+<div class="pswp" tabindex="-1" role="dialog" aria-hidden="true">
+  <!-- Background of PhotoSwipe. 
+         It's a separate element as animating opacity is faster than rgba(). -->
+  <div class="pswp__bg"></div>
+
+  <!-- Slides wrapper with overflow:hidden. -->
+  <div class="pswp__scroll-wrap">
+    <!-- Container that holds slides. 
+            PhotoSwipe keeps only 3 of them in the DOM to save memory.
+            Don't modify these 3 pswp__item elements, data is added later on. -->
+    <div class="pswp__container">
+      <div class="pswp__item"></div>
+      <div class="pswp__item"></div>
+      <div class="pswp__item"></div>
+    </div>
+
+    <!-- Default (PhotoSwipeUI_Default) interface on top of sliding area. Can be changed. -->
+    <div class="pswp__ui pswp__ui--hidden">
+      <div class="pswp__top-bar">
+        <!--  Controls are self-explanatory. Order can be changed. -->
+
+        <div class="pswp__counter"></div>
+
+        <button
+          class="pswp__button pswp__button--close"
+          title="Close (Esc)"
+        ></button>
+
+        <button
+          class="pswp__button pswp__button--share"
+          style="display: none"
+          title="Share"
+        ></button>
+
+        <button
+          class="pswp__button pswp__button--fs"
+          title="Toggle fullscreen"
+        ></button>
+
+        <button
+          class="pswp__button pswp__button--zoom"
+          title="Zoom in/out"
+        ></button>
+
+        <!-- Preloader demo http://codepen.io/dimsemenov/pen/yyBWoR -->
+        <!-- element will get class pswp__preloader--active when preloader is running -->
+        <div class="pswp__preloader">
+          <div class="pswp__preloader__icn">
+            <div class="pswp__preloader__cut">
+              <div class="pswp__preloader__donut"></div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <div class="pswp__share-modal pswp__share-modal--hidden pswp__single-tap">
+        <div class="pswp__share-tooltip"></div>
+      </div>
+
+      <button
+        class="pswp__button pswp__button--arrow--left"
+        title="Previous (arrow left)"
+      ></button>
+
+      <button
+        class="pswp__button pswp__button--arrow--right"
+        title="Next (arrow right)"
+      ></button>
+
+      <div class="pswp__caption">
+        <div class="pswp__caption__center"></div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<link rel="stylesheet" href="/css/photoswipe.min.css" />
+<link rel="stylesheet" href="/css/default-skin.min.css" />
+<script src="/js/photoswipe.min.js"></script>
+<script src="/js/photoswipe-ui-default.min.js"></script>
+
+<script>
+  function viewer_init() {
+    let pswpElement = document.querySelectorAll(".pswp")[0];
+    let $imgArr = document.querySelectorAll(
+      ".article-entry img:not(.reward-img)"
+    );
+
+    $imgArr.forEach(($em, i) => {
+      $em.onclick = () => {
+        // slider展开状态
+        // todo: 这样不好，后面改成状态
+        if (document.querySelector(".left-col.show")) return;
+        let items = [];
+        $imgArr.forEach(($em2, i2) => {
+          let img = $em2.getAttribute("data-idx", i2);
+          let src =
+            $em2.getAttribute("data-target") || $em2.getAttribute("src");
+          let title = $em2.getAttribute("alt");
+          // 获得原图尺寸
+          const image = new Image();
+          image.src = src;
+          items.push({
+            src: src,
+            w: image.width || $em2.width,
+            h: image.height || $em2.height,
+            title: title,
+          });
+        });
+        var gallery = new PhotoSwipe(pswpElement, PhotoSwipeUI_Default, items, {
+          index: parseInt(i),
+        });
+        gallery.init();
+      };
+    });
+  }
+  viewer_init();
+</script>
+ 
+<!-- MathJax -->
+ <script type="text/x-mathjax-config">
+  MathJax.Hub.Config({
+      tex2jax: {
+          inlineMath: [ ['$','$'], ["\\(","\\)"]  ],
+          processEscapes: true,
+          skipTags: ['script', 'noscript', 'style', 'textarea', 'pre', 'code']
+      }
+  });
+
+  MathJax.Hub.Queue(function() {
+      var all = MathJax.Hub.getAllJax(), i;
+      for(i=0; i < all.length; i += 1) {
+          all[i].SourceElement().parentNode.className += ' has-jax';
+      }
+  });
+</script>
+
+<script src="/js/MathJax.js"></script>
+<script src="/js/TeX-AMS-MML_HTMLorMML-full.js"></script>
+
+<script>
+  var ayerConfig = {
+    mathjax: true,
+  };
+</script>
+
+<!-- Katex -->
+
+<!-- busuanzi  -->
+
+<!-- ClickLove -->
+
+<!-- ClickBoom1 -->
+
+<!-- ClickBoom2 -->
+
+<!-- CodeCopy -->
+ 
+<link rel="stylesheet" href="/css/clipboard.css">
+ <script src="/js/clipboard.min.js"></script>
+<script>
+  function wait(callback, seconds) {
+    var timelag = null;
+    timelag = window.setTimeout(callback, seconds);
+  }
+  !(function (e, t, a) {
+    var initCopyCode = function () {
+      var copyHtml = "";
+      copyHtml += '<button class="btn-copy" data-clipboard-snippet="">';
+      copyHtml += '<i class="ri-file-copy-2-line"></i><span>COPY</span>';
+      copyHtml += "</button>";
+      $(".highlight .code pre").before(copyHtml);
+      $(".article pre code").before(copyHtml);
+      var clipboard = new ClipboardJS(".btn-copy", {
+        target: function (trigger) {
+          return trigger.nextElementSibling;
+        },
+      });
+      clipboard.on("success", function (e) {
+        let $btn = $(e.trigger);
+        $btn.addClass("copied");
+        let $icon = $($btn.find("i"));
+        $icon.removeClass("ri-file-copy-2-line");
+        $icon.addClass("ri-checkbox-circle-line");
+        let $span = $($btn.find("span"));
+        $span[0].innerText = "COPIED";
+
+        wait(function () {
+          // 等待两秒钟后恢复
+          $icon.removeClass("ri-checkbox-circle-line");
+          $icon.addClass("ri-file-copy-2-line");
+          $span[0].innerText = "COPY";
+        }, 2000);
+      });
+      clipboard.on("error", function (e) {
+        e.clearSelection();
+        let $btn = $(e.trigger);
+        $btn.addClass("copy-failed");
+        let $icon = $($btn.find("i"));
+        $icon.removeClass("ri-file-copy-2-line");
+        $icon.addClass("ri-time-line");
+        let $span = $($btn.find("span"));
+        $span[0].innerText = "COPY FAILED";
+
+        wait(function () {
+          // 等待两秒钟后恢复
+          $icon.removeClass("ri-time-line");
+          $icon.addClass("ri-file-copy-2-line");
+          $span[0].innerText = "COPY";
+        }, 2000);
+      });
+    };
+    initCopyCode();
+  })(window, document);
+</script>
+ 
+<!-- CanvasBackground -->
+
+<script>
+  if (window.mermaid) {
+    mermaid.initialize({ theme: "default" });
+  }
+</script>
+
+
+    
+    
+
+  </div>
+</body>
+
+</html>

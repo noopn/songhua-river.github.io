@@ -1,0 +1,641 @@
+<!DOCTYPE html>
+
+
+<html lang="zh-CN">
+  
+
+    <head>
+      <meta charset="utf-8" />
+       
+      <meta name="keywords" content="前端 web react" />
+       
+      <meta name="description" content="前端技术与生活。" />
+      
+      <meta
+        name="viewport"
+        content="width=device-width, initial-scale=1, maximum-scale=1"
+      />
+      <title>Express实践 ① 用 sequelize 实现 CRUD |  四月八日</title>
+  <meta name="generator" content="hexo-theme-ayer">
+      
+      <link rel="shortcut icon" href="/favicon.ico" />
+       
+<link rel="stylesheet" href="/dist/main.css">
+ 
+<link rel="stylesheet" href="/css/fonts/remixicon.css">
+ 
+<link rel="stylesheet" href="/css/custom.css">
+ 
+      <script src="/js/pace.min.js"></script>
+       
+ 
+
+      <link rel="stylesheet" href="/css/bulma.min.css" />
+      <script src="/js/sweetalert2.min.js"></script>
+
+      <!-- mermaid -->
+      
+      <script src="https://cdn.staticfile.org/mermaid/8.14.0/mermaid.min.js"></script>
+      
+      <style>
+        .swal2-styled.swal2-confirm {
+          font-size: 1.6rem;
+        }
+      </style>
+    <!-- hexo injector head_end start -->
+<link rel="stylesheet" href="/css/katex.min.css">
+
+<link rel="stylesheet" href="/css/style.css">
+<!-- hexo injector head_end end --></head>
+  </html>
+</html>
+
+
+<body>
+  <div id="app">
+    
+      
+    <main class="content on">
+      <section class="outer">
+  <article
+  id="post-node/express学习项目"
+  class="article article-type-post"
+  itemscope
+  itemprop="blogPost"
+  data-scroll-reveal
+>
+  <div class="article-inner">
+    
+    <header class="article-header">
+       
+<h1 class="article-title sea-center" style="border-left:0" itemprop="name">
+  Express实践 ① 用 sequelize 实现 CRUD
+</h1>
+ 
+
+      
+    </header>
+     
+    <div class="article-meta">
+      <a href="/posts/f43388a8eda0/" class="article-date">
+  <time datetime="2021-02-03T08:40:10.000Z" itemprop="datePublished">2021-02-03</time>
+</a> 
+  <div class="article-category">
+    <a class="article-category-link" href="/categories/NodeJS/">NodeJS</a>
+  </div>
+  
+<div class="word_count">
+    <span class="post-time">
+        <span class="post-meta-item-icon">
+            <i class="ri-quill-pen-line"></i>
+            <span class="post-meta-item-text"> 字数统计:</span>
+            <span class="post-count">2.3k</span>
+        </span>
+    </span>
+
+    <span class="post-time">
+        &nbsp; | &nbsp;
+        <span class="post-meta-item-icon">
+            <i class="ri-book-open-line"></i>
+            <span class="post-meta-item-text"> 阅读时长≈</span>
+            <span class="post-count">10 分钟</span>
+        </span>
+    </span>
+</div>
+ 
+    </div>
+      
+    <div class="tocbot"></div>
+
+
+
+
+  
+    <div class="article-entry" itemprop="articleBody">
+       
+  <h4 id="安装"><a href="#安装" class="headerlink" title="安装"></a>安装</h4><p>初始化项目 <a target="_blank" rel="noopener" href="https://github.com/expressjs/generator">express-generator</a></p>
+<figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment"># --no-view 表示不生成视图文件</span></span><br><span class="line">npx express-generator --no-view [项目名称]</span><br></pre></td></tr></table></figure>
+
+<p>安装 ORM 相关依赖,并初始化</p>
+<figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br></pre></td><td class="code"><pre><span class="line">npm install -D sequelize mysql2</span><br><span class="line"></span><br><span class="line"><span class="comment"># 初始化ORM</span></span><br><span class="line">npx sequelize-cli init</span><br></pre></td></tr></table></figure>
+
+<p>修改 sequelize 配置文件</p>
+<p><strong>所有的参数都需要使用字符串格式</strong></p>
+<figure class="highlight json"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment">// config/config.js</span></span><br><span class="line"></span><br><span class="line"><span class="punctuation">&#123;</span></span><br><span class="line">  <span class="attr">&quot;development&quot;</span><span class="punctuation">:</span> <span class="punctuation">&#123;</span></span><br><span class="line">    <span class="attr">&quot;username&quot;</span><span class="punctuation">:</span> <span class="string">&quot;用户名&quot;</span><span class="punctuation">,</span></span><br><span class="line">    <span class="attr">&quot;password&quot;</span><span class="punctuation">:</span> <span class="string">&quot;密码&quot;</span><span class="punctuation">,</span></span><br><span class="line">    <span class="attr">&quot;port&quot;</span><span class="punctuation">:</span> <span class="string">&quot;端口号&quot;</span><span class="punctuation">,</span></span><br><span class="line">    <span class="attr">&quot;database&quot;</span><span class="punctuation">:</span> <span class="string">&quot;数据库名称&quot;</span><span class="punctuation">,</span></span><br><span class="line">    <span class="attr">&quot;host&quot;</span><span class="punctuation">:</span> <span class="string">&quot;127.0.0.1&quot;</span><span class="punctuation">,</span></span><br><span class="line">    <span class="attr">&quot;dialect&quot;</span><span class="punctuation">:</span> <span class="string">&quot;mysql&quot;</span><span class="punctuation">,</span></span><br><span class="line">    <span class="attr">&quot;timezone&quot;</span><span class="punctuation">:</span> <span class="string">&quot;+8:00&quot;</span></span><br><span class="line">  <span class="punctuation">&#125;</span></span><br><span class="line"><span class="punctuation">&#125;</span></span><br></pre></td></tr></table></figure>
+
+<h4 id="创建数据库"><a href="#创建数据库" class="headerlink" title="创建数据库"></a>创建数据库</h4><p><strong>字符集 utf8mb4</strong><br>utf8mb4 支持 Unicode 字符集中的所有字符，包括表情符号（emoji）。一些其他语言字符，utf8 字符集无法处理的字符。</p>
+<p>**字符集排序规则 utf8mb4_general_ci **</p>
+<p>是一种常见的 不区分大小写（case-insensitive, CI） 排序规则，ci 代表 Case Insensitive，即不区分字母的大小写。<br>它会将大写字母和小写字母视为相同的字符进行排序。例如，字母 a 和 A 会被视为相同，而在某些排序规则下它们可能会被视为不同。</p>
+<p>utf8mb4_unicode_ci — 精确排序</p>
+<p>适用场景：多语言支持、需要精确排序的应用。<br>优点：符合 Unicode 排序规则，处理复杂字符（如带有重音符号的字母）时表现更好，能够准确地处理所有 Unicode 字符，适用于全球多种语言的应用。<br>缺点：与 utf8mb4_general_ci 相比，性能略差一些，因为它会考虑更多的字符特性进行排序。</p>
+<h4 id="创建模型"><a href="#创建模型" class="headerlink" title="创建模型"></a>创建模型</h4><p><a target="_blank" rel="noopener" href="https://sequelize.org/docs/v6/other-topics/migrations/#creating-the-first-model-and-migration">Creating the first Model (and Migration)</a>, <strong>模型的名字用单数命名，生成的表名是复数</strong></p>
+<figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">npx sequelize-cli model:generate --name User --attributes firstName:string,lastName:string,email:string</span><br></pre></td></tr></table></figure>
+
+<p>可以为模型添加校验条件 <a target="_blank" rel="noopener" href="https://sequelize.org/docs/v6/core-concepts/validations-and-constraints/">Validations &amp; Constraints</a></p>
+<figure class="highlight js"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br><span class="line">35</span><br><span class="line">36</span><br><span class="line">37</span><br><span class="line">38</span><br><span class="line">39</span><br><span class="line">40</span><br><span class="line">41</span><br><span class="line">42</span><br><span class="line">43</span><br><span class="line">44</span><br><span class="line">45</span><br><span class="line">46</span><br><span class="line">47</span><br><span class="line">48</span><br><span class="line">49</span><br><span class="line">50</span><br><span class="line">51</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment">// models\user.js</span></span><br><span class="line"><span class="meta"></span></span><br><span class="line"><span class="meta">&quot;use strict&quot;</span>;</span><br><span class="line"><span class="keyword">const</span> &#123; <span class="title class_">Model</span> &#125; = <span class="built_in">require</span>(<span class="string">&quot;sequelize&quot;</span>);</span><br><span class="line"></span><br><span class="line"><span class="variable language_">module</span>.<span class="property">exports</span> = <span class="function">(<span class="params">sequelize, DataTypes</span>) =&gt;</span> &#123;</span><br><span class="line">  <span class="keyword">class</span> <span class="title class_">User</span> <span class="keyword">extends</span> <span class="title class_ inherited__">Model</span> &#123;</span><br><span class="line">    <span class="keyword">static</span> <span class="title function_">associate</span>(<span class="params">models</span>) &#123;</span><br><span class="line">      <span class="comment">// define association here</span></span><br><span class="line">    &#125;</span><br><span class="line">  &#125;</span><br><span class="line">  <span class="title class_">User</span>.<span class="title function_">init</span>(</span><br><span class="line">    &#123;</span><br><span class="line">      <span class="attr">email</span>: <span class="title class_">DataTypes</span>.<span class="property">STRING</span>,</span><br><span class="line">      <span class="attr">username</span>: &#123;</span><br><span class="line">        <span class="attr">type</span>: <span class="title class_">DataTypes</span>.<span class="property">STRING</span>,</span><br><span class="line">        <span class="attr">allowNull</span>: <span class="literal">false</span>,</span><br><span class="line">        <span class="attr">validate</span>: &#123;</span><br><span class="line">          <span class="attr">notNull</span>: &#123;</span><br><span class="line">            <span class="attr">msg</span>: <span class="string">&quot;用户名不能为空&quot;</span>,</span><br><span class="line">          &#125;,</span><br><span class="line">          <span class="attr">notEmpty</span>: &#123;</span><br><span class="line">            <span class="attr">msg</span>: <span class="string">&quot;用户名不能为空&quot;</span>,</span><br><span class="line">          &#125;,</span><br><span class="line">          <span class="keyword">async</span> <span class="title function_">isUnique</span>(<span class="params">value</span>) &#123;</span><br><span class="line">            <span class="keyword">const</span> user = <span class="keyword">await</span> <span class="title class_">User</span>.<span class="title function_">findOne</span>(&#123; <span class="attr">where</span>: &#123; <span class="attr">username</span>: value &#125; &#125;);</span><br><span class="line">            <span class="keyword">if</span> (user) &#123;</span><br><span class="line">              <span class="keyword">throw</span> <span class="keyword">new</span> <span class="title class_">Error</span>(<span class="string">&quot;用户名已存在&quot;</span>);</span><br><span class="line">            &#125;</span><br><span class="line">          &#125;,</span><br><span class="line">          <span class="attr">len</span>: &#123;</span><br><span class="line">            <span class="attr">args</span>: [<span class="number">2</span>, <span class="number">20</span>],</span><br><span class="line">            <span class="attr">msg</span>: <span class="string">&quot;用户名长度在 2 到 20 之间&quot;</span>,</span><br><span class="line">          &#125;,</span><br><span class="line">        &#125;,</span><br><span class="line">      &#125;,</span><br><span class="line">      <span class="attr">password</span>: <span class="title class_">DataTypes</span>.<span class="property">STRING</span>,</span><br><span class="line">      <span class="attr">nickname</span>: <span class="title class_">DataTypes</span>.<span class="property">STRING</span>,</span><br><span class="line">      <span class="attr">sex</span>: <span class="title class_">DataTypes</span>.<span class="property">TINYINT</span>,</span><br><span class="line">      <span class="attr">company</span>: <span class="title class_">DataTypes</span>.<span class="property">STRING</span>,</span><br><span class="line">      <span class="attr">introduce</span>: <span class="title class_">DataTypes</span>.<span class="property">TEXT</span>,</span><br><span class="line">      <span class="attr">role</span>: <span class="title class_">DataTypes</span>.<span class="property">TINYINT</span>,</span><br><span class="line">      <span class="attr">avatar</span>: <span class="title class_">DataTypes</span>.<span class="property">STRING</span>,</span><br><span class="line">    &#125;,</span><br><span class="line">    &#123;</span><br><span class="line">      sequelize,</span><br><span class="line">      <span class="attr">modelName</span>: <span class="string">&quot;User&quot;</span>,</span><br><span class="line">    &#125;</span><br><span class="line">  );</span><br><span class="line">  <span class="keyword">return</span> <span class="title class_">User</span>;</span><br><span class="line">&#125;;</span><br></pre></td></tr></table></figure>
+
+<p>还可以通过 mysql-workbench 创建 ER 图，<strong>其中实线表示关联表没有自己的主键。</strong></p>
+<p><strong>如果数据库不是在 Docker 环境，而是使用集成环境运行,迁移后表名可能是小写的，这会导致部署到服务器上之后 Mysql 严格区分大小写导致报错,可以在服务器上重新运行迁移</strong></p>
+<p>对于已经存在的表，如果可以在模型中对表名做映射的配置</p>
+<figure class="highlight js"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">class</span> <span class="title class_">User</span> <span class="keyword">extends</span> <span class="title class_ inherited__">Model</span> &#123;</span><br><span class="line">  <span class="keyword">static</span> <span class="title function_">associate</span>(<span class="params">models</span>) &#123;</span><br><span class="line">    models.<span class="property">User</span>.<span class="title function_">belongsToMany</span>(models.<span class="property">Course</span>, &#123;</span><br><span class="line">      <span class="attr">through</span>: models.<span class="property">Like</span>,</span><br><span class="line">      <span class="comment">// 指明特殊的外键字段</span></span><br><span class="line">      <span class="attr">foreignKey</span>: <span class="string">&quot;user_name&quot;</span>,</span><br><span class="line">      <span class="attr">as</span>: <span class="string">&quot;likeCourses&quot;</span>,</span><br><span class="line">    &#125;);</span><br><span class="line">  &#125;</span><br><span class="line">&#125;</span><br><span class="line"><span class="title class_">User</span>.<span class="title function_">init</span>(</span><br><span class="line">  &#123;</span><br><span class="line">    <span class="attr">user_name</span>: <span class="title class_">DataTypes</span>.<span class="property">STRING</span>,</span><br><span class="line">  &#125;,</span><br><span class="line">  &#123;</span><br><span class="line">    sequelize,</span><br><span class="line">    <span class="attr">modelName</span>: <span class="string">&quot;User&quot;</span>,</span><br><span class="line">    <span class="comment">//指定模型和表名的对应关系</span></span><br><span class="line">    <span class="attr">tableName</span>: <span class="string">&quot;user_table&quot;</span>,</span><br><span class="line">    <span class="comment">// 不需要时间字段</span></span><br><span class="line">    <span class="attr">timestamps</span>: <span class="literal">false</span>,</span><br><span class="line">  &#125;</span><br><span class="line">);</span><br></pre></td></tr></table></figure>
+
+<h4 id="执行迁移文件"><a href="#执行迁移文件" class="headerlink" title="执行迁移文件"></a>执行迁移文件</h4><p><a target="_blank" rel="noopener" href="https://sequelize.org/docs/v6/other-topics/migrations/#running-migrations">Running Migrations</a>, <strong>创建模型会自动生成迁移文件</strong>,迁移文件需要按情况手动修改,修改字段类型，添加索引，等操作都是在迁移文件中完成的。</p>
+<figure class="highlight js"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br><span class="line">35</span><br><span class="line">36</span><br><span class="line">37</span><br><span class="line">38</span><br><span class="line">39</span><br><span class="line">40</span><br><span class="line">41</span><br><span class="line">42</span><br><span class="line">43</span><br><span class="line">44</span><br><span class="line">45</span><br><span class="line">46</span><br><span class="line">47</span><br><span class="line">48</span><br><span class="line">49</span><br><span class="line">50</span><br><span class="line">51</span><br><span class="line">52</span><br><span class="line">53</span><br><span class="line">54</span><br><span class="line">55</span><br><span class="line">56</span><br><span class="line">57</span><br><span class="line">58</span><br><span class="line">59</span><br><span class="line">60</span><br><span class="line">61</span><br><span class="line">62</span><br><span class="line">63</span><br><span class="line">64</span><br><span class="line">65</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment">// migrations\20250117092337-create-user.js</span></span><br><span class="line"></span><br><span class="line"><span class="variable language_">module</span>.<span class="property">exports</span> = &#123;</span><br><span class="line">  <span class="keyword">async</span> <span class="title function_">up</span>(<span class="params">queryInterface, Sequelize</span>) &#123;</span><br><span class="line">    <span class="keyword">const</span> transaction = <span class="keyword">await</span> queryInterface.<span class="property">sequelize</span>.<span class="title function_">transaction</span>();</span><br><span class="line">    <span class="keyword">await</span> queryInterface.<span class="title function_">createTable</span>(<span class="string">&quot;Users&quot;</span>, &#123;</span><br><span class="line">      <span class="attr">id</span>: &#123;</span><br><span class="line">        <span class="attr">allowNull</span>: <span class="literal">false</span>,</span><br><span class="line">        <span class="attr">autoIncrement</span>: <span class="literal">true</span>,</span><br><span class="line">        <span class="attr">primaryKey</span>: <span class="literal">true</span>,</span><br><span class="line">        <span class="attr">type</span>: <span class="title class_">Sequelize</span>.<span class="property">INTEGER</span>.<span class="property">UNSIGNED</span>,</span><br><span class="line">      &#125;,</span><br><span class="line">      <span class="attr">email</span>: &#123;</span><br><span class="line">        <span class="attr">allowNull</span>: <span class="literal">false</span>,</span><br><span class="line">        <span class="attr">type</span>: <span class="title class_">Sequelize</span>.<span class="property">STRING</span>,</span><br><span class="line">      &#125;,</span><br><span class="line">      <span class="attr">username</span>: &#123;</span><br><span class="line">        <span class="attr">allowNull</span>: <span class="literal">false</span>,</span><br><span class="line"></span><br><span class="line">        <span class="attr">type</span>: <span class="title class_">Sequelize</span>.<span class="property">STRING</span>,</span><br><span class="line">      &#125;,</span><br><span class="line">      <span class="attr">password</span>: &#123;</span><br><span class="line">        <span class="attr">allowNull</span>: <span class="literal">false</span>,</span><br><span class="line">        <span class="attr">type</span>: <span class="title class_">Sequelize</span>.<span class="property">STRING</span>,</span><br><span class="line">      &#125;,</span><br><span class="line">      <span class="attr">nickname</span>: &#123;</span><br><span class="line">        <span class="attr">allowNull</span>: <span class="literal">false</span>,</span><br><span class="line">        <span class="attr">type</span>: <span class="title class_">Sequelize</span>.<span class="property">STRING</span>,</span><br><span class="line">      &#125;,</span><br><span class="line">      <span class="attr">sex</span>: &#123;</span><br><span class="line">        <span class="attr">type</span>: <span class="title class_">Sequelize</span>.<span class="property">TINYINT</span>,</span><br><span class="line">      &#125;,</span><br><span class="line">      <span class="attr">company</span>: &#123;</span><br><span class="line">        <span class="attr">type</span>: <span class="title class_">Sequelize</span>.<span class="property">STRING</span>,</span><br><span class="line">      &#125;,</span><br><span class="line">      <span class="attr">introduce</span>: &#123;</span><br><span class="line">        <span class="attr">type</span>: <span class="title class_">Sequelize</span>.<span class="property">TEXT</span>,</span><br><span class="line">      &#125;,</span><br><span class="line">      <span class="attr">role</span>: &#123;</span><br><span class="line">        <span class="attr">type</span>: <span class="title class_">Sequelize</span>.<span class="property">TINYINT</span>,</span><br><span class="line">      &#125;,</span><br><span class="line">      <span class="attr">createdAt</span>: &#123;</span><br><span class="line">        <span class="attr">allowNull</span>: <span class="literal">false</span>,</span><br><span class="line">        <span class="attr">type</span>: <span class="title class_">Sequelize</span>.<span class="property">DATE</span>,</span><br><span class="line">      &#125;,</span><br><span class="line">      <span class="attr">updatedAt</span>: &#123;</span><br><span class="line">        <span class="attr">allowNull</span>: <span class="literal">false</span>,</span><br><span class="line">        <span class="attr">type</span>: <span class="title class_">Sequelize</span>.<span class="property">DATE</span>,</span><br><span class="line">      &#125;,</span><br><span class="line">    &#125;);</span><br><span class="line"></span><br><span class="line">    <span class="comment">//添加索引</span></span><br><span class="line">    <span class="keyword">await</span> queryInterface.<span class="title function_">addIndex</span>(<span class="string">&quot;Users&quot;</span>, [<span class="string">&quot;email&quot;</span>], &#123;</span><br><span class="line">      <span class="attr">unique</span>: <span class="literal">true</span>,</span><br><span class="line">    &#125;);</span><br><span class="line"></span><br><span class="line">    <span class="keyword">await</span> queryInterface.<span class="title function_">addIndex</span>(<span class="string">&quot;Users&quot;</span>, [<span class="string">&quot;username&quot;</span>], &#123;</span><br><span class="line">      <span class="attr">unique</span>: <span class="literal">true</span>,</span><br><span class="line">    &#125;);</span><br><span class="line">  &#125;,</span><br><span class="line">  <span class="keyword">async</span> <span class="title function_">down</span>(<span class="params">queryInterface, Sequelize</span>) &#123;</span><br><span class="line">    <span class="comment">// 回滚</span></span><br><span class="line">    <span class="keyword">await</span> queryInterface.<span class="title function_">dropTable</span>(<span class="string">&quot;Users&quot;</span>);</span><br><span class="line">  &#125;,</span><br><span class="line">&#125;;</span><br></pre></td></tr></table></figure>
+
+<p>修改完成后，执行迁移文件，这会在数据库中创建真正的数据表。</p>
+<figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">npx sequelize-cli db:migrate</span><br></pre></td></tr></table></figure>
+
+<p>如果数据表已经存在数据可以使用一下命令回归，这会执行迁移文件中的 down 方法，删除数据表</p>
+<figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">npx sequelize-cli db:migrate:undo  --name [迁移文件名称]</span><br></pre></td></tr></table></figure>
+
+<p><strong>如果数据表数据有效不能删除，还需要对字段修改，就需要额外创建一个迁移文件, 并单独执行这个迁移文件, 并同步修改 model 文件新增或修改字段属性</strong></p>
+<figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><span class="line">npx sequelize-cli migration:generate --name add-avatar-to-user</span><br><span class="line"></span><br><span class="line">npx sequelize-cli db:migrate --name xxxx-add-avatar-to-user</span><br></pre></td></tr></table></figure>
+
+<h4 id="创建种子文件"><a href="#创建种子文件" class="headerlink" title="创建种子文件"></a>创建种子文件</h4><p><a target="_blank" rel="noopener" href="https://sequelize.org/docs/v6/other-topics/migrations/#creating-the-first-seed">Creating the first Seed</a> 用于快速生成初始化的测试数据。</p>
+<p><strong>seed:all 会执行所有的种子文件，因此已经用 seed 初始化的表，还会再插入一遍数据</strong></p>
+<p><strong>种子文件字段校验受到模型（索引字段），迁移文件（校验字段，类型）影响,需要注意字段是否匹配，否则命令执行可能报错</strong></p>
+<figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">npx sequelize-cli seed:generate --name demo-user</span><br></pre></td></tr></table></figure>
+
+<p>需要手动修改种子文件，添加新增数据和删除数据的方法</p>
+<figure class="highlight js"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment">// seeders\20250117101059-user.js</span></span><br><span class="line"></span><br><span class="line"><span class="variable language_">module</span>.<span class="property">exports</span> = &#123;</span><br><span class="line">  <span class="keyword">async</span> <span class="title function_">up</span>(<span class="params">queryInterface, Sequelize</span>) &#123;</span><br><span class="line">    <span class="keyword">await</span> queryInterface.<span class="title function_">bulkInsert</span>(<span class="string">&quot;Users&quot;</span>, [</span><br><span class="line">      &#123;</span><br><span class="line">        <span class="attr">email</span>: <span class="string">&quot;admin@live.com&quot;</span>,</span><br><span class="line">        <span class="attr">username</span>: <span class="string">&quot;admin&quot;</span>,</span><br><span class="line">        <span class="attr">password</span>: <span class="string">&quot;12345&quot;</span>,</span><br><span class="line">        <span class="attr">nickname</span>: <span class="string">&quot;admin&quot;</span>,</span><br><span class="line">        <span class="attr">sex</span>: <span class="number">1</span>,</span><br><span class="line">        <span class="attr">role</span>: <span class="number">0</span>,</span><br><span class="line">        <span class="attr">createdAt</span>: <span class="keyword">new</span> <span class="title class_">Date</span>(),</span><br><span class="line">        <span class="attr">updatedAt</span>: <span class="keyword">new</span> <span class="title class_">Date</span>(),</span><br><span class="line">      &#125;,</span><br><span class="line">    ]);</span><br><span class="line">  &#125;,</span><br><span class="line"></span><br><span class="line">  <span class="keyword">async</span> <span class="title function_">down</span>(<span class="params">queryInterface, Sequelize</span>) &#123;</span><br><span class="line">    <span class="keyword">await</span> queryInterface.<span class="title function_">bulkDelete</span>(<span class="string">&quot;Users&quot;</span>, <span class="literal">null</span>);</span><br><span class="line">  &#125;,</span><br><span class="line">&#125;;</span><br></pre></td></tr></table></figure>
+
+<h4 id="开发路由"><a href="#开发路由" class="headerlink" title="开发路由"></a>开发路由</h4><ul>
+<li><p>在 router 文件夹下添加一个新的路由文件，并注册到 express 中</p>
+<figure class="highlight js"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment">// app.js</span></span><br><span class="line"><span class="keyword">var</span> app = <span class="title function_">express</span>();</span><br><span class="line"><span class="keyword">var</span> courseRouter = <span class="built_in">require</span>(<span class="string">&quot;./routes/course&quot;</span>);</span><br><span class="line">app.<span class="title function_">use</span>(<span class="string">&quot;/course&quot;</span>, courseRouter);</span><br></pre></td></tr></table></figure>
+</li>
+<li><p>使用 <a target="_blank" rel="noopener" href="https://sequelize.org/docs/v6/core-concepts/model-querying-basics/#applying-where-clauses">模糊查询</a></p>
+</li>
+<li><p>常用 <a target="_blank" rel="noopener" href="https://sequelize.org/docs/v6/core-concepts/model-querying-basics/">查询方法</a></p>
+</li>
+<li><p>201 响应码表示请求成功，且修改或创建了资源</p>
+</li>
+<li><p>必须对用户提交的数据过滤，字段验证可以用模型实现，而且可以自定义异步方法，从数据库中查询校验</p>
+</li>
+<li><p>避免孤儿数据<br>外键约束影响性能，一般不允许使用。<br>删除关联数据有风险，有些关联数据是用户数据不能删除<br>可以检测只有没有关联信息的数据才能被删除</p>
+</li>
+<li><p>查询 <a target="_blank" rel="noopener" href="https://sequelize.org/docs/v6/advanced-association-concepts/creating-with-associations/">关联字段</a>，文档只有语法，但是没有自动生成文件中如何添加的示例。</p>
+<p>在 model 文件中添加关联信息</p>
+<figure class="highlight js"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment">// models\course.js</span></span><br><span class="line"></span><br><span class="line"><span class="keyword">const</span> &#123; <span class="title class_">Model</span> &#125; = <span class="built_in">require</span>(<span class="string">&quot;sequelize&quot;</span>);</span><br><span class="line"><span class="variable language_">module</span>.<span class="property">exports</span> = <span class="function">(<span class="params">sequelize, DataTypes</span>) =&gt;</span> &#123;</span><br><span class="line">  <span class="keyword">class</span> <span class="title class_">Course</span> <span class="keyword">extends</span> <span class="title class_ inherited__">Model</span> &#123;</span><br><span class="line">    <span class="keyword">static</span> <span class="title function_">associate</span>(<span class="params">models</span>) &#123;</span><br><span class="line">      <span class="comment">// as 关联字段的别名, 在路由中使用的代码也需要改</span></span><br><span class="line">      models.<span class="property">Course</span>.<span class="title function_">belongsTo</span>(models.<span class="property">User</span>, &#123; <span class="attr">as</span>: <span class="string">&quot;user&quot;</span> &#125;);</span><br><span class="line">      models.<span class="property">Course</span>.<span class="title function_">belongsTo</span>(models.<span class="property">Category</span>, &#123; <span class="attr">as</span>: <span class="string">&quot;category&quot;</span> &#125;);</span><br><span class="line">    &#125;</span><br><span class="line">  &#125;</span><br><span class="line">  <span class="comment">// ...</span></span><br><span class="line">  <span class="keyword">return</span> <span class="title class_">Course</span>;</span><br><span class="line">&#125;;</span><br></pre></td></tr></table></figure>
+
+<p>查询条件中需要添加关联字段</p>
+<figure class="highlight js"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">const</span> condition = &#123;</span><br><span class="line">  <span class="comment">// 排序字段</span></span><br><span class="line">  <span class="attr">order</span>: [[<span class="string">&quot;id&quot;</span>, <span class="string">&quot;DESC&quot;</span>]],</span><br><span class="line">  <span class="comment">// 全局过滤 两个关联的外键</span></span><br><span class="line">  <span class="attr">attributes</span>: &#123;</span><br><span class="line">    <span class="attr">exclude</span>: [<span class="string">&quot;categoryId&quot;</span>, <span class="string">&quot;userId&quot;</span>],</span><br><span class="line">  &#125;,</span><br><span class="line">  <span class="attr">include</span>: [</span><br><span class="line">    <span class="comment">// as 关联字段别名，需要和model中的对应</span></span><br><span class="line">    <span class="comment">// attributes 用于过滤关联模型中的字段</span></span><br><span class="line">    &#123; <span class="attr">model</span>: <span class="title class_">User</span>, <span class="attr">as</span>: <span class="string">&quot;user&quot;</span>, <span class="attr">attributes</span>: [<span class="string">&quot;id&quot;</span>, <span class="string">&quot;username&quot;</span>] &#125;,</span><br><span class="line">    &#123; <span class="attr">model</span>: <span class="title class_">Category</span>, <span class="attr">as</span>: <span class="string">&quot;category&quot;</span>, <span class="attr">attributes</span>: [<span class="string">&quot;id&quot;</span>, <span class="string">&quot;name&quot;</span>] &#125;,</span><br><span class="line">  ],</span><br><span class="line">&#125;;</span><br></pre></td></tr></table></figure>
+</li>
+<li><p>路由代码如下， 可以优化统一的错误处理以及参数的解析</p>
+<figure class="highlight js"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br><span class="line">35</span><br><span class="line">36</span><br><span class="line">37</span><br><span class="line">38</span><br><span class="line">39</span><br><span class="line">40</span><br><span class="line">41</span><br><span class="line">42</span><br><span class="line">43</span><br><span class="line">44</span><br><span class="line">45</span><br><span class="line">46</span><br><span class="line">47</span><br><span class="line">48</span><br><span class="line">49</span><br><span class="line">50</span><br><span class="line">51</span><br><span class="line">52</span><br><span class="line">53</span><br><span class="line">54</span><br><span class="line">55</span><br><span class="line">56</span><br><span class="line">57</span><br><span class="line">58</span><br><span class="line">59</span><br><span class="line">60</span><br><span class="line">61</span><br><span class="line">62</span><br><span class="line">63</span><br><span class="line">64</span><br><span class="line">65</span><br><span class="line">66</span><br><span class="line">67</span><br><span class="line">68</span><br><span class="line">69</span><br><span class="line">70</span><br><span class="line">71</span><br><span class="line">72</span><br><span class="line">73</span><br><span class="line">74</span><br><span class="line">75</span><br><span class="line">76</span><br><span class="line">77</span><br><span class="line">78</span><br><span class="line">79</span><br><span class="line">80</span><br><span class="line">81</span><br><span class="line">82</span><br><span class="line">83</span><br><span class="line">84</span><br><span class="line">85</span><br><span class="line">86</span><br><span class="line">87</span><br><span class="line">88</span><br><span class="line">89</span><br><span class="line">90</span><br><span class="line">91</span><br><span class="line">92</span><br><span class="line">93</span><br><span class="line">94</span><br><span class="line">95</span><br><span class="line">96</span><br><span class="line">97</span><br><span class="line">98</span><br><span class="line">99</span><br><span class="line">100</span><br><span class="line">101</span><br><span class="line">102</span><br><span class="line">103</span><br><span class="line">104</span><br><span class="line">105</span><br><span class="line">106</span><br><span class="line">107</span><br><span class="line">108</span><br><span class="line">109</span><br><span class="line">110</span><br><span class="line">111</span><br><span class="line">112</span><br><span class="line">113</span><br><span class="line">114</span><br><span class="line">115</span><br><span class="line">116</span><br><span class="line">117</span><br><span class="line">118</span><br><span class="line">119</span><br><span class="line">120</span><br><span class="line">121</span><br><span class="line">122</span><br><span class="line">123</span><br><span class="line">124</span><br><span class="line">125</span><br><span class="line">126</span><br><span class="line">127</span><br><span class="line">128</span><br><span class="line">129</span><br><span class="line">130</span><br><span class="line">131</span><br><span class="line">132</span><br><span class="line">133</span><br><span class="line">134</span><br><span class="line">135</span><br><span class="line">136</span><br><span class="line">137</span><br><span class="line">138</span><br><span class="line">139</span><br><span class="line">140</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment">// routes\course.js</span></span><br><span class="line"></span><br><span class="line"><span class="keyword">var</span> express = <span class="built_in">require</span>(<span class="string">&quot;express&quot;</span>);</span><br><span class="line"><span class="keyword">var</span> router = express.<span class="title class_">Router</span>();</span><br><span class="line"><span class="keyword">const</span> &#123; <span class="title class_">Course</span>, <span class="title class_">User</span>, <span class="title class_">Category</span> &#125; = <span class="built_in">require</span>(<span class="string">&quot;../../models&quot;</span>);</span><br><span class="line"><span class="keyword">const</span> &#123; <span class="title class_">Op</span> &#125; = <span class="built_in">require</span>(<span class="string">&quot;sequelize&quot;</span>);</span><br><span class="line"></span><br><span class="line">router.<span class="title function_">get</span>(<span class="string">&quot;/&quot;</span>, <span class="keyword">async</span> <span class="keyword">function</span> (<span class="params">req, res, next</span>) &#123;</span><br><span class="line">  <span class="keyword">try</span> &#123;</span><br><span class="line">    <span class="keyword">const</span> condition = &#123;</span><br><span class="line">      <span class="attr">order</span>: [[<span class="string">&quot;id&quot;</span>, <span class="string">&quot;DESC&quot;</span>]],</span><br><span class="line">      <span class="comment">// 全局过滤 两个关联的外键</span></span><br><span class="line">      <span class="attr">attributes</span>: &#123;</span><br><span class="line">        <span class="attr">exclude</span>: [<span class="string">&quot;categoryId&quot;</span>, <span class="string">&quot;userId&quot;</span>],</span><br><span class="line">      &#125;,</span><br><span class="line">      <span class="attr">include</span>: [</span><br><span class="line">        <span class="comment">// as 关联字段别名，需要和model中的对应</span></span><br><span class="line">        <span class="comment">// attributes 用于过滤关联模型中的字段</span></span><br><span class="line">        &#123; <span class="attr">model</span>: <span class="title class_">User</span>, <span class="attr">as</span>: <span class="string">&quot;user&quot;</span>, <span class="attr">attributes</span>: [<span class="string">&quot;id&quot;</span>, <span class="string">&quot;username&quot;</span>] &#125;,</span><br><span class="line">        &#123; <span class="attr">model</span>: <span class="title class_">Category</span>, <span class="attr">as</span>: <span class="string">&quot;category&quot;</span>, <span class="attr">attributes</span>: [<span class="string">&quot;id&quot;</span>, <span class="string">&quot;name&quot;</span>] &#125;,</span><br><span class="line">      ],</span><br><span class="line">    &#125;;</span><br><span class="line"></span><br><span class="line">    <span class="keyword">const</span> page = req.<span class="property">query</span>.<span class="property">page</span> || <span class="number">1</span>;</span><br><span class="line">    <span class="keyword">const</span> pageSize = req.<span class="property">query</span>.<span class="property">pageSize</span> || <span class="number">10</span>;</span><br><span class="line"></span><br><span class="line">    condition.<span class="property">limit</span> = pageSize;</span><br><span class="line">    condition.<span class="property">offset</span> = (page - <span class="number">1</span>) * pageSize;</span><br><span class="line"></span><br><span class="line">    <span class="keyword">if</span> (req.<span class="property">query</span>.<span class="property">title</span>) &#123;</span><br><span class="line">      condition.<span class="property">where</span> = &#123;</span><br><span class="line">        <span class="attr">title</span>: &#123;</span><br><span class="line">          [<span class="title class_">Op</span>.<span class="property">like</span>]: <span class="string">`%<span class="subst">$&#123;req.query.title&#125;</span>%`</span>,</span><br><span class="line">        &#125;,</span><br><span class="line">      &#125;;</span><br><span class="line">    &#125;</span><br><span class="line"></span><br><span class="line">    <span class="keyword">const</span> &#123; count, rows &#125; = <span class="keyword">await</span> <span class="title class_">Course</span>.<span class="title function_">findAndCountAll</span>(condition);</span><br><span class="line"></span><br><span class="line">    res.<span class="title function_">json</span>(&#123;</span><br><span class="line">      <span class="attr">status</span>: <span class="literal">true</span>,</span><br><span class="line">      <span class="attr">message</span>: <span class="literal">null</span>,</span><br><span class="line">      <span class="attr">data</span>: &#123;</span><br><span class="line">        <span class="attr">course</span>: rows,</span><br><span class="line">        <span class="attr">pagination</span>: &#123;</span><br><span class="line">          <span class="attr">total</span>: count,</span><br><span class="line">          page,</span><br><span class="line">          pageSize,</span><br><span class="line">        &#125;,</span><br><span class="line">      &#125;,</span><br><span class="line">    &#125;);</span><br><span class="line">  &#125; <span class="keyword">catch</span> (err) &#123;</span><br><span class="line">    <span class="variable language_">console</span>.<span class="title function_">log</span>(err);</span><br><span class="line">    res.<span class="title function_">status</span>(<span class="number">500</span>).<span class="title function_">json</span>(&#123;</span><br><span class="line">      <span class="attr">status</span>: <span class="literal">false</span>,</span><br><span class="line">      <span class="attr">message</span>: err,</span><br><span class="line">    &#125;);</span><br><span class="line">  &#125;</span><br><span class="line">&#125;);</span><br><span class="line"></span><br><span class="line">router.<span class="title function_">get</span>(<span class="string">&quot;/:id&quot;</span>, <span class="keyword">async</span> <span class="keyword">function</span> (<span class="params">req, res, next</span>) &#123;</span><br><span class="line">  <span class="keyword">try</span> &#123;</span><br><span class="line">    <span class="keyword">const</span> &#123; id &#125; = req.<span class="property">params</span>;</span><br><span class="line">    <span class="keyword">const</span> data = <span class="keyword">await</span> <span class="title class_">Article</span>.<span class="title function_">findByPk</span>(id);</span><br><span class="line"></span><br><span class="line">    <span class="keyword">if</span> (data) &#123;</span><br><span class="line">      res.<span class="title function_">json</span>(&#123;</span><br><span class="line">        <span class="attr">status</span>: <span class="literal">true</span>,</span><br><span class="line">        <span class="attr">message</span>: <span class="literal">null</span>,</span><br><span class="line">        data,</span><br><span class="line">      &#125;);</span><br><span class="line">    &#125; <span class="keyword">else</span> &#123;</span><br><span class="line">      res.<span class="title function_">status</span>(<span class="number">404</span>).<span class="title function_">json</span>(&#123;</span><br><span class="line">        <span class="attr">status</span>: <span class="literal">false</span>,</span><br><span class="line">      &#125;);</span><br><span class="line">    &#125;</span><br><span class="line">  &#125; <span class="keyword">catch</span> &#123;</span><br><span class="line">    res.<span class="title function_">status</span>(<span class="number">500</span>).<span class="title function_">json</span>(&#123;</span><br><span class="line">      <span class="attr">status</span>: <span class="literal">false</span>,</span><br><span class="line">    &#125;);</span><br><span class="line">  &#125;</span><br><span class="line">&#125;);</span><br><span class="line"></span><br><span class="line">router.<span class="title function_">post</span>(<span class="string">&quot;/&quot;</span>, <span class="keyword">async</span> <span class="keyword">function</span> (<span class="params">req, res, next</span>) &#123;</span><br><span class="line">  <span class="keyword">try</span> &#123;</span><br><span class="line">    <span class="keyword">const</span> data = <span class="keyword">await</span> <span class="title class_">Article</span>.<span class="title function_">create</span>(req.<span class="property">body</span>);</span><br><span class="line">    res.<span class="title function_">status</span>(<span class="number">201</span>).<span class="title function_">json</span>(&#123;</span><br><span class="line">      <span class="attr">status</span>: <span class="literal">true</span>,</span><br><span class="line">    &#125;);</span><br><span class="line">  &#125; <span class="keyword">catch</span> (err) &#123;</span><br><span class="line">    res.<span class="title function_">status</span>(<span class="number">500</span>).<span class="title function_">json</span>(&#123;</span><br><span class="line">      <span class="attr">err</span>: err,</span><br><span class="line">    &#125;);</span><br><span class="line">  &#125;</span><br><span class="line">&#125;);</span><br><span class="line"></span><br><span class="line">router.<span class="title function_">delete</span>(<span class="string">&quot;/:id&quot;</span>, <span class="keyword">async</span> <span class="keyword">function</span> (<span class="params">req, res, next</span>) &#123;</span><br><span class="line">  <span class="keyword">try</span> &#123;</span><br><span class="line">    <span class="keyword">const</span> data = <span class="keyword">await</span> <span class="title class_">Article</span>.<span class="title function_">destroy</span>(&#123;</span><br><span class="line">      <span class="attr">where</span>: &#123;</span><br><span class="line">        <span class="attr">id</span>: req.<span class="property">params</span>.<span class="property">id</span>,</span><br><span class="line">      &#125;,</span><br><span class="line">    &#125;);</span><br><span class="line">    <span class="variable language_">console</span>.<span class="title function_">log</span>(data);</span><br><span class="line">    res.<span class="title function_">status</span>(<span class="number">201</span>).<span class="title function_">json</span>(&#123;</span><br><span class="line">      <span class="attr">status</span>: <span class="literal">true</span>,</span><br><span class="line">    &#125;);</span><br><span class="line">  &#125; <span class="keyword">catch</span> &#123;</span><br><span class="line">    res.<span class="title function_">status</span>(<span class="number">500</span>).<span class="title function_">json</span>(&#123;</span><br><span class="line">      <span class="attr">status</span>: <span class="literal">false</span>,</span><br><span class="line">    &#125;);</span><br><span class="line">  &#125;</span><br><span class="line">&#125;);</span><br><span class="line"></span><br><span class="line">router.<span class="title function_">put</span>(<span class="string">&quot;/:id&quot;</span>, <span class="keyword">async</span> <span class="keyword">function</span> (<span class="params">req, res, next</span>) &#123;</span><br><span class="line">  <span class="keyword">try</span> &#123;</span><br><span class="line">    <span class="keyword">const</span> count = <span class="keyword">await</span> <span class="title class_">Article</span>.<span class="title function_">count</span>(&#123;</span><br><span class="line">      <span class="attr">where</span>: &#123; <span class="attr">id</span>: req.<span class="property">params</span>.<span class="property">id</span> &#125;,</span><br><span class="line">    &#125;);</span><br><span class="line">    <span class="keyword">if</span> (count == <span class="number">0</span>) &#123;</span><br><span class="line">      res.<span class="title function_">status</span>(<span class="number">404</span>).<span class="title function_">json</span>(&#123;</span><br><span class="line">        <span class="attr">status</span>: <span class="literal">false</span>,</span><br><span class="line">        <span class="attr">message</span>: <span class="string">&quot;文章不存在&quot;</span>,</span><br><span class="line">      &#125;);</span><br><span class="line">    &#125; <span class="keyword">else</span> &#123;</span><br><span class="line">      <span class="keyword">await</span> <span class="title class_">Article</span>.<span class="title function_">update</span>(req.<span class="property">body</span>, &#123;</span><br><span class="line">        <span class="attr">where</span>: &#123; <span class="attr">id</span>: req.<span class="property">params</span>.<span class="property">id</span> &#125;,</span><br><span class="line">      &#125;);</span><br><span class="line">      res.<span class="title function_">status</span>(<span class="number">201</span>).<span class="title function_">json</span>(&#123;</span><br><span class="line">        <span class="attr">status</span>: <span class="literal">true</span>,</span><br><span class="line">        <span class="attr">message</span>: <span class="string">&quot;更新成功&quot;</span>,</span><br><span class="line">      &#125;);</span><br><span class="line">    &#125;</span><br><span class="line">  &#125; <span class="keyword">catch</span> &#123;</span><br><span class="line">    res.<span class="title function_">status</span>(<span class="number">500</span>).<span class="title function_">json</span>(&#123;</span><br><span class="line">      <span class="attr">status</span>: <span class="literal">false</span>,</span><br><span class="line">    &#125;);</span><br><span class="line">  &#125;</span><br><span class="line">&#125;);</span><br><span class="line"><span class="variable language_">module</span>.<span class="property">exports</span> = router;</span><br></pre></td></tr></table></figure></li>
+</ul>
+ 
+      <!-- reward -->
+      
+      <div id="reword-out">
+        <div id="reward-btn">
+          打赏
+        </div>
+      </div>
+      
+    </div>
+    
+
+    <!-- copyright -->
+    
+    <div class="declare">
+      <ul class="post-copyright">
+        <li>
+          <i class="ri-copyright-line"></i>
+          <strong>版权声明： </strong>
+          
+          本博客所有文章除特别声明外，著作权归作者所有。转载请注明出处！
+          
+        </li>
+      </ul>
+    </div>
+    
+    <footer class="article-footer">
+       
+  <ul class="article-tag-list" itemprop="keywords"><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/NodeJS/" rel="tag">NodeJS</a></li></ul>
+
+    </footer>
+  </div>
+
+   
+  <nav class="article-nav">
+    
+      <a href="/posts/5b26283fba38/" class="article-nav-link">
+        <strong class="article-nav-caption">上一篇</strong>
+        <div class="article-nav-title">
+          
+            Express实践 ② 完善核心功能
+          
+        </div>
+      </a>
+    
+    
+      <a href="/posts/38407de60227/" class="article-nav-link">
+        <strong class="article-nav-caption">下一篇</strong>
+        <div class="article-nav-title">vue原理A</div>
+      </a>
+    
+  </nav>
+
+  
+   
+<div class="gitalk" id="gitalk-container"></div>
+
+<link rel="stylesheet" href="https://cdn.staticfile.org/gitalk/1.7.2/gitalk.min.css">
+
+
+<script src="https://cdn.staticfile.org/gitalk/1.7.2/gitalk.min.js"></script>
+
+
+<script src="https://cdn.staticfile.org/blueimp-md5/2.19.0/js/md5.min.js"></script>
+
+<script type="text/javascript">
+  var gitalk = new Gitalk({
+    clientID: 'bce2317b25da7c3c18f6',
+    clientSecret: 'e0ab868ca9054234798be82c2b1c0c9dd8632307',
+    repo: 'noopn.github.io',
+    owner: 'noopn',
+    admin: ['noopn'],
+    // id: location.pathname,      // Ensure uniqueness and length less than 50
+    id: md5(location.pathname),
+    distractionFreeMode: false,  // Facebook-like distraction free mode
+    pagerDirection: 'last'
+  })
+
+  gitalk.render('gitalk-container')
+</script>
+
+     
+</article>
+
+</section>
+      <footer class="footer">
+  <div class="outer">
+    <ul>
+      <li>
+        Copyrights &copy;
+        2015-2025
+        <i class="ri-heart-fill heart_icon"></i> SunZhiqi
+      </li>
+    </ul>
+    <ul>
+      <li>
+        
+      </li>
+    </ul>
+    <ul>
+      <li>
+        
+      </li>
+    </ul>
+    <ul>
+      
+    </ul>
+    <ul>
+      
+    </ul>
+    <ul>
+      <li>
+        <!-- cnzz统计 -->
+        
+      </li>
+    </ul>
+  </div>
+</footer>    
+    </main>
+    <div class="float_btns">
+      <div class="totop" id="totop">
+  <i class="ri-arrow-up-line"></i>
+</div>
+
+    </div>
+    <aside class="sidebar on">
+      <button class="navbar-toggle"></button>
+<nav class="navbar">
+  
+  <div class="logo">
+    <a href="/"><img src="/images/ayer-side.png" alt="四月八日"></a>
+  </div>
+  
+  <ul class="nav nav-main">
+    
+    <li class="nav-item">
+      <a class="nav-item-link" href="/">主页</a>
+    </li>
+    
+    <li class="nav-item">
+      <a class="nav-item-link" href="/archives">归档</a>
+    </li>
+    
+    <li class="nav-item">
+      <a class="nav-item-link" href="/categories">分类</a>
+    </li>
+    
+    <li class="nav-item">
+      <a class="nav-item-link" href="/tags">标签</a>
+    </li>
+    
+  </ul>
+</nav>
+<nav class="navbar navbar-bottom">
+  <ul class="nav">
+    <li class="nav-item">
+      
+      <a class="nav-item-link nav-item-search"  title="搜索">
+        <i class="ri-search-line"></i>
+      </a>
+      
+      
+    </li>
+  </ul>
+</nav>
+<div class="search-form-wrap">
+  <div class="local-search local-search-plugin">
+  <input type="search" id="local-search-input" class="local-search-input" placeholder="Search...">
+  <div id="local-search-result" class="local-search-result"></div>
+</div>
+</div>
+    </aside>
+    <div id="mask"></div>
+
+<!-- #reward -->
+<div id="reward">
+  <span class="close"><i class="ri-close-line"></i></span>
+  <p class="reward-p"><i class="ri-cup-line"></i>此时无声胜有声！</p>
+  <div class="reward-box">
+    
+    <div class="reward-item">
+      <img class="reward-img" src="/images/alipay.jpg">
+      <span class="reward-type">支付宝</span>
+    </div>
+    
+    
+    <div class="reward-item">
+      <img class="reward-img" src="/images/wechat.jpg">
+      <span class="reward-type">微信</span>
+    </div>
+    
+  </div>
+</div>
+    
+<script src="/js/jquery-3.6.0.min.js"></script>
+ 
+<script src="/js/lazyload.min.js"></script>
+
+<!-- Tocbot -->
+ 
+<script src="/js/tocbot.min.js"></script>
+
+<script>
+  tocbot.init({
+    tocSelector: ".tocbot",
+    contentSelector: ".article-entry",
+    headingSelector: "h1, h2, h3, h4, h5, h6",
+    hasInnerContainers: true,
+    scrollSmooth: true,
+    scrollContainer: "main",
+    positionFixedSelector: ".tocbot",
+    positionFixedClass: "is-position-fixed",
+    fixedSidebarOffset: "auto",
+  });
+</script>
+
+<script src="/js/jquery.modal.min.js"></script>
+<link rel="stylesheet" href="/css/jquery.modal.min.css" />
+<script src="/js/jquery.justifiedGallery.min.js"></script>
+
+<script src="/dist/main.js"></script>
+
+<!-- ImageViewer -->
+ <!-- Root element of PhotoSwipe. Must have class pswp. -->
+<div class="pswp" tabindex="-1" role="dialog" aria-hidden="true">
+  <!-- Background of PhotoSwipe. 
+         It's a separate element as animating opacity is faster than rgba(). -->
+  <div class="pswp__bg"></div>
+
+  <!-- Slides wrapper with overflow:hidden. -->
+  <div class="pswp__scroll-wrap">
+    <!-- Container that holds slides. 
+            PhotoSwipe keeps only 3 of them in the DOM to save memory.
+            Don't modify these 3 pswp__item elements, data is added later on. -->
+    <div class="pswp__container">
+      <div class="pswp__item"></div>
+      <div class="pswp__item"></div>
+      <div class="pswp__item"></div>
+    </div>
+
+    <!-- Default (PhotoSwipeUI_Default) interface on top of sliding area. Can be changed. -->
+    <div class="pswp__ui pswp__ui--hidden">
+      <div class="pswp__top-bar">
+        <!--  Controls are self-explanatory. Order can be changed. -->
+
+        <div class="pswp__counter"></div>
+
+        <button
+          class="pswp__button pswp__button--close"
+          title="Close (Esc)"
+        ></button>
+
+        <button
+          class="pswp__button pswp__button--share"
+          style="display: none"
+          title="Share"
+        ></button>
+
+        <button
+          class="pswp__button pswp__button--fs"
+          title="Toggle fullscreen"
+        ></button>
+
+        <button
+          class="pswp__button pswp__button--zoom"
+          title="Zoom in/out"
+        ></button>
+
+        <!-- Preloader demo http://codepen.io/dimsemenov/pen/yyBWoR -->
+        <!-- element will get class pswp__preloader--active when preloader is running -->
+        <div class="pswp__preloader">
+          <div class="pswp__preloader__icn">
+            <div class="pswp__preloader__cut">
+              <div class="pswp__preloader__donut"></div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <div class="pswp__share-modal pswp__share-modal--hidden pswp__single-tap">
+        <div class="pswp__share-tooltip"></div>
+      </div>
+
+      <button
+        class="pswp__button pswp__button--arrow--left"
+        title="Previous (arrow left)"
+      ></button>
+
+      <button
+        class="pswp__button pswp__button--arrow--right"
+        title="Next (arrow right)"
+      ></button>
+
+      <div class="pswp__caption">
+        <div class="pswp__caption__center"></div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<link rel="stylesheet" href="/css/photoswipe.min.css" />
+<link rel="stylesheet" href="/css/default-skin.min.css" />
+<script src="/js/photoswipe.min.js"></script>
+<script src="/js/photoswipe-ui-default.min.js"></script>
+
+<script>
+  function viewer_init() {
+    let pswpElement = document.querySelectorAll(".pswp")[0];
+    let $imgArr = document.querySelectorAll(
+      ".article-entry img:not(.reward-img)"
+    );
+
+    $imgArr.forEach(($em, i) => {
+      $em.onclick = () => {
+        // slider展开状态
+        // todo: 这样不好，后面改成状态
+        if (document.querySelector(".left-col.show")) return;
+        let items = [];
+        $imgArr.forEach(($em2, i2) => {
+          let img = $em2.getAttribute("data-idx", i2);
+          let src =
+            $em2.getAttribute("data-target") || $em2.getAttribute("src");
+          let title = $em2.getAttribute("alt");
+          // 获得原图尺寸
+          const image = new Image();
+          image.src = src;
+          items.push({
+            src: src,
+            w: image.width || $em2.width,
+            h: image.height || $em2.height,
+            title: title,
+          });
+        });
+        var gallery = new PhotoSwipe(pswpElement, PhotoSwipeUI_Default, items, {
+          index: parseInt(i),
+        });
+        gallery.init();
+      };
+    });
+  }
+  viewer_init();
+</script>
+ 
+<!-- MathJax -->
+ <script type="text/x-mathjax-config">
+  MathJax.Hub.Config({
+      tex2jax: {
+          inlineMath: [ ['$','$'], ["\\(","\\)"]  ],
+          processEscapes: true,
+          skipTags: ['script', 'noscript', 'style', 'textarea', 'pre', 'code']
+      }
+  });
+
+  MathJax.Hub.Queue(function() {
+      var all = MathJax.Hub.getAllJax(), i;
+      for(i=0; i < all.length; i += 1) {
+          all[i].SourceElement().parentNode.className += ' has-jax';
+      }
+  });
+</script>
+
+<script src="/js/MathJax.js"></script>
+<script src="/js/TeX-AMS-MML_HTMLorMML-full.js"></script>
+
+<script>
+  var ayerConfig = {
+    mathjax: true,
+  };
+</script>
+
+<!-- Katex -->
+
+<!-- busuanzi  -->
+
+<!-- ClickLove -->
+
+<!-- ClickBoom1 -->
+
+<!-- ClickBoom2 -->
+
+<!-- CodeCopy -->
+ 
+<link rel="stylesheet" href="/css/clipboard.css">
+ <script src="/js/clipboard.min.js"></script>
+<script>
+  function wait(callback, seconds) {
+    var timelag = null;
+    timelag = window.setTimeout(callback, seconds);
+  }
+  !(function (e, t, a) {
+    var initCopyCode = function () {
+      var copyHtml = "";
+      copyHtml += '<button class="btn-copy" data-clipboard-snippet="">';
+      copyHtml += '<i class="ri-file-copy-2-line"></i><span>COPY</span>';
+      copyHtml += "</button>";
+      $(".highlight .code pre").before(copyHtml);
+      $(".article pre code").before(copyHtml);
+      var clipboard = new ClipboardJS(".btn-copy", {
+        target: function (trigger) {
+          return trigger.nextElementSibling;
+        },
+      });
+      clipboard.on("success", function (e) {
+        let $btn = $(e.trigger);
+        $btn.addClass("copied");
+        let $icon = $($btn.find("i"));
+        $icon.removeClass("ri-file-copy-2-line");
+        $icon.addClass("ri-checkbox-circle-line");
+        let $span = $($btn.find("span"));
+        $span[0].innerText = "COPIED";
+
+        wait(function () {
+          // 等待两秒钟后恢复
+          $icon.removeClass("ri-checkbox-circle-line");
+          $icon.addClass("ri-file-copy-2-line");
+          $span[0].innerText = "COPY";
+        }, 2000);
+      });
+      clipboard.on("error", function (e) {
+        e.clearSelection();
+        let $btn = $(e.trigger);
+        $btn.addClass("copy-failed");
+        let $icon = $($btn.find("i"));
+        $icon.removeClass("ri-file-copy-2-line");
+        $icon.addClass("ri-time-line");
+        let $span = $($btn.find("span"));
+        $span[0].innerText = "COPY FAILED";
+
+        wait(function () {
+          // 等待两秒钟后恢复
+          $icon.removeClass("ri-time-line");
+          $icon.addClass("ri-file-copy-2-line");
+          $span[0].innerText = "COPY";
+        }, 2000);
+      });
+    };
+    initCopyCode();
+  })(window, document);
+</script>
+ 
+<!-- CanvasBackground -->
+
+<script>
+  if (window.mermaid) {
+    mermaid.initialize({ theme: "default" });
+  }
+</script>
+
+
+    
+    
+
+  </div>
+</body>
+
+</html>
