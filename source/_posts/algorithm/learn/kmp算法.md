@@ -8,7 +8,7 @@ tags:
   - kmp算法
 categories:
   - 算法
-  - 常见算法
+  - 常见算法与数学
 ---
 
 字符串匹配是计算机的基本任务之一。Knuth-Morris-Pratt算法（简称KMP）是最常用的之一。它以三个发明者命名，起头的那个K就是著名科学家Donald Knuth。

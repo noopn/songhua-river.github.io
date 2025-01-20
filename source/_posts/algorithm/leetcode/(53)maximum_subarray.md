@@ -3,12 +3,12 @@ title: 53.最大子序和
 mathjax: true
 tags:
   - 算法
-  - LeetCode
+  - 关联题目
   - 动态规划
 categories:
   - 算法
-  - LeetCode
-  - Easy
+  - 关联题目
+  
 
 date: 2020-09-24 11:20:56
 ---

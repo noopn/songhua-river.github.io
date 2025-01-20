@@ -5,11 +5,11 @@ mathjax: true
 date: 2020-09-20 13:59:58
 tags:
   - 算法
-  - LeetCode
+  - 关联题目
 categories:
   - 算法
-  - LeetCode
-  - Easy
+  - 关联题目
+  
 ---
 
 ##### [LeetCode](https://leetcode-cn.com/problems/implement-strstr/)

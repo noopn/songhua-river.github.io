@@ -3,11 +3,11 @@ title: 62.不同路径
 mathjax: true
 tags:
   - 算法
-  - LeetCode
+  - 关联题目
 categories:
   - 算法
-  - LeetCode
-  - Medium
+  - 关联题目
+
 
 date: 2020-10-08 20:29:48
 ---

@@ -3,45 +3,45 @@ title: 动态规划
 mathjax: true
 tags:
   - 算法
-  - LeetCode
   - 动态规划
 categories:
   - 算法
-  - 常见算法
+  - 常见算法与数学
 
 date: 2020-10-02 16:44:34
 ---
 
 #### 什么样的问题可以使用动态规划
 
-+ 计数
-  + 到达一个位置有多少中走法
-  + 有多少种方式选出k个数使其和使sum
+- 计数
 
-+ 求最大值最小值
-  + 从左下角到右下角路径的最大数字和
-  + 最长上升子序列长度
+  - 到达一个位置有多少中走法
+  - 有多少种方式选出 k 个数使其和使 sum
 
-+ 存在性 博弈性
-  + 取石子游戏，先手是否必胜
-  + 能不能选出k个数使其和是sum
+- 求最大值最小值
 
+  - 从左下角到右下角路径的最大数字和
+  - 最长上升子序列长度
+
+- 存在性 博弈性
+  - 取石子游戏，先手是否必胜
+  - 能不能选出 k 个数使其和是 sum
 
 #### 问题描述
 
 一起提动态规划，可能最先想到的就是硬币问题，这也是动态规划的最常见问题。
 
-你有三种硬币，面值分别为 2元，5元，7元，每种硬币数量足够多。买一本书须要27元，如何使用最少的硬币组合正好可以付清27元
+你有三种硬币，面值分别为 2 元，5 元，7 元，每种硬币数量足够多。买一本书须要 27 元，如何使用最少的硬币组合正好可以付清 27 元
 
 从直觉上我们可能会这样尝试：
 
-+ 因为要最够少的硬币，那就尽量选择大的面额
+- 因为要最够少的硬币，那就尽量选择大的面额
 
-+ 拿3个7元硬币，还剩6元，发现如果使用5元硬币不能凑够6元，所以选择用3个两元硬币
+- 拿 3 个 7 元硬币，还剩 6 元，发现如果使用 5 元硬币不能凑够 6 元，所以选择用 3 个两元硬币
 
-+ 我想到的结果是 2元，2元，2元，7元，7元，7元 6枚硬币
+- 我想到的结果是 2 元，2 元，2 元，7 元，7 元，7 元 6 枚硬币
 
-+ 但正确的结果是 5元，5元，5元，5元，7元 5枚硬币
+- 但正确的结果是 5 元，5 元，5 元，5 元，7 元 5 枚硬币
 
 **问题所在**
 
@@ -59,7 +59,7 @@ date: 2020-10-02 16:44:34
 
 &ensp;&ensp;1） 最后一步
 
-&ensp;&ensp;以题目为例，随算我们不知道最少的方式是什么，但它肯定是由 {% mathjax %}a_1,a_2,...a_k{% endmathjax %} 这么多硬币加一起组成的，这些硬币加在一起的面值是27
+&ensp;&ensp;以题目为例，随算我们不知道最少的方式是什么，但它肯定是由 {% mathjax %}a_1,a_2,...a_k{% endmathjax %} 这么多硬币加一起组成的，这些硬币加在一起的面值是 27
 
 &ensp;&ensp;其中一定会有一枚**最后取到的硬币**{% mathjax %} a_k {% endmathjax %}
 
@@ -69,8 +69,7 @@ date: 2020-10-02 16:44:34
 
 ![](0001.jpg)
 
-
-&ensp;&ensp;&ensp;&ensp;a. 不关心前面{% mathjax %} k-1 {% endmathjax %} 枚硬币如何拼出 {% mathjax %} 27 - a_k {% endmathjax %}的面值，可能有1种方法，也可能有100种，虽然现在不知道{% mathjax %}a_k {% endmathjax %}（最后一枚硬币面值）,{% mathjax %} K {% endmathjax %}(最少使用的硬币数量)，但可以肯定的是我们用了{% mathjax %} k-1 {% endmathjax %}枚硬币，拼出了{% mathjax %} 27 - a_k {% endmathjax %} 的面值。
+&ensp;&ensp;&ensp;&ensp;a. 不关心前面{% mathjax %} k-1 {% endmathjax %} 枚硬币如何拼出 {% mathjax %} 27 - a_k {% endmathjax %}的面值，可能有 1 种方法，也可能有 100 种，虽然现在不知道{% mathjax %}a_k {% endmathjax %}（最后一枚硬币面值）,{% mathjax %} K {% endmathjax %}(最少使用的硬币数量)，但可以肯定的是我们用了{% mathjax %} k-1 {% endmathjax %}枚硬币，拼出了{% mathjax %} 27 - a_k {% endmathjax %} 的面值。
 
 &ensp;&ensp;&ensp;&ensp;b. 为什么前面一定是{% mathjax %} k-1 {% endmathjax %}枚硬币，而不能更少？ 因为我们假设的是最优策略，如果前面可以用少于{% mathjax %} k-1 {% endmathjax %}枚硬币，组成{% mathjax %} 27 - a_k {% endmathjax %} 的面值，那么加上最后一枚硬币，总硬币的数量还是小于{% mathjax %} K {% endmathjax %},与最初假设的最优策略{% mathjax %} K {% endmathjax %} 枚硬币相违背。换句话说，对于拼出{% mathjax %} 27 - a_k {% endmathjax %}的面值，需要使用 {% mathjax %} k-1 {% endmathjax %} 枚硬币，这仍然是一个最优策略。
 
@@ -86,20 +85,19 @@ date: 2020-10-02 16:44:34
 
 > 回顾一下如何抽象出状态的：我们先考虑最后一步，提取出除了最后一步之后的子问题，发现子问题和原问题，都是求最少硬币数量，原问题求的是拼除{% mathjax %} 27 {% endmathjax %}的最少硬币数量，子问题是拼出{% mathjax %} 27 - a_k {% endmathjax %}的最少硬币数量。所以我们用{% mathjax %} f {% endmathjax %} 表示最少硬币数量的结果，用 {% mathjax %} X {% endmathjax %} 表示需要求解的面值。
 
-&ensp;&ensp;到目前为止，我们还是不知道最后那个{% mathjax %} a_k {% endmathjax %}的硬币是多少，但它只可能是2，5，或者7，所以：
+&ensp;&ensp;到目前为止，我们还是不知道最后那个{% mathjax %} a_k {% endmathjax %}的硬币是多少，但它只可能是 2，5，或者 7，所以：
 
-&ensp;&ensp;如果 {% mathjax %} a_k = 2 {% endmathjax %},则 {% mathjax %} f(27) = f(27-2) + 1 {% endmathjax %} 最后一枚硬币为2
+&ensp;&ensp;如果 {% mathjax %} a_k = 2 {% endmathjax %},则 {% mathjax %} f(27) = f(27-2) + 1 {% endmathjax %} 最后一枚硬币为 2
 
-&ensp;&ensp;如果 {% mathjax %} a_k = 5 {% endmathjax %},则 {% mathjax %} f(27) = f(27-5) + 1 {% endmathjax %} 最后一枚硬币为5
+&ensp;&ensp;如果 {% mathjax %} a_k = 5 {% endmathjax %},则 {% mathjax %} f(27) = f(27-5) + 1 {% endmathjax %} 最后一枚硬币为 5
 
-&ensp;&ensp;如果 {% mathjax %} a_k = 7 {% endmathjax %},则 {% mathjax %} f(27) = f(27-7) + 1 {% endmathjax %} 最后一枚硬币为7
+&ensp;&ensp;如果 {% mathjax %} a_k = 7 {% endmathjax %},则 {% mathjax %} f(27) = f(27-7) + 1 {% endmathjax %} 最后一枚硬币为 7
 
 &ensp;&ensp;所以需要的最少硬币数，就是上面三种情况中的最小值
 
 <center>{% mathjax %} f(27) = min(f(27-2) + 1,f(27-5) + 1,f(27-7) + 1) {% endmathjax %}</center>
 &ensp;&ensp;
 <center>{% mathjax %} f(X) = min(f(X-a_1) + 1,f(X-a_2) + 1,...,f(X-a_k) + 1) {% endmathjax %}</center>
-
 
 **递归求解**
 
@@ -113,20 +111,20 @@ b. 如果求解总额`>=5`,最后一个硬币，可以是 2，5
 
 c. 如果求解总额`>=2`,最后一个硬币，可以是 2
 
-b. 边界情况总额是 0， 结果返回0，0元需要0枚硬币
+b. 边界情况总额是 0， 结果返回 0，0 元需要 0 枚硬币
 
 ```javascript
 function fn(x) {
-    if (x === 0) return 0;
-    var res = Infinity;
-    if (x >= 7) {
-        res = Math.min(fn(x - 2) + 1, fn(x - 5) + 1, fn(x - 7) + 1);
-    } else if (x >= 5) {
-        res = Math.min(fn(x - 2) + 1, fn(x - 5) + 1)
-    } else if (x >= 2) {
-        res = fn(x - 2) + 1
-    }
-    return res;
+  if (x === 0) return 0;
+  var res = Infinity;
+  if (x >= 7) {
+    res = Math.min(fn(x - 2) + 1, fn(x - 5) + 1, fn(x - 7) + 1);
+  } else if (x >= 5) {
+    res = Math.min(fn(x - 2) + 1, fn(x - 5) + 1);
+  } else if (x >= 2) {
+    res = fn(x - 2) + 1;
+  }
+  return res;
 }
 ```
 
@@ -134,19 +132,19 @@ function fn(x) {
 
 ```javascript
 function fn(x) {
-    if (x === 0) return 0;
-    var res = Infinity;
-    //最后一枚硬币是7 
-    if (x >= 7) {
-        res = Math.min(fn(x - 7) + 1, res);
-    }
-    if (x >= 5) {
-        res = Math.min(fn(x - 5) + 1, res)
-    }
-    if (x >= 2) {
-        res = Math.min(fn(x - 2) + 1, res)
-    }
-    return res;
+  if (x === 0) return 0;
+  var res = Infinity;
+  //最后一枚硬币是7
+  if (x >= 7) {
+    res = Math.min(fn(x - 7) + 1, res);
+  }
+  if (x >= 5) {
+    res = Math.min(fn(x - 5) + 1, res);
+  }
+  if (x >= 2) {
+    res = Math.min(fn(x - 2) + 1, res);
+  }
+  return res;
 }
 ```
 
@@ -156,7 +154,7 @@ function fn(x) {
 
 #### 转移方程
 
-转移方程通常在分析子问题的时候已经分析清楚，对于任意X
+转移方程通常在分析子问题的时候已经分析清楚，对于任意 X
 
 ![](0003.jpg)
 
@@ -164,13 +162,13 @@ function fn(x) {
 
 #### 初始条件和边界情况
 
-+ 如果{% mathjax %}X-2{% endmathjax %},{% mathjax %}X-5{% endmathjax %},{% mathjax %}X-7{% endmathjax %}小于0怎么办
+- 如果{% mathjax %}X-2{% endmathjax %},{% mathjax %}X-5{% endmathjax %},{% mathjax %}X-7{% endmathjax %}小于 0 怎么办
 
-+ 用正无穷来表示不能拼出某个值 {% mathjax %}f(-1) = +\infty{% endmathjax %}
+- 用正无穷来表示不能拼出某个值 {% mathjax %}f(-1) = +\infty{% endmathjax %}
 
 <center>{% mathjax %} f(1) = min(f(-1) + 1,f(-2) + 1) = +\infty {% endmathjax %}</center>
 
-+ 初始条件{% mathjax %} f(0) = 0 {% endmathjax %}，用转移方程算不出来的需要定义，{% mathjax %} f(0) = min(f(-2) + 1,f(-5) + 1,f(-7) + 1)) === +\infty {% endmathjax %},所以需要定义边界情况{% mathjax %} f(0) = 0 {% endmathjax %}。
+- 初始条件{% mathjax %} f(0) = 0 {% endmathjax %}，用转移方程算不出来的需要定义，{% mathjax %} f(0) = min(f(-2) + 1,f(-5) + 1,f(-7) + 1)) === +\infty {% endmathjax %},所以需要定义边界情况{% mathjax %} f(0) = 0 {% endmathjax %}。
 
 #### 计算顺序
 
@@ -187,8 +185,8 @@ function fn(x) {
 当计算到{% mathjax %} f(X) {% endmathjax %} 时，{% mathjax %} f(X-2)，f(X-5)，f(X-7) {% endmathjax %} 都已经计算过，且能拿到计算结果。
 
 | F(i)  | 最小硬币数量                                                            |
-|-------|-------------------------------------------------------------------------|
-| F(0)  | 0 //金额为0不能由硬币组成                                               |
+| ----- | ----------------------------------------------------------------------- |
+| F(0)  | 0 //金额为 0 不能由硬币组成                                             |
 | F(1)  | 1 //{% mathjax %}F(1)=min(F(1-2),F(1-5),F(1-7))+1=0{% endmathjax %}     |
 | F(2)  | 1 //{% mathjax %}F(2)=min(F(2-2),F(2-5),F(2-7))+1=1{% endmathjax %}     |
 | F(3)  | 2 //{% mathjax %}F(3)=min(F(3-2),F(3-5),F(3-7))+1=0 {% endmathjax %}    |
@@ -200,47 +198,47 @@ function fn(x) {
 
 ```javascript
 function fn(x) {
-    if (x === 0) return 0;
-    var stack = [0],
-        i = 1;
-    for (; i <= x; ++i) {
-        stack[i] = Math.min(
-            (stack[i - 2] === undefined ? Infinity : stack[i - 2]) + 1,
-            (stack[i - 5] === undefined ? Infinity : stack[i - 5]) + 1,
-            (stack[i - 7] === undefined ? Infinity : stack[i - 7]) + 1
-        );
-    }
-    if (stack[i - 1] === Infinity) {  
-        return -1;
-    }
-    return stack[i - 1];
+  if (x === 0) return 0;
+  var stack = [0],
+    i = 1;
+  for (; i <= x; ++i) {
+    stack[i] = Math.min(
+      (stack[i - 2] === undefined ? Infinity : stack[i - 2]) + 1,
+      (stack[i - 5] === undefined ? Infinity : stack[i - 5]) + 1,
+      (stack[i - 7] === undefined ? Infinity : stack[i - 7]) + 1
+    );
+  }
+  if (stack[i - 1] === Infinity) {
+    return -1;
+  }
+  return stack[i - 1];
 }
 ```
 
 ```javascript
 function fn(x) {
-    if (x === 0) return 0;
-    var stack = [0],
-        i = 1;
-    for (; i <= x; ++i) {
-        // 如果硬币面额数量不确定，其实就是循环两两比较
-        stack[i] = Math.min(
-            stack[i - 2] === undefined ? Infinity : stack[i - 2] + 1,
-            stack[i] === undefined ? Infinity : stack[i],
-        );
-        stack[i] = Math.min(
-            stack[i - 5] === undefined ? Infinity : stack[i - 5] + 1,
-            stack[i] === undefined ? Infinity : stack[i],
-        );
-        stack[i] = Math.min(
-            stack[i - 7] === undefined ? Infinity : stack[i - 7] + 1,
-            stack[i] === undefined ? Infinity : stack[i],
-        );
-    }
-    if (stack[i - 1] === Infinity) {
-        return -1;
-    }
-    return stack[i - 1];
+  if (x === 0) return 0;
+  var stack = [0],
+    i = 1;
+  for (; i <= x; ++i) {
+    // 如果硬币面额数量不确定，其实就是循环两两比较
+    stack[i] = Math.min(
+      stack[i - 2] === undefined ? Infinity : stack[i - 2] + 1,
+      stack[i] === undefined ? Infinity : stack[i]
+    );
+    stack[i] = Math.min(
+      stack[i - 5] === undefined ? Infinity : stack[i - 5] + 1,
+      stack[i] === undefined ? Infinity : stack[i]
+    );
+    stack[i] = Math.min(
+      stack[i - 7] === undefined ? Infinity : stack[i - 7] + 1,
+      stack[i] === undefined ? Infinity : stack[i]
+    );
+  }
+  if (stack[i - 1] === Infinity) {
+    return -1;
+  }
+  return stack[i - 1];
 }
 ```
 
@@ -256,7 +254,7 @@ function fn(x) {
 
 [不同路径](/posts/a42081a0)
 
-[n个骰子的点数](/posts/d6da309c)
+[n 个骰子的点数](/posts/d6da309c)
 
 **存在型动态规划**
 

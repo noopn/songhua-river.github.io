@@ -3,12 +3,12 @@ title: 152.乘积最大子数组
 mathjax: true
 tags:
   - 算法
-  - LeetCode
+  - 关联题目
   - 动态规划
 categories:
   - 算法
-  - LeetCode
-  - Medium
+  - 关联题目
+
 
 date: 2020-10-14 13:04:27
 ---

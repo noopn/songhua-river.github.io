@@ -3,11 +3,11 @@ title: O60.n个骰子的点数
 mathjax: true
 tags:
   - 算法
-  - LeetCode
+  - 关联题目
 categories:
   - 算法
-  - LeetCode
-  - Easy
+  - 关联题目
+  
 
 date: 2020-10-19 10:38:02
 ---

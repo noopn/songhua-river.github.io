@@ -3,11 +3,11 @@ title: 46.全排列
 mathjax: true
 tags:
   - 算法
-  - LeetCode
+  - 关联题目
 categories:
   - 算法
-  - LeetCode
-  - Medium
+  - 关联题目
+
 
 date: 2020-10-15 13:38:05
 ---

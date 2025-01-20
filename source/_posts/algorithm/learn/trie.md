@@ -5,11 +5,10 @@ mathjax: true
 date: 2020-10-13 14:54:38
 tags:
   - 算法
-  - LeetCode
   - 字典树
 categories:
   - 算法
-  - 常见算法
+  - 常见算法与数学
 ---
 
 #### 树的种类

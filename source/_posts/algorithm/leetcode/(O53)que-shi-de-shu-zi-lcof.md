@@ -5,11 +5,11 @@ mathjax: true
 date: 2020-11-01 19:38:05
 tags:
   - 算法
-  - LeetCode
+  - 关联题目
 categories:
   - 算法
-  - LeetCode
-  - Easy
+  - 关联题目
+  
 ---
 
 **[LeetCode](https://leetcode-cn.com/problems/que-shi-de-shu-zi-lcof/)**
