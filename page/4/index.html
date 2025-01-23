@@ -112,6 +112,96 @@
     
     
     <article
+  id="posts-pattern/⑩状态模式"
+  class="article article-type-posts"
+  itemscope
+  itemprop="blogPost"
+  data-scroll-reveal
+>
+  <div class="article-inner">
+    
+    <header class="article-header">
+       
+<h2 itemprop="name">
+  <a class="article-title" href="/posts/ff6edceab12a/"
+    >⑩状态模式</a> 
+</h2>
+ 
+
+      
+    </header>
+     
+    <div class="article-meta">
+      <a href="/posts/ff6edceab12a/" class="article-date">
+  <time datetime="2023-02-21T01:33:42.000Z" itemprop="datePublished">2023-02-21</time>
+</a> 
+  <div class="article-category">
+    <a class="article-category-link" href="/categories/%E8%AE%BE%E8%AE%A1%E6%A8%A1%E5%BC%8F/">设计模式</a>
+  </div>
+   
+    </div>
+      
+    <div class="article-entry" itemprop="articleBody">
+       
+  <h4 id="避免陷入在-if-x2F-else-之中"><a href="#避免陷入在-if-x2F-else-之中" class="headerlink" title="避免陷入在 if&#x2F;else 之中"></a>避免陷入在 if&#x2F;else 之中</h4><p>考虑以下两种场景，哪种更容易让你深陷在 if&#x2F;else 的逻辑之中。</p>
+<p><strong>订单配送</strong>，订单可能处于下面的几种状态</p>
+<ul>
+<li>下单状态</li>
+<li>打包状态</li>
+<li>配送状态</li>
+<li>签收状态</li>
+</ul>
+<p><strong>自动售卖机</strong></p>
+<ul>
+<li>无货状态</li>
+<li>有货状态</li>
+<li>已投币状态</li>
+<li>未投币状态</li>
+<li>出货状态</li>
+</ul>
+<p>显然订单配送的状态处理起来更容易一些</p>
+<ul>
+<li>下单状态需要备货</li>
+<li>打包状态需要检查时候安全，是否要放入小礼物</li>
+<li>配送状态要同步配送信息</li>
+<li>签收状态要回访客户</li>
+</ul>
+<p>虽然这些状态环环相扣，但是一旦状态完成转移就不需要在考虑原有状态中的行为是否还需要关注。</p>
+<p>而自动售售货机可能让你陷入 if&#x2F;else 的深渊，因为不同的状态可能伴随相同的操作，无论处于哪种状态，用户都可能按下取货按钮，但只有投币并且有货，按下取货才有意义。</p>
+<h4 id="状态模式"><a href="#状态模式" class="headerlink" title="状态模式"></a>状态模式</h4><p><strong>状态模式：允许对象在内部状态改变的时候改变他的行为，对象看起来好像修改了它的类。</strong></p>
+<p>状态模式和策略模式中的组合对象很像，但是状态模式更专注与状态的迁移，和不同状态中的行为。</p>
+<ul>
+<li>状态模式允许一个对象基于内部状态而拥有不同的行为。</li>
+<li><strong>和程序状态机（PSM）不同,状态模式用类代表状态</strong></li>
+<li>Context 会将行为委托给当前对象</li>
+<li>通过将每个状态封装进一个类，我们把以后需要做的任何变化都局部化了</li>
+<li>状态模式允许 Context 随着状态改变而改变行为</li>
+<li>状态转移可以由 State 类或 Context 类控制</li>
+<li>使用状态模式通常会导致设计中类的数目大量增加</li>
+<li>状态类可以被多个 Context 实例共享</li>
+</ul>
+<figure class="highlight ts"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br><span class="line">35</span><br><span class="line">36</span><br><span class="line">37</span><br><span class="line">38</span><br><span class="line">39</span><br><span class="line">40</span><br><span class="line">41</span><br><span class="line">42</span><br><span class="line">43</span><br><span class="line">44</span><br><span class="line">45</span><br><span class="line">46</span><br><span class="line">47</span><br><span class="line">48</span><br><span class="line">49</span><br><span class="line">50</span><br><span class="line">51</span><br><span class="line">52</span><br><span class="line">53</span><br><span class="line">54</span><br><span class="line">55</span><br><span class="line">56</span><br><span class="line">57</span><br><span class="line">58</span><br><span class="line">59</span><br><span class="line">60</span><br><span class="line">61</span><br><span class="line">62</span><br><span class="line">63</span><br><span class="line">64</span><br><span class="line">65</span><br><span class="line">66</span><br><span class="line">67</span><br><span class="line">68</span><br><span class="line">69</span><br><span class="line">70</span><br><span class="line">71</span><br><span class="line">72</span><br><span class="line">73</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment">// 投币</span></span><br><span class="line"><span class="comment">// 点击出货</span></span><br><span class="line"></span><br><span class="line"><span class="keyword">abstract</span> <span class="keyword">class</span> <span class="title class_">State</span> &#123;</span><br><span class="line">  <span class="attr">machine</span>: <span class="title class_">VendingMachine</span>;</span><br><span class="line">  <span class="title function_">constructor</span>(<span class="params">machine: VendingMachine</span>) &#123;</span><br><span class="line">    <span class="variable language_">this</span>.<span class="property">machine</span> = machine;</span><br><span class="line">  &#125;</span><br><span class="line">  <span class="title function_">addCoin</span>(<span class="params">coin?: <span class="built_in">Number</span></span>) &#123;</span><br><span class="line">    <span class="variable language_">console</span>.<span class="title function_">log</span>(<span class="string">&quot;必须实现 addCoin&quot;</span>);</span><br><span class="line">  &#125;</span><br><span class="line">  <span class="title function_">getProduct</span>(<span class="params"></span>) &#123;</span><br><span class="line">    <span class="variable language_">console</span>.<span class="title function_">log</span>(<span class="string">&quot;必须实现 getProduct&quot;</span>);</span><br><span class="line">  &#125;</span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line"><span class="comment">// 无商品</span></span><br><span class="line"></span><br><span class="line"><span class="keyword">class</span> <span class="title class_">NoProduct</span> <span class="keyword">extends</span> <span class="title class_ inherited__">State</span> &#123;</span><br><span class="line">  <span class="title function_">addCoin</span>(<span class="params"></span>) &#123;</span><br><span class="line">    <span class="variable language_">console</span>.<span class="title function_">log</span>(<span class="string">&quot;机器里无商品，你不能购买&quot;</span>);</span><br><span class="line">  &#125;</span><br><span class="line">  <span class="title function_">getProduct</span>(<span class="params"></span>) &#123;</span><br><span class="line">    <span class="variable language_">console</span>.<span class="title function_">log</span>(<span class="string">&quot;机器里无商品，你不能购买&quot;</span>);</span><br><span class="line">  &#125;</span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line"><span class="keyword">class</span> <span class="title class_">HasProduct</span> <span class="keyword">extends</span> <span class="title class_ inherited__">State</span> &#123;</span><br><span class="line">  <span class="title function_">addCoin</span>(<span class="params">coin: <span class="built_in">number</span></span>) &#123;</span><br><span class="line">    <span class="variable language_">this</span>.<span class="property">machine</span>.<span class="property">coin</span> += coin;</span><br><span class="line">  &#125;</span><br><span class="line">  <span class="title function_">getProduct</span>(<span class="params"></span>) &#123;</span><br><span class="line">    <span class="variable language_">console</span>.<span class="title function_">log</span>(<span class="string">&quot;你已经获取了商品&quot;</span>);</span><br><span class="line">    <span class="variable language_">this</span>.<span class="property">machine</span>.<span class="property">count</span> -= <span class="number">1</span>;</span><br><span class="line">    <span class="variable language_">this</span>.<span class="property">machine</span>.<span class="property">coin</span> -= <span class="number">1</span>;</span><br><span class="line">    <span class="variable language_">this</span>.<span class="title function_">stateTransform</span>();</span><br><span class="line">  &#125;</span><br><span class="line">  <span class="title function_">stateTransform</span>(<span class="params"></span>) &#123;</span><br><span class="line">    <span class="keyword">const</span> &#123; count, coin &#125; = <span class="variable language_">this</span>.<span class="property">machine</span>;</span><br><span class="line">    <span class="keyword">if</span> (coin === <span class="number">0</span>) &#123;</span><br><span class="line">      <span class="variable language_">this</span>.<span class="property">machine</span>.<span class="title function_">setState</span>(<span class="variable language_">this</span>.<span class="property">machine</span>.<span class="property">stateNoCoin</span>);</span><br><span class="line">    &#125; <span class="keyword">else</span> <span class="keyword">if</span> (count === <span class="number">0</span>) &#123;</span><br><span class="line">      <span class="variable language_">this</span>.<span class="property">machine</span>.<span class="title function_">setState</span>(<span class="variable language_">this</span>.<span class="property">machine</span>.<span class="property">stateNoProduct</span>);</span><br><span class="line">    &#125;</span><br><span class="line">  &#125;</span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line"><span class="keyword">class</span> <span class="title class_">NoCoin</span> <span class="keyword">extends</span> <span class="title class_ inherited__">State</span> &#123;&#125;</span><br><span class="line"></span><br><span class="line"><span class="keyword">class</span> <span class="title class_">VendingMachine</span> &#123;</span><br><span class="line">  <span class="attr">stateNoProduct</span>: <span class="title class_">NoProduct</span>;</span><br><span class="line">  <span class="attr">stateHasProduct</span>: <span class="title class_">HasProduct</span>;</span><br><span class="line">  <span class="attr">stateNoCoin</span>: <span class="title class_">NoCoin</span>;</span><br><span class="line">  <span class="attr">count</span>: <span class="built_in">number</span>;</span><br><span class="line">  <span class="attr">coin</span>: <span class="built_in">number</span> = <span class="number">0</span>;</span><br><span class="line">  <span class="attr">state</span>: <span class="title class_">NoProduct</span> | <span class="title class_">HasProduct</span>;</span><br><span class="line">  <span class="title function_">constructor</span>(<span class="params">count: <span class="built_in">number</span></span>) &#123;</span><br><span class="line">    <span class="variable language_">this</span>.<span class="property">count</span> = count || <span class="number">2</span>;</span><br><span class="line">    <span class="variable language_">this</span>.<span class="property">stateNoProduct</span> = <span class="keyword">new</span> <span class="title class_">NoProduct</span>(<span class="variable language_">this</span>);</span><br><span class="line">    <span class="variable language_">this</span>.<span class="property">stateHasProduct</span> = <span class="keyword">new</span> <span class="title class_">HasProduct</span>(<span class="variable language_">this</span>);</span><br><span class="line">    <span class="variable language_">this</span>.<span class="property">stateNoCoin</span> = <span class="keyword">new</span> <span class="title class_">NoCoin</span>(<span class="variable language_">this</span>);</span><br><span class="line">    <span class="variable language_">this</span>.<span class="property">state</span> = <span class="variable language_">this</span>.<span class="property">stateHasProduct</span>;</span><br><span class="line">  &#125;</span><br><span class="line">  <span class="title function_">setState</span>(<span class="params">state: NoProduct | HasProduct</span>) &#123;</span><br><span class="line">    <span class="variable language_">this</span>.<span class="property">state</span> = state;</span><br><span class="line">  &#125;</span><br><span class="line">  <span class="title function_">addCoin</span>(<span class="params">coin = <span class="number">0</span></span>) &#123;</span><br><span class="line">    <span class="variable language_">this</span>.<span class="property">state</span>.<span class="title function_">addCoin</span>(coin);</span><br><span class="line">  &#125;</span><br><span class="line">  <span class="title function_">getProduct</span>(<span class="params"></span>) &#123;</span><br><span class="line">    <span class="variable language_">this</span>.<span class="property">state</span>.<span class="title function_">getProduct</span>();</span><br><span class="line">  &#125;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+ 
+      <!-- reward -->
+      
+    </div>
+    
+
+    <!-- copyright -->
+    
+    <footer class="article-footer">
+       
+  <ul class="article-tag-list" itemprop="keywords"><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/%E8%AE%BE%E8%AE%A1%E6%A8%A1%E5%BC%8F/" rel="tag">设计模式</a></li></ul>
+
+    </footer>
+  </div>
+
+   
+    
+</article>
+
+    
+    <article
   id="posts-javascript/canvas画板"
   class="article article-type-posts"
   itemscope
@@ -838,83 +928,6 @@
 <li>大多数的模式都允许系统局部改变独立于其他部分。</li>
 <li>我们常把系统中会变化的部分抽出来封装。</li>
 <li>模式让开发人员之间有共享的语言，能够最大化沟通的价值。</li>
-</ul>
- 
-      <!-- reward -->
-      
-    </div>
-    
-
-    <!-- copyright -->
-    
-    <footer class="article-footer">
-       
-  <ul class="article-tag-list" itemprop="keywords"><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/%E8%AE%BE%E8%AE%A1%E6%A8%A1%E5%BC%8F/" rel="tag">设计模式</a></li></ul>
-
-    </footer>
-  </div>
-
-   
-    
-</article>
-
-    
-    <article
-  id="posts-pattern/②观察者模式"
-  class="article article-type-posts"
-  itemscope
-  itemprop="blogPost"
-  data-scroll-reveal
->
-  <div class="article-inner">
-    
-    <header class="article-header">
-       
-<h2 itemprop="name">
-  <a class="article-title" href="/posts/7a81d263951b/"
-    >②发布+订阅=观察者模式</a> 
-</h2>
- 
-
-      
-    </header>
-     
-    <div class="article-meta">
-      <a href="/posts/7a81d263951b/" class="article-date">
-  <time datetime="2022-12-27T04:49:16.000Z" itemprop="datePublished">2022-12-27</time>
-</a> 
-  <div class="article-category">
-    <a class="article-category-link" href="/categories/%E8%AE%BE%E8%AE%A1%E6%A8%A1%E5%BC%8F/">设计模式</a>
-  </div>
-   
-    </div>
-      
-    <div class="article-entry" itemprop="articleBody">
-       
-  <h4 id="像广播一样发消息"><a href="#像广播一样发消息" class="headerlink" title="像广播一样发消息"></a>像广播一样发消息</h4><p>思考一个问题，有没有一种可能，另一个人<strong>A</strong>,不知道你这个人的存在，但是却可以给你发消息。A 就像是一个广播站一样，将你们联系在一起的就是手中的收音机，你等待着 A 发布消息，而你等待消息就是一个订阅的行为。</p>
-<p>或者换一种说法，你就像是一个观察者一样，观察消息有没有到来。无论哪种定义无非都是在描述一种关系，接受消息者和发送消息者之间的关系。</p>
-<p>下面要实现一个新闻广播站，每当有新的新闻，会调用新闻对象的<code>broadcastNews</code>,并向观察者们推送消息。下面是一个非常不好的写法：</p>
-<figure class="highlight ts"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">interface</span> <span class="title class_">Observer</span> &#123;</span><br><span class="line">  <span class="title function_">update</span>(message?: &#123; <span class="attr">news</span>: <span class="built_in">string</span>[] &#125;): <span class="built_in">void</span>;</span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line"><span class="keyword">class</span> <span class="title class_">NewsObserver</span> <span class="keyword">implements</span> <span class="title class_">Observer</span> &#123;</span><br><span class="line">  <span class="title function_">update</span>(message): <span class="built_in">void</span> &#123;</span><br><span class="line">    <span class="variable language_">console</span>.<span class="title function_">log</span>(message);</span><br><span class="line">  &#125;</span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line"><span class="keyword">const</span> new1 = <span class="keyword">new</span> <span class="title class_">NewsObserver</span>();</span><br><span class="line"><span class="keyword">const</span> new2 = <span class="keyword">new</span> <span class="title class_">NewsObserver</span>();</span><br><span class="line"></span><br><span class="line"><span class="keyword">interface</span> <span class="title class_">Subscribe</span> &#123;</span><br><span class="line">  <span class="title function_">register</span>(<span class="attr">observer</span>: <span class="title class_">Observer</span>): <span class="built_in">void</span>;</span><br><span class="line">  <span class="title function_">unregister</span>(<span class="attr">observer</span>: <span class="title class_">Observer</span>): <span class="built_in">void</span>;</span><br><span class="line">  <span class="title function_">getWeather</span>(<span class="attr">city</span>: <span class="built_in">string</span>): <span class="title class_">NewsInfo</span>;</span><br><span class="line">  <span class="title function_">notify</span>(): <span class="built_in">void</span>;</span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line"><span class="keyword">class</span> <span class="title class_">NewsSubscribe</span> &#123;</span><br><span class="line">  <span class="title function_">getNews</span>(<span class="params"></span>) &#123;</span><br><span class="line">    <span class="keyword">return</span> <span class="string">&quot;获取到新闻&quot;</span>;</span><br><span class="line">  &#125;</span><br><span class="line">  <span class="title function_">broadcastNews</span>(<span class="params"></span>) &#123;</span><br><span class="line">    <span class="keyword">const</span> news = <span class="variable language_">this</span>.<span class="title function_">getNews</span>();</span><br><span class="line">    new1.<span class="title function_">update</span>(news);</span><br><span class="line">    new2.<span class="title function_">update</span>(news);</span><br><span class="line">  &#125;</span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line"><span class="keyword">const</span> newsSubscribe = <span class="keyword">new</span> <span class="title class_">NewsSubscribe</span>();</span><br></pre></td></tr></table></figure>
-
-<p>这种写法存在着很多严重的问题：</p>
-<ul>
-<li>观察者与被观察者紧耦合在了一起</li>
-<li>没办法在程序执行的时候动态添加或删除观察者</li>
-<li>观察者是会动态变化的对象，但是没有独立且封装</li>
-</ul>
-<h4 id="设计观察者模式"><a href="#设计观察者模式" class="headerlink" title="设计观察者模式"></a>设计观察者模式</h4><p>首先我们让被观察者有注册观察者和取消注册观察者的能力。这样能让观察者与被观察者解耦，并在程序执行的时候动态的添加或删除。</p>
-<p><strong>观察者模式定义了对象之间的一对多依赖，这样一来，当一个对象改变状态时，它的所有依赖者都会收到通知并自动更新。</strong></p>
-<figure class="highlight ts"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">class</span> <span class="title class_">NewsSubscribe</span> <span class="keyword">implements</span> <span class="title class_">Subscribe</span> &#123;</span><br><span class="line">  <span class="keyword">private</span> <span class="attr">observerList</span>: <span class="title class_">Observer</span>[];</span><br><span class="line">  <span class="title function_">constructor</span>(<span class="params"></span>) &#123;</span><br><span class="line">    <span class="variable language_">this</span>.<span class="property">observerList</span> = [];</span><br><span class="line">  &#125;</span><br><span class="line">  <span class="title function_">register</span>(<span class="attr">observer</span>: <span class="title class_">Observer</span>): <span class="built_in">void</span> &#123;</span><br><span class="line">    <span class="variable language_">this</span>.<span class="property">observerList</span>.<span class="title function_">push</span>(observer);</span><br><span class="line">  &#125;</span><br><span class="line"></span><br><span class="line">  <span class="title function_">unregister</span>(<span class="attr">observer</span>: <span class="title class_">Observer</span>): <span class="built_in">void</span> &#123;</span><br><span class="line">    <span class="keyword">const</span> index = <span class="variable language_">this</span>.<span class="property">observerList</span>.<span class="title function_">indexOf</span>(observer);</span><br><span class="line">    <span class="keyword">if</span> (index &gt; <span class="number">0</span>) &#123;</span><br><span class="line">      <span class="variable language_">this</span>.<span class="property">observerList</span>.<span class="title function_">splice</span>(index, <span class="number">1</span>);</span><br><span class="line">    &#125;</span><br><span class="line">  &#125;</span><br><span class="line">  <span class="title function_">notify</span>(): <span class="built_in">void</span> &#123;</span><br><span class="line">    <span class="variable language_">this</span>.<span class="property">observerList</span>.<span class="title function_">forEach</span>(<span class="function">(<span class="params">observer</span>) =&gt;</span> &#123;</span><br><span class="line">      observer.<span class="title function_">update</span>();</span><br><span class="line">    &#125;);</span><br><span class="line">  &#125;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
-
-<p><strong>被观察者不知道观察者的细节，只知道观察者实现了观察者接口。</strong></p>
-<figure class="highlight ts"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br><span class="line">35</span><br><span class="line">36</span><br><span class="line">37</span><br><span class="line">38</span><br><span class="line">39</span><br><span class="line">40</span><br><span class="line">41</span><br><span class="line">42</span><br><span class="line">43</span><br><span class="line">44</span><br><span class="line">45</span><br><span class="line">46</span><br><span class="line">47</span><br><span class="line">48</span><br><span class="line">49</span><br><span class="line">50</span><br><span class="line">51</span><br><span class="line">52</span><br><span class="line">53</span><br><span class="line">54</span><br><span class="line">55</span><br><span class="line">56</span><br><span class="line">57</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">interface</span> <span class="title class_">NewsInfo</span> &#123;</span><br><span class="line">  <span class="attr">news</span>: <span class="built_in">string</span>[];</span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line"><span class="keyword">interface</span> <span class="title class_">Observer</span> &#123;</span><br><span class="line">  <span class="title function_">update</span>(<span class="attr">subscribe</span>: <span class="title class_">NewsSubscribe</span>): <span class="built_in">void</span>;</span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line"><span class="keyword">class</span> <span class="title class_">NewsObserver</span> <span class="keyword">implements</span> <span class="title class_">Observer</span> &#123;</span><br><span class="line">  <span class="title function_">update</span>(<span class="attr">subscribe</span>: <span class="title class_">NewsSubscribe</span>): <span class="built_in">void</span> &#123;</span><br><span class="line">    <span class="variable language_">console</span>.<span class="title function_">log</span>(subscribe.<span class="title function_">getNews</span>());</span><br><span class="line">  &#125;</span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line"><span class="keyword">const</span> new1 = <span class="keyword">new</span> <span class="title class_">NewsObserver</span>();</span><br><span class="line"></span><br><span class="line"><span class="keyword">interface</span> <span class="title class_">Subscribe</span> &#123;</span><br><span class="line">  <span class="title function_">register</span>(<span class="attr">observer</span>: <span class="title class_">Observer</span>): <span class="built_in">void</span>;</span><br><span class="line">  <span class="title function_">unregister</span>(<span class="attr">observer</span>: <span class="title class_">Observer</span>): <span class="built_in">void</span>;</span><br><span class="line">  <span class="title function_">getNews</span>(<span class="attr">city</span>: <span class="built_in">string</span>): <span class="title class_">NewsInfo</span>;</span><br><span class="line">  <span class="title function_">notify</span>(): <span class="built_in">void</span>;</span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line"><span class="keyword">class</span> <span class="title class_">NewsSubscribe</span> <span class="keyword">implements</span> <span class="title class_">Subscribe</span> &#123;</span><br><span class="line">  <span class="keyword">private</span> <span class="attr">observerList</span>: <span class="title class_">Observer</span>[];</span><br><span class="line">  <span class="title function_">constructor</span>(<span class="params"></span>) &#123;</span><br><span class="line">    <span class="variable language_">this</span>.<span class="property">observerList</span> = [];</span><br><span class="line">  &#125;</span><br><span class="line">  <span class="title function_">register</span>(<span class="attr">observer</span>: <span class="title class_">Observer</span>): <span class="built_in">void</span> &#123;</span><br><span class="line">    <span class="variable language_">this</span>.<span class="property">observerList</span>.<span class="title function_">push</span>(observer);</span><br><span class="line">  &#125;</span><br><span class="line"></span><br><span class="line">  <span class="title function_">unregister</span>(<span class="attr">observer</span>: <span class="title class_">Observer</span>): <span class="built_in">void</span> &#123;</span><br><span class="line">    <span class="keyword">const</span> index = <span class="variable language_">this</span>.<span class="property">observerList</span>.<span class="title function_">indexOf</span>(observer);</span><br><span class="line">    <span class="keyword">if</span> (index &gt; <span class="number">0</span>) &#123;</span><br><span class="line">      <span class="variable language_">this</span>.<span class="property">observerList</span>.<span class="title function_">splice</span>(index, <span class="number">1</span>);</span><br><span class="line">    &#125;</span><br><span class="line">  &#125;</span><br><span class="line"></span><br><span class="line">  <span class="title function_">notify</span>(): <span class="built_in">void</span> &#123;</span><br><span class="line">    <span class="variable language_">this</span>.<span class="property">observerList</span>.<span class="title function_">forEach</span>(<span class="function">(<span class="params">observer</span>) =&gt;</span> &#123;</span><br><span class="line">      observer.<span class="title function_">update</span>(<span class="variable language_">this</span>);</span><br><span class="line">    &#125;);</span><br><span class="line">  &#125;</span><br><span class="line"></span><br><span class="line">  <span class="title function_">getNews</span>(): <span class="title class_">NewsInfo</span> &#123;</span><br><span class="line">    <span class="keyword">return</span> &#123;</span><br><span class="line">      <span class="attr">news</span>: [<span class="string">&quot;新闻&quot;</span>],</span><br><span class="line">    &#125;;</span><br><span class="line">  &#125;</span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line"><span class="keyword">const</span> newsSubscribe = <span class="keyword">new</span> <span class="title class_">NewsSubscribe</span>();</span><br><span class="line">newsSubscribe.<span class="title function_">register</span>(<span class="keyword">new</span> <span class="title class_">NewsObserver</span>());</span><br><span class="line">newsSubscribe.<span class="title function_">register</span>(<span class="keyword">new</span> <span class="title class_">NewsObserver</span>());</span><br><span class="line"></span><br><span class="line">newsSubscribe.<span class="title function_">notify</span>();</span><br></pre></td></tr></table></figure>
-
-<ul>
-<li>可以为观察者模式设置 <code>setChanged</code>  <code>hasChanged</code> 方法，此方法可以控制通知的条件，避免通知的频率过高</li>
-<li>观察者模式定义了对象之间一对多的关系。主题 (也就是可观察者) 用共同的接口来更新观察者</li>
-<li>观察者和可观察者之间用松耦合方式结合 (loosecoupling)，可观察者不知道观察者的细节，只知道观察者实现了观察者接口。<br>有弹</li>
-<li>使用此模式时，你可从被观察者处推 (push)或拉 (pul1)数据(然而，推的方式被认为更“正确”)。</li>
-<li>有多个观察者时，不可以依赖特定的通知次序</li>
 </ul>
  
       <!-- reward -->

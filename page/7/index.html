@@ -112,6 +112,94 @@
     
     
     <article
+  id="posts-javascript/extends使用技巧"
+  class="article article-type-posts"
+  itemscope
+  itemprop="blogPost"
+  data-scroll-reveal
+>
+  <div class="article-inner">
+    
+    <header class="article-header">
+       
+<h2 itemprop="name">
+  <a class="article-title" href="/posts/e1e2644f39f7/"
+    >TS extends 使用技巧</a> 
+</h2>
+ 
+
+      
+    </header>
+     
+    <div class="article-meta">
+      <a href="/posts/e1e2644f39f7/" class="article-date">
+  <time datetime="2022-04-15T02:35:28.000Z" itemprop="datePublished">2022-04-15</time>
+</a> 
+  <div class="article-category">
+    <a class="article-category-link" href="/categories/TypeScript/">TypeScript</a>
+  </div>
+   
+    </div>
+      
+    <div class="article-entry" itemprop="articleBody">
+       
+  <p>extends 关键字在 TS 中的两种用法，即接口继承和条件判断。</p>
+<h4 id="接口继承"><a href="#接口继承" class="headerlink" title="接口继承"></a>接口继承</h4><p>和 class 中的继承类似,但是类型中可以使用多继承</p>
+<figure class="highlight ts"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">interface</span> T3 <span class="keyword">extends</span> T1, T2 &#123;</span><br><span class="line">  <span class="attr">age</span>: <span class="built_in">number</span>;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+<h4 id="条件语句"><a href="#条件语句" class="headerlink" title="条件语句"></a>条件语句</h4><p><code>extends</code> 可以当作类型中的 if 语句使用,当时理念上与 if 略有不同</p>
+<figure class="highlight ts"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">type</span> T = <span class="built_in">string</span>;</span><br><span class="line"><span class="keyword">type</span> A = T <span class="keyword">extends</span> <span class="built_in">string</span> ? <span class="literal">true</span> : <span class="literal">false</span>;</span><br></pre></td></tr></table></figure>
+
+<p>上面的语句可以简单理解为, T 的类型是否是 string 类型. 但是,更准确的说法是 <strong>T 的类型能否分配给 string 类型</strong>.</p>
+<p>因为类型系统中不能像 <code>if</code> 一样,通过 <code>==</code> 或 <code>===</code> 来判断, 例如下面的接口或对象类型</p>
+<figure class="highlight ts"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">interface</span> A1 &#123;</span><br><span class="line">  <span class="attr">name</span>: <span class="built_in">string</span>;</span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line"><span class="keyword">interface</span> A2 &#123;</span><br><span class="line">  <span class="attr">name</span>: <span class="built_in">string</span>;</span><br><span class="line">  <span class="attr">age</span>: <span class="built_in">number</span>;</span><br><span class="line">&#125;</span><br><span class="line"><span class="keyword">type</span> A = <span class="variable constant_">A2</span> <span class="keyword">extends</span> <span class="variable constant_">A1</span> ? <span class="built_in">string</span> : <span class="built_in">number</span>; <span class="comment">//string</span></span><br></pre></td></tr></table></figure>
+
+<p>这两个类型并不是完全相同,但是 A2 的类型可以分配给 A1 使用,因为 A2 中 完全包括了 A1 中的类型,也就是说可以把 A2 当做 A1 使用.</p>
+<p>反过来 A1 不能当作 A2 使用,应为 A1 中没有 age 类型,可能导致类型错误.</p>
+<h4 id="条件分配类型"><a href="#条件分配类型" class="headerlink" title="条件分配类型"></a>条件分配类型</h4><p>看一个例子</p>
+<figure class="highlight ts"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">type</span> <span class="variable constant_">A2</span> = <span class="string">&quot;x&quot;</span> | <span class="string">&quot;y&quot;</span> <span class="keyword">extends</span> <span class="string">&quot;x&quot;</span> ? <span class="built_in">string</span> : <span class="built_in">number</span>; <span class="comment">// number</span></span><br><span class="line"></span><br><span class="line"><span class="keyword">type</span> P&lt;T&gt; = T <span class="keyword">extends</span> <span class="string">&quot;x&quot;</span> ? <span class="built_in">string</span> : <span class="built_in">number</span>;</span><br><span class="line"><span class="keyword">type</span> <span class="variable constant_">A3</span> = P&lt;<span class="string">&quot;x&quot;</span> | <span class="string">&quot;y&quot;</span>&gt;; <span class="comment">// string | number</span></span><br></pre></td></tr></table></figure>
+
+<p>A3 并不会和 A2 相同,造成这个的原因就是 <strong>分配条件类型（Distributive Conditional Types）</strong></p>
+<blockquote>
+<p>When conditional types act on a generic type, they become distributive when given a union type</p>
+</blockquote>
+<p>当条件类型作用在泛型上时, 当传入一个联合类型这个类型是可分配的.</p>
+<p>换句话说,当在使用泛型做条件判断的时候, 而且这个泛型传入的是一个联合类型,就会像数学中的分配率一样,把联合类型中的没没一项分别进行条件判断,最终返回一个联合类型</p>
+<p>所以上面 A3 类型,等价于</p>
+<figure class="highlight ts"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">type</span> <span class="variable constant_">A3</span> =</span><br><span class="line">  | (<span class="string">&quot;x&quot;</span> <span class="keyword">extends</span> <span class="string">&quot;x&quot;</span> ? <span class="built_in">string</span> : <span class="built_in">number</span>)</span><br><span class="line">  | (<span class="string">&quot;y&quot;</span> <span class="keyword">extends</span> <span class="string">&quot;x&quot;</span> ? <span class="built_in">string</span> : <span class="built_in">number</span>);</span><br></pre></td></tr></table></figure>
+
+<p>分配条件类型最终会返回一个不同分支返回结果的联合类型,如果返回的结果是一个包装过的类型,那么就是不同分支包装类型的联合类型</p>
+<figure class="highlight ts"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">type</span> <span class="title class_">Test</span>&lt;T, <span class="variable constant_">T2</span> = T&gt; = T <span class="keyword">extends</span> <span class="variable constant_">T2</span> ? &#123;<span class="attr">t</span>: T&#125; : <span class="built_in">never</span>;</span><br><span class="line"></span><br><span class="line"><span class="keyword">type</span> a = <span class="title class_">Test</span>&lt;<span class="built_in">string</span>|<span class="built_in">number</span>&gt;  <span class="comment">// &#123;t:string&#125; | &#123;t:number&#125;</span></span><br><span class="line"></span><br><span class="line"><span class="keyword">type</span> <span class="title class_">Test2</span>&lt;T, <span class="variable constant_">T2</span> = T&gt; = T <span class="keyword">extends</span> <span class="variable constant_">T2</span> ? [T] : <span class="built_in">never</span>;</span><br><span class="line"></span><br><span class="line"><span class="keyword">type</span> a = <span class="title class_">Test</span>&lt;<span class="built_in">string</span>|<span class="built_in">number</span>&gt;  <span class="comment">// [string] | [number]</span></span><br></pre></td></tr></table></figure>
+
+<p><strong>注意 never</strong></p>
+<p>never 在条件语句中的行为可能和想象的不一样,这也是条件类型在对其约束, never 相当于空的联合类型,所以没有判断直接返回</p>
+<figure class="highlight ts"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">type</span> <span class="variable constant_">A1</span> = <span class="built_in">never</span> <span class="keyword">extends</span> <span class="string">&quot;x&quot;</span> ? <span class="built_in">string</span> : <span class="built_in">number</span>; <span class="comment">// string</span></span><br><span class="line"></span><br><span class="line"><span class="keyword">type</span> P&lt;T&gt; = T <span class="keyword">extends</span> <span class="string">&quot;x&quot;</span> ? <span class="built_in">string</span> : <span class="built_in">number</span>;</span><br><span class="line"><span class="keyword">type</span> <span class="variable constant_">A2</span> = P&lt;<span class="built_in">never</span>&gt;; <span class="comment">// never</span></span><br></pre></td></tr></table></figure>
+
+<p><strong>防止条件类型分配</strong></p>
+<p>如果不想让 never 解析成空的联合类型,而是当作一个 never 类型传入,实际上就是阻止类型系统对联合类型自动分配,可以使用一个 <code>[]</code></p>
+<figure class="highlight ts"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">type</span> P&lt;T&gt; = [T] <span class="keyword">extends</span> [<span class="string">&quot;x&quot;</span>] ? <span class="built_in">string</span> : <span class="built_in">number</span>;</span><br><span class="line"><span class="keyword">type</span> <span class="variable constant_">A1</span> = P&lt;<span class="string">&quot;x&quot;</span> | <span class="string">&quot;y&quot;</span>&gt;; <span class="comment">// number</span></span><br><span class="line"><span class="keyword">type</span> <span class="variable constant_">A2</span> = P&lt;<span class="built_in">never</span>&gt;; <span class="comment">// string</span></span><br></pre></td></tr></table></figure>
+
+ 
+      <!-- reward -->
+      
+    </div>
+    
+
+    <!-- copyright -->
+    
+    <footer class="article-footer">
+       
+  <ul class="article-tag-list" itemprop="keywords"><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/TypeScript/" rel="tag">TypeScript</a></li></ul>
+
+    </footer>
+  </div>
+
+   
+    
+</article>
+
+    
+    <article
   id="posts-react/highchartsWrapper"
   class="article article-type-posts"
   itemscope
@@ -168,7 +256,7 @@
 
     
     <article
-  id="posts-javascript/React+TS 实战文档"
+  id="posts-typescript/React+TS 实战文档"
   class="article article-type-posts"
   itemscope
   itemprop="blogPost"
@@ -179,7 +267,7 @@
     <header class="article-header">
        
 <h2 itemprop="name">
-  <a class="article-title" href="/posts/a5ff92dd5e4d/"
+  <a class="article-title" href="/posts/737e9484764d/"
     >React+TS 实战文档</a> 
 </h2>
  
@@ -188,7 +276,7 @@
     </header>
      
     <div class="article-meta">
-      <a href="/posts/a5ff92dd5e4d/" class="article-date">
+      <a href="/posts/737e9484764d/" class="article-date">
   <time datetime="2022-04-11T15:04:03.000Z" itemprop="datePublished">2022-04-11</time>
 </a> 
   <div class="article-category">
@@ -219,6 +307,34 @@
 <figure class="highlight ts"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">const</span> <span class="title class_">Title</span>: <span class="title class_">React</span>.<span class="property">FC</span> = <span class="function">() =&gt;</span> <span class="string">&quot;123&quot;</span> <span class="keyword">as</span> unknown <span class="keyword">as</span> <span class="title class_">React</span>.<span class="property">ReactElement</span>;</span><br></pre></td></tr></table></figure>
 
 <p>正因为有这种问题, @type&#x2F;react@^18.0.0 将不再把 children 作为默认的属性,而是需要显示声明</p>
+<figure class="highlight ts"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">type</span> <span class="variable constant_">T1</span> = &#123; <span class="attr">name</span>: <span class="built_in">string</span> &#125;;</span><br><span class="line"><span class="keyword">type</span> <span class="variable constant_">T2</span> = &#123; <span class="attr">age</span>: <span class="built_in">number</span> &#125;;</span><br><span class="line"></span><br><span class="line"><span class="comment">// 返回值逆变 因此返回的是联合类型</span></span><br><span class="line"><span class="keyword">type</span> <span class="title class_">UnionToIntersection</span>&lt;T&gt; = T <span class="keyword">extends</span> &#123;</span><br><span class="line">  <span class="attr">a</span>: <span class="function">(<span class="params">x: T1</span>) =&gt;</span> infer U;</span><br><span class="line">  <span class="attr">b</span>: <span class="function">(<span class="params">x: T2</span>) =&gt;</span> infer U;</span><br><span class="line">&#125;</span><br><span class="line">  ? U</span><br><span class="line">  : <span class="built_in">never</span>;</span><br><span class="line"><span class="keyword">type</span> <span class="variable constant_">T3</span> = <span class="title class_">UnionToIntersection</span>&lt;&#123; <span class="attr">a</span>: <span class="function">(<span class="params">x: T1</span>) =&gt;</span> <span class="built_in">string</span>; <span class="attr">b</span>: <span class="function">(<span class="params">x: T2</span>) =&gt;</span> <span class="built_in">void</span> &#125;&gt;; <span class="comment">// string|void</span></span><br></pre></td></tr></table></figure>
+
+<h4 id="类型模块查找过程"><a href="#类型模块查找过程" class="headerlink" title="类型模块查找过程"></a>类型模块查找过程</h4><ul>
+<li><p>检查 package.json 的 exports 字段</p>
+<figure class="highlight json"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br></pre></td><td class="code"><pre><span class="line"><span class="punctuation">&#123;</span></span><br><span class="line">  <span class="attr">&quot;exports&quot;</span><span class="punctuation">:</span> <span class="punctuation">&#123;</span></span><br><span class="line">    <span class="attr">&quot;./es&quot;</span><span class="punctuation">:</span> <span class="punctuation">&#123;</span></span><br><span class="line">      <span class="attr">&quot;types&quot;</span><span class="punctuation">:</span> <span class="string">&quot;./es/index.d.ts&quot;</span><span class="punctuation">,</span></span><br><span class="line">      <span class="attr">&quot;import&quot;</span><span class="punctuation">:</span> <span class="string">&quot;./es/index.js&quot;</span></span><br><span class="line">    <span class="punctuation">&#125;</span></span><br><span class="line">  <span class="punctuation">&#125;</span></span><br><span class="line"><span class="punctuation">&#125;</span></span><br></pre></td></tr></table></figure>
+
+<p><strong>但是不支持动态路径映射，必须是指定路径下的文件, 也就是说类型文件必须存在于 &#x2F;es 目录下</strong></p>
+<figure class="highlight json"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br></pre></td><td class="code"><pre><span class="line"><span class="punctuation">&#123;</span></span><br><span class="line">  <span class="attr">&quot;exports&quot;</span><span class="punctuation">:</span> <span class="punctuation">&#123;</span></span><br><span class="line">    <span class="attr">&quot;./es&quot;</span><span class="punctuation">:</span> <span class="punctuation">&#123;</span></span><br><span class="line">      <span class="comment">// 使用方会提示找不到对应的类型文件</span></span><br><span class="line">      <span class="attr">&quot;types&quot;</span><span class="punctuation">:</span> <span class="string">&quot;./index.d.ts&quot;</span><span class="punctuation">,</span></span><br><span class="line">      <span class="attr">&quot;import&quot;</span><span class="punctuation">:</span> <span class="string">&quot;./es/index.js&quot;</span></span><br><span class="line">    <span class="punctuation">&#125;</span></span><br><span class="line">  <span class="punctuation">&#125;</span></span><br><span class="line"><span class="punctuation">&#125;</span></span><br></pre></td></tr></table></figure>
+</li>
+<li><p>检查 package.json 的 types</p>
+<figure class="highlight json"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br></pre></td><td class="code"><pre><span class="line"><span class="punctuation">&#123;</span></span><br><span class="line">  <span class="attr">&quot;name&quot;</span><span class="punctuation">:</span> <span class="string">&quot;lodash&quot;</span><span class="punctuation">,</span></span><br><span class="line">  <span class="attr">&quot;types&quot;</span><span class="punctuation">:</span> <span class="string">&quot;index.d.ts&quot;</span></span><br><span class="line"><span class="punctuation">&#125;</span></span><br></pre></td></tr></table></figure>
+
+<p>如果导入了 lodash&#x2F;es 类似的二级路径，但 types 只指向 index.d.ts，TypeScript 不会自动识别子路径，<strong>类型文件必须存在于 &#x2F;es 目录下，或者使用 tsconfig 文件明确指明路径</strong></p>
+<figure class="highlight json"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br></pre></td><td class="code"><pre><span class="line"><span class="punctuation">&#123;</span></span><br><span class="line">  <span class="attr">&quot;compilerOptions&quot;</span><span class="punctuation">:</span> <span class="punctuation">&#123;</span></span><br><span class="line">    <span class="attr">&quot;baseUrl&quot;</span><span class="punctuation">:</span> <span class="string">&quot;.&quot;</span><span class="punctuation">,</span></span><br><span class="line">    <span class="attr">&quot;paths&quot;</span><span class="punctuation">:</span> <span class="punctuation">&#123;</span></span><br><span class="line">      <span class="attr">&quot;lodash/es&quot;</span><span class="punctuation">:</span> <span class="punctuation">[</span><span class="string">&quot;node_modules/@types/lodash/index.d.ts&quot;</span><span class="punctuation">]</span></span><br><span class="line">    <span class="punctuation">&#125;</span></span><br><span class="line">  <span class="punctuation">&#125;</span></span><br><span class="line"><span class="punctuation">&#125;</span></span><br></pre></td></tr></table></figure>
+</li>
+<li><p>直接检查文件路径<br>尝试直接从导入路径中解析类型文件</p>
+</li>
+<li><p>在 node_modules&#x2F;@types 中查找类型<br>同样不支持动态路径映射，必须指定路径</p>
+</li>
+</ul>
+<h4 id="映射类型"><a href="#映射类型" class="headerlink" title="映射类型"></a>映射类型</h4><ul>
+<li><p>边界情况,映射类型在遇到非对象类型（例如 undefined 或 null）时,直接保留原始类型。</p>
+<figure class="highlight ts"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">type</span> <span class="title class_">NonNullableFlat</span>&lt;O&gt; = &#123;</span><br><span class="line">  [K <span class="keyword">in</span> keyof O]: <span class="title class_">NonNullable</span>&lt;O[K]&gt;;</span><br><span class="line">&#125; &amp; &#123;&#125;;</span><br><span class="line"></span><br><span class="line"><span class="keyword">type</span> c = <span class="title class_">NonNullableFlat</span>&lt;<span class="literal">undefined</span>&gt;; <span class="comment">// undefined</span></span><br><span class="line"><span class="keyword">type</span> d = <span class="title class_">NonNullableFlat</span>&lt;<span class="literal">null</span>&gt;; <span class="comment">// null</span></span><br></pre></td></tr></table></figure></li>
+</ul>
+<h4 id="条件类型"><a href="#条件类型" class="headerlink" title="条件类型"></a>条件类型</h4><ul>
+<li><p>条件类型会引入局部作用域。</p>
+<figure class="highlight ts"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">type</span> z = [<span class="number">1</span>, <span class="number">2</span>, <span class="number">3</span>, <span class="number">4</span>, <span class="number">5</span>];</span><br><span class="line"><span class="comment">// B 的定义仅在 true 分支中存在。</span></span><br><span class="line"><span class="keyword">type</span> V = z <span class="keyword">extends</span> [<span class="built_in">any</span>, ...infer B] ? <span class="number">1</span> : B;</span><br></pre></td></tr></table></figure></li>
+</ul>
  
       <!-- reward -->
       
@@ -918,96 +1034,6 @@
 <p><img src="/posts/2a574ab5dfc0/0011.png"></p>
 <p><img src="/posts/2a574ab5dfc0/0012.png"></p>
 <p><img src="/posts/2a574ab5dfc0/0013.png"></p>
- 
-      <!-- reward -->
-      
-    </div>
-    
-
-    <!-- copyright -->
-    
-    <footer class="article-footer">
-       
-  <ul class="article-tag-list" itemprop="keywords"><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/React/" rel="tag">React</a></li><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/%E6%BA%90%E7%A0%81%E5%88%86%E6%9E%90/" rel="tag">源码分析</a></li></ul>
-
-    </footer>
-  </div>
-
-   
-    
-</article>
-
-    
-    <article
-  id="posts-source/react/④render阶段执行流程"
-  class="article article-type-posts"
-  itemscope
-  itemprop="blogPost"
-  data-scroll-reveal
->
-  <div class="article-inner">
-    
-    <header class="article-header">
-       
-<h2 itemprop="name">
-  <a class="article-title" href="/posts/49df00acbc4a/"
-    >React源码分析 ④ render阶段执行流程</a> 
-</h2>
- 
-
-      
-    </header>
-     
-    <div class="article-meta">
-      <a href="/posts/49df00acbc4a/" class="article-date">
-  <time datetime="2022-03-17T07:21:34.000Z" itemprop="datePublished">2022-03-17</time>
-</a> 
-  <div class="article-category">
-    <a class="article-category-link" href="/categories/%E6%BA%90%E7%A0%81%E5%88%86%E6%9E%90/">源码分析</a> / <a class="article-category-link" href="/categories/%E6%BA%90%E7%A0%81%E5%88%86%E6%9E%90/React/">React</a>
-  </div>
-   
-    </div>
-      
-    <div class="article-entry" itemprop="articleBody">
-       
-  <p><img src="/posts/49df00acbc4a/0001.png"></p>
-<h4 id="render"><a href="#render" class="headerlink" title="render"></a>render</h4><p>传入 JSXElement 对象和挂载节点.</p>
-<p>何验证根节点是否合法,挂载节点为真,且必须是以下节点之一</p>
-<figure class="highlight js"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">function</span> <span class="title function_">isValidContainer</span>(<span class="params">node</span>) &#123;</span><br><span class="line">  <span class="keyword">return</span> !!(</span><br><span class="line">    node &amp;&amp;</span><br><span class="line">    (node.<span class="property">nodeType</span> === <span class="variable constant_">ELEMENT_NODE</span> ||</span><br><span class="line">      node.<span class="property">nodeType</span> === <span class="variable constant_">DOCUMENT_NODE</span> ||</span><br><span class="line">      node.<span class="property">nodeType</span> === <span class="variable constant_">DOCUMENT_FRAGMENT_NODE</span> ||</span><br><span class="line">      (node.<span class="property">nodeType</span> === <span class="variable constant_">COMMENT_NODE</span> &amp;&amp;</span><br><span class="line">        node.<span class="property">nodeValue</span> === <span class="string">&quot; react-mount-point-unstable &quot;</span>))</span><br><span class="line">  );</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
-
-<p>挂载节点必须是首次挂载,已经挂载过的节点不能再次执行 <code>React.render(element,container)</code>,首次挂载之后会给元素打上一个标记 <code>__reactContainer$xxx</code> 是一个自定义字符串后面是随机数, 用这个标记来判断元素是否挂载过</p>
-<p>而且 <code>internalContainerInstanceKey = FiberRoot</code> 会被赋值为 FiberRoot</p>
-<h4 id="legacyRenderSubtreeIntoContainer-null-element-container-false-callback"><a href="#legacyRenderSubtreeIntoContainer-null-element-container-false-callback" class="headerlink" title="legacyRenderSubtreeIntoContainer(null, element, container, false, callback)"></a>legacyRenderSubtreeIntoContainer(null, element, container, false, callback)</h4><p>首先尝试清空挂载节点中的内容,如果挂载节点中有其他的节点已经通过 render 渲染过,会提示错误</p>
-<figure class="highlight js"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">while</span> ((rootSibling = container.<span class="property">lastChild</span>)) &#123;</span><br><span class="line">  container.<span class="title function_">removeChild</span>(rootSibling);</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
-
-<p>这里创建出 <code>FiberFoot</code>和<code>RootFiber</code>两个节点, 并且通过指针相互引用</p>
-<p><img src="/posts/49df00acbc4a/0002.png"></p>
-<p><code>container._reactRootContainer = new ReactDOMBlockingRoot()</code> 挂载元素上会打上一个标记, 赋值为 RootFiber 构造函数的实例,而 render 方法 <code>_reactRootContainer</code> 中与<code>__reactContainer$xxx</code> 共同判断节点是否挂载过</p>
-<p>对于已经渲染过的节点会通过 <code>_reactRootContainer</code> 直接复用 <code>FiberRoot</code>, 并执行 <code>updateContainer</code> 批量更新, 如果是首次渲染则执行 <code>unbatchedUpdates</code>非批量更新,立即调用 <code>updateContainer</code>,同步执行尽快展示元素.</p>
-<h4 id="updateContainer-element-container-parentComponent-callback"><a href="#updateContainer-element-container-parentComponent-callback" class="headerlink" title="updateContainer(element, container, parentComponent, callback)"></a>updateContainer(element, container, parentComponent, callback)</h4><p>在首次执行前会标记上下文环境,因为也可能是程序运行之后,人为调用非批量更新,所以这个方法可能重复执行</p>
-<figure class="highlight js"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment">// 保存之前的上下文</span></span><br><span class="line"><span class="keyword">var</span> prevExecutionContext = executionContext;</span><br><span class="line"><span class="comment">// 删除掉批量更新的标记</span></span><br><span class="line">executionContext &amp;= ~<span class="title class_">BatchedContext</span>;</span><br><span class="line"><span class="comment">// 添加非批量更新的标记</span></span><br><span class="line">executionContext |= <span class="title class_">LegacyUnbatchedContext</span>;</span><br></pre></td></tr></table></figure>
-
-<p>下面这里定义了几个比较关键的变量</p>
-<p><code>requestUpdateLane</code> 传入了 FiberRoot, <span id="requestUpdateLane">计算出更新优先级为 1 (SyncLane)</span></p>
-<figure class="highlight js"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br><span class="line">35</span><br><span class="line">36</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment">// 计算一个时间戳</span></span><br><span class="line"><span class="keyword">var</span> eventTime = <span class="title function_">requestEventTime</span>();</span><br><span class="line"></span><br><span class="line"><span class="comment">// 计算更新优先级</span></span><br><span class="line"><span class="keyword">var</span> lane = <span class="title function_">requestUpdateLane</span>(container.<span class="property">current</span>);</span><br><span class="line"></span><br><span class="line"><span class="comment">// 创建更新对象并添加到更新队列中</span></span><br><span class="line"><span class="keyword">var</span> update = &#123;</span><br><span class="line">  <span class="attr">eventTime</span>: eventTime,</span><br><span class="line">  <span class="attr">lane</span>: lane,</span><br><span class="line">  <span class="attr">tag</span>: <span class="title class_">UpdateState</span>,</span><br><span class="line">  <span class="comment">// element 是 render 方法中传入的 JSXElement 对象</span></span><br><span class="line">  <span class="attr">payload</span>: &#123;<span class="attr">element</span>:element&#125;,</span><br><span class="line">  <span class="attr">callback</span>: <span class="literal">null</span>,</span><br><span class="line">  <span class="attr">next</span>: <span class="literal">null</span></span><br><span class="line">&#125;;</span><br><span class="line"></span><br><span class="line"><span class="comment">// updateQueue 是一个对象</span></span><br><span class="line"></span><br><span class="line"><span class="keyword">var</span> updateQueue = &#123;</span><br><span class="line">  <span class="attr">baseState</span>:<span class="literal">null</span></span><br><span class="line">  <span class="attr">effects</span>:<span class="literal">null</span></span><br><span class="line">  <span class="attr">firstBaseUpdate</span>:<span class="literal">null</span></span><br><span class="line">  <span class="attr">lastBaseUpdate</span>:<span class="literal">null</span></span><br><span class="line">  <span class="attr">shared</span>:&#123;<span class="attr">pending</span>: <span class="literal">null</span>&#125;</span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line"><span class="comment">// 如果这是第一个更新,会被处理成循环链表</span></span><br><span class="line"><span class="keyword">if</span> (updateQueue.<span class="property">pending</span> === <span class="literal">null</span>) &#123;</span><br><span class="line">  update.<span class="property">next</span> = update;</span><br><span class="line">&#125; <span class="keyword">else</span> &#123;</span><br><span class="line"><span class="comment">// 如果有了正在等待的更新,则链接到循环链表中</span></span><br><span class="line">  update.<span class="property">next</span> = pending.<span class="property">next</span>;</span><br><span class="line">  pending.<span class="property">next</span> = update;</span><br><span class="line">&#125;</span><br><span class="line">updateQueue.<span class="property">share</span>.<span class="property">pending</span> = update;</span><br></pre></td></tr></table></figure>
-
-<h4 id="scheduleUpdateOnFiber-fiber-lane-eventTime"><a href="#scheduleUpdateOnFiber-fiber-lane-eventTime" class="headerlink" title="scheduleUpdateOnFiber(fiber, lane, eventTime)"></a>scheduleUpdateOnFiber(fiber, lane, eventTime)</h4><p><code>checkForNestedUpdates()</code> 检查是否嵌套的更新过多</p>
-<p>拿到上 RootFiber <a href="/posts/d9523506ae81/#requestUpdateLane">计算出的更新优先级</a>, 与 <code>fiber</code> 上的优先级合并,如果当前节点不是根节点会一直递归到根节点. 首次执行时 fiber &#x3D; FiberRoot</p>
-<figure class="highlight js"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">var</span> root = <span class="title function_">markUpdateLaneFromFiberToRoot</span>(fiber, lane);</span><br></pre></td></tr></table></figure>
-
-<p>在 FiberRoot 上更新 pendingLanes</p>
-<figure class="highlight js"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">function</span> <span class="title function_">markRootUpdated</span>(<span class="params">root, updateLane, eventTime</span>) &#123;</span><br><span class="line">  root.<span class="property">pendingLanes</span> |= updateLane;</span><br><span class="line">  <span class="keyword">var</span> higherPriorityLanes = updateLane - <span class="number">1</span>; <span class="comment">// Turns 0b1000 into 0b0111</span></span><br><span class="line">  <span class="comment">// 处于当前优先级左边的会通过&amp;被删除掉</span></span><br><span class="line">  <span class="comment">// 其实就是删除了较低的优先级</span></span><br><span class="line">  root.<span class="property">suspendedLanes</span> &amp;= higherPriorityLanes;</span><br><span class="line">  root.<span class="property">pingedLanes</span> &amp;= higherPriorityLanes;</span><br><span class="line">  <span class="keyword">var</span> eventTimes = root.<span class="property">eventTimes</span>;</span><br><span class="line">  <span class="keyword">var</span> index = <span class="title function_">laneToIndex</span>(updateLane);</span><br><span class="line">  eventTimes[index] = eventTime;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
-
-<p>获取当前的执行优先级 <code>var priorityLevel = getCurrentPriorityLevel()</code> 这个优先级与 lane 是有区别的</p>
-<p>检查上下文环境,准备分析构建 Fiber 树</p>
-<figure class="highlight js"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br><span class="line">35</span><br><span class="line">36</span><br><span class="line">37</span><br><span class="line">38</span><br><span class="line">39</span><br><span class="line">40</span><br><span class="line">41</span><br><span class="line">42</span><br><span class="line">43</span><br><span class="line">44</span><br><span class="line">45</span><br><span class="line">46</span><br><span class="line">47</span><br><span class="line">48</span><br><span class="line">49</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment">// 如果传出的优先级是同步的</span></span><br><span class="line"><span class="keyword">if</span> (lane === <span class="title class_">SyncLane</span>) &#123;</span><br><span class="line">  <span class="keyword">if</span> (</span><br><span class="line">    <span class="comment">// 检查是非批量更新的状态</span></span><br><span class="line">    (executionContext &amp; <span class="title class_">LegacyUnbatchedContext</span>) !== <span class="title class_">NoContext</span> &amp;&amp;</span><br><span class="line">    <span class="comment">// 检查还没有开始渲染</span></span><br><span class="line">    (executionContext &amp; (<span class="title class_">RenderContext</span> | <span class="title class_">CommitContext</span>)) === <span class="title class_">NoContext</span></span><br><span class="line">  ) &#123;</span><br><span class="line">    <span class="comment">// Register pending interactions on the root to avoid losing traced interaction data.</span></span><br><span class="line">    <span class="title function_">schedulePendingInteractions</span>(root, lane);</span><br><span class="line">    <span class="comment">// This is a legacy edge case. The initial mount of a ReactDOM.render-ed</span></span><br><span class="line">    <span class="comment">// root inside of batchedUpdates should be synchronous, but layout updates</span></span><br><span class="line">    <span class="comment">// should be deferred until the end of the batch.</span></span><br><span class="line"></span><br><span class="line">    <span class="title function_">performSyncWorkOnRoot</span>(root);</span><br><span class="line">  &#125; <span class="keyword">else</span> &#123;</span><br><span class="line">    <span class="title function_">ensureRootIsScheduled</span>(root, eventTime);</span><br><span class="line">    <span class="title function_">schedulePendingInteractions</span>(root, lane);</span><br><span class="line"></span><br><span class="line">    <span class="keyword">if</span> (executionContext === <span class="title class_">NoContext</span>) &#123;</span><br><span class="line">      <span class="comment">// Flush the synchronous work now, unless we&#x27;re already working or inside</span></span><br><span class="line">      <span class="comment">// a batch. This is intentionally inside scheduleUpdateOnFiber instead of</span></span><br><span class="line">      <span class="comment">// scheduleCallbackForFiber to preserve the ability to schedule a callback</span></span><br><span class="line">      <span class="comment">// without immediately flushing it. We only do this for user-initiated</span></span><br><span class="line">      <span class="comment">// updates, to preserve historical behavior of legacy mode.</span></span><br><span class="line">      <span class="title function_">resetRenderTimer</span>();</span><br><span class="line">      <span class="title function_">flushSyncCallbackQueue</span>();</span><br><span class="line">    &#125;</span><br><span class="line">  &#125;</span><br><span class="line">&#125; <span class="keyword">else</span> &#123;</span><br><span class="line">  <span class="comment">// Schedule a discrete update but only if it&#x27;s not Sync.</span></span><br><span class="line">  <span class="keyword">if</span> (</span><br><span class="line">    (executionContext &amp; <span class="title class_">DiscreteEventContext</span>) !== <span class="title class_">NoContext</span> &amp;&amp; <span class="comment">// Only updates at user-blocking priority or greater are considered</span></span><br><span class="line">    <span class="comment">// discrete, even inside a discrete event.</span></span><br><span class="line">    (priorityLevel === <span class="title class_">UserBlockingPriority</span>$<span class="number">2</span> ||</span><br><span class="line">      priorityLevel === <span class="title class_">ImmediatePriority</span>$<span class="number">1</span>)</span><br><span class="line">  ) &#123;</span><br><span class="line">    <span class="comment">// This is the result of a discrete event. Track the lowest priority</span></span><br><span class="line">    <span class="comment">// discrete update per root so we can flush them early, if needed.</span></span><br><span class="line">    <span class="keyword">if</span> (rootsWithPendingDiscreteUpdates === <span class="literal">null</span>) &#123;</span><br><span class="line">      rootsWithPendingDiscreteUpdates = <span class="keyword">new</span> <span class="title class_">Set</span>([root]);</span><br><span class="line">    &#125; <span class="keyword">else</span> &#123;</span><br><span class="line">      rootsWithPendingDiscreteUpdates.<span class="title function_">add</span>(root);</span><br><span class="line">    &#125;</span><br><span class="line">  &#125; <span class="comment">// Schedule other updates after in case the callback is sync.</span></span><br><span class="line"></span><br><span class="line">  <span class="title function_">ensureRootIsScheduled</span>(root, eventTime);</span><br><span class="line">  <span class="title function_">schedulePendingInteractions</span>(root, lane);</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
-
-<h4 id="performSyncWorkOnRoot-fiberRoot"><a href="#performSyncWorkOnRoot-fiberRoot" class="headerlink" title="performSyncWorkOnRoot(fiberRoot)"></a>performSyncWorkOnRoot(fiberRoot)</h4><p>执行 <code>renderRootSync(root, lanes)</code></p>
-<p>执行结束后,赋值 finishWork 为最新的 Fiber 树,并进入提交节点,渲染元素</p>
-<figure class="highlight js"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">var</span> finishedWork = root.<span class="property">current</span>.<span class="property">alternate</span>;</span><br><span class="line">root.<span class="property">finishedWork</span> = finishedWork;</span><br><span class="line">root.<span class="property">finishedLanes</span> = lanes;</span><br><span class="line"><span class="title function_">commitRoot</span>(root);</span><br></pre></td></tr></table></figure>
-
-<h4 id="renderRootSync-root-lanes"><a href="#renderRootSync-root-lanes" class="headerlink" title="renderRootSync(root, lanes)"></a>renderRootSync(root, lanes)</h4><p>这个方法可以算是<a href="/posts/7db523698f9f/">构建 Fiber 树</a>的起点</p>
-<figure class="highlight js"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">function</span> <span class="title function_">renderRootSync</span>(<span class="params">root, lanes</span>) &#123;</span><br><span class="line">  <span class="comment">// 缓存执行环境</span></span><br><span class="line">  <span class="keyword">var</span> prevExecutionContext = executionContext;</span><br><span class="line">  <span class="comment">// 执行环境标记为渲染环境</span></span><br><span class="line">  executionContext |= <span class="title class_">RenderContext</span>;</span><br><span class="line">  <span class="comment">// 调用 createWorkInProgress 创建新的 RootFiber 作为 WorkInProgress</span></span><br><span class="line">  <span class="title function_">prepareFreshStack</span>(root, lanes);</span><br><span class="line"></span><br><span class="line">  <span class="keyword">do</span> &#123;</span><br><span class="line">    <span class="keyword">try</span> &#123;</span><br><span class="line">      <span class="title function_">workLoopSync</span>();</span><br><span class="line">      <span class="keyword">break</span>;</span><br><span class="line">    &#125; <span class="keyword">catch</span> (thrownValue) &#123;</span><br><span class="line">      <span class="title function_">handleError</span>(root, thrownValue);</span><br><span class="line">    &#125;</span><br><span class="line">  &#125; <span class="keyword">while</span> (<span class="literal">true</span>);</span><br><span class="line"></span><br><span class="line">  workInProgressRoot = <span class="literal">null</span>;</span><br><span class="line">  workInProgressRootRenderLanes = <span class="title class_">NoLanes</span>;</span><br><span class="line">  <span class="keyword">return</span> workInProgressRootExitStatus;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
  
       <!-- reward -->
       
