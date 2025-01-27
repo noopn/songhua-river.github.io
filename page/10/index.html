@@ -112,6 +112,193 @@
     
     
     <article
+  id="post-react/⑫(原理)事件系统"
+  class="article article-type-post"
+  itemscope
+  itemprop="blogPost"
+  data-scroll-reveal
+>
+  <div class="article-inner">
+    
+    <header class="article-header">
+       
+<h2 itemprop="name">
+  <a class="article-title" href="/posts/f95bd5c5972e/"
+    >React原理 事件系统</a> 
+</h2>
+ 
+
+      
+    </header>
+     
+    <div class="article-meta">
+      <a href="/posts/f95bd5c5972e/" class="article-date">
+  <time datetime="2021-10-21T05:46:50.000Z" itemprop="datePublished">2021-10-21</time>
+</a> 
+  <div class="article-category">
+    <a class="article-category-link" href="/categories/React/">React</a>
+  </div>
+   
+    </div>
+      
+    <div class="article-entry" itemprop="articleBody">
+       
+  <h4 id="创建事件集合"><a href="#创建事件集合" class="headerlink" title="创建事件集合"></a>创建事件集合</h4><p>React会在初始化的时候生成事件系统所需要的事件对象集合。</p>
+<ul>
+<li>把系统事件按照优先级分为三大类，每种事件对应着一个优先级</li>
+</ul>
+<table>
+<thead>
+<tr>
+<th>事件类别</th>
+<th>变量名称</th>
+<th>说明</th>
+<th>优先级</th>
+<th>举例</th>
+</tr>
+</thead>
+<tbody><tr>
+<td>独立事件</td>
+<td>discreteEventPairsForSimpleEventPlugin</td>
+<td></td>
+<td>DiscreteEvent&#x3D;0</td>
+<td>例如: <code>click</code></td>
+</tr>
+<tr>
+<td>用户阻塞事件</td>
+<td>userBlockingPairsForSimpleEventPlugin</td>
+<td><div style='width:250px'>因为事件持触发，所以如果某段逻辑执行之间过长，会影响用户的交互</div></td>
+<td>UserBlockingEvent&#x3D;1</td>
+<td>例如：<code>drag</code></td>
+</tr>
+<tr>
+<td>连续事件</td>
+<td>continuousPairsForSimpleEventPlugin</td>
+<td>需要系统一直监听是否触发的事件</td>
+<td>ContinuousEvent&#x3D;2</td>
+<td>例如: <code>animationEnd</code></td>
+</tr>
+</tbody></table>
+<ul>
+<li>通过循环每种事件对应的数组，将事件保存在一下几种事件对象中</li>
+</ul>
+<table>
+<thead>
+<tr>
+<th>变量名称</th>
+<th>变量对象</th>
+<th>说明</th>
+</tr>
+</thead>
+<tbody><tr>
+<td>allNativeEvents</td>
+<td>Set集合</td>
+<td><div style='width:600px'>保存所有原生事件的名称 例如 <code>0:&quot;cancel&quot;</code></div></td>
+</tr>
+<tr>
+<td>eventPriorities</td>
+<td>Map集</td>
+<td><div style='width:600px'>保存事件名称和事件优先级对应关系 例如 <code>click=&gt;0</code> </div></td>
+</tr>
+<tr>
+<td>topLevelEventsToReactNames</td>
+<td>Map集</td>
+<td><div style='width:600px'>保存原始事件名称和 React事件的对应关系 例如 <code>&quot;cancel&quot; =&gt; &quot;onCancel&quot;</code> </div></td>
+</tr>
+<tr>
+<td>registrationNameDependencies</td>
+<td>Object</td>
+<td><div style='width:600px'>保存React事件和原生事件的对应关系 例如 <code>onClick:(1) [&#39;click&#39;]</code> 每个React事件对应一个数组用于保存合成事件对应关系</div></td>
+</tr>
+<tr>
+<td>possibleRegistrationNames</td>
+<td>Object</td>
+<td><div style='width:600px'>保存小写的React事件名称和正确的驼峰命名事件的对应关系，用于校验用户输入 例如 <code>onclick:onClick</code></div></td>
+</tr>
+</tbody></table>
+<ul>
+<li>注册合成事件</li>
+</ul>
+<p>合成事件： 某些React事件会对应多个原生事件 例如：</p>
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">&#x27;onChange&#x27; =&gt; [&#x27;change&#x27;, &#x27;click&#x27;, &#x27;focusin&#x27;, &#x27;focusout&#x27;, &#x27;input&#x27;, &#x27;keydown&#x27;, &#x27;keyup&#x27;, &#x27;selectionchange&#x27;]</span><br></pre></td></tr></table></figure>
+
+<p>合成事件会维护在<code>registrationNameDependencies</code>变量中，例如 <code>onChange</code>事件最终会变为 &#96;&#96;</p>
+<h4 id="创建事件对象"><a href="#创建事件对象" class="headerlink" title="创建事件对象"></a>创建事件对象</h4><p>事件对象用于不用的事件类型，当React事件触发时，将会传入对应的事件对象，而不是原生的事件对象</p>
+<figure class="highlight javascript"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">function</span> <span class="title function_">createSyntheticEvent</span>(<span class="params">Interface</span>) &#123;</span><br><span class="line">  <span class="keyword">function</span> <span class="title function_">SyntheticBaseEvent</span>(<span class="params">reactName, reactEventType, targetInst, nativeEvent, nativeEventTarget</span>) &#123;</span><br><span class="line">    <span class="variable language_">this</span>.<span class="property">_reactName</span> = reactName;</span><br><span class="line">    <span class="variable language_">this</span>.<span class="property">_targetInst</span> = targetInst;</span><br><span class="line">    <span class="variable language_">this</span>.<span class="property">type</span> = reactEventType;</span><br><span class="line">    <span class="variable language_">this</span>.<span class="property">nativeEvent</span> = nativeEvent;</span><br><span class="line">    <span class="variable language_">this</span>.<span class="property">target</span> = nativeEventTarget;</span><br><span class="line">    <span class="variable language_">this</span>.<span class="property">currentTarget</span> = <span class="literal">null</span>;</span><br><span class="line">  <span class="title function_">_assign</span>(<span class="title class_">SyntheticBaseEvent</span>.<span class="property"><span class="keyword">prototype</span></span>, &#123;</span><br><span class="line">    <span class="attr">preventDefault</span>: <span class="keyword">function</span> (<span class="params"></span>) &#123;&#125;,</span><br><span class="line">    <span class="attr">stopPropagation</span>: <span class="keyword">function</span> (<span class="params"></span>) &#123;<span class="variable language_">this</span>.<span class="property">isPropagationStopped</span> = functionThatReturnsTrue;&#125;,</span><br><span class="line">    <span class="attr">persist</span>: <span class="keyword">function</span> (<span class="params"></span>) &#123;&#125;,</span><br><span class="line">    <span class="attr">isPersistent</span>: functionThatReturnsTrue</span><br><span class="line">  &#125;);</span><br><span class="line"></span><br><span class="line">  <span class="keyword">return</span> <span class="title class_">SyntheticBaseEvent</span>;</span><br><span class="line">&#125;</span><br><span class="line"><span class="keyword">var</span> <span class="title class_">UIEventInterface</span> = <span class="title function_">_assign</span>(&#123;&#125;, <span class="title class_">EventInterface</span>, &#123;</span><br><span class="line">  <span class="attr">view</span>: <span class="number">0</span>,</span><br><span class="line">  <span class="attr">detail</span>: <span class="number">0</span></span><br><span class="line">&#125;);</span><br><span class="line"></span><br><span class="line"><span class="keyword">var</span> <span class="title class_">SyntheticUIEvent</span> = <span class="title function_">createSyntheticEvent</span>(<span class="title class_">UIEventInterface</span>);</span><br><span class="line"></span><br></pre></td></tr></table></figure>
+
+<h4 id="事件绑定"><a href="#事件绑定" class="headerlink" title="事件绑定"></a>事件绑定</h4><p>React 创建 <code>FiberRoot</code> 根节点阶段, 会循环所有的原声事件，将事件绑定在 <code>root</code> 元素上。</p>
+<figure class="highlight javascript"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">function</span> <span class="title function_">listenToAllSupportedEvents</span>(<span class="params">rootContainerElement</span>) &#123;</span><br><span class="line">  &#123;</span><br><span class="line">    <span class="keyword">var</span> listeningMarker = <span class="string">&#x27;_reactListening&#x27;</span> + <span class="title class_">Math</span>.<span class="title function_">random</span>().<span class="title function_">toString</span>(<span class="number">36</span>).<span class="title function_">slice</span>(<span class="number">2</span>);</span><br><span class="line">    rootContainerElement[listeningMarker] = <span class="literal">true</span>;</span><br><span class="line">    allNativeEvents.<span class="title function_">forEach</span>(<span class="keyword">function</span> (<span class="params">domEventName</span>) &#123;</span><br><span class="line">      <span class="comment">// 没有事件委托的事件，也就是不能冒泡到document的事件</span></span><br><span class="line">      <span class="keyword">if</span> (!nonDelegatedEvents.<span class="title function_">has</span>(domEventName)) &#123;</span><br><span class="line">        <span class="title function_">listenToNativeEvent</span>(domEventName, <span class="literal">false</span>, rootContainerElement, <span class="literal">null</span>);</span><br><span class="line">      &#125;</span><br><span class="line"></span><br><span class="line">      <span class="title function_">listenToNativeEvent</span>(domEventName, <span class="literal">true</span>, rootContainerElement, <span class="literal">null</span>);</span><br><span class="line">    &#125;);</span><br><span class="line">  &#125;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+<p>根据事件的优先级不同，事件类型不同，绑定的事件处理函数也会不同。</p>
+<figure class="highlight javascript"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">function</span> <span class="title function_">createEventListenerWrapperWithPriority</span>(<span class="params">targetContainer, domEventName, eventSystemFlags</span>) &#123;</span><br><span class="line">  <span class="keyword">var</span> eventPriority = <span class="title function_">getEventPriorityForPluginSystem</span>(domEventName);</span><br><span class="line">  <span class="keyword">var</span> listenerWrapper;</span><br><span class="line"></span><br><span class="line">  <span class="keyword">switch</span> (eventPriority) &#123;</span><br><span class="line">    <span class="keyword">case</span> <span class="title class_">DiscreteEvent</span>:</span><br><span class="line">      listenerWrapper = dispatchDiscreteEvent;</span><br><span class="line">      <span class="keyword">break</span>;</span><br><span class="line"></span><br><span class="line">    <span class="keyword">case</span> <span class="title class_">UserBlockingEvent</span>:</span><br><span class="line">      listenerWrapper = dispatchUserBlockingUpdate;</span><br><span class="line">      <span class="keyword">break</span>;</span><br><span class="line"></span><br><span class="line">    <span class="keyword">case</span> <span class="title class_">ContinuousEvent</span>:</span><br><span class="line">    <span class="attr">default</span>:</span><br><span class="line">      listenerWrapper = dispatchEvent;</span><br><span class="line">      <span class="keyword">break</span>;</span><br><span class="line">  &#125;</span><br><span class="line"></span><br><span class="line">  <span class="keyword">return</span> listenerWrapper.<span class="title function_">bind</span>(<span class="literal">null</span>, domEventName, eventSystemFlags, targetContainer);</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+<ul>
+<li>对于独立事件，如果更新时存在副作用，会在下一个事件前立即执行</li>
+</ul>
+<figure class="highlight javascript"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">function</span> <span class="title function_">flushDiscreteUpdates</span>(<span class="params"></span>) &#123;</span><br><span class="line">  <span class="title function_">flushPendingDiscreteUpdates</span>();</span><br><span class="line">  <span class="title function_">flushPassiveEffects</span>();</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+<p>对于用户阻塞事件，通过原生事件的<code>target</code> 或 <code>srcElement</code> 获取到触发事件的元素，再通过定义在原生DOM上的属性 <code>internalInstanceKey</code> 找到DOM对应的Fiber节点</p>
+<figure class="highlight javascript"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">var</span> targetInst = targetNode[internalInstanceKey];</span><br></pre></td></tr></table></figure>
+
+<p>通过 <code>batchedEventUpdates</code> 标记批处理</p>
+<figure class="highlight javascript"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">function</span> <span class="title function_">batchedEventUpdates</span>(<span class="params">fn, a, b</span>) &#123;</span><br><span class="line">  <span class="keyword">if</span> (isBatchingEventUpdates) &#123;</span><br><span class="line">    <span class="comment">// If we are currently inside another batch, we need to wait until it</span></span><br><span class="line">    <span class="comment">// fully completes before restoring state.</span></span><br><span class="line">    <span class="keyword">return</span> <span class="title function_">fn</span>(a, b);</span><br><span class="line">  &#125;</span><br><span class="line"></span><br><span class="line">  isBatchingEventUpdates = <span class="literal">true</span>;</span><br><span class="line"></span><br><span class="line">  <span class="keyword">try</span> &#123;</span><br><span class="line">    <span class="keyword">return</span> <span class="title function_">batchedEventUpdatesImpl</span>(fn, a, b);</span><br><span class="line">  &#125; <span class="keyword">finally</span> &#123;</span><br><span class="line">    isBatchingEventUpdates = <span class="literal">false</span>;</span><br><span class="line">    <span class="title function_">finishEventHandler</span>();</span><br><span class="line">  &#125;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+<p>为不同的事件类型选择不同的事件对象，通过FiberNode上的props属性获取到事件，加入事件队列，<br>用队列来模拟冒泡事件和捕获事件</p>
+<figure class="highlight javascript"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br><span class="line">35</span><br><span class="line">36</span><br><span class="line">37</span><br><span class="line">38</span><br><span class="line">39</span><br><span class="line">40</span><br><span class="line">41</span><br><span class="line">42</span><br><span class="line">43</span><br><span class="line">44</span><br><span class="line">45</span><br><span class="line">46</span><br><span class="line">47</span><br><span class="line">48</span><br><span class="line">49</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">switch</span> (domEventName) &#123;</span><br><span class="line">  <span class="keyword">case</span> <span class="string">&#x27;click&#x27;</span>:</span><br><span class="line">    <span class="comment">// Firefox creates a click event on right mouse clicks. This removes the</span></span><br><span class="line">    <span class="comment">// unwanted click events.</span></span><br><span class="line">    <span class="keyword">if</span> (nativeEvent.<span class="property">button</span> === <span class="number">2</span>) &#123;</span><br><span class="line">      <span class="keyword">return</span>;</span><br><span class="line">    &#125;</span><br><span class="line"></span><br><span class="line">  <span class="keyword">case</span> <span class="string">&#x27;auxclick&#x27;</span>:</span><br><span class="line">  <span class="keyword">case</span> <span class="string">&#x27;dblclick&#x27;</span>:</span><br><span class="line">  <span class="keyword">case</span> <span class="string">&#x27;mousedown&#x27;</span>:</span><br><span class="line">  <span class="keyword">case</span> <span class="string">&#x27;mousemove&#x27;</span>:</span><br><span class="line">  <span class="keyword">case</span> <span class="string">&#x27;mouseup&#x27;</span>: <span class="comment">// <span class="doctag">TODO:</span> Disabled elements should not respond to mouse events</span></span><br><span class="line"></span><br><span class="line">  <span class="comment">/* falls through */</span></span><br><span class="line"></span><br><span class="line">  <span class="keyword">case</span> <span class="string">&#x27;mouseout&#x27;</span>:</span><br><span class="line">  <span class="keyword">case</span> <span class="string">&#x27;mouseover&#x27;</span>:</span><br><span class="line">  <span class="keyword">case</span> <span class="string">&#x27;contextmenu&#x27;</span>:</span><br><span class="line">    <span class="title class_">SyntheticEventCtor</span> = <span class="title class_">SyntheticMouseEvent</span>;</span><br><span class="line">    <span class="keyword">break</span>;</span><br><span class="line">&#125;</span><br><span class="line"><span class="keyword">while</span> (instance !== <span class="literal">null</span>) &#123;</span><br><span class="line">  <span class="keyword">var</span> _instance2 = instance,</span><br><span class="line">      stateNode = _instance2.<span class="property">stateNode</span>,</span><br><span class="line">      tag = _instance2.<span class="property">tag</span>; <span class="comment">// Handle listeners that are on HostComponents (i.e. &lt;div&gt;)</span></span><br><span class="line"></span><br><span class="line">    <span class="keyword">if</span> (reactEventName !== <span class="literal">null</span>) &#123;</span><br><span class="line">      <span class="keyword">var</span> props = <span class="title function_">getFiberCurrentPropsFromNode</span>(stateNode);</span><br><span class="line">      <span class="keyword">var</span> listener = props[registrationName];</span><br><span class="line"></span><br><span class="line">     <span class="keyword">if</span> (captureListener != <span class="literal">null</span>) &#123;</span><br><span class="line">        listeners.<span class="title function_">unshift</span>(<span class="title function_">createDispatchListener</span>(instance, captureListener, currentTarget));</span><br><span class="line">      &#125;</span><br><span class="line"></span><br><span class="line">      <span class="keyword">var</span> bubbleListener = <span class="title function_">getListener</span>(instance, reactName);</span><br><span class="line"></span><br><span class="line">      <span class="keyword">if</span> (bubbleListener != <span class="literal">null</span>) &#123;</span><br><span class="line">        listeners.<span class="title function_">push</span>(<span class="title function_">createDispatchListener</span>(instance, bubbleListener, currentTarget));</span><br><span class="line">      &#125;</span><br><span class="line">    &#125;</span><br><span class="line">  instance = instance.<span class="property">return</span>;</span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line"></span><br><span class="line">dispatchQueue.<span class="title function_">push</span>(&#123;</span><br><span class="line">  <span class="attr">event</span>: _event,</span><br><span class="line">  <span class="attr">listeners</span>: _listeners</span><br><span class="line">&#125;);</span><br></pre></td></tr></table></figure>
+
+<p>循环事件队列，如果执行过<code>stopPropagation</code> 直接跳出循环，方法定义在上面的事件对象中</p>
+<figure class="highlight javascript"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">function</span> <span class="title function_">processDispatchQueueItemsInOrder</span>(<span class="params">event, dispatchListeners, inCapturePhase</span>) &#123;gfdg</span><br><span class="line">  <span class="keyword">var</span> previousInstance;</span><br><span class="line"></span><br><span class="line">  <span class="keyword">for</span> (<span class="keyword">var</span> i = dispatchListeners.<span class="property">length</span> - <span class="number">1</span>; i &gt;= <span class="number">0</span>; i--) &#123;</span><br><span class="line">    <span class="keyword">var</span> _dispatchListeners$i = dispatchListeners[i],</span><br><span class="line">        instance = _dispatchListeners$i.<span class="property">instance</span>,</span><br><span class="line">        currentTarget = _dispatchListeners$i.<span class="property">currentTarget</span>,</span><br><span class="line">        listener = _dispatchListeners$i.<span class="property">listener</span>;</span><br><span class="line"></span><br><span class="line">    <span class="keyword">if</span> (instance !== previousInstance &amp;&amp; event.<span class="title function_">isPropagationStopped</span>()) &#123;</span><br><span class="line">      <span class="keyword">return</span>;</span><br><span class="line">    &#125;</span><br><span class="line"></span><br><span class="line">    <span class="title function_">executeDispatch</span>(event, listener, currentTarget);</span><br><span class="line">    previousInstance = instance;</span><br><span class="line">  &#125;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+<h4 id="FAQ"><a href="#FAQ" class="headerlink" title="FAQ"></a>FAQ</h4><ul>
+<li>React 为什么有自己的事件系统？</li>
+</ul>
+<p>为了抹平浏览器间差异，封装了事件对象，模拟了事件冒泡和捕获。</p>
+<ul>
+<li>什么是事件合成？</li>
+</ul>
+<p>一个React可能是一个事件，也可能是多个原生事件。而且事件对象也是封装过的对象。</p>
+<ul>
+<li>如何实现的批量更新？</li>
+</ul>
+<p>通过 <code>isBatchingEventUpdates</code> 标记批处理开始， 一次用户阻塞事件中的所有相同类型事件，都会合并成一次更新</p>
+<ul>
+<li>事件系统如何模拟冒泡和捕获阶段？</li>
+</ul>
+<p>通过队列，冒泡事件插入在队列尾部，捕获事件插入队列的头部</p>
+<ul>
+<li>如何通过 dom 元素找到与之匹配的fiber？</li>
+</ul>
+<p>通过原生事件对象获取触发事件的DOM元素，通过DOM元素上的内置属性，获取fiber节点</p>
+<ul>
+<li>阻止默认行为 ？</li>
+</ul>
+<p>原生事件： e.preventDefault() 和 return false 可以用来阻止事件默认行为，由于在 React 中给元素的事件并不是真正的事件处理函数。所以导致 return false 方法在 React 应用中完全失去了作用。</p>
+<p>React事件 在React应用中，可以用 e.preventDefault() 阻止事件默认行为，这个方法并非是原生事件的 preventDefault ，由于 React 事件源 e 也是独立组建的，所以 preventDefault 也是单独处理的。</p>
+<ul>
+<li>事件是绑定在真实的dom上吗？如何不是绑定在哪里？</li>
+</ul>
+<p>绑定在root节点上</p>
+ 
+      <!-- reward -->
+      
+    </div>
+    
+
+    <!-- copyright -->
+    
+    <footer class="article-footer">
+       
+  <ul class="article-tag-list" itemprop="keywords"><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/JSX/" rel="tag">JSX</a></li><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/React/" rel="tag">React</a></li></ul>
+
+    </footer>
+  </div>
+
+   
+    
+</article>
+
+    
+    <article
   id="post-react/③(SSR)实现路由"
   class="article article-type-post"
   itemscope
@@ -1055,100 +1242,6 @@
     <footer class="article-footer">
        
   <ul class="article-tag-list" itemprop="keywords"><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/React/" rel="tag">React</a></li></ul>
-
-    </footer>
-  </div>
-
-   
-    
-</article>
-
-    
-    <article
-  id="post-devops/实现一个CLI工具"
-  class="article article-type-post"
-  itemscope
-  itemprop="blogPost"
-  data-scroll-reveal
->
-  <div class="article-inner">
-    
-    <header class="article-header">
-       
-<h2 itemprop="name">
-  <a class="article-title" href="/posts/a73e3518930a/"
-    >实现一个CLI工具</a> 
-</h2>
- 
-
-      
-    </header>
-     
-    <div class="article-meta">
-      <a href="/posts/a73e3518930a/" class="article-date">
-  <time datetime="2021-09-14T05:08:51.000Z" itemprop="datePublished">2021-09-14</time>
-</a> 
-  <div class="article-category">
-    <a class="article-category-link" href="/categories/DevOps/">DevOps</a>
-  </div>
-   
-    </div>
-      
-    <div class="article-entry" itemprop="articleBody">
-       
-  <h4 id="CLI与GUI"><a href="#CLI与GUI" class="headerlink" title="CLI与GUI"></a>CLI与GUI</h4><p>CLI（Command Line Interface） 命令行接口, 在服务器端通常是没有可视化界面的，所有的操作都是在黑窗口的命令行中操作。</p>
-<p>GUI（Graphical User Interface）图形用户界面接口， 通过可视化的界面， 可以避免CLI中的命令操作， 某些场景可以增加效率，减少学习成本， 例如 mysql-workbanch 提供的可视化数据库管理工具，或者是 GitHub for Desktop 一个基于 git 命令的 GUI 工具。</p>
-<p>而 node 中的 CLI 工具就是通过命令行的方式，可以让我们快速根据交互中输入的配置初始化项目。或实现其他工具。</p>
-<h4 id="必备npm包"><a href="#必备npm包" class="headerlink" title="必备npm包"></a>必备npm包</h4><ul>
-<li><a target="_blank" rel="noopener" href="https://github.com/tj/commander.js/blob/master/Readme_zh-CN.md">commander</a> 完整的 node.js 命令行解决方案。</li>
-</ul>
-<p><strong>option</strong> 用于定义选项， <strong>默认提供-h选项，可以查看命令行当前的命令提示</strong></p>
-<figure class="highlight javascript"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br></pre></td><td class="code"><pre><span class="line">program</span><br><span class="line">    <span class="comment">// 通过 node xxx-cli.js -v 可以查看指定版本</span></span><br><span class="line">	.<span class="title function_">version</span>(<span class="built_in">require</span>(<span class="string">&#x27;../package&#x27;</span>).<span class="property">version</span>, <span class="string">&quot;-v, --version&quot;</span>)</span><br><span class="line"></span><br><span class="line">    <span class="comment">// 可以修改首行的信息</span></span><br><span class="line">    <span class="comment">// 默认 Usage: sun-cra-cli [options] [command]</span></span><br><span class="line">    <span class="comment">// 修改为： sun-cra-cli [options-my] [command-my]</span></span><br><span class="line">    .<span class="title function_">usage</span>(<span class="string">&#x27;&lt;options-my&gt; [command-my]&#x27;</span>)</span><br><span class="line"></span><br><span class="line">    <span class="comment">// 如果指定了-h 选项，默认-h 选项会被覆盖</span></span><br><span class="line">    <span class="comment">// .option(&#x27;-h, --help&#x27;, &#x27;help information&#x27;)</span></span><br><span class="line">    .<span class="title function_">option</span>(<span class="string">&#x27;-s, --small&#x27;</span>, <span class="string">&#x27;small pizza size&#x27;</span>)</span><br><span class="line">    .<span class="title function_">option</span>(<span class="string">&#x27;-p, --pizza-type &lt;type&gt;&#x27;</span>, <span class="string">&#x27;flavour of pizza&#x27;</span>)</span><br><span class="line"></span><br><span class="line">    <span class="comment">// 一定要放在参数处理的逻辑之前,否则不能执行</span></span><br><span class="line">    program.<span class="title function_">parse</span>(process.<span class="property">argv</span>);</span><br><span class="line"></span><br><span class="line">    <span class="comment">// 获取选项执行其他的逻辑</span></span><br><span class="line">    <span class="keyword">const</span> options = program.<span class="title function_">opts</span>();</span><br><span class="line">    <span class="keyword">if</span> (options.<span class="property">small</span>) <span class="variable language_">console</span>.<span class="title function_">log</span>(<span class="string">&#x27;- small pizza size&#x27;</span>);</span><br><span class="line">    <span class="keyword">if</span> (options.<span class="property">pizzaType</span>) <span class="variable language_">console</span>.<span class="title function_">log</span>(<span class="string">`- <span class="subst">$&#123;options.pizzaType&#125;</span>`</span>);</span><br></pre></td></tr></table></figure>
-
-<p>如果参数不全可以手动打印提示信息</p>
-<figure class="highlight javascript"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">function</span> <span class="title function_">help</span> () &#123;</span><br><span class="line">  program.<span class="title function_">parse</span>(process.<span class="property">argv</span>)</span><br><span class="line">  <span class="keyword">if</span> (program.<span class="property">args</span>.<span class="property">length</span> &lt; <span class="number">1</span>) <span class="keyword">return</span> program.<span class="title function_">help</span>()</span><br><span class="line">&#125;</span><br><span class="line"><span class="title function_">help</span>()</span><br></pre></td></tr></table></figure>
-
-<p><strong>command</strong> 定义命令</p>
-<p>当执行 <code>node xxx-cli.js</code> 会打印所有的提示信息</p>
-<p>当执行 <code>node xxx-cli.js init</code> 会自动执行全局注册的 <code>xxx-cli-init.js</code></p>
-<figure class="highlight javascript"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line">program</span><br><span class="line">    .<span class="title function_">command</span>(<span class="string">&#x27;init&#x27;</span>, <span class="string">&#x27;generate a new project from a template&#x27;</span>)</span><br></pre></td></tr></table></figure>
-
-<p>打印：</p>
-<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br></pre></td><td class="code"><pre><span class="line">Usage: sun-cra-cli [options] [command]</span><br><span class="line"></span><br><span class="line">Options:</span><br><span class="line">  -h, --help      display help for command</span><br><span class="line"></span><br><span class="line">Commands:</span><br><span class="line">  init            generate a new project from a template</span><br><span class="line">  help [command]  display help for command</span><br></pre></td></tr></table></figure>
-
-<p>也可以让命令有可选参数</p>
-<figure class="highlight javascript"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br></pre></td><td class="code"><pre><span class="line">program</span><br><span class="line">  <span class="comment">// 如果想让命令带上参数，就不能把命令描述写在第二个参数上，要用description方法</span></span><br><span class="line">  .<span class="title function_">command</span>(<span class="string">&#x27;init&#x27;</span>)</span><br><span class="line">  .<span class="title function_">description</span>(<span class="string">&#x27;clone a repository into a newly created directory&#x27;</span>)</span><br><span class="line">  <span class="comment">// 两个都是必选参数</span></span><br><span class="line">  .<span class="title function_">argument</span>(<span class="string">&#x27;&lt;username&gt;&#x27;</span>, <span class="string">&#x27;user to login&#x27;</span>)</span><br><span class="line">  .<span class="title function_">argument</span>(<span class="string">&#x27;&lt;password&gt;&#x27;</span>, <span class="string">&#x27;password for user, if required&#x27;</span>)</span><br><span class="line"></span><br><span class="line">  <span class="comment">// 这时执行 `node xxx-cli.js init` 并不会自动执行init命令所对应的文件</span></span><br><span class="line">  <span class="comment">// 需要在action中处理执行逻辑</span></span><br><span class="line">  .<span class="title function_">action</span>(<span class="function">(<span class="params">username, password</span>) =&gt;</span> &#123;</span><br><span class="line">    <span class="variable language_">console</span>.<span class="title function_">log</span>(<span class="string">&#x27;username:&#x27;</span>, username);</span><br><span class="line">    <span class="variable language_">console</span>.<span class="title function_">log</span>(<span class="string">&#x27;password:&#x27;</span>, password);</span><br><span class="line">  &#125;);</span><br><span class="line"></span><br><span class="line">program.<span class="title function_">parse</span>(process.<span class="property">argv</span>);</span><br><span class="line"></span><br></pre></td></tr></table></figure>
-
-<ul>
-<li><p><a target="_blank" rel="noopener" href="https://github.com/chalk/chalk">chalk</a> 一个可以让命令行带上颜色工具</p>
-</li>
-<li><p><a target="_blank" rel="noopener" href="https://github.com/SBoudrias/Inquirer.js">Inquirer</a> 交互式命令行用户界面。可以收集用户的输入</p>
-</li>
-<li><p><a target="_blank" rel="noopener" href="https://www.npmjs.com/package/ora">ora</a> 一个终端加载过度效果</p>
-</li>
-</ul>
-<p>连续调用可以输出多行信息</p>
-<figure class="highlight javascript"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br></pre></td><td class="code"><pre><span class="line">spinner.<span class="title function_">start</span>(<span class="string">&#x27;waiting&#x27;</span>)</span><br><span class="line">spinner.<span class="title function_">succeed</span>(<span class="string">&#x27;successfully&#x27;</span>)</span><br><span class="line">spinner.<span class="title function_">start</span>(<span class="string">&#x27;waiting&#x27;</span>)</span><br><span class="line">spinner.<span class="title function_">succeed</span>(<span class="string">&#x27;successfully&#x27;</span>)</span><br><span class="line"></span><br><span class="line"><span class="comment">/**</span></span><br><span class="line"><span class="comment">✔ Initialization successful.</span></span><br><span class="line"><span class="comment">✔ Initialization successful.</span></span><br><span class="line"><span class="comment">*/</span></span><br></pre></td></tr></table></figure>
-
-<ul>
-<li><a target="_blank" rel="noopener" href="https://www.npmjs.com/package/boxen">boxen</a> 可以在终端展示矩形框</li>
-</ul>
-<h4 id="收集信息"><a href="#收集信息" class="headerlink" title="收集信息"></a>收集信息</h4><figure class="highlight javascript"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br></pre></td><td class="code"><pre><span class="line"><span class="meta">#!/usr/bin/env node</span></span><br><span class="line"><span class="keyword">const</span> &#123; program &#125; = <span class="built_in">require</span>(<span class="string">&quot;commander&quot;</span>);</span><br><span class="line"></span><br><span class="line"><span class="comment">/**</span></span><br><span class="line"><span class="comment"> * Usage: create-bigdata-frontend [options] &lt;name&gt;</span></span><br><span class="line"><span class="comment"> * name 项目名称 --ts 是否使用ts模板</span></span><br><span class="line"><span class="comment"> */</span></span><br><span class="line">program</span><br><span class="line">	.<span class="title function_">version</span>(<span class="built_in">require</span>(<span class="string">&#x27;../package&#x27;</span>).<span class="property">version</span>, <span class="string">&quot;-v, --version&quot;</span>) <span class="comment">// 定义版本选项</span></span><br><span class="line">	<span class="comment">// .command(&#x27;create [name]&#x27;, &#x27;create a project&#x27;) // 定义命令+描述</span></span><br><span class="line">	.<span class="title function_">arguments</span>(<span class="string">&quot;&lt;name&gt;&quot;</span>) <span class="comment">// 定义命令参数</span></span><br><span class="line">	.<span class="title function_">option</span>(<span class="string">&quot;--ts&quot;</span>, <span class="string">&quot;using the typescript template&quot;</span>) <span class="comment">// 定义可提供的选项+描述: 是否使用ts</span></span><br><span class="line">	.<span class="title function_">description</span>(<span class="string">&quot;Create a project&quot;</span>, &#123; <span class="attr">name</span>: <span class="string">&quot;Project name&quot;</span> &#125;) <span class="comment">// 描述+参数，描述</span></span><br><span class="line">	.<span class="title function_">action</span>(<span class="function">(<span class="params">name, options, command</span>) =&gt;</span> &#123; <span class="comment">// 处理函数：(命令声明的所有参数, 选项, 命令对象自身)</span></span><br><span class="line">		<span class="built_in">require</span>(<span class="string">&quot;../lib/create.js&quot;</span>)(name, options &amp;&amp; options.<span class="property">ts</span>);</span><br><span class="line">	&#125;)</span><br><span class="line">	.<span class="property">program</span>.<span class="title function_">parse</span>();</span><br><span class="line"></span><br></pre></td></tr></table></figure>
-
-
-<h4 id="初始化逻辑"><a href="#初始化逻辑" class="headerlink" title="初始化逻辑"></a>初始化逻辑</h4><figure class="highlight javascript"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">const</span> <span class="title class_">CLIManager</span> = <span class="built_in">require</span>(<span class="string">&quot;./CLIManager&quot;</span>);</span><br><span class="line"><span class="variable language_">module</span>.<span class="property">exports</span> = <span class="keyword">async</span> (appName, ts) =&gt; &#123;</span><br><span class="line">  <span class="keyword">const</span> cliM = <span class="keyword">new</span> <span class="title class_">CLIManager</span>(&#123; appName &#125;);</span><br><span class="line">  <span class="keyword">await</span> cliM.<span class="title function_">downloadTemplate</span>(<span class="string">&#x27;https//:xxx.xxx.xxx/xx.git&#x27;</span>); <span class="comment">// 获取远程模板</span></span><br><span class="line">  <span class="keyword">await</span> cliM.<span class="title function_">writePackageJson</span>(); <span class="comment">// 修改package.json</span></span><br><span class="line">  <span class="keyword">await</span> cliM.<span class="title function_">rmGit</span>(); <span class="comment">// 移除原有.git信息</span></span><br><span class="line">  <span class="keyword">await</span> cliM.<span class="title function_">install</span>(); <span class="comment">// 安装依赖</span></span><br><span class="line">&#125;;</span><br></pre></td></tr></table></figure>
-
-<h4 id="CLIManager类"><a href="#CLIManager类" class="headerlink" title="CLIManager类"></a>CLIManager类</h4><figure class="highlight javascript"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br><span class="line">35</span><br><span class="line">36</span><br><span class="line">37</span><br><span class="line">38</span><br><span class="line">39</span><br><span class="line">40</span><br><span class="line">41</span><br><span class="line">42</span><br><span class="line">43</span><br><span class="line">44</span><br><span class="line">45</span><br><span class="line">46</span><br><span class="line">47</span><br><span class="line">48</span><br><span class="line">49</span><br><span class="line">50</span><br><span class="line">51</span><br><span class="line">52</span><br><span class="line">53</span><br><span class="line">54</span><br><span class="line">55</span><br><span class="line">56</span><br><span class="line">57</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">const</span> fs = <span class="built_in">require</span>(<span class="string">&quot;fs&quot;</span>);</span><br><span class="line"><span class="keyword">const</span> path = <span class="built_in">require</span>(<span class="string">&quot;path&quot;</span>);</span><br><span class="line"><span class="keyword">const</span> &#123; exec &#125; = <span class="built_in">require</span>(<span class="string">&quot;child_process&quot;</span>);</span><br><span class="line"><span class="variable language_">module</span>.<span class="property">exports</span> = <span class="keyword">class</span> <span class="title class_">CLIManager</span> &#123;</span><br><span class="line">  <span class="title function_">constructor</span>(<span class="params">&#123; appName &#125;</span>) &#123;</span><br><span class="line">    <span class="variable language_">this</span>.<span class="property">appName</span> = appName;</span><br><span class="line">    <span class="comment">// 获取当前命令执行是的目录</span></span><br><span class="line">    <span class="variable language_">this</span>.<span class="property">cwd</span> = process.<span class="title function_">cwd</span>();</span><br><span class="line">    <span class="variable language_">this</span>.<span class="property">targetDir</span> = path.<span class="title function_">join</span>(process.<span class="title function_">cwd</span>(), appName);</span><br><span class="line">  &#125;</span><br><span class="line"></span><br><span class="line">  <span class="comment">// 执行命令</span></span><br><span class="line">  <span class="title function_">run</span>(<span class="params">command, options, cb</span>) &#123;</span><br><span class="line">    <span class="title function_">exec</span>(command, options, <span class="function">(<span class="params">error, stdout, stderr</span>) =&gt;</span> &#123;</span><br><span class="line">      <span class="keyword">if</span> (error !== <span class="literal">null</span>) &#123;</span><br><span class="line">        <span class="variable language_">console</span>.<span class="title function_">log</span>(chalk.<span class="title function_">red</span>(<span class="string">&quot;X&quot;</span>), <span class="string">&quot;exec error: &quot;</span> + error);</span><br><span class="line">        <span class="keyword">return</span>;</span><br><span class="line">      &#125;</span><br><span class="line">      <span class="title function_">cb</span>(stdout);</span><br><span class="line">    &#125;);</span><br><span class="line">  &#125;</span><br><span class="line"></span><br><span class="line">  <span class="comment">// 拉取远程模板</span></span><br><span class="line">  <span class="title function_">downloadTemplate</span>(<span class="params">repositiry</span>) &#123;</span><br><span class="line">    <span class="keyword">return</span> <span class="keyword">new</span> <span class="title class_">Promise</span>(<span class="function">(<span class="params">resolve, reject</span>) =&gt;</span> &#123;</span><br><span class="line">      <span class="title function_">exec</span>(</span><br><span class="line">        <span class="string">`git clone https://github.com/jquery/jquery.git <span class="subst">$&#123;<span class="variable language_">this</span>.appName&#125;</span>`</span>,</span><br><span class="line">        <span class="function">(<span class="params">error, stdout, stderr</span>) =&gt;</span> &#123;</span><br><span class="line">          <span class="keyword">if</span> (error !== <span class="literal">null</span>) &#123;</span><br><span class="line">            spinner.<span class="title function_">fail</span>(<span class="string">`Failed fetching remote git repo`</span>);</span><br><span class="line">            <span class="title function_">reject</span>(error);</span><br><span class="line">            <span class="keyword">return</span>;</span><br><span class="line">          &#125;</span><br><span class="line">          <span class="title function_">resolve</span>(stdout);</span><br><span class="line">        &#125;</span><br><span class="line">      );</span><br><span class="line">    &#125;);</span><br><span class="line">  &#125;</span><br><span class="line"></span><br><span class="line">  <span class="comment">// 删除.git</span></span><br><span class="line">  <span class="title function_">rmGit</span>(<span class="params"></span>) &#123;</span><br><span class="line">    <span class="keyword">return</span> <span class="keyword">new</span> <span class="title class_">Promise</span>(<span class="function">(<span class="params">resolve</span>) =&gt;</span> &#123;</span><br><span class="line">      <span class="variable language_">this</span>.<span class="title function_">run</span>(<span class="string">&quot;rm -rf .git&quot;</span>, &#123; <span class="attr">cwd</span>: <span class="variable language_">this</span>.<span class="property">targetDir</span> &#125;, <span class="function">(<span class="params">stdout</span>) =&gt;</span> &#123;</span><br><span class="line">        <span class="title function_">resolve</span>(stdout);</span><br><span class="line">      &#125;);</span><br><span class="line">    &#125;);</span><br><span class="line">  &#125;</span><br><span class="line"></span><br><span class="line">  <span class="comment">// 安装依赖</span></span><br><span class="line">  <span class="title function_">install</span>(<span class="params"></span>) &#123;</span><br><span class="line">    <span class="keyword">return</span> <span class="keyword">new</span> <span class="title class_">Promise</span>(<span class="function">(<span class="params">resolve</span>) =&gt;</span> &#123;</span><br><span class="line">      <span class="variable language_">this</span>.<span class="title function_">run</span>(<span class="string">&quot;npm ci&quot;</span>, &#123; <span class="attr">cwd</span>: <span class="variable language_">this</span>.<span class="property">targetDir</span> &#125;, <span class="function">(<span class="params">stdout</span>) =&gt;</span> &#123;</span><br><span class="line">        <span class="title function_">resolve</span>(stdout);</span><br><span class="line">      &#125;);</span><br><span class="line">    &#125;);</span><br><span class="line">  &#125;</span><br><span class="line">&#125;;</span><br></pre></td></tr></table></figure> 
-      <!-- reward -->
-      
-    </div>
-    
-
-    <!-- copyright -->
-    
-    <footer class="article-footer">
-       
-  <ul class="article-tag-list" itemprop="keywords"><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/DevOps/" rel="tag">DevOps</a></li></ul>
 
     </footer>
   </div>

@@ -112,6 +112,350 @@
     
     
     <article
+  id="posts-db/局部变量"
+  class="article article-type-posts"
+  itemscope
+  itemprop="blogPost"
+  data-scroll-reveal
+>
+  <div class="article-inner">
+    
+    <header class="article-header">
+       
+<h2 itemprop="name">
+  <a class="article-title" href="/posts/53b58b276684/"
+    >MySQL 局部变量</a> 
+</h2>
+ 
+
+      
+    </header>
+     
+    <div class="article-meta">
+      <a href="/posts/53b58b276684/" class="article-date">
+  <time datetime="2022-05-15T06:36:17.000Z" itemprop="datePublished">2022-05-15</time>
+</a> 
+  <div class="article-category">
+    <a class="article-category-link" href="/categories/%E6%95%B0%E6%8D%AE%E5%BA%93/">数据库</a>
+  </div>
+   
+    </div>
+      
+    <div class="article-entry" itemprop="articleBody">
+       
+  <p>Transact-SQL 局部变量是可以保存特定类型的单个数据值的对象。在脚本或批处理中通常会使用变量</p>
+<ul>
+<li>作为计数器来计算循环执行的次数或控制循环执行的次数。</li>
+<li>保存流程控制中的测试值</li>
+<li>保存要由存储过程返回码或函数返回值返回的数据值。</li>
+</ul>
+<h4 id="SELECT-local-variable"><a href="#SELECT-local-variable" class="headerlink" title="SELECT @local_variable"></a>SELECT @local_variable</h4><figure class="highlight sql"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">SELECT</span> &#123; <span class="variable">@local</span>_variable &#123; <span class="operator">=</span> <span class="operator">|</span> <span class="operator">+</span><span class="operator">=</span> <span class="operator">|</span> <span class="operator">-</span><span class="operator">=</span> <span class="operator">|</span> <span class="operator">*</span><span class="operator">=</span> <span class="operator">|</span> <span class="operator">/</span><span class="operator">=</span> <span class="operator">|</span> <span class="operator">%</span><span class="operator">=</span> <span class="operator">|</span> <span class="operator">&amp;</span><span class="operator">=</span> <span class="operator">|</span> <span class="operator">^</span><span class="operator">=</span> <span class="operator">|</span> <span class="operator">|</span><span class="operator">=</span> &#125; expression &#125;</span><br><span class="line">    [ ,...n ] [ ; ]</span><br></pre></td></tr></table></figure>
+
+<p>将右边的值赋给左边的变量。</p>
+<table>
+<thead>
+<tr>
+<th>操作员</th>
+<th>行动</th>
+</tr>
+</thead>
+<tbody><tr>
+<td>&#x3D;</td>
+<td>将后面的表达式分配给变量。</td>
+</tr>
+<tr>
+<td>+&#x3D;</td>
+<td>添加和分配</td>
+</tr>
+<tr>
+<td>-&#x3D;</td>
+<td>减法和赋值</td>
+</tr>
+<tr>
+<td>*&#x3D;</td>
+<td>相乘并赋值</td>
+</tr>
+<tr>
+<td>&#x2F;&#x3D;</td>
+<td>划分和分配</td>
+</tr>
+<tr>
+<td>%&#x3D;</td>
+<td>取模和赋值</td>
+</tr>
+<tr>
+<td>&amp;&#x3D;</td>
+<td>按位与并赋值</td>
+</tr>
+<tr>
+<td>^&#x3D;</td>
+<td>按位异或并赋值</td>
+</tr>
+<tr>
+<td>| &#x3D;</td>
+<td>按位或并赋值</td>
+</tr>
+</tbody></table>
+<p>SELECT @local_variable 通常用于将单个值返回到变量中。但是，当表达式是列名时，它可以返回多个值。如果 SELECT 语句返回多个值，则为变量分配最后一个返回的值。</p>
+<p>如果 SELECT 语句没有返回任何行，则变量保留其当前值。如果表达式是不返回值的标量子查询，则变量设置为 NULL。</p>
+<p>一个 SELECT 语句可以初始化多个局部变量。</p>
+<ul>
+<li>查询最近 12 个月的数据量, 没有的用 0 补全</li>
+</ul>
+<p>因为把表中的所有月份 group by 之后,已有的月份不足 12 个月, 需要补齐,所以先生成一张 12 个月的空表</p>
+<p>注意子查询中的日期不能使用 date_format 因为会失去时间格式,导致上面的变量在 addDate 中不可使用</p>
+<figure class="highlight sql"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">select</span> DATE_FORMAT( <span class="variable">@u</span> :<span class="operator">=</span> ADDDATE(<span class="variable">@u</span>,<span class="type">INTERVAL</span> <span class="number">1</span> <span class="keyword">Month</span>),<span class="string">&#x27;%Y-%m&#x27;</span>) <span class="keyword">as</span> <span class="type">date</span> <span class="keyword">from</span> (</span><br><span class="line">	<span class="keyword">select</span>  <span class="variable">@u</span> :<span class="operator">=</span> ADDDATE(now(),<span class="type">INTERVAL</span> <span class="number">-6</span> <span class="keyword">Month</span>) <span class="keyword">from</span> Student s limit <span class="number">12</span></span><br><span class="line">) <span class="keyword">as</span> t;</span><br></pre></td></tr></table></figure>
+
+<p>在拼接已存在的数据</p>
+<figure class="highlight sql"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">select</span> DATE_FORMAT( <span class="variable">@u</span> :<span class="operator">=</span> ADDDATE(<span class="variable">@u</span>,<span class="type">INTERVAL</span> <span class="number">1</span> <span class="keyword">Month</span>),<span class="string">&#x27;%Y-%m&#x27;</span>) <span class="keyword">as</span> <span class="type">date</span> <span class="keyword">from</span> (</span><br><span class="line">	<span class="keyword">select</span>  <span class="variable">@u</span> :<span class="operator">=</span> ADDDATE(now(),<span class="type">INTERVAL</span> <span class="number">-6</span> <span class="keyword">Month</span>) <span class="keyword">from</span> Student s limit <span class="number">12</span></span><br><span class="line">) <span class="keyword">as</span> t</span><br><span class="line"></span><br><span class="line"><span class="keyword">left</span> <span class="keyword">join</span> (</span><br><span class="line">	<span class="keyword">select</span> <span class="built_in">count</span>(<span class="operator">*</span>) <span class="keyword">as</span> sum,DATE_FORMAT(s.date,<span class="string">&#x27;%Y-%m&#x27;</span>) <span class="keyword">as</span> <span class="type">date</span>  <span class="keyword">from</span> Student s</span><br><span class="line">	<span class="keyword">group</span> <span class="keyword">by</span> DATE_FORMAT(s.date,<span class="string">&#x27;%Y-%m&#x27;</span>)</span><br><span class="line">) <span class="keyword">as</span> t2 <span class="keyword">on</span> t2.date  <span class="operator">=</span> t.date</span><br></pre></td></tr></table></figure>
+
+<p>最后把空值处理为 0</p>
+<figure class="highlight sql"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">select</span> <span class="type">date</span>, if(ISNULL(d.sum),<span class="number">0</span>,d.sum) <span class="keyword">as</span> sum <span class="keyword">from</span> (</span><br><span class="line">	<span class="keyword">select</span> DATE_FORMAT( <span class="variable">@u</span> :<span class="operator">=</span> ADDDATE(<span class="variable">@u</span>,<span class="type">INTERVAL</span> <span class="number">1</span> <span class="keyword">Month</span>),<span class="string">&#x27;%Y-%m&#x27;</span>) <span class="keyword">as</span> <span class="type">date</span> <span class="keyword">from</span> (</span><br><span class="line">		<span class="keyword">select</span>  <span class="variable">@u</span> :<span class="operator">=</span> ADDDATE(now(),<span class="type">INTERVAL</span> <span class="number">-6</span> <span class="keyword">Month</span>) <span class="keyword">from</span> Student s limit <span class="number">12</span></span><br><span class="line">	) <span class="keyword">as</span> t</span><br><span class="line"></span><br><span class="line">	<span class="keyword">left</span> <span class="keyword">join</span> (</span><br><span class="line">		<span class="keyword">select</span> <span class="built_in">count</span>(<span class="operator">*</span>) <span class="keyword">as</span> sum,DATE_FORMAT(s.date,<span class="string">&#x27;%Y-%m&#x27;</span>) <span class="keyword">as</span> <span class="type">date</span>  <span class="keyword">from</span> Student s</span><br><span class="line">		<span class="keyword">group</span> <span class="keyword">by</span> DATE_FORMAT(s.date,<span class="string">&#x27;%Y-%m&#x27;</span>)</span><br><span class="line">	) <span class="keyword">as</span> t2 <span class="keyword">on</span> t2.date  <span class="operator">=</span> t.date</span><br><span class="line">) <span class="keyword">as</span> d</span><br></pre></td></tr></table></figure>
+ 
+      <!-- reward -->
+      
+    </div>
+    
+
+    <!-- copyright -->
+    
+    <footer class="article-footer">
+       
+  <ul class="article-tag-list" itemprop="keywords"><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/MySQL/" rel="tag">MySQL</a></li><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/%E6%95%B0%E6%8D%AE%E5%BA%93/" rel="tag">数据库</a></li></ul>
+
+    </footer>
+  </div>
+
+   
+    
+</article>
+
+    
+    <article
+  id="posts-db/日期时间函数"
+  class="article article-type-posts"
+  itemscope
+  itemprop="blogPost"
+  data-scroll-reveal
+>
+  <div class="article-inner">
+    
+    <header class="article-header">
+       
+<h2 itemprop="name">
+  <a class="article-title" href="/posts/f608af7ca97b/"
+    >MySQL 日期时间函数</a> 
+</h2>
+ 
+
+      
+    </header>
+     
+    <div class="article-meta">
+      <a href="/posts/f608af7ca97b/" class="article-date">
+  <time datetime="2022-05-15T05:59:06.000Z" itemprop="datePublished">2022-05-15</time>
+</a> 
+  <div class="article-category">
+    <a class="article-category-link" href="/categories/%E6%95%B0%E6%8D%AE%E5%BA%93/">数据库</a>
+  </div>
+   
+    </div>
+      
+    <div class="article-entry" itemprop="articleBody">
+       
+  <h4 id="ADDDATE"><a href="#ADDDATE" class="headerlink" title="ADDDATE()"></a>ADDDATE()</h4><figure class="highlight sql"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment">-- date时间字段名  expr时间间隔</span></span><br><span class="line"><span class="comment">-- unit单位 指的时间单位 天day 小时hour表示等</span></span><br><span class="line">DATE_ADD(<span class="type">date</span>,<span class="type">INTERVAL</span> expr unit)</span><br><span class="line"></span><br><span class="line"><span class="comment">-- 采用这种写法的时候,使用方法与DATE_ADD一致</span></span><br></pre></td></tr></table></figure>
+
+<ul>
+<li>日期+天数</li>
+</ul>
+<figure class="highlight sql"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">SELECT</span> ADDDATE(<span class="string">&#x27;2020-01-02 00:00:00&#x27;</span>, <span class="type">INTERVAL</span> <span class="number">1</span> <span class="keyword">day</span>) <span class="keyword">from</span> orders</span><br><span class="line"></span><br><span class="line"><span class="comment">--打印字段为：2020-01-03 00:00:00</span></span><br><span class="line"></span><br><span class="line"><span class="comment">-- 下面同理， 在写增加天为单位时 可以缩写成</span></span><br><span class="line"><span class="keyword">SELECT</span> ADDDATE(<span class="string">&#x27;2020-01-02 00:00:00&#x27;</span>, <span class="number">1</span>) <span class="keyword">from</span> orders</span><br><span class="line"></span><br><span class="line"><span class="comment">--默认为day</span></span><br><span class="line"><span class="comment">--打印字段为：2020-01-03 00:00:00</span></span><br><span class="line"></span><br><span class="line"><span class="comment">--如果减一天 则为 -1   这里也可写成字符串</span></span><br><span class="line"><span class="keyword">SELECT</span> ADDDATE(<span class="string">&#x27;2020-01-01 00:00:00&#x27;</span>, <span class="string">&#x27;-1&#x27;</span>) <span class="keyword">from</span> orders</span><br><span class="line"></span><br><span class="line"><span class="comment">--打印字段为：2020-01-01 00:00:00</span></span><br><span class="line"></span><br></pre></td></tr></table></figure>
+
+<ul>
+<li>日期+小时</li>
+</ul>
+<figure class="highlight sql"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">SELECT</span> ADDDATE(<span class="string">&#x27;2020-01-02 00:00:00&#x27;</span>, <span class="type">INTERVAL</span> <span class="number">1</span> <span class="keyword">HOUR</span>) <span class="keyword">from</span> orders</span><br><span class="line"><span class="comment">-- 打印字段为：2020-01-01 01:00:00</span></span><br></pre></td></tr></table></figure>
+
+<ul>
+<li>日期+分钟</li>
+</ul>
+<figure class="highlight sql"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">SELECT</span> ADDDATE(<span class="string">&#x27;2020-01-02 00:00:00&#x27;</span>, <span class="type">INTERVAL</span> <span class="number">1</span> <span class="keyword">MINUTE</span>) <span class="keyword">from</span> orders</span><br><span class="line"><span class="comment">-- 打印字段为：2020-01-01 00:01:00</span></span><br></pre></td></tr></table></figure>
+
+<ul>
+<li>日期+秒</li>
+</ul>
+<figure class="highlight sql"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">SELECT</span> ADDDATE(<span class="string">&#x27;2020-01-02 00:00:00&#x27;</span>, <span class="type">INTERVAL</span> <span class="number">1</span> <span class="keyword">SECOND</span>) <span class="keyword">from</span> orders</span><br><span class="line"><span class="comment">-- 打印字段为：2020-01-01 00:00:01</span></span><br></pre></td></tr></table></figure>
+
+<h4 id="DATE-FORMAT"><a href="#DATE-FORMAT" class="headerlink" title="DATE_FORMAT()"></a>DATE_FORMAT()</h4><p>date 参数是合法的日期。format 规定日期&#x2F;时间的输出格式。</p>
+<figure class="highlight sql"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">DATE_FORMAT(<span class="type">date</span>,format)</span><br></pre></td></tr></table></figure>
+
+<table>
+<thead>
+<tr>
+<th>格式</th>
+<th>描述</th>
+</tr>
+</thead>
+<tbody><tr>
+<td>%a</td>
+<td>缩写星期名</td>
+</tr>
+<tr>
+<td>%b</td>
+<td>缩写月名</td>
+</tr>
+<tr>
+<td>%c</td>
+<td>月，数值</td>
+</tr>
+<tr>
+<td>%D</td>
+<td>带有英文前缀的月中的天</td>
+</tr>
+<tr>
+<td>%d</td>
+<td>月的天，数值(00-31)</td>
+</tr>
+<tr>
+<td>%e</td>
+<td>月的天，数值(0-31)</td>
+</tr>
+<tr>
+<td>%f</td>
+<td>微秒</td>
+</tr>
+<tr>
+<td>%H</td>
+<td>小时 (00-23)</td>
+</tr>
+<tr>
+<td>%h</td>
+<td>小时 (01-12)</td>
+</tr>
+<tr>
+<td>%I</td>
+<td>小时 (01-12)</td>
+</tr>
+<tr>
+<td>%i</td>
+<td>分钟，数值(00-59)</td>
+</tr>
+<tr>
+<td>%j</td>
+<td>年的天 (001-366)</td>
+</tr>
+<tr>
+<td>%k</td>
+<td>小时 (0-23)</td>
+</tr>
+<tr>
+<td>%l</td>
+<td>小时 (1-12)</td>
+</tr>
+<tr>
+<td>%M</td>
+<td>月名</td>
+</tr>
+<tr>
+<td>%m</td>
+<td>月，数值(00-12)</td>
+</tr>
+<tr>
+<td>%p</td>
+<td>AM 或 PM</td>
+</tr>
+<tr>
+<td>%r</td>
+<td>时间，12-小时（hh:mm:ss AM 或 PM）</td>
+</tr>
+<tr>
+<td>%S</td>
+<td>秒(00-59)</td>
+</tr>
+<tr>
+<td>%s</td>
+<td>秒(00-59)</td>
+</tr>
+<tr>
+<td>%T</td>
+<td>时间, 24-小时 (hh:mm:ss)</td>
+</tr>
+<tr>
+<td>%U</td>
+<td>周 (00-53) 星期日是一周的第一天</td>
+</tr>
+<tr>
+<td>%u</td>
+<td>周 (00-53) 星期一是一周的第一天</td>
+</tr>
+<tr>
+<td>%V</td>
+<td>周 (01-53) 星期日是一周的第一天，与 %X 使用</td>
+</tr>
+<tr>
+<td>%v</td>
+<td>周 (01-53) 星期一是一周的第一天，与 %x 使用</td>
+</tr>
+<tr>
+<td>%W</td>
+<td>星期名</td>
+</tr>
+<tr>
+<td>%w</td>
+<td>周的天 （0&#x3D;星期日, 6&#x3D;星期六）</td>
+</tr>
+<tr>
+<td>%X</td>
+<td>年，其中的星期日是周的第一天，4 位，与 %V 使用</td>
+</tr>
+<tr>
+<td>%x</td>
+<td>年，其中的星期一是周的第一天，4 位，与 %v 使用</td>
+</tr>
+<tr>
+<td>%Y</td>
+<td>年，4 位</td>
+</tr>
+<tr>
+<td>%y</td>
+<td>年，2 位</td>
+</tr>
+</tbody></table>
+<h4 id="NOW-CURDATE-CURTIME"><a href="#NOW-CURDATE-CURTIME" class="headerlink" title="NOW() CURDATE() CURTIME()"></a>NOW() CURDATE() CURTIME()</h4><p>函数返回当前的日期和时间。</p>
+<table>
+<thead>
+<tr>
+<th>NOW()</th>
+<th>CURDATE()</th>
+<th>CURTIME()</th>
+</tr>
+</thead>
+<tbody><tr>
+<td>2008-12-29 16:25:46</td>
+<td>2008-12-29</td>
+<td>16:25:46</td>
+</tr>
+</tbody></table>
+ 
+      <!-- reward -->
+      
+    </div>
+    
+
+    <!-- copyright -->
+    
+    <footer class="article-footer">
+       
+  <ul class="article-tag-list" itemprop="keywords"><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/MySQL/" rel="tag">MySQL</a></li><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/%E6%95%B0%E6%8D%AE%E5%BA%93/" rel="tag">数据库</a></li></ul>
+
+    </footer>
+  </div>
+
+   
+    
+</article>
+
+    
+    <article
   id="posts-javascript/用户认证"
   class="article article-type-posts"
   itemscope
@@ -876,170 +1220,6 @@
     <footer class="article-footer">
        
   <ul class="article-tag-list" itemprop="keywords"><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/wordcloud/" rel="tag">wordcloud</a></li></ul>
-
-    </footer>
-  </div>
-
-   
-    
-</article>
-
-    
-    <article
-  id="posts-source/d3-dispatch"
-  class="article article-type-posts"
-  itemscope
-  itemprop="blogPost"
-  data-scroll-reveal
->
-  <div class="article-inner">
-    
-    <header class="article-header">
-       
-<h2 itemprop="name">
-  <a class="article-title" href="/posts/1033523a61a7/"
-    >d3-dispatch 源码分析</a> 
-</h2>
- 
-
-      
-    </header>
-     
-    <div class="article-meta">
-      <a href="/posts/1033523a61a7/" class="article-date">
-  <time datetime="2022-04-24T09:51:35.000Z" itemprop="datePublished">2022-04-24</time>
-</a> 
-  <div class="article-category">
-    <a class="article-category-link" href="/categories/%E6%BA%90%E7%A0%81%E5%88%86%E6%9E%90/">源码分析</a> / <a class="article-category-link" href="/categories/%E6%BA%90%E7%A0%81%E5%88%86%E6%9E%90/d3/">d3</a>
-  </div>
-   
-    </div>
-      
-    <div class="article-entry" itemprop="articleBody">
-       
-  <p><a target="_blank" rel="noopener" href="https://github.com/d3/d3-dispatch">d3-dispatch</a> 是一个基于 观察者模式 的事件处理工具.</p>
-<h4 id="使用方法"><a href="#使用方法" class="headerlink" title="使用方法"></a>使用方法</h4><figure class="highlight ts"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment">// 注册事件</span></span><br><span class="line"><span class="keyword">const</span> d = <span class="title function_">dispatch</span>(<span class="string">&quot;start&quot;</span>, <span class="string">&quot;end&quot;</span>);</span><br><span class="line"></span><br><span class="line"><span class="comment">//帮顶事件方法</span></span><br><span class="line">d.<span class="title function_">on</span>(<span class="string">&#x27;start.a&#x27;</span>,<span class="function">()=&gt;</span>&#123;&#125;)</span><br><span class="line">d.<span class="title function_">on</span>(<span class="string">&#x27;start.*b.c&#x27;</span>,<span class="function">()=&gt;</span>&#123;&#125;) <span class="comment">// *b.c作为方法名</span></span><br><span class="line">d.<span class="title function_">on</span>(<span class="string">&#x27;start.d start.e&#x27;</span>,<span class="function">()=&gt;</span>&#123;&#125;) <span class="comment">// 帮顶d,e两个方法</span></span><br><span class="line">d.<span class="title function_">on</span>(<span class="string">&#x27;start.d&#x27;</span>,<span class="literal">null</span>) <span class="comment">// 删除d绑定事件</span></span><br><span class="line">d.<span class="title function_">on</span>(<span class="string">&#x27;start.e&#x27;</span>) <span class="comment">// 获取e绑定事件</span></span><br><span class="line"></span><br><span class="line"><span class="comment">// 执行方法</span></span><br><span class="line">d.<span class="title function_">fire</span>(<span class="string">&#x27;start&#x27;</span>) <span class="comment">// 按照帮顶顺序执行每一个方法</span></span><br><span class="line"></span><br></pre></td></tr></table></figure>
-
-<h4 id="dispatch"><a href="#dispatch" class="headerlink" title="dispatch"></a>dispatch</h4><p>用于添加一个或多个事件名称,事件对应着一个队列,可以包含多个子方法</p>
-<figure class="highlight ts"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">const</span> d = <span class="title function_">dispatch</span>(<span class="string">&quot;start&quot;</span>, <span class="string">&quot;end&quot;</span>);</span><br></pre></td></tr></table></figure>
-
-<ul>
-<li>尝试把方法名转换为字符串</li>
-<li>不能转换为字符串 或 已经注册过 或 包含<code>空格</code>或<code>.</code> 则不合法</li>
-</ul>
-<figure class="highlight ts"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">const</span> <span class="title function_">dispatch</span> = (<span class="params">...args: <span class="built_in">string</span>[]</span>) =&gt; &#123;</span><br><span class="line">  <span class="keyword">const</span> <span class="attr">types</span>: <span class="title class_">Types</span> = &#123;&#125;;</span><br><span class="line">  <span class="keyword">for</span> (<span class="keyword">let</span> i = <span class="number">0</span>, l = args.<span class="property">length</span>, t; i &lt; l; i += <span class="number">1</span>) &#123;</span><br><span class="line">    t = <span class="string">`<span class="subst">$&#123;args[i]&#125;</span>`</span>;</span><br><span class="line">    <span class="keyword">if</span> (!t || t <span class="keyword">in</span> types || <span class="regexp">/[\s.]/</span>.<span class="title function_">test</span>(t)) <span class="keyword">throw</span> <span class="keyword">new</span> <span class="title class_">Error</span>();</span><br><span class="line">    types[t] = [];</span><br><span class="line">  &#125;</span><br><span class="line">  <span class="keyword">return</span> <span class="keyword">new</span> <span class="title class_">Dispatch</span>(types);</span><br><span class="line">&#125;;</span><br><span class="line"></span><br><span class="line"><span class="keyword">export</span> <span class="keyword">default</span> dispatch;</span><br></pre></td></tr></table></figure>
-
-<h4 id="Dispatch"><a href="#Dispatch" class="headerlink" title="Dispatch"></a>Dispatch</h4><figure class="highlight ts"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">interface</span> <span class="title class_">TypeItem</span> &#123;</span><br><span class="line">  <span class="attr">name</span>: <span class="built_in">string</span>;</span><br><span class="line">  <span class="attr">value</span>: <span class="function">(<span class="params">...args: unknown[]</span>) =&gt;</span> unknown;</span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line"><span class="keyword">interface</span> <span class="title class_">Types</span> &#123;</span><br><span class="line">  [<span class="attr">k</span>: <span class="built_in">string</span>]: <span class="title class_">TypeItem</span>[];</span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line"><span class="comment">// 工具方法空函数</span></span><br><span class="line"><span class="keyword">const</span> noop = &#123; <span class="attr">value</span>: <span class="function">() =&gt;</span> &#123;&#125; &#125; <span class="keyword">as</span> <span class="title class_">TypeItem</span>;</span><br><span class="line"></span><br><span class="line"><span class="keyword">class</span> <span class="title class_">Dispatch</span> &#123;</span><br><span class="line">  <span class="keyword">private</span> <span class="attr">types</span>: <span class="title class_">Types</span>;</span><br><span class="line"></span><br><span class="line">  <span class="title function_">constructor</span>(<span class="params">types: Types</span>) &#123;</span><br><span class="line">    <span class="variable language_">this</span>.<span class="property">types</span> = types;</span><br><span class="line">  &#125;</span><br><span class="line"></span><br><span class="line">  <span class="title function_">on</span>(<span class="params"></span>) &#123;&#125;</span><br><span class="line"></span><br><span class="line">  <span class="title function_">copy</span>(<span class="params"></span>) &#123;&#125;</span><br><span class="line"></span><br><span class="line">  <span class="title function_">fire</span>(<span class="params"></span>) &#123;&#125;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
-
-<p>一个取值的工具方法<br>事件对象中取出回调方法的数组</p>
-<figure class="highlight ts"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">const</span> get = (<span class="attr">type</span>: <span class="title class_">TypeItem</span>[], <span class="attr">name</span>: <span class="built_in">string</span>): <span class="title class_">TypeItem</span>[<span class="string">&quot;value&quot;</span>] | <span class="function"><span class="params">undefined</span> =&gt;</span> &#123;</span><br><span class="line">  <span class="keyword">for</span> (<span class="keyword">let</span> i = <span class="number">0</span>, n = <span class="keyword">type</span>.<span class="property">length</span>, c; i &lt; n; i += <span class="number">1</span>) &#123;</span><br><span class="line">    c = <span class="keyword">type</span>[i];</span><br><span class="line">    <span class="keyword">if</span> (c.<span class="property">name</span> === name) &#123;</span><br><span class="line">      <span class="keyword">return</span> c.<span class="property">value</span>;</span><br><span class="line">    &#125;</span><br><span class="line">  &#125;</span><br><span class="line">  <span class="keyword">return</span> <span class="literal">undefined</span>;</span><br><span class="line">&#125;;</span><br></pre></td></tr></table></figure>
-
-<p>设置值的工具方法<br>如果存在同名方法,从事件队列中删除,并置空同名方法<br>如果传递了回调函数则在队列最后重新添加方法</p>
-<figure class="highlight ts"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">const</span> set = (</span><br><span class="line">  <span class="attr">_type</span>: <span class="title class_">TypeItem</span>[],</span><br><span class="line">  <span class="attr">name</span>: <span class="built_in">string</span>,</span><br><span class="line">  <span class="attr">callback</span>: <span class="title class_">TypeItem</span>[<span class="string">&quot;value&quot;</span>] | <span class="literal">null</span></span><br><span class="line">): <span class="title class_">TypeItem</span>[] =&gt; &#123;</span><br><span class="line">  <span class="keyword">let</span> <span class="keyword">type</span> = _type;</span><br><span class="line">  <span class="keyword">for</span> (<span class="keyword">let</span> i = <span class="number">0</span>, n = <span class="keyword">type</span>.<span class="property">length</span>; i &lt; n; i += <span class="number">1</span>) &#123;</span><br><span class="line">    <span class="keyword">if</span> (<span class="keyword">type</span>[i].<span class="property">name</span> === name) &#123;</span><br><span class="line">      <span class="keyword">type</span>[i] = noop;</span><br><span class="line">      <span class="keyword">type</span> = <span class="keyword">type</span>.<span class="title function_">slice</span>(<span class="number">0</span>, i).<span class="title function_">concat</span>(<span class="keyword">type</span>.<span class="title function_">slice</span>(i + <span class="number">1</span>));</span><br><span class="line">      <span class="keyword">break</span>;</span><br><span class="line">    &#125;</span><br><span class="line">  &#125;</span><br><span class="line">  <span class="keyword">if</span> (callback != <span class="literal">null</span>) <span class="keyword">type</span>.<span class="title function_">push</span>(&#123; name, <span class="attr">value</span>: callback &#125;);</span><br><span class="line">  <span class="keyword">return</span> <span class="keyword">type</span>;</span><br><span class="line">&#125;;</span><br></pre></td></tr></table></figure>
-
-<p>解析事件方法名<br>方法名尝试转为字符串,并删除头尾空格预处理<br><code>a.b a.c</code> 会添加两个回调方法, <code>a.b.c</code> 会添加 <code>b.c</code> 作为方法名称<br>用空格来切割,因为可能存在多个绑定事件<br>查找 <code>.</code> 的第一个匹配位置,后面的无论是什么都看作是一个方法</p>
-<figure class="highlight ts"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">const</span> parseTypenames = (</span><br><span class="line">  <span class="attr">typenames</span>: <span class="built_in">string</span>,</span><br><span class="line">  <span class="attr">types</span>: <span class="title class_">Types</span></span><br><span class="line">): &#123; <span class="attr">type</span>: <span class="built_in">string</span>; <span class="attr">name</span>: <span class="built_in">string</span> &#125;[] =&gt; &#123;</span><br><span class="line">  <span class="keyword">return</span> typenames</span><br><span class="line">    .<span class="title function_">trim</span>()</span><br><span class="line">    .<span class="title function_">split</span>(<span class="regexp">/^|\s+/</span>)</span><br><span class="line">    .<span class="title function_">map</span>(<span class="keyword">function</span> <span class="title function_">map</span>(<span class="params">_t</span>) &#123;</span><br><span class="line">      <span class="keyword">let</span> t = _t;</span><br><span class="line">      <span class="keyword">let</span> name = <span class="string">&quot;&quot;</span>;</span><br><span class="line">      <span class="keyword">const</span> i = t.<span class="title function_">indexOf</span>(<span class="string">&quot;.&quot;</span>);</span><br><span class="line">      <span class="keyword">if</span> (i &gt;= <span class="number">0</span>) &#123;</span><br><span class="line">        name = t.<span class="title function_">slice</span>(i + <span class="number">1</span>);</span><br><span class="line">        t = t.<span class="title function_">slice</span>(<span class="number">0</span>, i);</span><br><span class="line">      &#125;</span><br><span class="line">      <span class="keyword">const</span> has = <span class="title class_">Object</span>.<span class="property"><span class="keyword">prototype</span></span>.<span class="property">hasOwnProperty</span>.<span class="title function_">call</span>(types, t);</span><br><span class="line">      <span class="keyword">if</span> (t &amp;&amp; !has) <span class="keyword">throw</span> <span class="keyword">new</span> <span class="title class_">Error</span>(<span class="string">`unknown type:  <span class="subst">$&#123;t&#125;</span>`</span>);</span><br><span class="line">      <span class="keyword">return</span> &#123; <span class="attr">type</span>: t, name &#125;;</span><br><span class="line">    &#125;);</span><br><span class="line">&#125;;</span><br></pre></td></tr></table></figure>
-
-<h4 id="on"><a href="#on" class="headerlink" title="on"></a>on</h4><figure class="highlight ts"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br><span class="line">35</span><br><span class="line">36</span><br><span class="line">37</span><br><span class="line">38</span><br><span class="line">39</span><br><span class="line">40</span><br><span class="line">41</span><br><span class="line">42</span><br><span class="line">43</span><br><span class="line">44</span><br><span class="line">45</span><br><span class="line">46</span><br><span class="line">47</span><br><span class="line">48</span><br><span class="line">49</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">public</span> <span class="title function_">on</span>(</span><br><span class="line">    <span class="attr">_typename</span>: <span class="built_in">string</span> | &#123; <span class="attr">name</span>: <span class="built_in">string</span>; <span class="attr">type</span>: <span class="built_in">string</span> &#125;,</span><br><span class="line">    <span class="attr">callback</span>: <span class="title class_">TypeItem</span>[<span class="string">&#x27;value&#x27;</span>] | <span class="literal">null</span></span><br><span class="line">  ): <span class="variable language_">this</span> | <span class="title class_">TypeItem</span>[<span class="string">&#x27;value&#x27;</span>] | <span class="literal">undefined</span> &#123;</span><br><span class="line">    <span class="keyword">const</span> &#123; types &#125; = <span class="variable language_">this</span>;</span><br><span class="line">    <span class="keyword">let</span> typename = _typename;</span><br><span class="line">    <span class="keyword">const</span> T = <span class="title function_">parseTypenames</span>(<span class="string">`<span class="subst">$&#123;typename&#125;</span>`</span>, types);</span><br><span class="line">    <span class="keyword">let</span> <span class="attr">t</span>: <span class="built_in">string</span> | <span class="title class_">TypeItem</span>[<span class="string">&#x27;value&#x27;</span>] | <span class="literal">undefined</span>;</span><br><span class="line">    <span class="keyword">let</span> i = <span class="number">0</span>;</span><br><span class="line">    <span class="keyword">const</span> n = T.<span class="property">length</span>;</span><br><span class="line"></span><br><span class="line">    <span class="comment">// 如果不存在回调函数,把他作为取值操作,返回最先匹配到的方法</span></span><br><span class="line">    <span class="keyword">if</span> (callback === <span class="literal">undefined</span>) &#123;</span><br><span class="line">      <span class="keyword">while</span> (i &lt; n) &#123;</span><br><span class="line">        typename = T[i];</span><br><span class="line">        t = typename.<span class="property">type</span>;</span><br><span class="line">        <span class="keyword">if</span> (!t) <span class="keyword">return</span> <span class="literal">undefined</span>;</span><br><span class="line">        t = <span class="title function_">get</span>(types[t], typename.<span class="property">name</span>);</span><br><span class="line">        <span class="keyword">if</span> (t) <span class="keyword">return</span> t;</span><br><span class="line">      &#125;</span><br><span class="line">      i += <span class="number">1</span>;</span><br><span class="line">      <span class="keyword">return</span> <span class="literal">undefined</span>;</span><br><span class="line">    &#125;</span><br><span class="line">    <span class="comment">// 如果回调函数不是方法,直接报错</span></span><br><span class="line"></span><br><span class="line">    <span class="keyword">if</span> (callback != <span class="literal">null</span> &amp;&amp; <span class="keyword">typeof</span> callback !== <span class="string">&#x27;function&#x27;</span>)</span><br><span class="line">      <span class="keyword">throw</span> <span class="keyword">new</span> <span class="title class_">Error</span>(<span class="string">`invalid callback: <span class="subst">$&#123;callback&#125;</span>`</span>);</span><br><span class="line"></span><br><span class="line">    <span class="comment">// 添加到 type 事件对象中</span></span><br><span class="line">    <span class="keyword">while</span> (i &lt; n) &#123;</span><br><span class="line">      <span class="comment">// 插入</span></span><br><span class="line">      typename = T[i];</span><br><span class="line">      t = typename.<span class="property">type</span>;</span><br><span class="line">      <span class="keyword">const</span> ct = typename;</span><br><span class="line"></span><br><span class="line">      <span class="keyword">if</span> (t) types[t] = <span class="title function_">set</span>(types[t], typename.<span class="property">name</span>, callback);</span><br><span class="line">      <span class="comment">// 删除</span></span><br><span class="line">      <span class="comment">// 所有监听队列中的同名方法都将被删除</span></span><br><span class="line"></span><br><span class="line">      <span class="keyword">else</span> <span class="keyword">if</span> (callback == <span class="literal">null</span>)</span><br><span class="line">        <span class="title class_">Object</span>.<span class="title function_">entries</span>(types).<span class="title function_">forEach</span>(<span class="function">(<span class="params">[k, v]</span>) =&gt;</span> &#123;</span><br><span class="line">          types[k] = <span class="title function_">set</span>(v, ct.<span class="property">name</span>, <span class="literal">null</span>);</span><br><span class="line">        &#125;);</span><br><span class="line"></span><br><span class="line">      i += <span class="number">1</span>;</span><br><span class="line">    &#125;</span><br><span class="line"></span><br><span class="line">    <span class="keyword">return</span> <span class="variable language_">this</span>;</span><br><span class="line">  &#125;</span><br></pre></td></tr></table></figure>
-
-<h4 id="copy"><a href="#copy" class="headerlink" title="copy"></a>copy</h4><figure class="highlight ts"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">public</span> <span class="title function_">copy</span>(<span class="params"></span>) &#123;</span><br><span class="line">  <span class="keyword">const</span> <span class="attr">copy</span>: <span class="title class_">Types</span> = &#123;&#125;;</span><br><span class="line">  <span class="keyword">const</span> &#123; types &#125; = <span class="variable language_">this</span>;</span><br><span class="line">  <span class="title class_">Object</span>.<span class="title function_">entries</span>(types).<span class="title function_">forEach</span>(<span class="function">(<span class="params">[k, v]</span>) =&gt;</span> &#123;</span><br><span class="line">    copy[k] = v.<span class="title function_">slice</span>();</span><br><span class="line">  &#125;);</span><br><span class="line">  <span class="keyword">return</span> <span class="keyword">new</span> <span class="title class_">Dispatch</span>(copy);</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
-
-<h4 id="fire"><a href="#fire" class="headerlink" title="fire"></a>fire</h4><figure class="highlight ts"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">public</span> <span class="title function_">fire</span>(<span class="params"><span class="keyword">type</span>: <span class="built_in">string</span>, that?: unknown, ...args: unknown[]</span>) &#123;</span><br><span class="line">  <span class="keyword">const</span> has = <span class="title class_">Object</span>.<span class="property"><span class="keyword">prototype</span></span>.<span class="property">hasOwnProperty</span>.<span class="title function_">call</span>(<span class="variable language_">this</span>.<span class="property">types</span>, <span class="keyword">type</span>);</span><br><span class="line">  <span class="keyword">if</span> (!has) <span class="keyword">throw</span> <span class="keyword">new</span> <span class="title class_">Error</span>(<span class="string">`unknown type: <span class="subst">$&#123;<span class="keyword">type</span>&#125;</span>`</span>);</span><br><span class="line">  <span class="keyword">const</span> t = <span class="variable language_">this</span>.<span class="property">types</span>[<span class="keyword">type</span>];</span><br><span class="line">  <span class="keyword">let</span> i = <span class="number">0</span>;</span><br><span class="line">  <span class="keyword">const</span> n = t.<span class="property">length</span>;</span><br><span class="line">  <span class="keyword">for</span> (; i &lt; n; i += <span class="number">1</span>) t[i].<span class="property">value</span>.<span class="title function_">apply</span>(that, args);</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
- 
-      <!-- reward -->
-      
-    </div>
-    
-
-    <!-- copyright -->
-    
-    <footer class="article-footer">
-       
-  <ul class="article-tag-list" itemprop="keywords"><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/d3/" rel="tag">d3</a></li></ul>
-
-    </footer>
-  </div>
-
-   
-    
-</article>
-
-    
-    <article
-  id="posts-source/react/⑧commit阶段"
-  class="article article-type-posts"
-  itemscope
-  itemprop="blogPost"
-  data-scroll-reveal
->
-  <div class="article-inner">
-    
-    <header class="article-header">
-       
-<h2 itemprop="name">
-  <a class="article-title" href="/posts/6f8702340d77/"
-    >React源码分析 ⑧ commit阶段</a> 
-</h2>
- 
-
-      
-    </header>
-     
-    <div class="article-meta">
-      <a href="/posts/6f8702340d77/" class="article-date">
-  <time datetime="2022-04-21T09:26:56.000Z" itemprop="datePublished">2022-04-21</time>
-</a> 
-  <div class="article-category">
-    <a class="article-category-link" href="/categories/%E6%BA%90%E7%A0%81%E5%88%86%E6%9E%90/">源码分析</a> / <a class="article-category-link" href="/categories/%E6%BA%90%E7%A0%81%E5%88%86%E6%9E%90/React/">React</a>
-  </div>
-   
-    </div>
-      
-    <div class="article-entry" itemprop="articleBody">
-       
-  <p><img src="/posts/6f8702340d77/0001.png"></p>
-<h4 id="预备工作"><a href="#预备工作" class="headerlink" title="预备工作"></a>预备工作</h4><p>flushPassiveEffects 执行所有还没执行的副作用,因为执行的时候还可能产生额外的副作用,所以需要 while 判断. rootWithPendingPassiveEffect 表示是否有副作用标记</p>
-<figure class="highlight js"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">do</span> &#123;</span><br><span class="line">  <span class="title function_">flushPassiveEffects</span>();</span><br><span class="line">&#125; <span class="keyword">while</span> (rootWithPendingPassiveEffects !== <span class="literal">null</span>);</span><br><span class="line"></span><br><span class="line"><span class="comment">// 第一步执行所有的副作用销毁函数</span></span><br><span class="line"><span class="comment">// 一定要保证在执行副作用函数前,所有的销毁函数已经执行完成,但也有例外的情况</span></span><br><span class="line"><span class="comment">// 例如在兄弟组件中,一个组件的副作用销毁函数,是在兄弟组件的副作用创建函数中定义的</span></span><br><span class="line"><span class="comment">// 并且被添加在Ref 属性上通过引用的方式使用.</span></span><br><span class="line"></span><br><span class="line"><span class="keyword">var</span> unmountEffects = pendingPassiveHookEffectsUnmount;</span><br><span class="line"><span class="keyword">for</span> (<span class="keyword">var</span> i = <span class="number">0</span>; i &lt; unmountEffects.<span class="property">length</span>; i += <span class="number">2</span>) &#123;</span><br><span class="line">  <span class="keyword">var</span> destroy = _effect.<span class="property">destroy</span>;</span><br><span class="line">  <span class="title function_">destroy</span>();</span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line"><span class="comment">// 执行所有的副作用创建函数</span></span><br><span class="line"><span class="keyword">var</span> mountEffects = pendingPassiveHookEffectsMount;</span><br><span class="line"></span><br><span class="line"><span class="keyword">for</span> (<span class="keyword">var</span> _i = <span class="number">0</span>; _i &lt; mountEffects.<span class="property">length</span>; _i += <span class="number">2</span>) &#123;</span><br><span class="line">  <span class="keyword">var</span> _effect2 = mountEffects[_i];</span><br><span class="line">  <span class="keyword">var</span> create = effect.<span class="property">create</span>;</span><br><span class="line">  effect.<span class="property">destroy</span> = <span class="title function_">create</span>();</span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line"><span class="comment">// 在副作用链表上 删除, 用于内存回收</span></span><br><span class="line"><span class="keyword">while</span> (effect !== <span class="literal">null</span>) &#123;</span><br><span class="line">  <span class="keyword">var</span> nextNextEffect = effect.<span class="property">nextEffect</span>;</span><br><span class="line">  effect.<span class="property">nextEffect</span> = <span class="literal">null</span>;</span><br><span class="line">  effect = nextNextEffect;</span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line"><span class="comment">// 如果与额外的副作产生则重新发起调度</span></span><br><span class="line"><span class="title function_">flushSyncCallbackQueue</span>();</span><br></pre></td></tr></table></figure>
-
-<p>将 rootFiber 添加到 effect 链表中, completeWork 中构建的 effect 链表只包涵它的子元素, 如果 rootFiber 有副作用需要把他添加到链表的最后. 最终的 effect 链表属于 rootFiber 的父元素</p>
-<figure class="highlight js"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">if</span> (finishedWork.<span class="property">flags</span> &gt; <span class="title class_">PerformedWork</span>) &#123;</span><br><span class="line">  <span class="keyword">if</span> (finishedWork.<span class="property">lastEffect</span> !== <span class="literal">null</span>) &#123;</span><br><span class="line">    finishedWork.<span class="property">lastEffect</span>.<span class="property">nextEffect</span> = finishedWork;</span><br><span class="line">    firstEffect = finishedWork.<span class="property">firstEffect</span>;</span><br><span class="line">  &#125; <span class="keyword">else</span> &#123;</span><br><span class="line">    firstEffect = finishedWork;</span><br><span class="line">  &#125;</span><br><span class="line">&#125; <span class="keyword">else</span> &#123;</span><br><span class="line">  firstEffect = finishedWork.<span class="property">firstEffect</span>;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
-
-<h4 id="commitBeforeMutationEffects"><a href="#commitBeforeMutationEffects" class="headerlink" title="commitBeforeMutationEffects"></a>commitBeforeMutationEffects</h4><p>尽可能早的去调度 mutation effect</p>
-<figure class="highlight js"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">while</span> (nextEffect !== <span class="literal">null</span>) &#123;</span><br><span class="line">  <span class="keyword">var</span> current = nextEffect.<span class="property">alternate</span>;</span><br><span class="line"></span><br><span class="line">  <span class="keyword">var</span> flags = nextEffect.<span class="property">flags</span>;</span><br><span class="line"></span><br><span class="line">  <span class="comment">// getSnapshotBeforeUpdate 将会执行</span></span><br><span class="line">  <span class="keyword">if</span> ((flags &amp; <span class="title class_">Snapshot</span>) !== <span class="title class_">NoFlags</span>) &#123;</span><br><span class="line">    <span class="title function_">commitBeforeMutationLifeCycles</span>(current, nextEffect);</span><br><span class="line">  &#125;</span><br><span class="line"></span><br><span class="line">  <span class="keyword">if</span> ((flags &amp; <span class="title class_">Passive</span>) !== <span class="title class_">NoFlags</span>) &#123;</span><br><span class="line">    <span class="keyword">if</span> (!rootDoesHavePassiveEffects) &#123;</span><br><span class="line">      rootDoesHavePassiveEffects = <span class="literal">true</span>;</span><br><span class="line">      <span class="title function_">scheduleCallback</span>(<span class="title class_">NormalPriority</span>$<span class="number">1</span>, <span class="keyword">function</span> (<span class="params"></span>) &#123;</span><br><span class="line">        <span class="title function_">flushPassiveEffects</span>();</span><br><span class="line">        <span class="keyword">return</span> <span class="literal">null</span>;</span><br><span class="line">      &#125;);</span><br><span class="line">    &#125;</span><br><span class="line">  &#125;</span><br><span class="line"></span><br><span class="line">  nextEffect = nextEffect.<span class="property">nextEffect</span>;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
-
-<h4 id="commitMutationEffects"><a href="#commitMutationEffects" class="headerlink" title="commitMutationEffects"></a>commitMutationEffects</h4><p><a target="_blank" rel="noopener" href="https://reactjs.org/docs/refs-and-the-dom.html#caveats-with-callback-refs">为什么需要解绑 Ref ?</a></p>
-<p>如果 Ref 被定义为一个函数,在更新阶段会执行两次,第一次为 <code>null</code>,第二次会绑定 DOM 元素,这是因为每次渲染都会创建新的函数实例,所以 React 会先删除旧的 Ref 回收内存,再创建一个新的.</p>
-<figure class="highlight ts"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">if</span> (flags &amp; <span class="title class_">Ref</span>) &#123;</span><br><span class="line">  <span class="keyword">var</span> current = nextEffect.<span class="property">alternate</span>;</span><br><span class="line">  <span class="keyword">if</span> (current !== <span class="literal">null</span>) &#123;</span><br><span class="line">    <span class="keyword">var</span> currentRef = current.<span class="property">ref</span>;</span><br><span class="line">    <span class="keyword">if</span> (currentRef !== <span class="literal">null</span>) &#123;</span><br><span class="line">      <span class="keyword">if</span> (<span class="keyword">typeof</span> currentRef === <span class="string">&quot;function&quot;</span>) &#123;</span><br><span class="line">        <span class="title function_">currentRef</span>(<span class="literal">null</span>);</span><br><span class="line">      &#125; <span class="keyword">else</span> &#123;</span><br><span class="line">        currentRef.<span class="property">current</span> = <span class="literal">null</span>;</span><br><span class="line">      &#125;</span><br><span class="line">    &#125;</span><br><span class="line">  &#125;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
-
-<p>不同的 Tag 对应不同的 DOM 操作</p>
-<figure class="highlight js"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br><span class="line">35</span><br><span class="line">36</span><br><span class="line">37</span><br><span class="line">38</span><br><span class="line">39</span><br><span class="line">40</span><br><span class="line">41</span><br><span class="line">42</span><br><span class="line">43</span><br><span class="line">44</span><br><span class="line">45</span><br><span class="line">46</span><br><span class="line">47</span><br><span class="line">48</span><br><span class="line">49</span><br><span class="line">50</span><br><span class="line">51</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">var</span> primaryFlags = flags &amp; (<span class="title class_">Placement</span> | <span class="title class_">Update</span> | <span class="title class_">Deletion</span> | <span class="title class_">Hydrating</span>);</span><br><span class="line"></span><br><span class="line">    <span class="keyword">switch</span> (primaryFlags) &#123;</span><br><span class="line">      <span class="keyword">case</span> <span class="title class_">Placement</span>:</span><br><span class="line">        &#123;</span><br><span class="line">          <span class="title function_">commitPlacement</span>(nextEffect);</span><br><span class="line">          nextEffect.<span class="property">flags</span> &amp;= ~<span class="title class_">Placement</span>;</span><br><span class="line">          <span class="keyword">break</span>;</span><br><span class="line">        &#125;</span><br><span class="line"></span><br><span class="line">      <span class="keyword">case</span> <span class="title class_">PlacementAndUpdate</span>:</span><br><span class="line">        &#123;</span><br><span class="line">          <span class="title function_">commitPlacement</span>(nextEffect);</span><br><span class="line">          nextEffect.<span class="property">flags</span> &amp;= ~<span class="title class_">Placement</span>;</span><br><span class="line">          <span class="keyword">var</span> _current = nextEffect.<span class="property">alternate</span>;</span><br><span class="line">          <span class="title function_">commitWork</span>(_current, nextEffect);</span><br><span class="line">          <span class="keyword">break</span>;</span><br><span class="line">        &#125;</span><br><span class="line"></span><br><span class="line">      <span class="keyword">case</span> <span class="title class_">Hydrating</span>:</span><br><span class="line">        &#123;</span><br><span class="line">          nextEffect.<span class="property">flags</span> &amp;= ~<span class="title class_">Hydrating</span>;</span><br><span class="line">          <span class="keyword">break</span>;</span><br><span class="line">        &#125;</span><br><span class="line"></span><br><span class="line">      <span class="keyword">case</span> <span class="title class_">HydratingAndUpdate</span>:</span><br><span class="line">        &#123;</span><br><span class="line">          nextEffect.<span class="property">flags</span> &amp;= ~<span class="title class_">Hydrating</span>;</span><br><span class="line"></span><br><span class="line">          <span class="keyword">var</span> _current2 = nextEffect.<span class="property">alternate</span>;</span><br><span class="line">          <span class="title function_">commitWork</span>(_current2, nextEffect);</span><br><span class="line">          <span class="keyword">break</span>;</span><br><span class="line">        &#125;</span><br><span class="line"></span><br><span class="line">      <span class="keyword">case</span> <span class="title class_">Update</span>:</span><br><span class="line">        &#123;</span><br><span class="line">          <span class="keyword">var</span> _current3 = nextEffect.<span class="property">alternate</span>;</span><br><span class="line">          <span class="title function_">commitWork</span>(_current3, nextEffect);</span><br><span class="line">          <span class="keyword">break</span>;</span><br><span class="line">        &#125;</span><br><span class="line"></span><br><span class="line">      <span class="keyword">case</span> <span class="title class_">Deletion</span>:</span><br><span class="line">        &#123;</span><br><span class="line">          <span class="title function_">commitDeletion</span>(root, nextEffect);</span><br><span class="line">          <span class="keyword">break</span>;</span><br><span class="line">        &#125;</span><br><span class="line">    &#125;</span><br><span class="line"></span><br><span class="line">    <span class="title function_">resetCurrentFiber</span>();</span><br><span class="line">    nextEffect = nextEffect.<span class="property">nextEffect</span>;</span><br><span class="line">  &#125;</span><br></pre></td></tr></table></figure>
-
-<h5 id="commitPlacement-插入"><a href="#commitPlacement-插入" class="headerlink" title="commitPlacement 插入"></a>commitPlacement 插入</h5><figure class="highlight js"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br><span class="line">35</span><br><span class="line">36</span><br><span class="line">37</span><br><span class="line">38</span><br><span class="line">39</span><br><span class="line">40</span><br><span class="line">41</span><br><span class="line">42</span><br><span class="line">43</span><br><span class="line">44</span><br><span class="line">45</span><br><span class="line">46</span><br><span class="line">47</span><br><span class="line">48</span><br><span class="line">49</span><br><span class="line">50</span><br><span class="line">51</span><br><span class="line">52</span><br><span class="line">53</span><br><span class="line">54</span><br><span class="line">55</span><br><span class="line">56</span><br><span class="line">57</span><br><span class="line">58</span><br><span class="line">59</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">function</span> <span class="title function_">commitPlacement</span>(<span class="params">finishedWork</span>) &#123;</span><br><span class="line">  <span class="comment">// 找到当前插入节点的上级节点</span></span><br><span class="line">  <span class="keyword">var</span> parentFiber = <span class="title function_">getHostParentFiber</span>(finishedWork); <span class="comment">// Note: these two variables *must* always be updated together.</span></span><br><span class="line"></span><br><span class="line">  <span class="keyword">var</span> parent;</span><br><span class="line">  <span class="keyword">var</span> isContainer;</span><br><span class="line">  <span class="keyword">var</span> parentStateNode = parentFiber.<span class="property">stateNode</span>;</span><br><span class="line"></span><br><span class="line">  <span class="comment">// 判断是不是跟节点</span></span><br><span class="line">  <span class="keyword">switch</span> (parentFiber.<span class="property">tag</span>) &#123;</span><br><span class="line">    <span class="keyword">case</span> <span class="title class_">HostComponent</span>:</span><br><span class="line">      parent = parentStateNode;</span><br><span class="line">      isContainer = <span class="literal">false</span>;</span><br><span class="line">      <span class="keyword">break</span>;</span><br><span class="line"></span><br><span class="line">    <span class="keyword">case</span> <span class="title class_">HostRoot</span>:</span><br><span class="line">      parent = parentStateNode.<span class="property">containerInfo</span>;</span><br><span class="line">      isContainer = <span class="literal">true</span>;</span><br><span class="line">      <span class="keyword">break</span>;</span><br><span class="line"></span><br><span class="line">    <span class="keyword">case</span> <span class="title class_">HostPortal</span>:</span><br><span class="line">      parent = parentStateNode.<span class="property">containerInfo</span>;</span><br><span class="line">      isContainer = <span class="literal">true</span>;</span><br><span class="line">      <span class="keyword">break</span>;</span><br><span class="line">  &#125;</span><br><span class="line"></span><br><span class="line">  <span class="comment">// 如果上级节点标记了清除内容的副作用,则先清空文本</span></span><br><span class="line">  <span class="keyword">if</span> (parentFiber.<span class="property">flags</span> &amp; <span class="title class_">ContentReset</span>) &#123;</span><br><span class="line">    <span class="title function_">resetTextContent</span>(parent);</span><br><span class="line"></span><br><span class="line">    parentFiber.<span class="property">flags</span> &amp;= ~<span class="title class_">ContentReset</span>;</span><br><span class="line">  &#125;</span><br><span class="line">  <span class="comment">// 插入有两种情况,直接插入一个元素中,或插入兄弟节点前面,这里需要获取兄弟节点</span></span><br><span class="line">  <span class="keyword">var</span> before = <span class="title function_">getHostSibling</span>(finishedWork);</span><br><span class="line"></span><br><span class="line">  <span class="keyword">if</span> (isContainer) &#123;</span><br><span class="line">    如果兄弟节点存在;</span><br><span class="line">    <span class="comment">/*</span></span><br><span class="line"><span class="comment">    如果兄弟节点存在</span></span><br><span class="line"><span class="comment">    if (container.nodeType === COMMENT_NODE) &#123;</span></span><br><span class="line"><span class="comment">      container.parentNode.insertBefore(child, beforeChild);</span></span><br><span class="line"><span class="comment">    &#125; else &#123;</span></span><br><span class="line"><span class="comment">      container.insertBefore(child, beforeChild);</span></span><br><span class="line"><span class="comment">    &#125;</span></span><br><span class="line"><span class="comment">    </span></span><br><span class="line"><span class="comment">    如果兄弟节点不存在</span></span><br><span class="line"><span class="comment">    if (container.nodeType === COMMENT_NODE) &#123;</span></span><br><span class="line"><span class="comment">      parentNode = container.parentNode;</span></span><br><span class="line"><span class="comment">      parentNode.insertBefore(child, container);</span></span><br><span class="line"><span class="comment">    &#125; else &#123;</span></span><br><span class="line"><span class="comment">      parentNode = container;</span></span><br><span class="line"><span class="comment">      parentNode.appendChild(child);</span></span><br><span class="line"><span class="comment">    &#125;</span></span><br><span class="line"><span class="comment">    */</span></span><br><span class="line">    <span class="title function_">insertOrAppendPlacementNodeIntoContainer</span>(finishedWork, before, parent);</span><br><span class="line">  &#125; <span class="keyword">else</span> &#123;</span><br><span class="line">    <span class="title function_">insertOrAppendPlacementNode</span>(finishedWork, before, parent);</span><br><span class="line">  &#125;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
-
-<h5 id="commitWork-更新"><a href="#commitWork-更新" class="headerlink" title="commitWork 更新"></a>commitWork 更新</h5><figure class="highlight js"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br><span class="line">35</span><br><span class="line">36</span><br><span class="line">37</span><br><span class="line">38</span><br><span class="line">39</span><br><span class="line">40</span><br><span class="line">41</span><br><span class="line">42</span><br><span class="line">43</span><br><span class="line">44</span><br><span class="line">45</span><br><span class="line">46</span><br><span class="line">47</span><br><span class="line">48</span><br><span class="line">49</span><br><span class="line">50</span><br><span class="line">51</span><br><span class="line">52</span><br><span class="line">53</span><br><span class="line">54</span><br><span class="line">55</span><br><span class="line">56</span><br><span class="line">57</span><br><span class="line">58</span><br><span class="line">59</span><br><span class="line">60</span><br><span class="line">61</span><br><span class="line">62</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">function</span> <span class="title function_">commitWork</span>(<span class="params">current, finishedWork</span>) &#123;</span><br><span class="line">  <span class="keyword">switch</span> (finishedWork.<span class="property">tag</span>) &#123;</span><br><span class="line">    <span class="keyword">case</span> <span class="title class_">FunctionComponent</span>:</span><br><span class="line">    <span class="keyword">case</span> <span class="title class_">ForwardRef</span>:</span><br><span class="line">    <span class="keyword">case</span> <span class="title class_">MemoComponent</span>:</span><br><span class="line">    <span class="keyword">case</span> <span class="title class_">SimpleMemoComponent</span>:</span><br><span class="line">    <span class="keyword">case</span> <span class="title class_">Block</span>: &#123;</span><br><span class="line">      <span class="comment">// 有可能兄弟组件间的副作用会相互影响,例如在同一次 commit 阶段中</span></span><br><span class="line">      <span class="comment">// 一个组件的副作用销毁函数,不应该依赖与另一个组件的副作用创建函数,通过ref传递,因为执行时机问题造成不会执行</span></span><br><span class="line">      &#123;</span><br><span class="line">        <span class="title function_">commitHookEffectListUnmount</span>(<span class="title class_">Layout</span> | <span class="title class_">HasEffect</span>, finishedWork);</span><br><span class="line">      &#125;</span><br><span class="line"></span><br><span class="line">      <span class="keyword">return</span>;</span><br><span class="line">    &#125;</span><br><span class="line"></span><br><span class="line">    <span class="keyword">case</span> <span class="title class_">ClassComponent</span>: &#123;</span><br><span class="line">      <span class="keyword">return</span>;</span><br><span class="line">    &#125;</span><br><span class="line"></span><br><span class="line">    <span class="keyword">case</span> <span class="title class_">HostComponent</span>: &#123;</span><br><span class="line">      <span class="keyword">var</span> instance = finishedWork.<span class="property">stateNode</span>;</span><br><span class="line"></span><br><span class="line">      <span class="keyword">if</span> (instance != <span class="literal">null</span>) &#123;</span><br><span class="line">        <span class="comment">// Commit the work prepared earlier.</span></span><br><span class="line">        <span class="keyword">var</span> newProps = finishedWork.<span class="property">memoizedProps</span>; <span class="comment">// For hydration we reuse the update path but we treat the oldProps</span></span><br><span class="line">        <span class="comment">// as the newProps. The updatePayload will contain the real change in</span></span><br><span class="line">        <span class="comment">// this case.</span></span><br><span class="line"></span><br><span class="line">        <span class="keyword">var</span> oldProps = current !== <span class="literal">null</span> ? current.<span class="property">memoizedProps</span> : newProps;</span><br><span class="line">        <span class="keyword">var</span> type = finishedWork.<span class="property">type</span>; <span class="comment">// <span class="doctag">TODO:</span> Type the updateQueue to be specific to host components.</span></span><br><span class="line"></span><br><span class="line">        <span class="keyword">var</span> updatePayload = finishedWork.<span class="property">updateQueue</span>;</span><br><span class="line">        finishedWork.<span class="property">updateQueue</span> = <span class="literal">null</span>;</span><br><span class="line"></span><br><span class="line">        <span class="comment">/*</span></span><br><span class="line"><span class="comment">          最终会调用原生节点上的设置属性</span></span><br><span class="line"><span class="comment">        if (value === null) &#123;</span></span><br><span class="line"><span class="comment">          node.removeAttribute(_attributeName);</span></span><br><span class="line"><span class="comment">        &#125; else &#123;</span></span><br><span class="line"><span class="comment">          node.setAttribute(_attributeName,  &#x27;&#x27; + value);</span></span><br><span class="line"><span class="comment">        &#125;</span></span><br><span class="line"><span class="comment">        */</span></span><br><span class="line">        <span class="keyword">if</span> (updatePayload !== <span class="literal">null</span>) &#123;</span><br><span class="line">          <span class="title function_">commitUpdate</span>(instance, updatePayload, type, oldProps, newProps);</span><br><span class="line">        &#125;</span><br><span class="line">      &#125;</span><br><span class="line"></span><br><span class="line">      <span class="keyword">return</span>;</span><br><span class="line">    &#125;</span><br><span class="line"></span><br><span class="line">    <span class="keyword">case</span> <span class="title class_">HostText</span>: &#123;</span><br><span class="line">      <span class="keyword">if</span> (!(finishedWork.<span class="property">stateNode</span> !== <span class="literal">null</span>)) &#123;</span><br><span class="line"></span><br><span class="line">      <span class="keyword">var</span> textInstance = finishedWork.<span class="property">stateNode</span>;</span><br><span class="line">      <span class="keyword">var</span> newText = finishedWork.<span class="property">memoizedProps</span>;</span><br><span class="line"></span><br><span class="line">      <span class="keyword">var</span> oldText = current !== <span class="literal">null</span> ? current.<span class="property">memoizedProps</span> : newText;</span><br><span class="line">      <span class="title function_">commitTextUpdate</span>(textInstance, oldText, newText);</span><br><span class="line">      <span class="keyword">return</span>;</span><br><span class="line">    &#125;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
-
-<h5 id="commitDeletion-删除"><a href="#commitDeletion-删除" class="headerlink" title="commitDeletion 删除"></a>commitDeletion 删除</h5><p>虽然只有当前的 Fiber 节点删除,但仍然需要遍历所有的子节点,因为可能子节点会执行 <code>componentWillUnmount</code></p>
-<figure class="highlight js"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br><span class="line">35</span><br><span class="line">36</span><br><span class="line">37</span><br><span class="line">38</span><br><span class="line">39</span><br><span class="line">40</span><br><span class="line">41</span><br><span class="line">42</span><br><span class="line">43</span><br><span class="line">44</span><br><span class="line">45</span><br><span class="line">46</span><br><span class="line">47</span><br><span class="line">48</span><br><span class="line">49</span><br><span class="line">50</span><br><span class="line">51</span><br><span class="line">52</span><br><span class="line">53</span><br><span class="line">54</span><br><span class="line">55</span><br><span class="line">56</span><br><span class="line">57</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">while</span> (<span class="literal">true</span>) &#123;</span><br><span class="line">  <span class="keyword">if</span> (node.<span class="property">tag</span> === <span class="title class_">HostComponent</span> || node.<span class="property">tag</span> === <span class="title class_">HostText</span>) &#123;</span><br><span class="line">    <span class="comment">// 执行 commitUnmount</span></span><br><span class="line">    <span class="comment">// 遍历所有子节点,删除 Ref,或执行 componentWillUnmount</span></span><br><span class="line">    <span class="comment">// HostPortal 需要删除挂载元素</span></span><br><span class="line">    <span class="comment">// 执行 useEffect销毁函数</span></span><br><span class="line">    <span class="title function_">commitNestedUnmounts</span>(finishedRoot, node);</span><br><span class="line"></span><br><span class="line">    <span class="comment">//所有子节点卸载后才能安全的从 DOM 树中删除当前节点</span></span><br><span class="line">    <span class="keyword">if</span> (currentParentIsContainer) &#123;</span><br><span class="line">      <span class="title function_">removeChildFromContainer</span>(currentParent, node.<span class="property">stateNode</span>);</span><br><span class="line">    &#125; <span class="keyword">else</span> &#123;</span><br><span class="line">      <span class="title function_">removeChild</span>(currentParent, node.<span class="property">stateNode</span>);</span><br><span class="line">    &#125; <span class="comment">// Don&#x27;t visit children because we already visited them.</span></span><br><span class="line">  &#125; <span class="keyword">else</span> <span class="keyword">if</span> (node.<span class="property">tag</span> === <span class="title class_">HostPortal</span>) &#123;</span><br><span class="line">    <span class="keyword">if</span> (node.<span class="property">child</span> !== <span class="literal">null</span>) &#123;</span><br><span class="line">      <span class="comment">// When we go into a portal, it becomes the parent to remove from.</span></span><br><span class="line">      <span class="comment">// We will reassign it back when we pop the portal on the way up.</span></span><br><span class="line">      currentParent = node.<span class="property">stateNode</span>.<span class="property">containerInfo</span>;</span><br><span class="line">      currentParentIsContainer = <span class="literal">true</span>; <span class="comment">// Visit children because portals might contain host components.</span></span><br><span class="line"></span><br><span class="line">      node.<span class="property">child</span>.<span class="property">return</span> = node;</span><br><span class="line">      node = node.<span class="property">child</span>;</span><br><span class="line">      <span class="keyword">continue</span>;</span><br><span class="line">    &#125;</span><br><span class="line">  &#125; <span class="keyword">else</span> &#123;</span><br><span class="line">    <span class="comment">// Visit children because we may find more host components below.</span></span><br><span class="line">    <span class="title function_">commitUnmount</span>(finishedRoot, node);</span><br><span class="line"></span><br><span class="line">    <span class="keyword">if</span> (node.<span class="property">child</span> !== <span class="literal">null</span>) &#123;</span><br><span class="line">      node.<span class="property">child</span>.<span class="property">return</span> = node;</span><br><span class="line">      node = node.<span class="property">child</span>;</span><br><span class="line">      <span class="keyword">continue</span>;</span><br><span class="line">    &#125;</span><br><span class="line">  &#125;</span><br><span class="line"></span><br><span class="line">  <span class="keyword">if</span> (node === current) &#123;</span><br><span class="line">    <span class="keyword">return</span>;</span><br><span class="line">  &#125;</span><br><span class="line"></span><br><span class="line">  <span class="keyword">while</span> (node.<span class="property">sibling</span> === <span class="literal">null</span>) &#123;</span><br><span class="line">    <span class="keyword">if</span> (node.<span class="property">return</span> === <span class="literal">null</span> || node.<span class="property">return</span> === current) &#123;</span><br><span class="line">      <span class="keyword">return</span>;</span><br><span class="line">    &#125;</span><br><span class="line"></span><br><span class="line">    node = node.<span class="property">return</span>;</span><br><span class="line"></span><br><span class="line">    <span class="keyword">if</span> (node.<span class="property">tag</span> === <span class="title class_">HostPortal</span>) &#123;</span><br><span class="line">      <span class="comment">// When we go out of the portal, we need to restore the parent.</span></span><br><span class="line">      <span class="comment">// Since we don&#x27;t keep a stack of them, we will search for it.</span></span><br><span class="line">      currentParentIsValid = <span class="literal">false</span>;</span><br><span class="line">    &#125;</span><br><span class="line">  &#125;</span><br><span class="line"></span><br><span class="line">  node.<span class="property">sibling</span>.<span class="property">return</span> = node.<span class="property">return</span>;</span><br><span class="line">  node = node.<span class="property">sibling</span>;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
-
-<h4 id="commitLayoutEffects"><a href="#commitLayoutEffects" class="headerlink" title="commitLayoutEffects"></a>commitLayoutEffects</h4><p>执行前会将 current 指向 finishedWork, 在 <code>componentDidMount/Update.</code> 执行結束后, work-in-progress tree 已经变为最终的状态了,可以安全的指向 current</p>
-<figure class="highlight js"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">root.<span class="property">current</span> = finishedWork;</span><br></pre></td></tr></table></figure>
-
-<p>下一个阶段是 layout 节点,会在已经改变的树上读取 effect 执行,这也是为什么此时能获取到 DOM 的最新状态</p>
-<figure class="highlight js"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br><span class="line">35</span><br><span class="line">36</span><br><span class="line">37</span><br><span class="line">38</span><br><span class="line">39</span><br><span class="line">40</span><br><span class="line">41</span><br><span class="line">42</span><br><span class="line">43</span><br><span class="line">44</span><br><span class="line">45</span><br><span class="line">46</span><br><span class="line">47</span><br><span class="line">48</span><br><span class="line">49</span><br><span class="line">50</span><br><span class="line">51</span><br><span class="line">52</span><br><span class="line">53</span><br><span class="line">54</span><br><span class="line">55</span><br><span class="line">56</span><br><span class="line">57</span><br><span class="line">58</span><br><span class="line">59</span><br><span class="line">60</span><br><span class="line">61</span><br><span class="line">62</span><br><span class="line">63</span><br><span class="line">64</span><br><span class="line">65</span><br><span class="line">66</span><br><span class="line">67</span><br><span class="line">68</span><br><span class="line">69</span><br><span class="line">70</span><br><span class="line">71</span><br></pre></td><td class="code"><pre><span class="line">&#123;</span><br><span class="line">  <span class="keyword">switch</span> (finishedWork.<span class="property">tag</span>) &#123;</span><br><span class="line">    <span class="keyword">case</span> <span class="title class_">FunctionComponent</span>:</span><br><span class="line">    <span class="keyword">case</span> <span class="title class_">ForwardRef</span>:</span><br><span class="line">    <span class="keyword">case</span> <span class="title class_">SimpleMemoComponent</span>:</span><br><span class="line">    <span class="keyword">case</span> <span class="title class_">Block</span>: &#123;</span><br><span class="line">      <span class="comment">// 同步执行 layoutEffect</span></span><br><span class="line">      &#123;</span><br><span class="line">        <span class="title function_">commitHookEffectListMount</span>(<span class="title class_">Layout</span> | <span class="title class_">HasEffect</span>, finishedWork);</span><br><span class="line">      &#125;</span><br><span class="line">      <span class="comment">// 将 mutation effects 创建函数和销毁函数添加到队列中,并执行调度</span></span><br><span class="line">      <span class="title function_">schedulePassiveEffects</span>(finishedWork);</span><br><span class="line">      <span class="keyword">return</span>;</span><br><span class="line">    &#125;</span><br><span class="line"></span><br><span class="line">    <span class="keyword">case</span> <span class="title class_">ClassComponent</span>:</span><br><span class="line">      &#123;</span><br><span class="line">        <span class="keyword">var</span> instance = finishedWork.<span class="property">stateNode</span>;</span><br><span class="line"></span><br><span class="line">        <span class="keyword">if</span> (finishedWork.<span class="property">flags</span> &amp; <span class="title class_">Update</span>) &#123;</span><br><span class="line">          <span class="keyword">if</span> (current === <span class="literal">null</span>) &#123;</span><br><span class="line">            <span class="comment">// current 不存在表示首次挂载</span></span><br><span class="line">            instance.<span class="title function_">componentDidMount</span>();</span><br><span class="line">          &#125; <span class="keyword">else</span> &#123;</span><br><span class="line">            <span class="keyword">var</span> prevProps =</span><br><span class="line">              finishedWork.<span class="property">elementType</span> === finishedWork.<span class="property">type</span></span><br><span class="line">                ? current.<span class="property">memoizedProps</span></span><br><span class="line">                : <span class="title function_">resolveDefaultProps</span>(finishedWork.<span class="property">type</span>, current.<span class="property">memoizedProps</span>);</span><br><span class="line">            <span class="keyword">var</span> prevState = current.<span class="property">memoizedState</span>; <span class="comment">// We could update instance props and state here,</span></span><br><span class="line">            <span class="comment">// but instead we rely on them being set during last render.</span></span><br><span class="line">            <span class="comment">// <span class="doctag">TODO:</span> revisit this when we implement resuming.</span></span><br><span class="line"></span><br><span class="line">            <span class="comment">// 组件更新</span></span><br><span class="line">            instance.<span class="title function_">componentDidUpdate</span>(</span><br><span class="line">              prevProps,</span><br><span class="line">              prevState,</span><br><span class="line">              instance.<span class="property">__reactInternalSnapshotBeforeUpdate</span></span><br><span class="line">            );</span><br><span class="line">          &#125;</span><br><span class="line">        &#125;</span><br><span class="line">        <span class="title function_">commitUpdateQueue</span>(finishedWork, updateQueue, instance);</span><br><span class="line">      &#125;</span><br><span class="line"></span><br><span class="line">      <span class="keyword">return</span>;</span><br><span class="line">  &#125;</span><br><span class="line"></span><br><span class="line">  <span class="comment">// 重新绑定 Ref</span></span><br><span class="line">  <span class="keyword">if</span> (flags &amp; <span class="title class_">Ref</span>) &#123;</span><br><span class="line">    <span class="keyword">var</span> ref = finishedWork.<span class="property">ref</span>;</span><br><span class="line"></span><br><span class="line">    <span class="keyword">if</span> (ref !== <span class="literal">null</span>) &#123;</span><br><span class="line">      <span class="keyword">var</span> instance = finishedWork.<span class="property">stateNode</span>;</span><br><span class="line">      <span class="keyword">var</span> instanceToUse;</span><br><span class="line"></span><br><span class="line">      <span class="keyword">switch</span> (finishedWork.<span class="property">tag</span>) &#123;</span><br><span class="line">        <span class="keyword">case</span> <span class="title class_">HostComponent</span>:</span><br><span class="line">          instanceToUse = <span class="title function_">getPublicInstance</span>(instance);</span><br><span class="line">          <span class="keyword">break</span>;</span><br><span class="line"></span><br><span class="line">        <span class="attr">default</span>:</span><br><span class="line">          instanceToUse = instance;</span><br><span class="line">      &#125; <span class="comment">// Moved outside to ensure DCE works with this flag</span></span><br><span class="line"></span><br><span class="line">      <span class="keyword">if</span> (<span class="keyword">typeof</span> ref === <span class="string">&quot;function&quot;</span>) &#123;</span><br><span class="line">        <span class="title function_">ref</span>(instanceToUse);</span><br><span class="line">      &#125; <span class="keyword">else</span> &#123;</span><br><span class="line">        ref.<span class="property">current</span> = instanceToUse;</span><br><span class="line">      &#125;</span><br><span class="line">    &#125;</span><br><span class="line">  &#125;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
-
-<h4 id="requestPaint"><a href="#requestPaint" class="headerlink" title="requestPaint"></a>requestPaint</h4><p>在上面三个阶段执行結束后,会执行请求绘制的方法, 通过 Scheduler 模块调度, 这也是 <code>useLayoutEffect</code> 会在 DOM 绘制前执行的原因</p>
-<figure class="highlight js"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br></pre></td><td class="code"><pre><span class="line"><span class="title function_">requestPaint</span>();</span><br><span class="line"></span><br><span class="line"><span class="keyword">var</span> rootDidHavePassiveEffects = rootDoesHavePassiveEffects;</span><br><span class="line"></span><br><span class="line"><span class="keyword">if</span> (rootDoesHavePassiveEffects) &#123;</span><br><span class="line">  <span class="comment">// 在所有阶段执行结束后 root 节点上还有副作用, 先保存一个引用,在 layout 结束后再去调度</span></span><br><span class="line">  rootDoesHavePassiveEffects = <span class="literal">false</span>;</span><br><span class="line">  rootWithPendingPassiveEffects = root;</span><br><span class="line">  pendingPassiveEffectsLanes = lanes;</span><br><span class="line">  pendingPassiveEffectsRenderPriority = renderPriorityLevel;</span><br><span class="line">&#125; <span class="keyword">else</span> &#123;</span><br><span class="line">  <span class="comment">// We are done with the effect chain at this point so let&#x27;s clear the</span></span><br><span class="line">  <span class="comment">// nextEffect pointers to assist with GC. If we have passive effects, we&#x27;ll</span></span><br><span class="line">  <span class="comment">// clear this in flushPassiveEffects.</span></span><br><span class="line">  nextEffect = firstEffect;</span><br><span class="line"></span><br><span class="line">  <span class="keyword">while</span> (nextEffect !== <span class="literal">null</span>) &#123;</span><br><span class="line">    <span class="keyword">var</span> nextNextEffect = nextEffect.<span class="property">nextEffect</span>;</span><br><span class="line">    nextEffect.<span class="property">nextEffect</span> = <span class="literal">null</span>;</span><br><span class="line"></span><br><span class="line">    <span class="keyword">if</span> (nextEffect.<span class="property">flags</span> &amp; <span class="title class_">Deletion</span>) &#123;</span><br><span class="line">      <span class="title function_">detachFiberAfterEffects</span>(nextEffect);</span><br><span class="line">    &#125;</span><br><span class="line"></span><br><span class="line">    nextEffect = nextNextEffect;</span><br><span class="line">  &#125;</span><br><span class="line">&#125; <span class="comment">// Read this again, since an effect might have updated it</span></span><br></pre></td></tr></table></figure>
- 
-      <!-- reward -->
-      
-    </div>
-    
-
-    <!-- copyright -->
-    
-    <footer class="article-footer">
-       
-  <ul class="article-tag-list" itemprop="keywords"><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/React/" rel="tag">React</a></li><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/%E6%BA%90%E7%A0%81%E5%88%86%E6%9E%90/" rel="tag">源码分析</a></li></ul>
 
     </footer>
   </div>

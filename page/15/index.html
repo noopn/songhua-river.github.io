@@ -112,6 +112,85 @@
     
     
     <article
+  id="post-react/基础/ReactHooks没有魔法只是数组"
+  class="article article-type-post"
+  itemscope
+  itemprop="blogPost"
+  data-scroll-reveal
+>
+  <div class="article-inner">
+    
+    <header class="article-header">
+       
+<h2 itemprop="name">
+  <a class="article-title" href="/posts/90febc06ed69/"
+    >ReactHooks没有魔法只是数组</a> 
+</h2>
+ 
+
+      
+    </header>
+     
+    <div class="article-meta">
+      <a href="/posts/90febc06ed69/" class="article-date">
+  <time datetime="2021-05-22T08:17:17.000Z" itemprop="datePublished">2021-05-22</time>
+</a> 
+  <div class="article-category">
+    <a class="article-category-link" href="/categories/React/">React</a> / <a class="article-category-link" href="/categories/React/%E5%9F%BA%E7%A1%80/">基础</a>
+  </div>
+   
+    </div>
+      
+    <div class="article-entry" itemprop="articleBody">
+       
+  <h4 id="Hooks规则"><a href="#Hooks规则" class="headerlink" title="Hooks规则"></a>Hooks规则</h4><p>Hooks在使用的时候有两条铁律：</p>
+<ul>
+<li><p>不要在循环，条件语句，深层函数调用Hooks</p>
+</li>
+<li><p>只在React函数组件中调用Hooks</p>
+</li>
+</ul>
+<h4 id="useState实现"><a href="#useState实现" class="headerlink" title="useState实现"></a>useState实现</h4><p>下面代码只是一个demo，是为了让我们理解hooks大概是怎么运作的。这不是 React 中的真正内部实现。</p>
+<h5 id="state初始化"><a href="#state初始化" class="headerlink" title="state初始化"></a>state初始化</h5><p>创建两个空数组，分别用来存放 setters 和 state，将 指针 指到 0 的位置：</p>
+<p><img src="/posts/90febc06ed69/0001.jpg"></p>
+<h5 id="组件首次render"><a href="#组件首次render" class="headerlink" title="组件首次render"></a>组件首次render</h5><p>当首次render这个函数组件的时候。</p>
+<p>每一个 useState 调用，当 首次 执行的时候，在 setter 数组里加入一个 setter 函数(和对应的数组index关联)；然后，将 state 加入对应的 state 数组里：</p>
+<p><img src="/posts/90febc06ed69/0002.jpg"></p>
+<h5 id="组件后续-非首次-render"><a href="#组件后续-非首次-render" class="headerlink" title="组件后续(非首次)render"></a>组件后续(非首次)render</h5><p>后续组件的每次render，指针都会重置为 0 ，每调用一次 useState，都会返回指针对应的两个数组里的 state 和 setter，然后将指针位置 +1。</p>
+<p><img src="/posts/90febc06ed69/0003.jpg"></p>
+<h5 id="setter调用处理"><a href="#setter调用处理" class="headerlink" title="setter调用处理"></a>setter调用处理</h5><p>每一个 setter 函数，都关联了对应的指针位置。当调用某个 setter 函数式，就可以通过这个函数所关联的指针，找到对应的 state，修改state数组里对应位置的值：</p>
+<p><img src="/posts/90febc06ed69/0004.jpg"></p>
+<h4 id="为什么hooks的调用顺序不能变呢？"><a href="#为什么hooks的调用顺序不能变呢？" class="headerlink" title="为什么hooks的调用顺序不能变呢？"></a>为什么hooks的调用顺序不能变呢？</h4><p>useState 是在一个 条件分支里。看看这样引入的bug。</p>
+<figure class="highlight javascript"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">let</span> firstRender = <span class="literal">true</span>;</span><br><span class="line"></span><br><span class="line"><span class="keyword">function</span> <span class="title function_">RenderFunctionComponent</span>(<span class="params"></span>) &#123;</span><br><span class="line">  <span class="keyword">let</span> initName;</span><br><span class="line"></span><br><span class="line">  <span class="keyword">if</span>(firstRender)&#123;</span><br><span class="line">    [initName] = <span class="title function_">useState</span>(<span class="string">&quot;Rudi&quot;</span>);</span><br><span class="line">    firstRender = <span class="literal">false</span>;</span><br><span class="line">  &#125;</span><br><span class="line">  <span class="keyword">const</span> [firstName, setFirstName] = <span class="title function_">useState</span>(initName);</span><br><span class="line">  <span class="keyword">const</span> [lastName, setLastName] = <span class="title function_">useState</span>(<span class="string">&quot;Yardley&quot;</span>);</span><br><span class="line"></span><br><span class="line">  <span class="keyword">return</span> (</span><br><span class="line">    <span class="language-xml"><span class="tag">&lt;<span class="name">Button</span> <span class="attr">onClick</span>=<span class="string">&#123;()</span> =&gt;</span> setFirstName(&quot;Fred&quot;)&#125;&gt;Fred<span class="tag">&lt;/<span class="name">Button</span>&gt;</span></span></span><br><span class="line">  );</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+<h5 id="第一次render"><a href="#第一次render" class="headerlink" title="第一次render"></a>第一次render</h5><p><img src="/posts/90febc06ed69/0005.jpg"></p>
+<p>第一个render之后，我们的两个state，firstName 和 lastName 都对应了正确的值。接下来看看组件第二次render的时候，会发生什么情况。</p>
+<h5 id="第二次render"><a href="#第二次render" class="headerlink" title="第二次render"></a>第二次render</h5><p><img src="/posts/90febc06ed69/0006.jpg"></p>
+<p>第二次render之后，我们的两个state， firstName和 lastName 都成了 Rudi。这显然是错误的，必须要避免这样使用hooks！但是这也给我们演示了，hooks的调用顺序，为什么不能改变。</p>
+<p>react团队明确强调了hooks的2个使用原则，如果不按照这些原则来使用hooks，将会导致我们数据的不一致性！</p>
+<p>将hooks的操作想象成数组的操作，你可能不太会违背这些原则</p>
+<p>OK，现在你应该清楚，为什么我们不能在条件块或者循环语句里调用hooks了。因为调用hooks的过程中，我们是在操作数组上的指针，如果你在多次render中，改变了hooks的调用顺序，将导致数组上的指针和组件里的 useState 不匹配，从而返回错误的 state 以及 setter 。</p>
+ 
+      <!-- reward -->
+      
+    </div>
+    
+
+    <!-- copyright -->
+    
+    <footer class="article-footer">
+       
+  <ul class="article-tag-list" itemprop="keywords"><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/React/" rel="tag">React</a></li></ul>
+
+    </footer>
+  </div>
+
+   
+    
+</article>
+
+    
+    <article
   id="post-react/基础/React作为UI运行时"
   class="article article-type-post"
   itemscope
@@ -515,6 +594,110 @@
 
     
     <article
+  id="post-node/express学习项目4"
+  class="article article-type-post"
+  itemscope
+  itemprop="blogPost"
+  data-scroll-reveal
+>
+  <div class="article-inner">
+    
+    <header class="article-header">
+       
+<h2 itemprop="name">
+  <a class="article-title" href="/posts/e94f43ff2888/"
+    >Express实践 ④ 支付/事务</a> 
+</h2>
+ 
+
+      
+    </header>
+     
+    <div class="article-meta">
+      <a href="/posts/e94f43ff2888/" class="article-date">
+  <time datetime="2021-03-30T07:04:09.000Z" itemprop="datePublished">2021-03-30</time>
+</a> 
+  <div class="article-category">
+    <a class="article-category-link" href="/categories/NodeJS/">NodeJS</a>
+  </div>
+   
+    </div>
+      
+    <div class="article-entry" itemprop="articleBody">
+       
+  <h4 id=""><a href="#" class="headerlink" title=""></a></h4> 
+      <!-- reward -->
+      
+    </div>
+    
+
+    <!-- copyright -->
+    
+    <footer class="article-footer">
+       
+  <ul class="article-tag-list" itemprop="keywords"><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/NodeJS/" rel="tag">NodeJS</a></li></ul>
+
+    </footer>
+  </div>
+
+   
+    
+</article>
+
+    
+    <article
+  id="post-typescript/TS挑战"
+  class="article article-type-post"
+  itemscope
+  itemprop="blogPost"
+  data-scroll-reveal
+>
+  <div class="article-inner">
+    
+    <header class="article-header">
+       
+<h2 itemprop="name">
+  <a class="article-title" href="/posts/d2311fb3cd62/"
+    >TypeScript 体操</a> 
+</h2>
+ 
+
+      
+    </header>
+     
+    <div class="article-meta">
+      <a href="/posts/d2311fb3cd62/" class="article-date">
+  <time datetime="2021-03-22T10:28:21.000Z" itemprop="datePublished">2021-03-22</time>
+</a> 
+  <div class="article-category">
+    <a class="article-category-link" href="/categories/TypeScript/">TypeScript</a>
+  </div>
+   
+    </div>
+      
+    <div class="article-entry" itemprop="articleBody">
+       
+  <h4 id=""><a href="#" class="headerlink" title=""></a></h4> 
+      <!-- reward -->
+      
+    </div>
+    
+
+    <!-- copyright -->
+    
+    <footer class="article-footer">
+       
+  <ul class="article-tag-list" itemprop="keywords"><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/TypeScript/" rel="tag">TypeScript</a></li></ul>
+
+    </footer>
+  </div>
+
+   
+    
+</article>
+
+    
+    <article
   id="post-linux/Ubuntu_Server安装"
   class="article article-type-post"
   itemscope
@@ -793,339 +976,6 @@
     <footer class="article-footer">
        
   <ul class="article-tag-list" itemprop="keywords"><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/Vue/" rel="tag">Vue</a></li></ul>
-
-    </footer>
-  </div>
-
-   
-    
-</article>
-
-    
-    <article
-  id="post-devops/Node项目部署"
-  class="article article-type-post"
-  itemscope
-  itemprop="blogPost"
-  data-scroll-reveal
->
-  <div class="article-inner">
-    
-    <header class="article-header">
-       
-<h2 itemprop="name">
-  <a class="article-title" href="/posts/6661e67bf767/"
-    >简单Node部署</a> 
-</h2>
- 
-
-      
-    </header>
-     
-    <div class="article-meta">
-      <a href="/posts/6661e67bf767/" class="article-date">
-  <time datetime="2021-03-01T13:38:19.000Z" itemprop="datePublished">2021-03-01</time>
-</a> 
-  <div class="article-category">
-    <a class="article-category-link" href="/categories/DevOps/">DevOps</a>
-  </div>
-   
-    </div>
-      
-    <div class="article-entry" itemprop="articleBody">
-       
-  <h4 id="创建非-root-账户"><a href="#创建非-root-账户" class="headerlink" title="创建非 root 账户"></a>创建非 root 账户</h4><p>有些云服务器会禁止 root 用户登录， 但是如果分发的服务器使用 root 登录，可以创建一个非 root 账号， 防止权限过高导致误操作。</p>
-<figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment"># root 用户下执行，添加一个 user1 用户</span></span><br><span class="line">adduser user1</span><br><span class="line"></span><br><span class="line">Adding user `user1<span class="string">&#x27; ...</span></span><br><span class="line"><span class="string">Adding new group `user1&#x27;</span> (1002) ...</span><br><span class="line">Adding new user `user1<span class="string">&#x27; (1002) with group `user1&#x27;</span> ...</span><br><span class="line">Creating home directory `/home/user1<span class="string">&#x27; ...</span></span><br><span class="line"><span class="string">Copying files from `/etc/skel&#x27;</span> ...</span><br><span class="line">New password:</span><br><span class="line">Retype new password:</span><br><span class="line">passwd: password updated successfully</span><br><span class="line">Changing the user information <span class="keyword">for</span> user1</span><br><span class="line">Enter the new value, or press ENTER <span class="keyword">for</span> the default</span><br><span class="line">        Full Name []: sunzhiqi</span><br><span class="line">        Room Number []:</span><br><span class="line">        Work Phone []:</span><br><span class="line">        Home Phone []:</span><br><span class="line">        Other []:</span><br><span class="line">Is the information correct? [Y/n]</span><br></pre></td></tr></table></figure>
-
-<p>将指定的用户（user）添加到 sudo 组中，从而授予该用户使用 sudo 命令的权限</p>
-<figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">gpasswd -a user1 sudo</span><br></pre></td></tr></table></figure>
-
-<p><strong>之前 root 用户登录的窗口不要关闭，如果新用户无法登录，可以使用 root 用户窗口重启 ssh 服务，再次尝试</strong></p>
-<figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">service ssh restart</span><br></pre></td></tr></table></figure>
-
-<h4 id="免密登录"><a href="#免密登录" class="headerlink" title="免密登录"></a>免密登录</h4><p>如果使用 ssh 工具可以记住登录密码，如果使用命令行需要配置 <a href="/posts/de11f04658e7/#%E5%85%8D%E5%AF%86%E7%99%BB%E9%99%86"><strong>免密登录</strong></a></p>
-<h4 id="修改默认端口"><a href="#修改默认端口" class="headerlink" title="修改默认端口"></a>修改默认端口</h4><p><strong>修改完成后需要同步修改本地的 config 免密登录配置文件，同时配置服务器防火墙放行端口</strong></p>
-<figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br></pre></td><td class="code"><pre><span class="line">vi /etc/ssh/sshd_config</span><br><span class="line"></span><br><span class="line"><span class="comment">#修改端口字段</span></span><br><span class="line"><span class="comment"># Port 22222</span></span><br></pre></td></tr></table></figure>
-
-<h4 id="禁用-root-登录"><a href="#禁用-root-登录" class="headerlink" title="禁用 root 登录"></a>禁用 root 登录</h4><figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br></pre></td><td class="code"><pre><span class="line">vi /etc/ssh/sshd_config</span><br><span class="line"></span><br><span class="line"><span class="comment"># 表示禁止密码登录，但是可以通过SSH登录</span></span><br><span class="line"><span class="comment"># 通常需要设置为no</span></span><br><span class="line"><span class="comment">#PermitRootLogin prohibit-password</span></span><br><span class="line"></span><br><span class="line"><span class="comment"># 使用密码登录，通常设置为no</span></span><br><span class="line"><span class="comment"># PasswordAuthentication yes</span></span><br><span class="line"></span><br></pre></td></tr></table></figure>
-
-<h4 id="iptables-配置"><a href="#iptables-配置" class="headerlink" title="iptables 配置"></a>iptables 配置</h4><figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">sudo <span class="built_in">touch</span> /etc/network/if-up.d/iptables.up</span><br></pre></td></tr></table></figure>
-
-<p>写入规则</p>
-<figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br><span class="line">35</span><br><span class="line">36</span><br><span class="line">37</span><br><span class="line">38</span><br><span class="line">39</span><br><span class="line">40</span><br><span class="line">41</span><br><span class="line">42</span><br><span class="line">43</span><br><span class="line">44</span><br><span class="line">45</span><br><span class="line">46</span><br><span class="line">47</span><br><span class="line">48</span><br><span class="line">49</span><br><span class="line">50</span><br><span class="line">51</span><br><span class="line">52</span><br><span class="line">53</span><br><span class="line">54</span><br><span class="line">55</span><br><span class="line">56</span><br><span class="line">57</span><br><span class="line">58</span><br><span class="line">59</span><br><span class="line">60</span><br><span class="line">61</span><br><span class="line">62</span><br><span class="line">63</span><br><span class="line">64</span><br><span class="line">65</span><br><span class="line">66</span><br><span class="line">67</span><br><span class="line">68</span><br><span class="line">69</span><br><span class="line">70</span><br><span class="line">71</span><br><span class="line">72</span><br><span class="line">73</span><br><span class="line">74</span><br><span class="line">75</span><br><span class="line">76</span><br><span class="line">77</span><br><span class="line">78</span><br><span class="line">79</span><br><span class="line">80</span><br><span class="line">81</span><br><span class="line">82</span><br><span class="line">83</span><br><span class="line">84</span><br><span class="line">85</span><br><span class="line">86</span><br><span class="line">87</span><br><span class="line">88</span><br><span class="line">89</span><br></pre></td><td class="code"><pre><span class="line">*filter</span><br><span class="line"></span><br><span class="line"><span class="comment"># -A INPUT：向 INPUT 链添加规则，用于处理进入系统的数据包。</span></span><br><span class="line"><span class="comment"># -m state：指定使用 state 模块，state 模块允许基于连接状态来过滤数据包。</span></span><br><span class="line"><span class="comment"># --state ESTABLISHED,RELATED：允许已建立连接（ESTABLISHED）和相关连接（RELATED）的数据包通过。简单来说，允许已经建立的连接的数据包通过，例如响应来自客户端的请求。</span></span><br><span class="line"><span class="comment"># -j ACCEPT：匹配此规则的数据包将被接受（允许通过）。</span></span><br><span class="line">-A INPUT -m state --state ESTABLISHED,RELATED -j ACCEPT</span><br><span class="line"></span><br><span class="line"></span><br><span class="line"><span class="comment"># -A OUTPUT：向 OUTPUT 链添加规则，用于处理从系统发送的数据包。</span></span><br><span class="line"><span class="comment"># -j ACCEPT：所有匹配此规则的数据包将被接受，即允许所有出站流量。</span></span><br><span class="line">-A OUTPUT -j ACCEPT</span><br><span class="line"></span><br><span class="line"></span><br><span class="line"><span class="comment"># -A INPUT：向 INPUT 链添加规则，处理进入系统的数据包。</span></span><br><span class="line"><span class="comment"># -p tcp：指定使用 TCP 协议。</span></span><br><span class="line"><span class="comment"># --dport 443：指定目标端口为 443，这通常用于 HTTPS 流量。</span></span><br><span class="line"><span class="comment"># -j ACCEPT：匹配此规则的 TCP 数据包将被接受，允许 HTTPS 流量进入系统。</span></span><br><span class="line">-A INPUT -p tcp --dport 443 -j ACCEPT</span><br><span class="line"></span><br><span class="line"></span><br><span class="line"><span class="comment"># -A INPUT：向 INPUT 链添加规则，处理进入系统的数据包。</span></span><br><span class="line"><span class="comment"># -p tcp：指定使用 TCP 协议。</span></span><br><span class="line"><span class="comment"># --dport 80：指定目标端口为 80，通常用于 HTTP 流量。</span></span><br><span class="line"><span class="comment"># -j ACCEPT：允许所有 HTTP 流量（目标端口 80）进入系统。</span></span><br><span class="line">-A INPUT -p tcp --dport 80 -j ACCEPT</span><br><span class="line"></span><br><span class="line"></span><br><span class="line"><span class="comment"># -A INPUT：向 INPUT 链添加规则，处理进入系统的数据包。</span></span><br><span class="line"><span class="comment"># -p tcp：指定使用 TCP 协议。</span></span><br><span class="line"><span class="comment"># -m state：使用 state 模块来匹配连接状态。</span></span><br><span class="line"><span class="comment"># --state NEW：只允许新的连接通过，即连接尚未建立的流量。</span></span><br><span class="line"><span class="comment"># --dport 39999：指定目标端口为 39999。</span></span><br><span class="line"><span class="comment"># -j ACCEPT：允许目标端口为 39999 的新连接通过。</span></span><br><span class="line">-A INPUT -p tcp -m state --state NEW --dport 22222 -j ACCEPT</span><br><span class="line"></span><br><span class="line"></span><br><span class="line"></span><br><span class="line"><span class="comment"># -A INPUT：向 INPUT 链添加规则，处理进入系统的数据包。</span></span><br><span class="line"><span class="comment"># -p icmp：指定使用 ICMP 协议，通常用于网络诊断，如 ping 命令。</span></span><br><span class="line"><span class="comment"># -m icmp：使用 ICMP 模块进行匹配。</span></span><br><span class="line"><span class="comment"># --icmp-type 8：指定 ICMP 类型为 8，这表示“回显请求”类型，通常是 ping 请求。</span></span><br><span class="line"><span class="comment"># -j ACCEPT：允许 ping 请求（ICMP 类型 8）进入系统。</span></span><br><span class="line">-A INPUT -p icmp -m icmp --icmp-type 8 -j ACCEPT</span><br><span class="line"></span><br><span class="line"></span><br><span class="line"><span class="comment"># -A INPUT：将规则添加到 INPUT 链，表示处理进入系统的流量。</span></span><br><span class="line"><span class="comment"># -m limit 5/min：使用 limit 模块来限制日志记录的频率。这里表示每分钟最多记录 5 次 拒绝的连接请求。这样可以避免日志记录过多导致磁盘空间不足。</span></span><br><span class="line"><span class="comment"># -j LOG：指示 iptables 执行日志记录操作。</span></span><br><span class="line"><span class="comment"># --log-prefix &quot;iptables denied: &quot;：为每个被记录的日志条目添加前缀。日志条目将以 iptables denied: 开头，便于区分其他日志。</span></span><br><span class="line"><span class="comment"># --log-level 7：设置日志级别为 7。日志级别越高，记录的详细信息越多。级别 7 是最高级别，通常用于调试。</span></span><br><span class="line"><span class="comment"># 这条规则的作用是：记录所有被拒绝的连接请求，并且每分钟最多记录 5 次，并将日志保存到系统的日志文件中（通常是 /var/log/syslog 或 /var/log/messages）。</span></span><br><span class="line">-A INPUT -m <span class="built_in">limit</span> 5/min -j LOG --log-prefix <span class="string">&quot;iptables denied: &quot;</span> --log-level 7</span><br><span class="line"></span><br><span class="line"><span class="comment"># 拒绝所有未被允许的入站流量，即如果流量没有匹配任何允许规则，则会被拒绝并发送一个拒绝消息。</span></span><br><span class="line">-A INPUT -j REJECT</span><br><span class="line"></span><br><span class="line"></span><br><span class="line"><span class="comment"># 拒绝所有经过路由的流量。通常这种配置用于禁止路由器或网关机器转发流量。</span></span><br><span class="line">-A FORWARD -j REJECT</span><br><span class="line"></span><br><span class="line"></span><br><span class="line"><span class="comment"># -A INPUT：将这条规则添加到 INPUT 链，表示处理进入系统的流量。</span></span><br><span class="line"><span class="comment"># -p tcp：指定协议为 TCP。</span></span><br><span class="line"><span class="comment"># --dport 80：指定目标端口为 80，即 HTTP 流量。</span></span><br><span class="line"><span class="comment"># -i eth0：表示该规则仅适用于 eth0 网络接口。也就是说，只有通过该接口的流量才会应用此规则。</span></span><br><span class="line"><span class="comment"># -m state：使用 state 模块来匹配数据包的连接状态。</span></span><br><span class="line"><span class="comment"># --state NEW：匹配所有 新的连接，即第一次尝试建立连接的流量。</span></span><br><span class="line"><span class="comment"># -m recent --set：使用 recent 模块，标记（--set）每个新连接的源 IP 地址。这会将源 IP 地址添加到一个最近连接的列表中。这个模块通常用于追踪和限制访问频率。</span></span><br><span class="line"><span class="comment"># 这条规则的作用是：对所有新的、来自 eth0 接口的 HTTP 请求进行标记，记录这些请求的源 IP 地址。</span></span><br><span class="line">-A INPUT -p tcp --dport 80 -i eth0 -m state --state NEW -m recent --<span class="built_in">set</span></span><br><span class="line"></span><br><span class="line"></span><br><span class="line"></span><br><span class="line"><span class="comment"># -A INPUT：将规则添加到 INPUT 链，处理进入的流量。</span></span><br><span class="line"><span class="comment"># -p tcp：使用 TCP 协议。</span></span><br><span class="line"><span class="comment"># --dport 80：指定目标端口为 80，即 HTTP 流量。</span></span><br><span class="line"><span class="comment"># -i eth0：指定网络接口为 eth0。</span></span><br><span class="line"><span class="comment"># -m state：使用 state 模块来匹配数据包的连接状态。</span></span><br><span class="line"><span class="comment"># --state NEW：匹配所有新的连接。</span></span><br><span class="line"><span class="comment"># -m recent --update：使用 recent 模块来更新连接源 IP 的记录。</span></span><br><span class="line"><span class="comment"># --seconds 60：指定检查时间窗口为 60 秒。即在过去 60 秒内的请求将被视为重复的请求。</span></span><br><span class="line"><span class="comment"># --hitcount 150：如果源 IP 在 60 秒内的请求次数超过 150 次，则触发 DROP 动作。</span></span><br><span class="line"><span class="comment"># -j DROP：如果源 IP 地址的请求次数超过 150 次，就会被 丢弃，即拒绝这个源 IP 地址的流量。</span></span><br><span class="line"><span class="comment"># 这条规则的作用是：如果一个源 IP 地址在 60 秒内对端口 80 发起超过 150 次新连接，则丢弃该 IP 的请求。这通常用于 防止 DoS（拒绝服务）攻击 或者 流量过载，限制某个 IP 在短时间内过多的连接请求。</span></span><br><span class="line">-A INPUT -p tcp --dport 80 -i eth0 -m state --state NEW -m recent --update --seconds 60 --hitcount 150 -j DROP</span><br><span class="line"></span><br><span class="line"></span><br><span class="line">COMMIT</span><br></pre></td></tr></table></figure>
-
-<p>使用 iptables-restore 从 &#x2F;etc&#x2F;network&#x2F;if-up.d&#x2F;iptables.up 文件中加载并恢复防火墙规则</p>
-<figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">sudo iptables-restore &lt; /etc/network/if-up.d/iptables.up</span><br></pre></td></tr></table></figure>
-
-<p>启动防火墙</p>
-<figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><span class="line">sudo ufw <span class="built_in">enable</span></span><br><span class="line"></span><br><span class="line">sudo ufw status</span><br></pre></td></tr></table></figure>
-
-<p>配置开机自动写入</p>
-<figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment"># 创建文件</span></span><br><span class="line"><span class="built_in">touch</span> /etc/network/if-up.d/iptables</span><br><span class="line"></span><br><span class="line"><span class="comment"># 写入配置</span></span><br><span class="line"></span><br><span class="line"><span class="comment">#!/bin/sh</span></span><br><span class="line">iptables-restore /etc/iptables.up</span><br><span class="line"></span><br></pre></td></tr></table></figure>
-
-<h4 id="fail2ban"><a href="#fail2ban" class="headerlink" title="fail2ban"></a>fail2ban</h4><p>Fail2ban 是一个开源的入侵防护工具，主要用于防止基于暴力破解的攻击（如 SSH、HTTP、FTP 等服务的暴力登录尝试）。它通过监控日志文件，检测可疑行为（如多次失败的登录尝试），然后根据配置的规则采取措施，例如暂时或永久禁止攻击者的 IP 地址。</p>
-<figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">sudo apt install fail2ban</span><br></pre></td></tr></table></figure>
-
-<p>修改配置</p>
-<figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br></pre></td><td class="code"><pre><span class="line">vi /etc</span><br><span class="line"></span><br><span class="line"><span class="comment"># 换成自己的邮箱</span></span><br><span class="line">destemail = root@localhost</span><br></pre></td></tr></table></figure>
-
-<p>启动服务</p>
-<figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">service fail2ban start</span><br></pre></td></tr></table></figure>
-
-<h4 id="配置-node-环境"><a href="#配置-node-环境" class="headerlink" title="配置 node 环境"></a>配置 node 环境</h4><p>安装必要依赖</p>
-<figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">sudo apt install vim openssl build-essential libssl-dev wget curl git</span><br></pre></td></tr></table></figure>
-
-<p>安装 <a target="_blank" rel="noopener" href="https://github.com/nvm-sh/nvm">nvm</a>,指定默认版本</p>
-<figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">nvm <span class="built_in">alias</span> default v20.xx</span><br></pre></td></tr></table></figure>
-
-<h4 id="设置系统文件参数"><a href="#设置系统文件参数" class="headerlink" title="设置系统文件参数"></a>设置系统文件参数</h4><p>修改了 fs.inotify.max_user_watches 参数，增加每个用户可以监控的文件数（即文件监控器的数量）。</p>
-<p>将此设置永久性地添加到 &#x2F;etc&#x2F;sysctl.conf 配置文件中，并应用该更改，使得新的文件监控数值生效。</p>
-<figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line"><span class="built_in">echo</span> fs.inotify.max_user_watches=524288 | sudo <span class="built_in">tee</span> -a /etc/sysctl.conf</span><br><span class="line">sudo sysctl -p</span><br></pre></td></tr></table></figure>
-
-<h4 id="强制同步-cnpm"><a href="#强制同步-cnpm" class="headerlink" title="强制同步 cnpm"></a>强制同步 cnpm</h4><p>如果使用了 cnpm 源，导致有些包不是最新的，使用以下命令强制同步</p>
-<figure class="highlight js"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">cnpm sync [package]</span><br></pre></td></tr></table></figure>
-
-<h4 id="nginx"><a href="#nginx" class="headerlink" title="nginx"></a>nginx</h4><p>如果服务器预装了 apache2 需要先删除</p>
-<figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment"># 删除 Apache2 服务的自动启动配置,它会删除 /etc/rc.d 目录下的相关启动链接。</span></span><br><span class="line">update-rc.d -f apache2 remove</span><br><span class="line"></span><br><span class="line"><span class="comment"># 卸载 Apache2 软件包</span></span><br><span class="line">sudo apt remove apache2</span><br></pre></td></tr></table></figure>
-
-<p>添加 nginx 配置文件</p>
-<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br><span class="line">35</span><br><span class="line">36</span><br><span class="line">37</span><br><span class="line">38</span><br><span class="line">39</span><br><span class="line">40</span><br><span class="line">41</span><br><span class="line">42</span><br><span class="line">43</span><br><span class="line">44</span><br><span class="line">45</span><br><span class="line">46</span><br><span class="line">47</span><br><span class="line">48</span><br><span class="line">49</span><br><span class="line">50</span><br><span class="line">51</span><br><span class="line">52</span><br><span class="line">53</span><br><span class="line">54</span><br><span class="line">55</span><br></pre></td><td class="code"><pre><span class="line">upstream node_learn &#123;</span><br><span class="line">    server 127.0.0.1:3000;  # 定义后端服务器</span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line">server &#123;</span><br><span class="line">    listen 80;</span><br><span class="line">    server_name site.iftrue.club;  # 配置服务器监听端口和域名</span><br><span class="line"></span><br><span class="line">    # 优化代理设置</span><br><span class="line">    location / &#123;</span><br><span class="line">        proxy_set_header X-Real-IP $remote_addr;  # 设置请求头，传递真实的客户端 IP 地址</span><br><span class="line">        proxy_set_header X-Forwarded-For $proxy_add_X_forwarded_for;  # 设置请求头，传递 X-Forwarded-For 头信息</span><br><span class="line">        proxy_set_header Host $http_host;  # 保留原始请求的 Host 头</span><br><span class="line">        proxy_set_header X-Nginx-Proxy true;  # 添加 X-Nginx-Proxy 头，标识请求是经过 Nginx 代理的</span><br><span class="line">        proxy_pass http://node_learn;  # 转发请求到后端应用</span><br><span class="line">        proxy_redirect off;  # 关闭代理重定向</span><br><span class="line">        proxy_cache my_cache;  # 启用缓存</span><br><span class="line">        proxy_cache_valid 200 1h;  # 缓存 200 状态的响应 1 小时</span><br><span class="line">        proxy_cache_use_stale error timeout updating;  # 使用过期的缓存响应来应对错误或超时</span><br><span class="line">    &#125;</span><br><span class="line"></span><br><span class="line">    # 静态资源代理和缓存</span><br><span class="line">    location /assets/ &#123;</span><br><span class="line">        # 将静态资源代理到 Node.js 应用或提供本地静态文件</span><br><span class="line">        proxy_pass http://node_learn/assets/;</span><br><span class="line">        proxy_set_header X-Real-IP $remote_addr;</span><br><span class="line">        proxy_set_header X-Forwarded-For $proxy_add_X_forwarded_for;</span><br><span class="line">        proxy_set_header Host $http_host;</span><br><span class="line">        proxy_set_header X-Nginx-Proxy true;</span><br><span class="line">        proxy_cache my_cache;</span><br><span class="line">        proxy_cache_valid 200 1d;  # 缓存静态资源 1 天</span><br><span class="line">    &#125;</span><br><span class="line"></span><br><span class="line">    # 如果静态文件已经存储在磁盘中，可以使用 root 或 alias 来提供静态文件</span><br><span class="line">    location /static/ &#123;</span><br><span class="line">        root /var/www/site.iftrue.club;  # 假设静态资源位于这个目录</span><br><span class="line">        try_files $uri $uri/ =404;  # 如果找不到文件返回 404</span><br><span class="line">    &#125;</span><br><span class="line"></span><br><span class="line">    # 你也可以为其他静态资源（如 CSS、JS）设置缓存</span><br><span class="line">    location ~* \.(css|js|jpg|jpeg|png|gif|ico|woff|woff2|ttf|svg)$ &#123;</span><br><span class="line">        root /var/www/site.iftrue.club;</span><br><span class="line">        try_files $uri $uri/ =404;</span><br><span class="line">        expires 30d;  # 设置静态资源缓存 30 天</span><br><span class="line">        add_header Cache-Control &quot;public, no-transform&quot;;  # 设置缓存控制头</span><br><span class="line">    &#125;</span><br><span class="line"></span><br><span class="line">    # 其他错误页面、重定向等配置</span><br><span class="line">    error_page 404 /404.html;</span><br><span class="line">    location = /404.html &#123;</span><br><span class="line">        root /usr/share/nginx/html;</span><br><span class="line">        internal;</span><br><span class="line">    &#125;</span><br><span class="line">&#125;</span><br><span class="line"></span><br></pre></td></tr></table></figure>
-
-<p>如果需要隐藏响应头中的 nginx 版本信息配置 nginx.conf</p>
-<figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment"># /etc/nginx/nginx.conf</span></span><br><span class="line"></span><br><span class="line"><span class="comment"># 取消此行注释</span></span><br><span class="line">server_tokens off;</span><br></pre></td></tr></table></figure>
-
-<h4 id="mysql"><a href="#mysql" class="headerlink" title="mysql"></a>mysql</h4><figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br><span class="line">35</span><br><span class="line">36</span><br><span class="line">37</span><br><span class="line">38</span><br><span class="line">39</span><br><span class="line">40</span><br><span class="line">41</span><br><span class="line">42</span><br><span class="line">43</span><br><span class="line">44</span><br><span class="line">45</span><br><span class="line">46</span><br><span class="line">47</span><br><span class="line">48</span><br><span class="line">49</span><br><span class="line">50</span><br><span class="line">51</span><br><span class="line">52</span><br><span class="line">53</span><br><span class="line">54</span><br><span class="line">55</span><br><span class="line">56</span><br><span class="line">57</span><br><span class="line">58</span><br><span class="line">59</span><br><span class="line">60</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment"># 安装服务</span></span><br><span class="line">sudo apt install -y mysql-server</span><br><span class="line"></span><br><span class="line"><span class="comment"># 检查服务是否启动</span></span><br><span class="line">systemctl status mysql</span><br><span class="line"></span><br><span class="line"><span class="comment"># 执行MySQL安全脚本mysql_secure_installation，提高MySQL的安全性</span></span><br><span class="line"><span class="comment"># 该脚本允许设置或更改root密码策略、移除匿名用户、禁止root远程登录、删除测试数据库等。</span></span><br><span class="line">sudo mysql_secure_installation</span><br><span class="line"></span><br><span class="line"><span class="comment"># 首次登录没有密码</span></span><br><span class="line">sudo mysql -u root -p</span><br><span class="line"></span><br><span class="line"><span class="comment">#给root用户设置密码</span></span><br><span class="line">ALTER USER <span class="string">&#x27;root&#x27;</span>@<span class="string">&#x27;localhost&#x27;</span> IDENTIFIED WITH mysql_native_password BY <span class="string">&#x27;your_password&#x27;</span>; FLUSH PRIVILEGES;EXIT;</span><br><span class="line"></span><br><span class="line"><span class="comment"># 创建对应的数据库</span></span><br><span class="line"></span><br><span class="line">CREATE DATABASE my_database</span><br><span class="line">CHARACTER SET utf8mb4</span><br><span class="line">COLLATE utf8mb4_general_ci;</span><br><span class="line"><span class="comment"># 查看所有数据库</span></span><br><span class="line">SHOW DATABASES;</span><br><span class="line"></span><br><span class="line"><span class="comment"># 删除数据库</span></span><br><span class="line">DROP DATABASE database_name;</span><br><span class="line"><span class="comment"># 修改字符集和排序</span></span><br><span class="line">ALTER DATABASE database_name</span><br><span class="line">CHARACTER SET utf8mb4</span><br><span class="line">COLLATE utf8mb4_general_ci;</span><br><span class="line"></span><br><span class="line"><span class="comment"># 创建新用户</span></span><br><span class="line"><span class="comment"># &#x27;localhost&#x27;：表示该用户只能从本地机器连接到数据库。如果希望该用户可以从任何主机连接，可以使用 &#x27;%&#x27;，如 &#x27;new_user&#x27;@&#x27;%&#x27;。</span></span><br><span class="line">CREATE USER <span class="string">&#x27;new_user&#x27;</span>@<span class="string">&#x27;localhost&#x27;</span> IDENTIFIED BY <span class="string">&#x27;your_password&#x27;</span>;</span><br><span class="line"><span class="comment"># 查看所有用户</span></span><br><span class="line">SELECT User, Host FROM mysql.user;</span><br><span class="line"></span><br><span class="line"></span><br><span class="line"><span class="comment">#ALL PRIVILEGES：赋予所有权限。</span></span><br><span class="line"><span class="comment"># my_database.*：指示该用户可以对 my_database 数据库中的所有表进行操作。</span></span><br><span class="line"><span class="comment"># &#x27;localhost&#x27;：表示该用户只能从本地连接。</span></span><br><span class="line">GRANT ALL PRIVILEGES ON my_database.* TO <span class="string">&#x27;new_user&#x27;</span>@<span class="string">&#x27;localhost&#x27;</span>;</span><br><span class="line"><span class="comment"># 如果希望用户只具备某些操作的权限（例如只读权限），可以单独授予特定权限</span></span><br><span class="line">GRANT SELECT ON my_database.* TO <span class="string">&#x27;new_user&#x27;</span>@<span class="string">&#x27;localhost&#x27;</span>;</span><br><span class="line">GRANT SELECT, INSERT ON my_database.* TO <span class="string">&#x27;new_user&#x27;</span>@<span class="string">&#x27;localhost&#x27;</span>;</span><br><span class="line"></span><br><span class="line"></span><br><span class="line"><span class="comment"># 可以访问所有数据库</span></span><br><span class="line"><span class="comment"># GRANT ALL PRIVILEGES ON *.* TO &#x27;new_user&#x27;@&#x27;localhost&#x27;;</span></span><br><span class="line"></span><br><span class="line"></span><br><span class="line"><span class="comment"># 刷新权限</span></span><br><span class="line">FLUSH PRIVILEGES;</span><br><span class="line"></span><br><span class="line"></span><br><span class="line"><span class="comment"># 查看端口</span></span><br><span class="line">SHOW VARIABLES LIKE <span class="string">&#x27;port&#x27;</span>;</span><br><span class="line"></span><br><span class="line"><span class="built_in">cat</span> /etc/mysql/mysql.conf.d/mysqld.cnf</span><br><span class="line"></span><br></pre></td></tr></table></figure>
-
-<h4 id="pm2"><a href="#pm2" class="headerlink" title="pm2"></a>pm2</h4><figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br></pre></td><td class="code"><pre><span class="line">npm install -g pm2</span><br><span class="line"></span><br><span class="line"><span class="comment"># 启动服务</span></span><br><span class="line">pm2 start server.js</span><br><span class="line"></span><br><span class="line"><span class="comment"># 应用列表</span></span><br><span class="line">pm2 list</span><br><span class="line"></span><br><span class="line"><span class="comment"># 应用详细信息</span></span><br><span class="line">pm2 show [appName]</span><br></pre></td></tr></table></figure>
-
-<h4 id="配置-pm2-ecosystem-json"><a href="#配置-pm2-ecosystem-json" class="headerlink" title="配置 pm2 ecosystem.json"></a>配置 pm2 ecosystem.json</h4><figure class="highlight json"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br><span class="line">35</span><br><span class="line">36</span><br><span class="line">37</span><br><span class="line">38</span><br><span class="line">39</span><br><span class="line">40</span><br><span class="line">41</span><br><span class="line">42</span><br><span class="line">43</span><br><span class="line">44</span><br><span class="line">45</span><br><span class="line">46</span><br><span class="line">47</span><br></pre></td><td class="code"><pre><span class="line"><span class="punctuation">&#123;</span></span><br><span class="line">  <span class="attr">&quot;apps&quot;</span><span class="punctuation">:</span> <span class="punctuation">[</span></span><br><span class="line">    <span class="punctuation">&#123;</span></span><br><span class="line">      <span class="attr">&quot;name&quot;</span><span class="punctuation">:</span> <span class="string">&quot;node-learn&quot;</span><span class="punctuation">,</span></span><br><span class="line">      <span class="attr">&quot;script&quot;</span><span class="punctuation">:</span> <span class="string">&quot;bin/www&quot;</span><span class="punctuation">,</span></span><br><span class="line">      <span class="attr">&quot;env&quot;</span><span class="punctuation">:</span> <span class="punctuation">&#123;</span></span><br><span class="line">        <span class="attr">&quot;NODE_ENV&quot;</span><span class="punctuation">:</span> <span class="string">&quot;development&quot;</span></span><br><span class="line">      <span class="punctuation">&#125;</span><span class="punctuation">,</span></span><br><span class="line">      <span class="attr">&quot;env_production&quot;</span><span class="punctuation">:</span> <span class="punctuation">&#123;</span></span><br><span class="line">        <span class="attr">&quot;NODE_ENV&quot;</span><span class="punctuation">:</span> <span class="string">&quot;production&quot;</span></span><br><span class="line">      <span class="punctuation">&#125;</span></span><br><span class="line">    <span class="punctuation">&#125;</span></span><br><span class="line">  <span class="punctuation">]</span><span class="punctuation">,</span></span><br><span class="line">  <span class="attr">&quot;deploy&quot;</span><span class="punctuation">:</span> <span class="punctuation">&#123;</span></span><br><span class="line">    <span class="attr">&quot;production&quot;</span><span class="punctuation">:</span> <span class="punctuation">&#123;</span></span><br><span class="line">      <span class="comment">// 远程服务器上用于执行部署的用户。这个用户将有权限操作目标服务器进行部署工作。</span></span><br><span class="line">      <span class="attr">&quot;user&quot;</span><span class="punctuation">:</span> <span class="string">&quot;ubuntu&quot;</span><span class="punctuation">,</span></span><br><span class="line">      <span class="comment">// 部署目标服务器的 IP 地址。这里设置了一个服务器的 IP 地址</span></span><br><span class="line">      <span class="comment">// 表示要将代码部署到这个服务器。</span></span><br><span class="line">      <span class="attr">&quot;host&quot;</span><span class="punctuation">:</span> <span class="punctuation">[</span><span class="string">&quot;192.168.48.171&quot;</span><span class="punctuation">]</span><span class="punctuation">,</span></span><br><span class="line">      <span class="comment">// 通过 SSH 连接远程服务器时使用的端口号</span></span><br><span class="line">      <span class="attr">&quot;port&quot;</span><span class="punctuation">:</span> <span class="string">&quot;22&quot;</span><span class="punctuation">,</span></span><br><span class="line">      <span class="comment">// 这是你要部署的 Git 分支。origin/master 表示远程仓库的 master 分支</span></span><br><span class="line">      <span class="attr">&quot;ref&quot;</span><span class="punctuation">:</span> <span class="string">&quot;origin/main&quot;</span><span class="punctuation">,</span></span><br><span class="line">      <span class="comment">// 这是 Git 仓库的 URL，表示从哪里拉取代码。</span></span><br><span class="line">      <span class="attr">&quot;repo&quot;</span><span class="punctuation">:</span> <span class="string">&quot;git@git.oschina.net:wolf18387/backend-website.git&quot;</span><span class="punctuation">,</span></span><br><span class="line">      <span class="comment">// 这是部署目标路径，代码将被拉取到这个路径下。</span></span><br><span class="line">      <span class="comment">// 所有应用文件将被放置在服务器的 /www/website/production 目录下。</span></span><br><span class="line">      <span class="attr">&quot;path&quot;</span><span class="punctuation">:</span> <span class="string">&quot;/www/node-learn&quot;</span><span class="punctuation">,</span></span><br><span class="line">      <span class="comment">// 这个选项用于 SSH 连接时禁用 SSH 主机密钥检查。</span></span><br><span class="line">      <span class="comment">// 这通常用于自动化部署，避免因首次连接服务器时需要确认主机密钥而中断部署。</span></span><br><span class="line">      <span class="attr">&quot;ssh_options&quot;</span><span class="punctuation">:</span> <span class="string">&quot;StrictHostKeyChecking=no&quot;</span><span class="punctuation">,</span></span><br><span class="line">      <span class="comment">// 部署前的准备脚本</span></span><br><span class="line">      <span class="attr">&quot;pre-setup&quot;</span><span class="punctuation">:</span> <span class="string">&quot;rm -rf /www/node-learn/*&quot;</span><span class="punctuation">,</span></span><br><span class="line">      <span class="comment">// 部署前的准备脚本，在拉取代码后执行</span></span><br><span class="line">      <span class="comment">// 在服务器上执行的脚本</span></span><br><span class="line">      <span class="comment">// 如果使用的是nvm安装的node需要加上 source ~/.nvm/nvm.sh</span></span><br><span class="line">      <span class="comment">// 需要指定环境变量 export NODE_ENV=production deploy.env 只会在 deploy 阶段加载</span></span><br><span class="line">      <span class="attr">&quot;post-setup&quot;</span><span class="punctuation">:</span> <span class="string">&quot;source ~/.nvm/nvm.sh &amp;&amp; npm install &amp;&amp; export NODE_ENV=production &amp;&amp; npx sequelize-cli db:migrate &amp;&amp; npx sequelize-cli db:seed:all&quot;</span><span class="punctuation">,</span></span><br><span class="line"></span><br><span class="line">      <span class="attr">&quot;post-deploy&quot;</span><span class="punctuation">:</span> <span class="string">&quot;source ~/.nvm/nvm.sh &amp;&amp; npm install &amp;&amp; pm2 startOrRestart ecosystem.json --env production&quot;</span><span class="punctuation">,</span></span><br><span class="line">      <span class="attr">&quot;env&quot;</span><span class="punctuation">:</span> <span class="punctuation">&#123;</span></span><br><span class="line">        <span class="attr">&quot;NODE_ENV&quot;</span><span class="punctuation">:</span> <span class="string">&quot;production&quot;</span></span><br><span class="line">      <span class="punctuation">&#125;</span></span><br><span class="line">    <span class="punctuation">&#125;</span></span><br><span class="line">  <span class="punctuation">&#125;</span></span><br><span class="line"><span class="punctuation">&#125;</span></span><br></pre></td></tr></table></figure>
-
-<h4 id="执行部署"><a href="#执行部署" class="headerlink" title="执行部署"></a>执行部署</h4><p><strong>部署前确认各个服务器之间可以互相免密访问，本地&#x3D;&gt;生产服务器&#x3D;&gt;git 服务器, 将主机加入目标主机的 known hosts 中</strong></p>
-<p><strong>确认服务器的目录是否有写入权限</strong></p>
-<p><strong>windows 环境会执行失败，需要在 linux 虚拟机中执行</strong></p>
-<figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment">#  设置远程环境,创建应用目录,初始化 Git 仓库,执行 pre-setup 钩子</span></span><br><span class="line"><span class="comment">#  current 当前服务运行的文件夹会软连接到source文件夹上</span></span><br><span class="line"><span class="comment">#  source clone下来的源代码</span></span><br><span class="line"><span class="comment">#  shared 配置文件等</span></span><br><span class="line"><span class="comment">#  只应该在初始化的时候执行一次</span></span><br><span class="line">npx pm2 deploy production setup</span><br><span class="line"></span><br></pre></td></tr></table></figure>
-
-<p>部署成功后可以登录服务器检查部署情况</p>
-<figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><span class="line">pm2 list</span><br><span class="line"></span><br><span class="line">pm2 logs</span><br></pre></td></tr></table></figure>
- 
-      <!-- reward -->
-      
-    </div>
-    
-
-    <!-- copyright -->
-    
-    <footer class="article-footer">
-       
-  <ul class="article-tag-list" itemprop="keywords"><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/DevOps/" rel="tag">DevOps</a></li></ul>
-
-    </footer>
-  </div>
-
-   
-    
-</article>
-
-    
-    <article
-  id="post-javascript/高级用法"
-  class="article article-type-post"
-  itemscope
-  itemprop="blogPost"
-  data-scroll-reveal
->
-  <div class="article-inner">
-    
-    <header class="article-header">
-       
-<h2 itemprop="name">
-  <a class="article-title" href="/posts/7042a9e618ec/"
-    >高级用法</a> 
-</h2>
- 
-
-      
-    </header>
-     
-    <div class="article-meta">
-      <a href="/posts/7042a9e618ec/" class="article-date">
-  <time datetime="2021-02-26T02:51:19.000Z" itemprop="datePublished">2021-02-26</time>
-</a> 
-  <div class="article-category">
-    <a class="article-category-link" href="/categories/TypeScript/">TypeScript</a>
-  </div>
-   
-    </div>
-      
-    <div class="article-entry" itemprop="articleBody">
-       
-  <h4 id="泛型定义"><a href="#泛型定义" class="headerlink" title="泛型定义"></a>泛型定义</h4><p>泛型（Generics）是只在定义函数，接口或类的时候，不预先指定具体的类型，而在使用的时候再指定类型的一种特征</p>
-<p>泛型 T 作用于只限在函数的内部</p>
-<p>必须要把val指定为any类型，可以传入任意类型，但是不够灵活<br>val不是所有类型都可以，所以需要使用泛型</p>
-<figure class="highlight javascript"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">function</span>  <span class="title function_">createArray</span>(<span class="params">length:number,val:any</span>):<span class="title class_">Array</span>&lt;any&gt; &#123;</span><br><span class="line">  <span class="keyword">let</span> <span class="attr">result</span>:<span class="title class_">Array</span>&lt;any&gt; =[]; </span><br><span class="line">  <span class="keyword">for</span>(<span class="keyword">let</span> i=<span class="number">0</span>;i&lt;length;i++)&#123;</span><br><span class="line">    result.<span class="title function_">push</span>(val);</span><br><span class="line">  &#125;</span><br><span class="line">  <span class="keyword">return</span> result;</span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line"><span class="keyword">let</span> result = <span class="title function_">createArray</span>(<span class="number">3</span>,<span class="string">&quot;x&quot;</span>);</span><br><span class="line"><span class="variable language_">console</span>.<span class="title function_">log</span>(result);</span><br></pre></td></tr></table></figure>
-
-<p>期望的是val的什么类型，最终返回的就是这个类型的数组</p>
-<figure class="highlight javascript"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">function</span>  createArray&lt;T&gt;(<span class="attr">length</span>:number,<span class="attr">val</span>:T):<span class="title class_">Array</span>&lt;T&gt; &#123;</span><br><span class="line">  <span class="keyword">let</span> <span class="attr">result</span>:<span class="title class_">Array</span>&lt;T&gt; =[]; </span><br><span class="line">  <span class="keyword">for</span>(<span class="keyword">let</span> i=<span class="number">0</span>;i&lt;length;i++)&#123;</span><br><span class="line">    result.<span class="title function_">push</span>(val);</span><br><span class="line">  &#125;</span><br><span class="line">  <span class="keyword">return</span> result;</span><br><span class="line">&#125;</span><br><span class="line"><span class="comment">// 在是用的时候传入声明的类型</span></span><br><span class="line"><span class="keyword">let</span> result = createArray&lt;string&gt;(<span class="number">3</span>,<span class="string">&quot;x&quot;</span>);</span><br><span class="line"><span class="variable language_">console</span>.<span class="title function_">log</span>(result);</span><br></pre></td></tr></table></figure>
-
-<h4 id="接口泛型"><a href="#接口泛型" class="headerlink" title="接口泛型"></a>接口泛型</h4><p>因为T是未知类型，所以返回值中不能经行运算</p>
-<figure class="highlight javascript"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br></pre></td><td class="code"><pre><span class="line">interface M &#123;</span><br><span class="line">  &lt;T&gt;(<span class="attr">a</span>:T,<span class="attr">b</span>:number):T</span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line"><span class="keyword">const</span> <span class="attr">fn</span>:M = <span class="keyword">function</span> &lt;T&gt;(<span class="attr">a</span>:T,<span class="attr">b</span>:number) &#123;</span><br><span class="line">  <span class="keyword">return</span> a;</span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line"><span class="title function_">fn</span>(<span class="string">&quot;1&quot;</span>,<span class="number">1</span>);</span><br></pre></td></tr></table></figure>
-
-<h4 id="多类型参数"><a href="#多类型参数" class="headerlink" title="多类型参数"></a>多类型参数</h4><figure class="highlight javascript"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">const</span> swap = <span class="keyword">function</span> swap&lt;A,B&gt;(<span class="attr">arr</span>:[A,B]):[B,A] &#123;</span><br><span class="line">  <span class="keyword">return</span> [arr[<span class="number">1</span>],arr[<span class="number">0</span>]];</span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line"><span class="variable language_">console</span>.<span class="title function_">log</span>(swap&lt;string,number&gt;([<span class="string">&#x27;a&#x27;</span>,<span class="number">2</span>]))</span><br></pre></td></tr></table></figure>
-
-
-<h4 id="默认泛型"><a href="#默认泛型" class="headerlink" title="默认泛型"></a>默认泛型</h4><figure class="highlight javascript"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">const</span> swap = <span class="keyword">function</span> swap&lt;A,B=number&gt;(<span class="attr">arr</span>:[A,B]):[B,A] &#123;</span><br><span class="line">  <span class="keyword">return</span> [arr[<span class="number">1</span>],arr[<span class="number">0</span>]];</span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line"><span class="variable language_">console</span>.<span class="title function_">log</span>(swap&lt;string&gt;([<span class="string">&#x27;a&#x27;</span>,<span class="number">2</span>]))</span><br></pre></td></tr></table></figure>
-
-<h4 id="泛型约束"><a href="#泛型约束" class="headerlink" title="泛型约束"></a>泛型约束</h4><p>在函数中使用泛型的时候，由于预先不知道具体使用的类型，所以不能访问相应类型的方法</p>
-<figure class="highlight javascript"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">function</span> logger&lt;T&gt;(<span class="attr">val</span>:T):number &#123;</span><br><span class="line">  <span class="comment">// 报错： 不能确定val的类型，所以不能检查</span></span><br><span class="line">  <span class="keyword">return</span> val.<span class="property">length</span>;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
-
-<figure class="highlight javascript"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br></pre></td><td class="code"><pre><span class="line">interface <span class="title class_">Logger</span> &#123;</span><br><span class="line">  <span class="attr">length</span>:number</span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line"><span class="keyword">function</span> logger&lt;T <span class="keyword">extends</span> <span class="title class_">Logger</span>&gt;(<span class="attr">val</span>:T):number &#123;</span><br><span class="line">  <span class="keyword">return</span> val.<span class="property">length</span>;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
-
-
-<h4 id="泛型类型别名"><a href="#泛型类型别名" class="headerlink" title="泛型类型别名"></a>泛型类型别名</h4><p>interface定义一个真实的接口，是一个真正的类型</p>
-<p>type 一般用来定义别名，并不是一个真正的类型</p>
-<figure class="highlight javascript"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br></pre></td><td class="code"><pre><span class="line">interface <span class="title class_">Cart</span>&lt;T&gt; &#123;</span><br><span class="line">  <span class="attr">list</span>:T[]</span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line"><span class="comment">// 泛型类型别名</span></span><br><span class="line">type <span class="title class_">Cart2</span>&lt;T&gt; =&#123;<span class="attr">list</span>:T[]&#125;|T[];</span><br><span class="line"></span><br><span class="line"><span class="keyword">const</span> <span class="attr">c1</span>:<span class="title class_">Cart2</span>&lt;string&gt; = [<span class="string">&#x27;1&#x27;</span>]</span><br><span class="line"><span class="keyword">const</span> <span class="attr">c2</span>:<span class="title class_">Cart2</span>&lt;string&gt; = &#123;<span class="attr">list</span>:[<span class="string">&#x27;1&#x27;</span>]&#125;</span><br></pre></td></tr></table></figure>
-
-
-<h4 id="交叉类型"><a href="#交叉类型" class="headerlink" title="交叉类型"></a>交叉类型</h4><figure class="highlight javascript"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br></pre></td><td class="code"><pre><span class="line">interface <span class="title class_">Bird</span>&#123;</span><br><span class="line">  <span class="title function_">fly</span>():<span class="keyword">void</span></span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line">interface <span class="title class_">Boy</span>&#123;</span><br><span class="line">  <span class="attr">name</span>:string</span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line">type <span class="title class_">BirdBoy</span> = <span class="title class_">Bird</span> &amp; <span class="title class_">Boy</span></span><br></pre></td></tr></table></figure>
-
-<h4 id="typeof-获取类型"><a href="#typeof-获取类型" class="headerlink" title="typeof 获取类型"></a>typeof 获取类型</h4><figure class="highlight javascript"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">const</span> boy  = &#123;</span><br><span class="line">  <span class="attr">name</span>:<span class="string">&#x27;1&#x27;</span></span><br><span class="line">&#125;</span><br><span class="line">type <span class="title class_">Boy</span> = <span class="keyword">typeof</span> boy;</span><br><span class="line"></span><br><span class="line"><span class="keyword">const</span> <span class="attr">p</span>:<span class="title class_">Boy</span> =&#123;</span><br><span class="line">  <span class="attr">name</span>:<span class="string">&quot;123&quot;</span></span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
-
-<h4 id="索引访问"><a href="#索引访问" class="headerlink" title="索引访问"></a>索引访问</h4><figure class="highlight javascript"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br></pre></td><td class="code"><pre><span class="line">interface <span class="title class_">Boy</span>&#123;</span><br><span class="line">  <span class="attr">name</span>:string,</span><br><span class="line">  <span class="attr">info</span>:&#123;</span><br><span class="line">    <span class="attr">id</span>:number</span><br><span class="line">  &#125;</span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line"><span class="keyword">const</span> <span class="attr">boy</span>:<span class="title class_">Boy</span>[<span class="string">&#x27;info&#x27;</span>][<span class="string">&#x27;id&#x27;</span>] = <span class="number">123</span></span><br></pre></td></tr></table></figure>
-
-<h4 id="索引类型查询操作符"><a href="#索引类型查询操作符" class="headerlink" title="索引类型查询操作符"></a>索引类型查询操作符</h4><figure class="highlight javascript"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">const</span> <span class="attr">boy</span>:<span class="title class_">Boy</span> = &#123;</span><br><span class="line">  <span class="attr">name</span>:<span class="string">&quot;boy&quot;</span>,</span><br><span class="line">  <span class="attr">id</span>:<span class="number">1</span>,</span><br><span class="line">  <span class="attr">info</span>:&#123;</span><br><span class="line">    <span class="attr">aaa</span>:<span class="number">123</span></span><br><span class="line">  &#125;</span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line">type <span class="title class_">PropType</span> = keyof <span class="title class_">Boy</span>;</span><br><span class="line"></span><br><span class="line"><span class="keyword">function</span> <span class="title function_">getData</span>(<span class="params">target:Boy,prop:PropType</span>) &#123;</span><br><span class="line">  <span class="keyword">return</span> target[prop];</span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line"><span class="title function_">getData</span>(boy,<span class="string">&#x27;info&#x27;</span>)</span><br></pre></td></tr></table></figure>
-
-
-<h4 id="映射类型"><a href="#映射类型" class="headerlink" title="映射类型"></a>映射类型</h4><p>部分属性</p>
-<figure class="highlight javascript"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br></pre></td><td class="code"><pre><span class="line">interface <span class="title class_">Boy</span>&#123;</span><br><span class="line">  <span class="attr">name</span>:string,</span><br><span class="line">  <span class="attr">id</span>:number,</span><br><span class="line">  <span class="attr">info</span>:&#123;</span><br><span class="line">    <span class="attr">aaa</span>:number</span><br><span class="line">  &#125;</span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line"><span class="comment">// 部分属性</span></span><br><span class="line">type <span class="title class_">PartialBoy</span> = &#123;</span><br><span class="line">  [k <span class="keyword">in</span> keyof <span class="title class_">Boy</span>]?:<span class="title class_">Boy</span>[k]</span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line"><span class="keyword">const</span> <span class="attr">boy</span>:<span class="title class_">PartialBoy</span> = &#123;</span><br><span class="line">  <span class="attr">name</span>:<span class="string">&#x27;123&#x27;</span></span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
-
-<p>原生提供的方法及实现</p>
-<figure class="highlight javascript"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment">// Partial 实现</span></span><br><span class="line">type <span class="title class_">Partial</span>&lt;T&gt; =&#123;</span><br><span class="line">  [key <span class="keyword">in</span> keyof T]?:T[key]</span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line"><span class="comment">// 原生方法</span></span><br><span class="line">type <span class="title class_">PartialBoy</span> = <span class="title class_">Partial</span>&lt;<span class="title class_">Boy</span>&gt;;</span><br><span class="line"></span><br><span class="line"><span class="keyword">const</span> <span class="attr">boy</span>:<span class="title class_">PartialBoy</span> = &#123;</span><br><span class="line">  <span class="attr">name</span>: <span class="string">&quot;name&quot;</span></span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
-
-<p>所有属性必须有</p>
-<figure class="highlight javascript"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment">// Required 实现</span></span><br><span class="line">type <span class="title class_">Required</span>&lt;T&gt; =&#123;</span><br><span class="line">  [key <span class="keyword">in</span> keyof T]-？:T[key]</span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line"><span class="comment">// 原生方法</span></span><br><span class="line">type <span class="title class_">PartialBoy</span> = <span class="title class_">Required</span>&lt;<span class="title class_">Boy</span>&gt;;</span><br><span class="line"></span><br><span class="line"><span class="keyword">const</span> <span class="attr">boy</span>:<span class="title class_">PartialBoy</span> = &#123;</span><br><span class="line">  <span class="attr">name</span>: <span class="string">&quot;name&quot;</span>,</span><br><span class="line">  <span class="attr">id</span>:<span class="number">123</span>,</span><br><span class="line">  <span class="attr">info</span>:&#123;</span><br><span class="line">    <span class="attr">aaa</span>:<span class="number">111</span></span><br><span class="line">  &#125;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
-
-<p>属性只读</p>
-<figure class="highlight javascript"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment">// Readonly 实现</span></span><br><span class="line">type <span class="title class_">Readonly</span>&lt;T&gt; =&#123;</span><br><span class="line">  readonly [key <span class="keyword">in</span> keyof T]:T[key]</span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line"><span class="comment">// 原生方法</span></span><br><span class="line">type <span class="title class_">PartialBoy</span> = <span class="title class_">Readonly</span>&lt;<span class="title class_">Boy</span>&gt;;</span><br><span class="line"></span><br><span class="line"><span class="keyword">const</span> <span class="attr">boy</span>:<span class="title class_">PartialBoy</span> = &#123;</span><br><span class="line">  <span class="attr">name</span>: <span class="string">&quot;name&quot;</span>,</span><br><span class="line">  <span class="attr">id</span>:<span class="number">123</span>,</span><br><span class="line">  <span class="attr">info</span>:&#123;</span><br><span class="line">    <span class="attr">aaa</span>:<span class="number">111</span></span><br><span class="line">  &#125;</span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line"><span class="comment">// 报错</span></span><br><span class="line">boy.<span class="property">name</span> = <span class="number">1</span>;</span><br></pre></td></tr></table></figure>
-
-<p>pick 指定属性</p>
-<figure class="highlight javascript"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment">// Pick 实现</span></span><br><span class="line"><span class="comment">// 只能摘取某一项返回</span></span><br><span class="line">type <span class="title class_">Pick</span>&lt;T,K <span class="keyword">extends</span> keyof T&gt; =&#123;</span><br><span class="line">  [key <span class="keyword">in</span> K]:T[key]</span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line"><span class="comment">// 原生方法</span></span><br><span class="line">type <span class="title class_">PartialBoy</span> = <span class="title class_">Pick</span>&lt;<span class="title class_">Boy</span>,<span class="string">&#x27;id&#x27;</span>&gt;;</span><br><span class="line"></span><br><span class="line"><span class="keyword">const</span> <span class="attr">boy</span>:<span class="title class_">PartialBoy</span> = &#123;</span><br><span class="line">  <span class="attr">id</span>:<span class="number">123</span>,</span><br><span class="line">  <span class="attr">name</span>:<span class="string">&#x27;123&#x27;</span> <span class="comment">// 报错</span></span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
-
-
-<h4 id="条件类型"><a href="#条件类型" class="headerlink" title="条件类型"></a>条件类型</h4><figure class="highlight javascript"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br></pre></td><td class="code"><pre><span class="line">interface <span class="title class_">Bird</span> &#123;</span><br><span class="line">  <span class="attr">name1</span>:string</span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line">interface <span class="title class_">Fish</span> &#123;</span><br><span class="line">  <span class="attr">name2</span>:string</span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line">interface <span class="title class_">Water</span> &#123;</span><br><span class="line">  <span class="attr">name3</span>:string</span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line">interface <span class="title class_">Sky</span> &#123;</span><br><span class="line">  <span class="attr">name4</span>:string</span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line">type <span class="title class_">Combin</span>&lt;T&gt; = T <span class="keyword">extends</span> <span class="title class_">Bird</span> ? <span class="title class_">Sky</span> : <span class="title class_">Water</span>;</span><br><span class="line"></span><br><span class="line"><span class="keyword">const</span> <span class="attr">ins</span>:<span class="title class_">Combin</span>&lt;<span class="title class_">Fish</span> | <span class="title class_">Bird</span>&gt; = &#123;</span><br><span class="line">  <span class="attr">name4</span>: <span class="string">&#x27;123&#x27;</span>,</span><br><span class="line">  <span class="attr">name3</span>:<span class="string">&#x27;123&#x27;</span></span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
-
- 
-      <!-- reward -->
-      
-    </div>
-    
-
-    <!-- copyright -->
-    
-    <footer class="article-footer">
-       
-  <ul class="article-tag-list" itemprop="keywords"><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/TypeScript/" rel="tag">TypeScript</a></li></ul>
-
-    </footer>
-  </div>
-
-   
-    
-</article>
-
-    
-    <article
-  id="post-typescript/TS案例总结"
-  class="article article-type-post"
-  itemscope
-  itemprop="blogPost"
-  data-scroll-reveal
->
-  <div class="article-inner">
-    
-    <header class="article-header">
-       
-<h2 itemprop="name">
-  <a class="article-title" href="/posts/e40dc38116f7/"
-    >TypeScript 相关概念</a> 
-</h2>
- 
-
-      
-    </header>
-     
-    <div class="article-meta">
-      <a href="/posts/e40dc38116f7/" class="article-date">
-  <time datetime="2021-02-24T10:28:21.000Z" itemprop="datePublished">2021-02-24</time>
-</a> 
-  <div class="article-category">
-    <a class="article-category-link" href="/categories/TypeScript/">TypeScript</a>
-  </div>
-   
-    </div>
-      
-    <div class="article-entry" itemprop="articleBody">
-       
-  <h4 id="interface-vs-type"><a href="#interface-vs-type" class="headerlink" title="interface vs type"></a>interface vs type</h4><ul>
-<li><p>interface 可以使用 扩展（extends）来继承其他接口，并且支持 声明合并（Declaration Merging）<br>type 不能像接口那样直接进行声明合并，但它可以通过 交叉类型（&amp;）来合并类型。<strong>一般称作类型别名</strong></p>
-</li>
-<li><p>interface 更多地用于定义对象的结构，也可以用来定义类的形状（即类实现的接口）。<br>type 是更通用的类型别名，可以用于任何类型，包括基本类型、联合类型、交叉类型、元组等。</p>
-</li>
-<li><p>鼠标放在 interface 上会显示接口名称，但是放在 type 上显示的是对应的类型，因此 type 并不定义新的类型。</p>
-</li>
-</ul>
-<h4 id="const-vs-readonly"><a href="#const-vs-readonly" class="headerlink" title="const vs readonly"></a>const vs readonly</h4><p>不在同一个维度，一个是类型，一个是变量，如果描述一个类型不可变使用 readonly, 如果是变量不可变使用 const。</p>
-<h4 id="数字类型索引"><a href="#数字类型索引" class="headerlink" title="数字类型索引"></a>数字类型索引</h4><p>数字类型索引的类型必须是字符串索引的子类型。</p>
-<figure class="highlight ts"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">class</span> <span class="title class_">Animal</span> &#123;&#125;</span><br><span class="line"><span class="keyword">class</span> <span class="title class_">Dog</span> <span class="keyword">extends</span> <span class="title class_ inherited__">Animal</span> &#123;&#125;</span><br><span class="line"><span class="keyword">const</span> <span class="attr">a</span>: &#123;</span><br><span class="line">  [<span class="attr">k</span>: <span class="built_in">number</span>]: <span class="title class_">Dog</span>;</span><br><span class="line">  [<span class="attr">k</span>: <span class="built_in">string</span>]: <span class="title class_">Animal</span>;</span><br><span class="line">&#125; = &#123;</span><br><span class="line">  <span class="number">1</span>: <span class="keyword">new</span> <span class="title class_">Dog</span>(),</span><br><span class="line">&#125;;</span><br></pre></td></tr></table></figure>
-
-<h4 id="class-interface"><a href="#class-interface" class="headerlink" title="class interface"></a>class interface</h4><p><strong>class 具有静态部分类型，和实例类型。 不要用构造器签名去给类实现接口使用。</strong></p>
-<figure class="highlight ts"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">interface</span> IA &#123;</span><br><span class="line">  <span class="title function_">todo</span>(): <span class="built_in">void</span>;</span><br><span class="line">&#125;</span><br><span class="line"><span class="keyword">interface</span> <span class="title class_">IACons</span> &#123;</span><br><span class="line">  <span class="keyword">new</span> (): <span class="variable constant_">IA</span>;</span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line"><span class="keyword">class</span> <span class="title class_">A</span> <span class="keyword">implements</span> <span class="variable constant_">IA</span> &#123;</span><br><span class="line">  <span class="title function_">todo</span>(<span class="params"></span>) &#123;&#125;</span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line"><span class="keyword">function</span> <span class="title function_">create</span>(<span class="params">cons: IACons</span>): <span class="variable constant_">IA</span> &#123;</span><br><span class="line">  <span class="keyword">return</span> <span class="keyword">new</span> <span class="title function_">cons</span>();</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
-
-<h4 id="受保护的构造方法"><a href="#受保护的构造方法" class="headerlink" title="受保护的构造方法"></a>受保护的构造方法</h4><p>可以考虑用抽象类代替</p>
-<figure class="highlight ts"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">class</span> <span class="title class_">A</span> &#123;</span><br><span class="line">  <span class="keyword">protected</span> <span class="title function_">constructor</span>(<span class="params"></span>) &#123;&#125;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
-
-<h4 id="类型断言"><a href="#类型断言" class="headerlink" title="类型断言"></a>类型断言</h4><figure class="highlight ts"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">const</span> <span class="attr">a</span>: <span class="built_in">object</span> | <span class="built_in">any</span>[] = [];</span><br><span class="line"></span><br><span class="line">(a <span class="keyword">as</span> <span class="built_in">any</span>[]).<span class="title function_">push</span>(<span class="number">1</span>);</span><br><span class="line">(<span class="language-xml">&lt;any[]&gt;a).push(1);</span></span><br></pre></td></tr></table></figure>
-
-<h4 id="类型保护"><a href="#类型保护" class="headerlink" title="类型保护"></a>类型保护</h4><ul>
-<li><p>使用类型谓词</p>
-<figure class="highlight ts"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">interface</span> <span class="title class_">Fish</span> &#123;</span><br><span class="line">  <span class="attr">swim</span>: <span class="function">() =&gt;</span> <span class="built_in">void</span>;</span><br><span class="line">  <span class="attr">name</span>: <span class="function">() =&gt;</span> <span class="built_in">void</span>;</span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line"><span class="keyword">interface</span> <span class="title class_">Bird</span> &#123;</span><br><span class="line">  <span class="attr">fly</span>: <span class="function">() =&gt;</span> <span class="built_in">void</span>;</span><br><span class="line">  <span class="attr">name</span>: <span class="function">() =&gt;</span> <span class="built_in">void</span>;</span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line"><span class="keyword">function</span> <span class="title function_">isFish</span>(<span class="params">obj: Fish | Bird</span>): obj is <span class="title class_">Fish</span> &#123;</span><br><span class="line">  <span class="comment">// 返回一个boolean</span></span><br><span class="line">  <span class="keyword">return</span> (obj <span class="keyword">as</span> <span class="title class_">Fish</span>).<span class="property">swim</span> !== <span class="literal">undefined</span>;</span><br><span class="line">&#125;</span><br><span class="line"><span class="keyword">function</span> <span class="title function_">fn</span>(<span class="params">obj: Fish | Bird</span>) &#123;</span><br><span class="line">  <span class="keyword">if</span> (<span class="title function_">isFish</span>(obj)) obj.<span class="title function_">swim</span>();</span><br><span class="line">  <span class="keyword">else</span> obj.<span class="title function_">fly</span>();</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
-</li>
-<li><p>typeof</p>
-<figure class="highlight ts"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">function</span> <span class="title function_">fn</span>(<span class="params">obj: <span class="built_in">string</span> | <span class="built_in">number</span></span>) &#123;</span><br><span class="line">  <span class="keyword">if</span> (<span class="keyword">typeof</span> obj === <span class="string">&quot;string&quot;</span>) obj.<span class="property">substring</span>;</span><br><span class="line">  <span class="keyword">else</span> obj.<span class="property">toFixed</span>;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
-</li>
-<li><p>! 操作符</p>
-<figure class="highlight ts"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment">// 在嵌套函数中无法正确推断数据类型</span></span><br><span class="line"><span class="keyword">function</span> <span class="title function_">fn</span>(<span class="params">name: <span class="built_in">string</span> | <span class="literal">null</span> | <span class="literal">undefined</span></span>) &#123;</span><br><span class="line">  <span class="keyword">return</span> <span class="keyword">function</span> (<span class="params"></span>) &#123;</span><br><span class="line">    name!.<span class="property">substring</span>;</span><br><span class="line">  &#125;;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure></li>
-</ul>
-<h4 id="类型约束"><a href="#类型约束" class="headerlink" title="类型约束"></a>类型约束</h4><ul>
-<li><strong>unknown 是 TypeScript 中的一个特殊类型，它表示任何类型</strong>。与 any 不同，unknown 类型的值不能直接操作，必须先进行某种类型的检查。</li>
-</ul>
-<figure class="highlight ts"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">type</span> <span class="keyword">of</span> = [<span class="number">1</span>, <span class="number">2</span>, <span class="number">3</span>] <span class="keyword">extends</span> unknown ? <span class="number">1</span> : <span class="number">2</span>; <span class="comment">// 1</span></span><br></pre></td></tr></table></figure>
-
-<h4 id="元组转为普通对象"><a href="#元组转为普通对象" class="headerlink" title="元组转为普通对象"></a>元组转为普通对象</h4><p>会移除,number 索引签名,所有数组方法, length 属性,所有可能的数字字符串索引</p>
-<p>保留元组特有的具体数字属性映射</p>
-<figure class="highlight ts"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">type</span> <span class="title class_">ObjFromTuple</span> = <span class="title class_">Omit</span>&lt;<span class="title class_">Tuple</span>, keyof <span class="built_in">any</span>[]&gt;;</span><br></pre></td></tr></table></figure>
-
-<h4 id="逆变-协变"><a href="#逆变-协变" class="headerlink" title="逆变 协变"></a>逆变 协变</h4><ul>
-<li><p>协变通常表示同向，例如 A 是 B 的子类型，那么 Container<A> 也是 Container<B> 的子类型，类型会随着内部类型的变化而同向变化。</p>
-</li>
-<li><p>逆变通常表示逆向，例如 A 是 B 的子类型，那么 Container<B> 是 Container<A> 的子类型，类型会随着内部类型的变化而逆向变化。</p>
-</li>
-<li><p>换一种简单说法就是要永远保证类型的安全</p>
-</li>
-</ul>
-<figure class="highlight ts"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">class</span> <span class="title class_">Animal</span> &#123;&#125;</span><br><span class="line"></span><br><span class="line"><span class="keyword">class</span> <span class="title class_">Cat</span> <span class="keyword">extends</span> <span class="title class_ inherited__">Animal</span> &#123;</span><br><span class="line">  <span class="title class_">Cat</span>() &#123;&#125;</span><br><span class="line">&#125;</span><br><span class="line"><span class="keyword">class</span> <span class="title class_">Dog</span> <span class="keyword">extends</span> <span class="title class_ inherited__">Animal</span> &#123;</span><br><span class="line">  <span class="title class_">Dog</span>() &#123;&#125;</span><br><span class="line">&#125;</span><br><span class="line"><span class="keyword">class</span> <span class="title class_">SmallDog</span> <span class="keyword">extends</span> <span class="title class_ inherited__">Dog</span> &#123;</span><br><span class="line">  <span class="keyword">public</span> name = <span class="number">1</span>;</span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line"><span class="comment">// 错误  参数类型不安全，定义的类型应该是参数类型的父类型，参数可以多出不使用，但是不能少</span></span><br><span class="line"><span class="keyword">const</span> <span class="attr">fn</span>: <span class="function">(<span class="params">v: Dog</span>) =&gt;</span> <span class="title class_">Dog</span> = <span class="function">(<span class="params">v: SmallDog</span>) =&gt;</span> <span class="keyword">new</span> <span class="title class_">SmallDog</span>();</span><br><span class="line"><span class="comment">// 错误</span></span><br><span class="line"><span class="keyword">const</span> <span class="attr">fn1</span>: <span class="function">(<span class="params">v: Dog</span>) =&gt;</span> <span class="title class_">Dog</span> = <span class="function">(<span class="params">v: SmallDog</span>) =&gt;</span> <span class="keyword">new</span> <span class="title class_">Animal</span>();</span><br><span class="line"><span class="keyword">const</span> <span class="attr">fn2</span>: <span class="function">(<span class="params">v: Dog</span>) =&gt;</span> <span class="title class_">Dog</span> = <span class="function">(<span class="params">v: Animal</span>) =&gt;</span> <span class="keyword">new</span> <span class="title class_">SmallDog</span>();</span><br><span class="line"><span class="comment">// 错误  返回值类型不安全，定义的类型应该是返回值类型的子类型，返回值可以返回当前有的类型，但是不能多返回</span></span><br><span class="line"><span class="keyword">const</span> <span class="attr">fn3</span>: <span class="function">(<span class="params">v: Dog</span>) =&gt;</span> <span class="title class_">Dog</span> = <span class="function">(<span class="params">v: Animal</span>) =&gt;</span> <span class="keyword">new</span> <span class="title class_">Animal</span>();</span><br></pre></td></tr></table></figure>
-
-<figure class="highlight ts"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">type</span> <span class="variable constant_">T1</span> = &#123; <span class="attr">name</span>: <span class="built_in">string</span> &#125;;</span><br><span class="line"><span class="keyword">type</span> <span class="variable constant_">T2</span> = &#123; <span class="attr">age</span>: <span class="built_in">number</span> &#125;;</span><br><span class="line"></span><br><span class="line"><span class="comment">// 参数协变，因此返回的是交叉类型</span></span><br><span class="line"><span class="keyword">type</span> <span class="title class_">UnionToIntersection</span>&lt;T&gt; = T <span class="keyword">extends</span> &#123;</span><br><span class="line">  <span class="attr">a</span>: <span class="function">(<span class="params">x: infer U</span>) =&gt;</span> <span class="built_in">void</span>;</span><br><span class="line">  <span class="attr">b</span>: <span class="function">(<span class="params">x: infer U</span>) =&gt;</span> <span class="built_in">void</span>;</span><br><span class="line">&#125;</span><br><span class="line">  ? U</span><br><span class="line">  : <span class="built_in">never</span>;</span><br><span class="line"><span class="keyword">type</span> <span class="variable constant_">T3</span> = <span class="title class_">UnionToIntersection</span>&lt;&#123; <span class="attr">a</span>: <span class="function">(<span class="params">x: T1</span>) =&gt;</span> <span class="built_in">void</span>; <span class="attr">b</span>: <span class="function">(<span class="params">x: T2</span>) =&gt;</span> <span class="built_in">void</span> &#125;&gt;; <span class="comment">// T1 &amp; T2</span></span><br></pre></td></tr></table></figure>
- 
-      <!-- reward -->
-      
-    </div>
-    
-
-    <!-- copyright -->
-    
-    <footer class="article-footer">
-       
-  <ul class="article-tag-list" itemprop="keywords"><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/TypeScript/" rel="tag">TypeScript</a></li></ul>
 
     </footer>
   </div>

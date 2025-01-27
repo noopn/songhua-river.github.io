@@ -1,0 +1,589 @@
+<!DOCTYPE html>
+
+
+<html lang="zh-CN">
+  
+
+    <head>
+      <meta charset="utf-8" />
+       
+      <meta name="keywords" content="前端 web react" />
+       
+      <meta name="description" content="前端技术与生活。" />
+      
+      <meta
+        name="viewport"
+        content="width=device-width, initial-scale=1, maximum-scale=1"
+      />
+      <title>解析 React Transition Group ① |  四月八日</title>
+  <meta name="generator" content="hexo-theme-ayer">
+      
+      <link rel="shortcut icon" href="/favicon.ico" />
+       
+<link rel="stylesheet" href="/dist/main.css">
+ 
+<link rel="stylesheet" href="/css/fonts/remixicon.css">
+ 
+<link rel="stylesheet" href="/css/custom.css">
+ 
+      <script src="/js/pace.min.js"></script>
+       
+ 
+
+      <link rel="stylesheet" href="/css/bulma.min.css" />
+      <script src="/js/sweetalert2.min.js"></script>
+
+      <!-- mermaid -->
+      
+      <script src="https://cdn.staticfile.org/mermaid/8.14.0/mermaid.min.js"></script>
+      
+      <style>
+        .swal2-styled.swal2-confirm {
+          font-size: 1.6rem;
+        }
+      </style>
+    <!-- hexo injector head_end start -->
+<link rel="stylesheet" href="/css/katex.min.css">
+
+<link rel="stylesheet" href="/css/style.css">
+<!-- hexo injector head_end end --></head>
+  </html>
+</html>
+
+
+<body>
+  <div id="app">
+    
+      
+    <main class="content on">
+      <section class="outer">
+  <article
+  id="post-react/react-transition-group-2"
+  class="article article-type-post"
+  itemscope
+  itemprop="blogPost"
+  data-scroll-reveal
+>
+  <div class="article-inner">
+    
+    <header class="article-header">
+       
+<h1 class="article-title sea-center" style="border-left:0" itemprop="name">
+  解析 React Transition Group ①
+</h1>
+ 
+
+      
+    </header>
+     
+    <div class="article-meta">
+      <a href="/posts/2c770da8eb2f/" class="article-date">
+  <time datetime="2023-01-23T09:29:00.000Z" itemprop="datePublished">2023-01-23</time>
+</a> 
+  <div class="article-category">
+    <a class="article-category-link" href="/categories/React/">React</a>
+  </div>
+  
+<div class="word_count">
+    <span class="post-time">
+        <span class="post-meta-item-icon">
+            <i class="ri-quill-pen-line"></i>
+            <span class="post-meta-item-text"> 字数统计:</span>
+            <span class="post-count">1k</span>
+        </span>
+    </span>
+
+    <span class="post-time">
+        &nbsp; | &nbsp;
+        <span class="post-meta-item-icon">
+            <i class="ri-book-open-line"></i>
+            <span class="post-meta-item-text"> 阅读时长≈</span>
+            <span class="post-count">4 分钟</span>
+        </span>
+    </span>
+</div>
+ 
+    </div>
+      
+    <div class="tocbot"></div>
+
+
+
+
+  
+    <div class="article-entry" itemprop="articleBody">
+       
+  <h4 id="Transition-Group-组件"><a href="#Transition-Group-组件" class="headerlink" title="Transition Group 组件"></a>Transition Group 组件</h4><p>Transition Group 组件用于管理一个 Transition 组件列表，即使 Transition 不声明状态 Transition Group 也会自动为其维护一个内部状态。</p>
+<ul>
+<li>自动为子组件列表添加状态并记录</li>
+<li>子组件添加或删除时不会被直接渲染，而是被 Transition Group 拦截，当执行完动画逻辑后，在内部状态中删除，并重新渲染。</li>
+</ul>
+<p>首次渲染时可以记录子组件并吸收为内部状态，需要注意以下细节：</p>
+<ul>
+<li>子组件可能不合法，或没有 key</li>
+<li>Transition Group 的属性优先级需要高于子组件相同属性的优先级</li>
+<li>需要实现清除逻辑给组件被删除时使用，从内部状态中清除被删除的组件。</li>
+</ul>
+<figure class="highlight js"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br><span class="line">35</span><br><span class="line">36</span><br><span class="line">37</span><br><span class="line">38</span><br><span class="line">39</span><br><span class="line">40</span><br><span class="line">41</span><br><span class="line">42</span><br><span class="line">43</span><br><span class="line">44</span><br><span class="line">45</span><br><span class="line">46</span><br><span class="line">47</span><br><span class="line">48</span><br><span class="line">49</span><br><span class="line">50</span><br><span class="line">51</span><br><span class="line">52</span><br><span class="line">53</span><br><span class="line">54</span><br><span class="line">55</span><br><span class="line">56</span><br><span class="line">57</span><br><span class="line">58</span><br><span class="line">59</span><br><span class="line">60</span><br><span class="line">61</span><br><span class="line">62</span><br><span class="line">63</span><br><span class="line">64</span><br><span class="line">65</span><br><span class="line">66</span><br><span class="line">67</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">const</span> <span class="title function_">TransitionGroup</span> = (<span class="params">props</span>) =&gt; &#123;</span><br><span class="line">  <span class="comment">// 是否首次渲染</span></span><br><span class="line">  <span class="keyword">const</span> firstRender = <span class="title function_">useRef</span>(<span class="literal">true</span>);</span><br><span class="line">  <span class="title function_">useEffect</span>(<span class="function">() =&gt;</span> &#123;</span><br><span class="line">    firstRender.<span class="property">current</span> = <span class="literal">false</span>;</span><br><span class="line">  &#125;, []);</span><br><span class="line"></span><br><span class="line">  <span class="keyword">const</span> [, rerender] = <span class="title function_">useState</span>([]);</span><br><span class="line"></span><br><span class="line">  <span class="keyword">const</span> latestChildrenRef = <span class="title function_">useRef</span>(props.<span class="property">children</span>);</span><br><span class="line">  latestChildrenRef.<span class="property">current</span> = props.<span class="property">children</span>;</span><br><span class="line"></span><br><span class="line">  <span class="comment">// handleOnExit 是一个组件内的方法</span></span><br><span class="line">  <span class="comment">// 需要注意的是它通过 latestChildrenRef 保证 children 永远是最新的</span></span><br><span class="line">  <span class="comment">// 因为组件可能被重新渲染，而 handleOnExit 方法可能已经被绑定在了组件上</span></span><br><span class="line">  <span class="comment">// 因此，在它真正执行的上下文中无法获取到最近的 children 属性</span></span><br><span class="line"></span><br><span class="line">  <span class="keyword">const</span> <span class="title function_">handleOnExit</span> = (<span class="params">child, node</span>) =&gt; &#123;</span><br><span class="line">    <span class="keyword">const</span> currentMap = <span class="title function_">getChildrenMapping</span>(latestChildrenRef.<span class="property">current</span>);</span><br><span class="line"></span><br><span class="line">    <span class="comment">// onExit 执行的时候，这个元素可能已经没有了，在外部通过map重新渲染了新列表，所以已经计算的currentChildrenMap 不可靠</span></span><br><span class="line">    <span class="keyword">if</span> (currentMap.<span class="title function_">has</span>(child.<span class="property">key</span>)) <span class="keyword">return</span>;</span><br><span class="line"></span><br><span class="line">    <span class="keyword">if</span> (child.<span class="property">props</span>.<span class="property">onExited</span>) &#123;</span><br><span class="line">      child.<span class="property">props</span>.<span class="title function_">onExited</span>(node);</span><br><span class="line">    &#125;</span><br><span class="line"></span><br><span class="line">    preChildrenMap.<span class="property">current</span>.<span class="title function_">delete</span>(child.<span class="property">key</span>);</span><br><span class="line">    <span class="title function_">rerender</span>([]);</span><br><span class="line">  &#125;;</span><br><span class="line"></span><br><span class="line">  <span class="keyword">const</span> mappedChildren = firstRender.<span class="property">current</span></span><br><span class="line">    ? <span class="title function_">getInitialChildMapping</span>(props, handleOnExit)</span><br><span class="line">    : <span class="title function_">getNextChildrenMap</span>(props, preChildrenMap.<span class="property">current</span>, handleOnExit); <span class="comment">// 更新时的逻辑</span></span><br><span class="line">&#125;;</span><br><span class="line"></span><br><span class="line"><span class="keyword">const</span> <span class="title function_">getInitialChildMapping</span> = (<span class="params">props, handleExit</span>) =&gt; &#123;</span><br><span class="line">  <span class="keyword">return</span> <span class="title function_">getChildrenMapping</span>(props.<span class="property">children</span>, <span class="function">(<span class="params">child</span>) =&gt;</span> &#123;</span><br><span class="line">    <span class="keyword">return</span> <span class="title class_">React</span>.<span class="title function_">cloneElement</span>(child, &#123;</span><br><span class="line">      <span class="comment">// 在子组件退出的方法中处理删除内部状态的逻辑</span></span><br><span class="line">      <span class="attr">onExited</span>: <span class="title function_">handleExit</span>(child),</span><br><span class="line"></span><br><span class="line">      <span class="comment">// 初始化状态</span></span><br><span class="line">      <span class="attr">in</span>: <span class="literal">true</span>,</span><br><span class="line"></span><br><span class="line">      <span class="comment">// Transition Group 的属性优先级需要高于子组件</span></span><br><span class="line">      <span class="attr">appear</span>: <span class="title function_">getProp</span>(child, <span class="string">&quot;appear&quot;</span>, props),</span><br><span class="line">      <span class="attr">enter</span>: <span class="title function_">getProp</span>(child, <span class="string">&quot;enter&quot;</span>, props),</span><br><span class="line">      <span class="attr">exit</span>: <span class="title function_">getProp</span>(child, <span class="string">&quot;exit&quot;</span>, props),</span><br><span class="line">    &#125;);</span><br><span class="line">  &#125;);</span><br><span class="line">&#125;;</span><br><span class="line"></span><br><span class="line"><span class="keyword">const</span> <span class="title function_">getChildrenMapping</span> = (<span class="params">children, fn</span>) =&gt; &#123;</span><br><span class="line">  <span class="keyword">const</span> childrenMap = <span class="keyword">new</span> <span class="title class_">Map</span>();</span><br><span class="line">  <span class="keyword">const</span> <span class="title function_">mapper</span> = (<span class="params">child</span>) =&gt; &#123;</span><br><span class="line">    <span class="keyword">return</span> fn &amp;&amp; <span class="title class_">React</span>.<span class="title function_">isValidElement</span>(child) ? <span class="title function_">fn</span>(child) : child;</span><br><span class="line">  &#125;;</span><br><span class="line"></span><br><span class="line">  <span class="keyword">if</span> (children) &#123;</span><br><span class="line">    <span class="comment">// map 函数可以自动添加key</span></span><br><span class="line">    <span class="title class_">React</span>.<span class="property">Children</span>.<span class="title function_">map</span>(children, <span class="function">(<span class="params">child</span>) =&gt;</span> child).<span class="title function_">forEach</span>(<span class="function">(<span class="params">child</span>) =&gt;</span> &#123;</span><br><span class="line">      childrenMap.<span class="title function_">set</span>(child.<span class="property">key</span>, <span class="title function_">mapper</span>(child));</span><br><span class="line">    &#125;);</span><br><span class="line">  &#125;</span><br><span class="line">  <span class="keyword">return</span> childrenMap;</span><br><span class="line">&#125;;</span><br></pre></td></tr></table></figure>
+
+<p>更新阶段, 新列表并不一定只会删除其中一个元素，而是可以添加或删除多个元素，而删除操作并不是立即执行的，而是当动画结束后，从内部状态中删除。</p>
+<p>这需要一种策略合并两个列表。让旧组件尽量保持在原来的位置上，再将附近的新元素插入到就元素的前面。</p>
+<iframe width='100%' height='600px' src="https://drawio.iftrue.club:9348//?tags=%7B%7D&lightbox=1&highlight=0000ff&layers=1&nav=1&title=drawio.drawio#R%3Cmxfile%3E%3Cdiagram%20id%3D%22LWQS1ubHAZ7xhi4PirgD%22%20name%3D%22Page-1%22%3E7Vzbkto4EP0aPc4WvsiWHzF4kofdZKtmt5I8OiDAibGIMQPs168EEr60hnFqGUtUtipVI7VlWT6t0%2Bpud0DeZH14V6ab1R9sTnPkjuYH5E2R67qj0Od%2FhOR4ljiOj8%2BSZZnNpawWPGX%2FUCkcSekum9Nta2DFWF5lm7ZwxoqCzqqWLC1Ltm8PW7C8%2FdRNuqRA8DRLcyj9lM2r1VlK8KiWv6fZcqWe7IzklXWqBkvBdpXO2b4h8hLkTUrGqnNrfZjQXKCncDnf9%2FjC1cvCSlpUfW7YLxafpsWXv%2F6m44cs268%2B%2F3hfPjhSG89pvpNv7MnlVkeFwX6VVfRpk85Ef88Vjbx4Va1z3nN4Ey5Eru2ZlhU9NERyYe8oW9OqPPIh8qqnUJPbxFP47mvMPSlaNeBWslRqeXmZuQaCNyQWP4NLAHBxDeDiYttwCQEujglcrNsvxEpcXGIalwjiMjIAjO9bBoxHAAol2xVzKm4a8ZdmZbViS1ak%2Be%2BMbSQS32hVHeUhme4q1saJw1MeP4v7f3Ox6n%2BR850600Ord5S9FwHesl05o1deQx1uVVouaXXtfaX5pPPWeQsVVtI8rbLnNoluDr9ad2NfRibOvQjbtS0vr1Djgk3ggi2jqzr9G7j4JnCxzb574ZuasaGsmNfTiil32RYr5oFdacJ773qpxnelC72xwAIrZtxL9eCpB%2Fk7gDNmm%2FeunBPD3kDXSTWPC8wOOCbCGp%2FYBgwMawAs21W6Ec3ZrsyPcZnOvoujJX4Frfr0FL08%2FUrzP9k2qzJWcFlOF2IOgVw240dq5%2FI6m8%2FF4%2BM0z5ZCUJ6xuNwwlvLLwBsox4nayvEdqBxXoxzHfSvt%2BJDOQDviBH%2BS3dpHSWpp%2FJ%2F9mBexfdUfUXbgVX%2FElzNa4o%2F48Hwx4o94nR3pGjYXPoyqjGSHyOu4hIPiAs%2BXOyNq38DB9%2B0iKgwcTDg8gKihaaL6ABcumZhIgQCyarAZlqzwkwiA5Vf1eXDQz%2Be5KPHm2sF37%2FOEfU0pscuUWvJFrGNKsXFTCnMwHxCOHYSnFlhTHTzBkPBgeNLcF19x3xgFe1bxFcMYBSI%2FPF8DTdQ8KF8xdAkFX107%2BKqDZ1i%2BQnN2Z3zFffka2sVXOyqUAF9NpyAx9DsEXz1L%2BKqBZ1i%2BajK0SYCiEI1DlEQoIih6RAlGhAhh8ojiCW9%2FVC0YDnMkRFixrUr2nU5YzkouL1gheL3I8rwjauC7YEUlGc3DSdmXEzvXIhUV0sy4Ymh5G00FbUW5IQaKutQwtkKXt9JUAA%2Fkk6YCFI%2BuaOrDr6YpzzeuKZjGRG6QC6w3LQ0EP3aiqjXOs4I%2BqKWN%2BRBhFfAJHTWEt5by72mi7SYttHMJVTxsT7oRMznu5qCfKCFonJz2DkbxFEX4Ku8xiiZoTE5jYhT7ja3HL40QSVDiozhGZIqSEBHeDtRav5b1QzEaT8Xk9YQhisZivHgW%2F%2BcJCZ9%2FPFIbd9JYGBzjizF8BjGGt5P2UtUKu3c1HioXz195isYXRXHFnyFuw87Fm67sZjrVTT7PnrXTC%2B4%2BSDaJ2b%2FttlW2OL42%2F2k6sPxry7DHZsgEl%2B6QvoEV6XxT9j2NFfE1VuTNMlWhzorckycdkJ6edBBZ5UkHdlTFAE86MuxJB9BVFJ50YIknrYFnUE86dO%2Bcr2Hfj3ShXR%2FpQpiRMVGt1eVr6BnmawhTp4KvoR181cEzLF%2FvPVMVRj35qpC3ha%2FwHDFRIw74aroaVz2%2FgctHzlffEr5q4BmUr%2BTe%2FWHi9uWrXV%2BC1LoN%2F1%2BXLl%2BJ6Wo1Av0OwVdsB1918AzLV92X25slr855m1MeKY5ErqnO5DQTSufkFUFjR2SErud2%2Fs%2FjDJrHucGe7%2BRsQl2OXldepHI7t9%2Fz916oSYK%2BZ5RdXz8JLLqzoVCTmK4uIvqvn5ElZ5Tp6iJy7zEg6RsDquyYLXzV%2FN6BDeWAkenyIqWnbjmgJfWAOnwGZWx071Fg1DcKjOyKAtW6Tf9CCWCspqR8WMbqw0AOjh2M1eBzI8bybv2zXKdrjV8385J%2FAQ%3D%3D%3C%2Fdiagram%3E%3C%2Fmxfile%3E"></iframe>
+
+<figure class="highlight js"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br><span class="line">35</span><br><span class="line">36</span><br><span class="line">37</span><br><span class="line">38</span><br><span class="line">39</span><br><span class="line">40</span><br><span class="line">41</span><br><span class="line">42</span><br><span class="line">43</span><br><span class="line">44</span><br><span class="line">45</span><br><span class="line">46</span><br><span class="line">47</span><br><span class="line">48</span><br><span class="line">49</span><br><span class="line">50</span><br><span class="line">51</span><br><span class="line">52</span><br><span class="line">53</span><br><span class="line">54</span><br><span class="line">55</span><br><span class="line">56</span><br><span class="line">57</span><br><span class="line">58</span><br><span class="line">59</span><br><span class="line">60</span><br><span class="line">61</span><br><span class="line">62</span><br><span class="line">63</span><br><span class="line">64</span><br><span class="line">65</span><br><span class="line">66</span><br><span class="line">67</span><br><span class="line">68</span><br><span class="line">69</span><br><span class="line">70</span><br><span class="line">71</span><br><span class="line">72</span><br><span class="line">73</span><br><span class="line">74</span><br><span class="line">75</span><br><span class="line">76</span><br><span class="line">77</span><br><span class="line">78</span><br><span class="line">79</span><br><span class="line">80</span><br><span class="line">81</span><br><span class="line">82</span><br><span class="line">83</span><br><span class="line">84</span><br><span class="line">85</span><br><span class="line">86</span><br><span class="line">87</span><br><span class="line">88</span><br><span class="line">89</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">const</span> <span class="title function_">mergeMappingChildren</span> = (<span class="params">preChildrenMap, currentChildrenMap</span>) =&gt; &#123;</span><br><span class="line">  <span class="keyword">const</span> pre = preChildrenMap || <span class="keyword">new</span> <span class="title class_">Map</span>();</span><br><span class="line">  <span class="keyword">const</span> next = currentChildrenMap || <span class="keyword">new</span> <span class="title class_">Map</span>();</span><br><span class="line"></span><br><span class="line">  <span class="keyword">let</span> pendingQueue = [];</span><br><span class="line">  <span class="keyword">let</span> prePendingMap = <span class="keyword">new</span> <span class="title class_">Map</span>();</span><br><span class="line"></span><br><span class="line">  <span class="comment">// 如果新列表中有当前这个旧元素</span></span><br><span class="line">  <span class="comment">// 记录这个旧元素之前的元素，放进列表</span></span><br><span class="line">  pre.<span class="title function_">forEach</span>(<span class="function">(<span class="params">preChild</span>) =&gt;</span> &#123;</span><br><span class="line">    <span class="keyword">if</span> (next.<span class="title function_">has</span>(preChild.<span class="property">key</span>)) &#123;</span><br><span class="line">      <span class="keyword">if</span> (pendingQueue.<span class="property">length</span>) &#123;</span><br><span class="line">        prePendingMap.<span class="title function_">set</span>(preChild.<span class="property">key</span>, pendingQueue);</span><br><span class="line">        pendingQueue = [];</span><br><span class="line">      &#125;</span><br><span class="line">    &#125; <span class="keyword">else</span> &#123;</span><br><span class="line">      pendingQueue.<span class="title function_">push</span>(preChild.<span class="property">key</span>);</span><br><span class="line">    &#125;</span><br><span class="line">  &#125;);</span><br><span class="line"></span><br><span class="line">  <span class="keyword">const</span> mergedChildrenMap = <span class="keyword">new</span> <span class="title class_">Map</span>();</span><br><span class="line">  next.<span class="title function_">forEach</span>(<span class="function">(<span class="params">nextChild</span>) =&gt;</span> &#123;</span><br><span class="line">    <span class="comment">// 新元素排在旧元素的前面</span></span><br><span class="line">    <span class="comment">// 旧元素尽可能保持在原有的位置。</span></span><br><span class="line">    <span class="keyword">if</span> (prePendingMap.<span class="title function_">has</span>(nextChild.<span class="property">key</span>)) &#123;</span><br><span class="line">      <span class="keyword">const</span> pendingQueue = prePendingMap.<span class="title function_">get</span>(nextChild.<span class="property">key</span>);</span><br><span class="line">      pendingQueue.<span class="title function_">forEach</span>(<span class="function">(<span class="params">key</span>) =&gt;</span> &#123;</span><br><span class="line">        mergedChildrenMap.<span class="title function_">set</span>(key, pre.<span class="title function_">get</span>(key));</span><br><span class="line">      &#125;);</span><br><span class="line">    &#125;</span><br><span class="line">    mergedChildrenMap.<span class="title function_">set</span>(nextChild.<span class="property">key</span>, next.<span class="title function_">get</span>(nextChild.<span class="property">key</span>));</span><br><span class="line">  &#125;);</span><br><span class="line"></span><br><span class="line">  <span class="keyword">if</span> (pendingQueue.<span class="property">length</span>) &#123;</span><br><span class="line">    pendingQueue.<span class="title function_">forEach</span>(<span class="function">(<span class="params">preChild</span>) =&gt;</span> &#123;</span><br><span class="line">      mergedChildrenMap.<span class="title function_">set</span>(preChild.<span class="property">key</span>, next.<span class="title function_">get</span>(preChild.<span class="property">key</span>));</span><br><span class="line">    &#125;);</span><br><span class="line">  &#125;</span><br><span class="line"></span><br><span class="line">  <span class="keyword">return</span> mergedChildrenMap;</span><br><span class="line">&#125;;</span><br><span class="line"></span><br><span class="line"><span class="keyword">const</span> <span class="title function_">getNextChildrenMap</span> = (<span class="params">props, preChildrenMap, handleExit</span>) =&gt; &#123;</span><br><span class="line">  <span class="keyword">const</span> nextChildrenMap = <span class="title function_">getChildrenMapping</span>(props.<span class="property">children</span>);</span><br><span class="line">  <span class="keyword">const</span> mergedChildrenMap = <span class="title function_">mergeMappingChildren</span>(</span><br><span class="line">    preChildrenMap,</span><br><span class="line">    nextChildrenMap</span><br><span class="line">  );</span><br><span class="line"></span><br><span class="line">  <span class="keyword">const</span> childrenMap = <span class="keyword">new</span> <span class="title class_">Map</span>();</span><br><span class="line">  mergedChildrenMap.<span class="title function_">forEach</span>(<span class="function">(<span class="params">child</span>) =&gt;</span> &#123;</span><br><span class="line">    <span class="keyword">const</span> preHas = preChildrenMap.<span class="title function_">has</span>(child.<span class="property">key</span>);</span><br><span class="line">    <span class="keyword">const</span> nextHas = nextChildrenMap.<span class="title function_">has</span>(child.<span class="property">key</span>);</span><br><span class="line">    <span class="keyword">const</span> isExiting = preHas &amp;&amp; !preChildrenMap.<span class="title function_">get</span>(child.<span class="property">key</span>).<span class="property">props</span>.<span class="property">in</span>;</span><br><span class="line"></span><br><span class="line">    <span class="comment">// 本次更新中被删除的元素</span></span><br><span class="line">    <span class="keyword">if</span> (preHas &amp;&amp; !nextHas &amp;&amp; !isExiting) &#123;</span><br><span class="line">      childrenMap.<span class="title function_">set</span>(</span><br><span class="line">        child.<span class="property">key</span>,</span><br><span class="line">        <span class="title class_">React</span>.<span class="title function_">cloneElement</span>(child, &#123;</span><br><span class="line">          <span class="attr">in</span>: <span class="literal">false</span>,</span><br><span class="line">        &#125;)</span><br><span class="line">      );</span><br><span class="line">      <span class="comment">// 新增的元素,包括正在退出中的元素</span></span><br><span class="line">    &#125; <span class="keyword">else</span> <span class="keyword">if</span> ((!preHas || isExiting) &amp;&amp; nextHas) &#123;</span><br><span class="line">      childrenMap.<span class="title function_">set</span>(</span><br><span class="line">        child.<span class="property">key</span>,</span><br><span class="line">        <span class="title class_">React</span>.<span class="title function_">cloneElement</span>(child, &#123;</span><br><span class="line">          <span class="attr">onExited</span>: <span class="function">() =&gt;</span> <span class="title function_">handleExit</span>(child),</span><br><span class="line">          <span class="attr">in</span>: <span class="literal">true</span>,</span><br><span class="line">          <span class="attr">enter</span>: <span class="title function_">getProp</span>(child, <span class="string">&quot;enter&quot;</span>, props),</span><br><span class="line">          <span class="attr">exit</span>: <span class="title function_">getProp</span>(child, <span class="string">&quot;exit&quot;</span>, props),</span><br><span class="line">        &#125;)</span><br><span class="line">      );</span><br><span class="line">      <span class="comment">// 没有改变的元素</span></span><br><span class="line">    &#125; <span class="keyword">else</span> <span class="keyword">if</span> (preHas &amp;&amp; nextHas &amp;&amp; <span class="title function_">isValidElement</span>(prevChild)) &#123;</span><br><span class="line">      childrenMap.<span class="title function_">set</span>(</span><br><span class="line">        child.<span class="property">key</span>,</span><br><span class="line">        <span class="title class_">React</span>.<span class="title function_">cloneElement</span>(child, &#123;</span><br><span class="line">          <span class="attr">onExited</span>: <span class="function">() =&gt;</span> <span class="title function_">handleExit</span>(child),</span><br><span class="line">          <span class="attr">in</span>: preChildrenMap.<span class="title function_">get</span>(child.<span class="property">key</span>).<span class="property">props</span>.<span class="property">in</span>,</span><br><span class="line">          <span class="attr">enter</span>: <span class="title function_">getProp</span>(child, <span class="string">&quot;enter&quot;</span>, props),</span><br><span class="line">          <span class="attr">exit</span>: <span class="title function_">getProp</span>(child, <span class="string">&quot;exit&quot;</span>, props),</span><br><span class="line">        &#125;)</span><br><span class="line">      );</span><br><span class="line">    &#125;</span><br><span class="line">  &#125;);</span><br><span class="line">  <span class="keyword">return</span> childrenMap;</span><br><span class="line">&#125;;</span><br></pre></td></tr></table></figure>
+ 
+      <!-- reward -->
+      
+      <div id="reword-out">
+        <div id="reward-btn">
+          打赏
+        </div>
+      </div>
+      
+    </div>
+    
+
+    <!-- copyright -->
+    
+    <div class="declare">
+      <ul class="post-copyright">
+        <li>
+          <i class="ri-copyright-line"></i>
+          <strong>版权声明： </strong>
+          
+          本博客所有文章除特别声明外，著作权归作者所有。转载请注明出处！
+          
+        </li>
+      </ul>
+    </div>
+    
+    <footer class="article-footer">
+       
+  <ul class="article-tag-list" itemprop="keywords"><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/React/" rel="tag">React</a></li></ul>
+
+    </footer>
+  </div>
+
+   
+  <nav class="article-nav">
+    
+      <a href="/posts/1430ebf25b0e/" class="article-nav-link">
+        <strong class="article-nav-caption">上一篇</strong>
+        <div class="article-nav-title">
+          
+            鼠标，触摸，指针事件
+          
+        </div>
+      </a>
+    
+    
+      <a href="/posts/327123b12d40/" class="article-nav-link">
+        <strong class="article-nav-caption">下一篇</strong>
+        <div class="article-nav-title">⑧抽取算法-模板方法模式</div>
+      </a>
+    
+  </nav>
+
+  
+   
+<div class="gitalk" id="gitalk-container"></div>
+
+<link rel="stylesheet" href="https://cdn.staticfile.org/gitalk/1.7.2/gitalk.min.css">
+
+
+<script src="https://cdn.staticfile.org/gitalk/1.7.2/gitalk.min.js"></script>
+
+
+<script src="https://cdn.staticfile.org/blueimp-md5/2.19.0/js/md5.min.js"></script>
+
+<script type="text/javascript">
+  var gitalk = new Gitalk({
+    clientID: 'bce2317b25da7c3c18f6',
+    clientSecret: 'e0ab868ca9054234798be82c2b1c0c9dd8632307',
+    repo: 'noopn.github.io',
+    owner: 'noopn',
+    admin: ['noopn'],
+    // id: location.pathname,      // Ensure uniqueness and length less than 50
+    id: md5(location.pathname),
+    distractionFreeMode: false,  // Facebook-like distraction free mode
+    pagerDirection: 'last'
+  })
+
+  gitalk.render('gitalk-container')
+</script>
+
+     
+</article>
+
+</section>
+      <footer class="footer">
+  <div class="outer">
+    <ul>
+      <li>
+        Copyrights &copy;
+        2015-2025
+        <i class="ri-heart-fill heart_icon"></i> SunZhiqi
+      </li>
+    </ul>
+    <ul>
+      <li>
+        
+      </li>
+    </ul>
+    <ul>
+      <li>
+        
+      </li>
+    </ul>
+    <ul>
+      
+    </ul>
+    <ul>
+      
+    </ul>
+    <ul>
+      <li>
+        <!-- cnzz统计 -->
+        
+      </li>
+    </ul>
+  </div>
+</footer>    
+    </main>
+    <div class="float_btns">
+      <div class="totop" id="totop">
+  <i class="ri-arrow-up-line"></i>
+</div>
+
+    </div>
+    <aside class="sidebar on">
+      <button class="navbar-toggle"></button>
+<nav class="navbar">
+  
+  <div class="logo">
+    <a href="/"><img src="/images/ayer-side.png" alt="四月八日"></a>
+  </div>
+  
+  <ul class="nav nav-main">
+    
+    <li class="nav-item">
+      <a class="nav-item-link" href="/">主页</a>
+    </li>
+    
+    <li class="nav-item">
+      <a class="nav-item-link" href="/archives">归档</a>
+    </li>
+    
+    <li class="nav-item">
+      <a class="nav-item-link" href="/categories">分类</a>
+    </li>
+    
+    <li class="nav-item">
+      <a class="nav-item-link" href="/tags">标签</a>
+    </li>
+    
+  </ul>
+</nav>
+<nav class="navbar navbar-bottom">
+  <ul class="nav">
+    <li class="nav-item">
+      
+      <a class="nav-item-link nav-item-search"  title="搜索">
+        <i class="ri-search-line"></i>
+      </a>
+      
+      
+    </li>
+  </ul>
+</nav>
+<div class="search-form-wrap">
+  <div class="local-search local-search-plugin">
+  <input type="search" id="local-search-input" class="local-search-input" placeholder="Search...">
+  <div id="local-search-result" class="local-search-result"></div>
+</div>
+</div>
+    </aside>
+    <div id="mask"></div>
+
+<!-- #reward -->
+<div id="reward">
+  <span class="close"><i class="ri-close-line"></i></span>
+  <p class="reward-p"><i class="ri-cup-line"></i>此时无声胜有声！</p>
+  <div class="reward-box">
+    
+    <div class="reward-item">
+      <img class="reward-img" src="/images/alipay.jpg">
+      <span class="reward-type">支付宝</span>
+    </div>
+    
+    
+    <div class="reward-item">
+      <img class="reward-img" src="/images/wechat.jpg">
+      <span class="reward-type">微信</span>
+    </div>
+    
+  </div>
+</div>
+    
+<script src="/js/jquery-3.6.0.min.js"></script>
+ 
+<script src="/js/lazyload.min.js"></script>
+
+<!-- Tocbot -->
+ 
+<script src="/js/tocbot.min.js"></script>
+
+<script>
+  tocbot.init({
+    tocSelector: ".tocbot",
+    contentSelector: ".article-entry",
+    headingSelector: "h1, h2, h3, h4, h5, h6",
+    hasInnerContainers: true,
+    scrollSmooth: true,
+    scrollContainer: "main",
+    positionFixedSelector: ".tocbot",
+    positionFixedClass: "is-position-fixed",
+    fixedSidebarOffset: "auto",
+  });
+</script>
+
+<script src="/js/jquery.modal.min.js"></script>
+<link rel="stylesheet" href="/css/jquery.modal.min.css" />
+<script src="/js/jquery.justifiedGallery.min.js"></script>
+
+<script src="/dist/main.js"></script>
+
+<!-- ImageViewer -->
+ <!-- Root element of PhotoSwipe. Must have class pswp. -->
+<div class="pswp" tabindex="-1" role="dialog" aria-hidden="true">
+  <!-- Background of PhotoSwipe. 
+         It's a separate element as animating opacity is faster than rgba(). -->
+  <div class="pswp__bg"></div>
+
+  <!-- Slides wrapper with overflow:hidden. -->
+  <div class="pswp__scroll-wrap">
+    <!-- Container that holds slides. 
+            PhotoSwipe keeps only 3 of them in the DOM to save memory.
+            Don't modify these 3 pswp__item elements, data is added later on. -->
+    <div class="pswp__container">
+      <div class="pswp__item"></div>
+      <div class="pswp__item"></div>
+      <div class="pswp__item"></div>
+    </div>
+
+    <!-- Default (PhotoSwipeUI_Default) interface on top of sliding area. Can be changed. -->
+    <div class="pswp__ui pswp__ui--hidden">
+      <div class="pswp__top-bar">
+        <!--  Controls are self-explanatory. Order can be changed. -->
+
+        <div class="pswp__counter"></div>
+
+        <button
+          class="pswp__button pswp__button--close"
+          title="Close (Esc)"
+        ></button>
+
+        <button
+          class="pswp__button pswp__button--share"
+          style="display: none"
+          title="Share"
+        ></button>
+
+        <button
+          class="pswp__button pswp__button--fs"
+          title="Toggle fullscreen"
+        ></button>
+
+        <button
+          class="pswp__button pswp__button--zoom"
+          title="Zoom in/out"
+        ></button>
+
+        <!-- Preloader demo http://codepen.io/dimsemenov/pen/yyBWoR -->
+        <!-- element will get class pswp__preloader--active when preloader is running -->
+        <div class="pswp__preloader">
+          <div class="pswp__preloader__icn">
+            <div class="pswp__preloader__cut">
+              <div class="pswp__preloader__donut"></div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <div class="pswp__share-modal pswp__share-modal--hidden pswp__single-tap">
+        <div class="pswp__share-tooltip"></div>
+      </div>
+
+      <button
+        class="pswp__button pswp__button--arrow--left"
+        title="Previous (arrow left)"
+      ></button>
+
+      <button
+        class="pswp__button pswp__button--arrow--right"
+        title="Next (arrow right)"
+      ></button>
+
+      <div class="pswp__caption">
+        <div class="pswp__caption__center"></div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<link rel="stylesheet" href="/css/photoswipe.min.css" />
+<link rel="stylesheet" href="/css/default-skin.min.css" />
+<script src="/js/photoswipe.min.js"></script>
+<script src="/js/photoswipe-ui-default.min.js"></script>
+
+<script>
+  function viewer_init() {
+    let pswpElement = document.querySelectorAll(".pswp")[0];
+    let $imgArr = document.querySelectorAll(
+      ".article-entry img:not(.reward-img)"
+    );
+
+    $imgArr.forEach(($em, i) => {
+      $em.onclick = () => {
+        // slider展开状态
+        // todo: 这样不好，后面改成状态
+        if (document.querySelector(".left-col.show")) return;
+        let items = [];
+        $imgArr.forEach(($em2, i2) => {
+          let img = $em2.getAttribute("data-idx", i2);
+          let src =
+            $em2.getAttribute("data-target") || $em2.getAttribute("src");
+          let title = $em2.getAttribute("alt");
+          // 获得原图尺寸
+          const image = new Image();
+          image.src = src;
+          items.push({
+            src: src,
+            w: image.width || $em2.width,
+            h: image.height || $em2.height,
+            title: title,
+          });
+        });
+        var gallery = new PhotoSwipe(pswpElement, PhotoSwipeUI_Default, items, {
+          index: parseInt(i),
+        });
+        gallery.init();
+      };
+    });
+  }
+  viewer_init();
+</script>
+ 
+<!-- MathJax -->
+ <script type="text/x-mathjax-config">
+  MathJax.Hub.Config({
+      tex2jax: {
+          inlineMath: [ ['$','$'], ["\\(","\\)"]  ],
+          processEscapes: true,
+          skipTags: ['script', 'noscript', 'style', 'textarea', 'pre', 'code']
+      }
+  });
+
+  MathJax.Hub.Queue(function() {
+      var all = MathJax.Hub.getAllJax(), i;
+      for(i=0; i < all.length; i += 1) {
+          all[i].SourceElement().parentNode.className += ' has-jax';
+      }
+  });
+</script>
+
+<script src="/js/MathJax.js"></script>
+<script src="/js/TeX-AMS-MML_HTMLorMML-full.js"></script>
+
+<script>
+  var ayerConfig = {
+    mathjax: true,
+  };
+</script>
+
+<!-- Katex -->
+
+<!-- busuanzi  -->
+
+<!-- ClickLove -->
+
+<!-- ClickBoom1 -->
+
+<!-- ClickBoom2 -->
+
+<!-- CodeCopy -->
+ 
+<link rel="stylesheet" href="/css/clipboard.css">
+ <script src="/js/clipboard.min.js"></script>
+<script>
+  function wait(callback, seconds) {
+    var timelag = null;
+    timelag = window.setTimeout(callback, seconds);
+  }
+  !(function (e, t, a) {
+    var initCopyCode = function () {
+      var copyHtml = "";
+      copyHtml += '<button class="btn-copy" data-clipboard-snippet="">';
+      copyHtml += '<i class="ri-file-copy-2-line"></i><span>COPY</span>';
+      copyHtml += "</button>";
+      $(".highlight .code pre").before(copyHtml);
+      $(".article pre code").before(copyHtml);
+      var clipboard = new ClipboardJS(".btn-copy", {
+        target: function (trigger) {
+          return trigger.nextElementSibling;
+        },
+      });
+      clipboard.on("success", function (e) {
+        let $btn = $(e.trigger);
+        $btn.addClass("copied");
+        let $icon = $($btn.find("i"));
+        $icon.removeClass("ri-file-copy-2-line");
+        $icon.addClass("ri-checkbox-circle-line");
+        let $span = $($btn.find("span"));
+        $span[0].innerText = "COPIED";
+
+        wait(function () {
+          // 等待两秒钟后恢复
+          $icon.removeClass("ri-checkbox-circle-line");
+          $icon.addClass("ri-file-copy-2-line");
+          $span[0].innerText = "COPY";
+        }, 2000);
+      });
+      clipboard.on("error", function (e) {
+        e.clearSelection();
+        let $btn = $(e.trigger);
+        $btn.addClass("copy-failed");
+        let $icon = $($btn.find("i"));
+        $icon.removeClass("ri-file-copy-2-line");
+        $icon.addClass("ri-time-line");
+        let $span = $($btn.find("span"));
+        $span[0].innerText = "COPY FAILED";
+
+        wait(function () {
+          // 等待两秒钟后恢复
+          $icon.removeClass("ri-time-line");
+          $icon.addClass("ri-file-copy-2-line");
+          $span[0].innerText = "COPY";
+        }, 2000);
+      });
+    };
+    initCopyCode();
+  })(window, document);
+</script>
+ 
+<!-- CanvasBackground -->
+
+<script>
+  if (window.mermaid) {
+    mermaid.initialize({ theme: "default" });
+  }
+</script>
+
+
+    
+    
+
+  </div>
+</body>
+
+</html>

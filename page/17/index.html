@@ -112,6 +112,244 @@
     
     
     <article
+  id="post-react/更新/FiberRoot"
+  class="article article-type-post"
+  itemscope
+  itemprop="blogPost"
+  data-scroll-reveal
+>
+  <div class="article-inner">
+    
+    <header class="article-header">
+       
+<h2 itemprop="name">
+  <a class="article-title" href="/posts/53f0f9c6dda5/"
+    >FiberRoot</a> 
+</h2>
+ 
+
+      
+    </header>
+     
+    <div class="article-meta">
+      <a href="/posts/53f0f9c6dda5/" class="article-date">
+  <time datetime="2021-02-14T06:15:36.000Z" itemprop="datePublished">2021-02-14</time>
+</a> 
+  <div class="article-category">
+    <a class="article-category-link" href="/categories/React/">React</a> / <a class="article-category-link" href="/categories/React/%E6%9B%B4%E6%96%B0/">更新</a>
+  </div>
+   
+    </div>
+      
+    <div class="article-entry" itemprop="articleBody">
+       
+  <h4 id="FiberRoot"><a href="#FiberRoot" class="headerlink" title="FiberRoot"></a>FiberRoot</h4><ul>
+<li>整个应用的起点</li>
+<li>包含应用挂载的目标节点</li>
+<li>记录整个应用更新过程的各种信息</li>
+</ul>
+<figure class="highlight javascript"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br><span class="line">35</span><br><span class="line">36</span><br><span class="line">37</span><br><span class="line">38</span><br><span class="line">39</span><br><span class="line">40</span><br><span class="line">41</span><br><span class="line">42</span><br><span class="line">43</span><br><span class="line">44</span><br><span class="line">45</span><br><span class="line">46</span><br><span class="line">47</span><br><span class="line">48</span><br><span class="line">49</span><br><span class="line">50</span><br><span class="line">51</span><br><span class="line">52</span><br><span class="line">53</span><br><span class="line">54</span><br><span class="line">55</span><br><span class="line">56</span><br><span class="line">57</span><br></pre></td><td class="code"><pre><span class="line">type <span class="title class_">BaseFiberRootProperties</span> = &#123;|</span><br><span class="line">  <span class="comment">// root节点，render方法接收的第二个参数</span></span><br><span class="line">  <span class="attr">containerInfo</span>: any,</span><br><span class="line">  <span class="comment">// 只有在持久更新中会用到，也就是不支持增量更新的平台，react-dom不会用到</span></span><br><span class="line">  <span class="attr">pendingChildren</span>: any,</span><br><span class="line">  <span class="comment">// 当前应用对应的Fiber对象，是Root Fiber</span></span><br><span class="line">  <span class="attr">current</span>: <span class="title class_">Fiber</span>,</span><br><span class="line"></span><br><span class="line">  <span class="comment">// 一下的优先级是用来区分</span></span><br><span class="line">  <span class="comment">// 1) 没有提交(committed)的任务</span></span><br><span class="line">  <span class="comment">// 2) 没有提交的挂起任务</span></span><br><span class="line">  <span class="comment">// 3) 没有提交的可能被挂起的任务</span></span><br><span class="line">  <span class="comment">// 我们选择不追踪每个单独的阻塞登记，为了兼顾性能</span></span><br><span class="line">  <span class="comment">// The earliest and latest priority levels that are suspended from committing.</span></span><br><span class="line">  <span class="comment">// 最老和新的在提交的时候被挂起的任务</span></span><br><span class="line">  <span class="attr">earliestSuspendedTime</span>: <span class="title class_">ExpirationTime</span>,</span><br><span class="line">  <span class="attr">latestSuspendedTime</span>: <span class="title class_">ExpirationTime</span>,</span><br><span class="line">  <span class="comment">// The earliest and latest priority levels that are not known to be suspended.</span></span><br><span class="line">  <span class="comment">// 最老和最新的不确定是否会挂起的优先级（所有任务进来一开始都是这个状态）</span></span><br><span class="line">  <span class="attr">earliestPendingTime</span>: <span class="title class_">ExpirationTime</span>,</span><br><span class="line">  <span class="attr">latestPendingTime</span>: <span class="title class_">ExpirationTime</span>,</span><br><span class="line">  <span class="comment">// The latest priority level that was pinged by a resolved promise and can</span></span><br><span class="line">  <span class="comment">// be retried.</span></span><br><span class="line">  <span class="comment">// 最新的通过一个promise被reslove并且可以重新尝试的优先级</span></span><br><span class="line">  <span class="attr">latestPingedTime</span>: <span class="title class_">ExpirationTime</span>,</span><br><span class="line"></span><br><span class="line">  <span class="comment">// 如果有错误被抛出并且没有更多的更新存在，我们尝试在处理错误前同步重新从头渲染</span></span><br><span class="line">  <span class="comment">// 在`renderRoot`出现无法处理的错误时会被设置为`true`</span></span><br><span class="line">  <span class="attr">didError</span>: boolean,</span><br><span class="line"></span><br><span class="line">  <span class="comment">// 正在等待提交的任务的`expirationTime`</span></span><br><span class="line">  <span class="attr">pendingCommitExpirationTime</span>: <span class="title class_">ExpirationTime</span>,</span><br><span class="line">  <span class="comment">// 已经完成的任务的FiberRoot对象，如果你只有一个Root，那他永远只可能是这个Root对应的Fiber，或者是null</span></span><br><span class="line">  <span class="comment">// 在commit阶段只会处理这个值对应的任务</span></span><br><span class="line">  <span class="attr">finishedWork</span>: <span class="title class_">Fiber</span> | <span class="literal">null</span>,</span><br><span class="line">  <span class="comment">// 在任务被挂起的时候通过setTimeout设置的返回内容，用来下一次如果有新的任务挂起时清理还没触发的timeout</span></span><br><span class="line">  <span class="attr">timeoutHandle</span>: <span class="title class_">TimeoutHandle</span> | <span class="title class_">NoTimeout</span>,</span><br><span class="line">  <span class="comment">// 顶层context对象，只有主动调用`renderSubtreeIntoContainer`时才会有用</span></span><br><span class="line">  <span class="attr">context</span>: <span class="title class_">Object</span> | <span class="literal">null</span>,</span><br><span class="line">  <span class="attr">pendingContext</span>: <span class="title class_">Object</span> | <span class="literal">null</span>,</span><br><span class="line">  <span class="comment">// 用来确定第一次渲染的时候是否需要融合</span></span><br><span class="line">  +<span class="attr">hydrate</span>: boolean,</span><br><span class="line">  <span class="comment">// 当前root上剩余的过期时间</span></span><br><span class="line">  <span class="comment">// <span class="doctag">TODO:</span> 提到renderer里面区处理</span></span><br><span class="line">  <span class="attr">nextExpirationTimeToWorkOn</span>: <span class="title class_">ExpirationTime</span>,</span><br><span class="line">  <span class="comment">// 当前更新对应的过期时间</span></span><br><span class="line">  <span class="attr">expirationTime</span>: <span class="title class_">ExpirationTime</span>,</span><br><span class="line">  <span class="comment">// List of top-level batches. This list indicates whether a commit should be</span></span><br><span class="line">  <span class="comment">// deferred. Also contains completion callbacks.</span></span><br><span class="line">  <span class="comment">// <span class="doctag">TODO:</span> Lift this into the renderer</span></span><br><span class="line">  <span class="comment">// 顶层批次（批处理任务？）这个变量指明一个commit是否应该被推迟</span></span><br><span class="line">  <span class="comment">// 同时包括完成之后的回调</span></span><br><span class="line">  <span class="comment">// 貌似用在测试的时候？</span></span><br><span class="line">  <span class="attr">firstBatch</span>: <span class="title class_">Batch</span> | <span class="literal">null</span>,</span><br><span class="line">  <span class="comment">// root之间关联的链表结构</span></span><br><span class="line">  <span class="attr">nextScheduledRoot</span>: <span class="title class_">FiberRoot</span> | <span class="literal">null</span>,</span><br><span class="line">|&#125;;</span><br></pre></td></tr></table></figure>
+
+
+
+<h4 id="mode"><a href="#mode" class="headerlink" title="mode"></a>mode</h4><p>创建跟节点RootFiber时，在current属性上挂载了通过<code>createHostRootFiber</code>创建的fiber对象</p>
+<figure class="highlight javascript"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">export</span> <span class="keyword">function</span> <span class="title function_">createHostRootFiber</span>(<span class="params">tag: RootTag</span>): <span class="title class_">Fiber</span> &#123;</span><br><span class="line">  <span class="keyword">let</span> mode;</span><br><span class="line">  <span class="keyword">if</span> (tag === <span class="title class_">ConcurrentRoot</span>) &#123;</span><br><span class="line">    mode = <span class="title class_">ConcurrentMode</span> | <span class="title class_">BlockingMode</span> | <span class="title class_">StrictMode</span>;</span><br><span class="line">  &#125; <span class="keyword">else</span> <span class="keyword">if</span> (tag === <span class="title class_">BlockingRoot</span>) &#123;</span><br><span class="line">    mode = <span class="title class_">BlockingMode</span> | <span class="title class_">StrictMode</span>;</span><br><span class="line">  &#125; <span class="keyword">else</span> &#123;</span><br><span class="line">    <span class="comment">// tag 为0</span></span><br><span class="line">    mode = <span class="title class_">NoMode</span>;</span><br><span class="line">  &#125;</span><br><span class="line"></span><br><span class="line">  <span class="comment">// 开发时mode为8</span></span><br><span class="line">  <span class="keyword">if</span> (enableProfilerTimer &amp;&amp; isDevToolsPresent) &#123;</span><br><span class="line">    <span class="comment">// Always collect profile timings when DevTools are present.</span></span><br><span class="line">    <span class="comment">// This enables DevTools to start capturing timing at any point–</span></span><br><span class="line">    <span class="comment">// Without some nodes in the tree having empty base times.</span></span><br><span class="line">    mode |= <span class="title class_">ProfileMode</span>;</span><br><span class="line">  &#125;</span><br><span class="line"></span><br><span class="line">  <span class="keyword">return</span> <span class="title function_">createFiber</span>(<span class="title class_">HostRoot</span>, <span class="literal">null</span>, <span class="literal">null</span>, mode);</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure> 
+      <!-- reward -->
+      
+    </div>
+    
+
+    <!-- copyright -->
+    
+    <footer class="article-footer">
+       
+  <ul class="article-tag-list" itemprop="keywords"><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/React/" rel="tag">React</a></li></ul>
+
+    </footer>
+  </div>
+
+   
+    
+</article>
+
+    
+    <article
+  id="post-react/更新/ReactDOM_render"
+  class="article article-type-post"
+  itemscope
+  itemprop="blogPost"
+  data-scroll-reveal
+>
+  <div class="article-inner">
+    
+    <header class="article-header">
+       
+<h2 itemprop="name">
+  <a class="article-title" href="/posts/e9424d0753a9/"
+    >ReactDOM.render</a> 
+</h2>
+ 
+
+      
+    </header>
+     
+    <div class="article-meta">
+      <a href="/posts/e9424d0753a9/" class="article-date">
+  <time datetime="2021-02-13T13:47:04.000Z" itemprop="datePublished">2021-02-13</time>
+</a> 
+  <div class="article-category">
+    <a class="article-category-link" href="/categories/React/">React</a> / <a class="article-category-link" href="/categories/React/%E6%9B%B4%E6%96%B0/">更新</a>
+  </div>
+   
+    </div>
+      
+    <div class="article-entry" itemprop="articleBody">
+       
+  <h4 id="ReactDOM-render"><a href="#ReactDOM-render" class="headerlink" title="ReactDOM.render"></a>ReactDOM.render</h4><p>packages&#x2F;react-dom&#x2F;src&#x2F;client&#x2F;ReactDOMLegacy.js</p>
+<ul>
+<li>创建ReactRoot</li>
+<li>创将FiberRoot和RootFiber</li>
+<li>创将更新</li>
+</ul>
+<figure class="highlight javascript"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">export</span> <span class="keyword">function</span> <span class="title function_">render</span>(<span class="params"></span></span><br><span class="line"><span class="params">  element: React$Element&lt;any&gt;,</span></span><br><span class="line"><span class="params">  container: Container,</span></span><br><span class="line"><span class="params">  callback: ?<span class="built_in">Function</span>,</span></span><br><span class="line"><span class="params"></span>) &#123; </span><br><span class="line">  <span class="comment">// ...</span></span><br><span class="line">  <span class="keyword">return</span> <span class="title function_">legacyRenderSubtreeIntoContainer</span>(</span><br><span class="line">    <span class="literal">null</span>,</span><br><span class="line">    element,</span><br><span class="line">    container,</span><br><span class="line">    <span class="literal">false</span>,</span><br><span class="line">    callback,</span><br><span class="line">  );</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+<figure class="highlight javascript"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">function</span> <span class="title function_">legacyRenderSubtreeIntoContainer</span>(<span class="params"></span></span><br><span class="line"><span class="params">  parentComponent: ?React$Component&lt;any, any&gt;, <span class="comment">// 父组件</span></span></span><br><span class="line"><span class="params">  children: ReactNodeList, <span class="comment">// 渲染组件</span></span></span><br><span class="line"><span class="params">  container: Container, <span class="comment">// 容器</span></span></span><br><span class="line"><span class="params">  forceHydrate: boolean, <span class="comment">// 是否强制注入</span></span></span><br><span class="line"><span class="params">  callback: ?<span class="built_in">Function</span>, <span class="comment">// 回调函数</span></span></span><br><span class="line"><span class="params"></span>) &#123;</span><br><span class="line">  <span class="comment">//...</span></span><br><span class="line">  <span class="comment">// 查看是否有复用的节点</span></span><br><span class="line">  <span class="keyword">let</span> <span class="attr">root</span>: <span class="title class_">RootType</span> = (container.<span class="property">_reactRootContainer</span>: any);</span><br><span class="line">  <span class="keyword">let</span> fiberRoot;</span><br><span class="line">  <span class="keyword">if</span> (!root) &#123;</span><br><span class="line">    <span class="comment">// 初始化加载，在root上挂载创建的ReactRooter </span></span><br><span class="line">    root = container.<span class="property">_reactRootContainer</span> = <span class="title function_">legacyCreateRootFromDOMContainer</span>(</span><br><span class="line">      container,</span><br><span class="line">      forceHydrate,</span><br><span class="line">    );</span><br><span class="line">    <span class="comment">// _internalRoot 也就是内部使用的fiberRoot</span></span><br><span class="line">    fiberRoot = root.<span class="property">_internalRoot</span>;</span><br><span class="line">    <span class="comment">//...</span></span><br><span class="line">    <span class="title function_">unbatchedUpdates</span>(<span class="function">() =&gt;</span> &#123;</span><br><span class="line">      <span class="title function_">updateContainer</span>(children, fiberRoot, parentComponent, callback);</span><br><span class="line">    &#125;);</span><br><span class="line">  &#125; <span class="keyword">else</span> &#123;</span><br><span class="line">    <span class="comment">//... </span></span><br><span class="line">    <span class="title function_">updateContainer</span>(children, fiberRoot, parentComponent, callback);</span><br><span class="line">  &#125;</span><br><span class="line">  <span class="comment">// 最终都是调用了 updateContainer，并把创将的fiberRoot传入</span></span><br><span class="line">  <span class="keyword">return</span> <span class="title function_">getPublicRootInstance</span>(fiberRoot);</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+<h5 id="legacyCreateRootFromDOMContainer"><a href="#legacyCreateRootFromDOMContainer" class="headerlink" title="legacyCreateRootFromDOMContainer"></a>legacyCreateRootFromDOMContainer</h5><figure class="highlight javascript"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br><span class="line">35</span><br><span class="line">36</span><br><span class="line">37</span><br><span class="line">38</span><br><span class="line">39</span><br><span class="line">40</span><br><span class="line">41</span><br><span class="line">42</span><br><span class="line">43</span><br><span class="line">44</span><br><span class="line">45</span><br><span class="line">46</span><br><span class="line">47</span><br><span class="line">48</span><br><span class="line">49</span><br><span class="line">50</span><br><span class="line">51</span><br><span class="line">52</span><br><span class="line">53</span><br><span class="line">54</span><br><span class="line">55</span><br><span class="line">56</span><br><span class="line">57</span><br><span class="line">58</span><br><span class="line">59</span><br><span class="line">60</span><br><span class="line">61</span><br><span class="line">62</span><br><span class="line">63</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment">// 直接返回原生节点</span></span><br><span class="line"><span class="keyword">function</span> <span class="title function_">getReactRootElementInContainer</span>(<span class="params">container: any</span>) &#123;</span><br><span class="line">  <span class="keyword">if</span> (!container) &#123;</span><br><span class="line">    <span class="keyword">return</span> <span class="literal">null</span>;</span><br><span class="line">  &#125;</span><br><span class="line"></span><br><span class="line">  <span class="keyword">if</span> (container.<span class="property">nodeType</span> === <span class="variable constant_">DOCUMENT_NODE</span>) &#123;</span><br><span class="line">    <span class="keyword">return</span> container.<span class="property">documentElement</span>;</span><br><span class="line">  &#125; <span class="keyword">else</span> &#123;</span><br><span class="line">    <span class="keyword">return</span> container.<span class="property">firstChild</span>;</span><br><span class="line">  &#125;</span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line"><span class="comment">// 如果原生节点存在 shouldHydrate = true</span></span><br><span class="line"><span class="keyword">function</span> <span class="title function_">shouldHydrateDueToLegacyHeuristic</span>(<span class="params">container</span>) &#123;</span><br><span class="line">  <span class="keyword">const</span> rootElement = <span class="title function_">getReactRootElementInContainer</span>(container);</span><br><span class="line">  <span class="keyword">return</span> !!(</span><br><span class="line">    rootElement &amp;&amp;</span><br><span class="line">    rootElement.<span class="property">nodeType</span> === <span class="variable constant_">ELEMENT_NODE</span> &amp;&amp;</span><br><span class="line">    rootElement.<span class="title function_">hasAttribute</span>(<span class="variable constant_">ROOT_ATTRIBUTE_NAME</span>)</span><br><span class="line">  );</span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line"><span class="keyword">function</span> <span class="title function_">legacyCreateRootFromDOMContainer</span>(<span class="params"></span></span><br><span class="line"><span class="params">  container: Container,</span></span><br><span class="line"><span class="params">  forceHydrate: boolean,</span></span><br><span class="line"><span class="params"></span>): <span class="title class_">RootType</span> &#123;</span><br><span class="line">  <span class="keyword">const</span> shouldHydrate =</span><br><span class="line">    forceHydrate || <span class="title function_">shouldHydrateDueToLegacyHeuristic</span>(container);</span><br><span class="line">  <span class="comment">// First clear any existing content.</span></span><br><span class="line">  <span class="keyword">if</span> (!shouldHydrate) &#123;</span><br><span class="line">    <span class="keyword">let</span> warned = <span class="literal">false</span>;</span><br><span class="line">    <span class="keyword">let</span> rootSibling;</span><br><span class="line">    <span class="comment">// 清空容器的子节点</span></span><br><span class="line">    <span class="keyword">while</span> ((rootSibling = container.<span class="property">lastChild</span>)) &#123;</span><br><span class="line">      <span class="keyword">if</span> (__DEV__) &#123;</span><br><span class="line">        <span class="keyword">if</span> (</span><br><span class="line">          !warned &amp;&amp;</span><br><span class="line">          rootSibling.<span class="property">nodeType</span> === <span class="variable constant_">ELEMENT_NODE</span> &amp;&amp;</span><br><span class="line">          <span class="comment">// ROOT_ATTRIBUTE_NAME 用于服务端渲染的判断，是否需要合并节点</span></span><br><span class="line">          (<span class="attr">rootSibling</span>: any).<span class="title function_">hasAttribute</span>(<span class="variable constant_">ROOT_ATTRIBUTE_NAME</span>)</span><br><span class="line">        ) &#123;</span><br><span class="line">          warned = <span class="literal">true</span>;</span><br><span class="line">          <span class="variable language_">console</span>.<span class="title function_">error</span>(</span><br><span class="line">            <span class="string">&#x27;render(): Target node has markup rendered by React, but there &#x27;</span> +</span><br><span class="line">              <span class="string">&#x27;are unrelated nodes as well. This is most commonly caused by &#x27;</span> +</span><br><span class="line">              <span class="string">&#x27;white-space inserted around server-rendered markup.&#x27;</span>,</span><br><span class="line">          );</span><br><span class="line">        &#125;</span><br><span class="line">      &#125;</span><br><span class="line">      container.<span class="title function_">removeChild</span>(rootSibling);</span><br><span class="line">    &#125;</span><br><span class="line">  &#125;</span><br><span class="line">  <span class="comment">// ...</span></span><br><span class="line">  <span class="keyword">return</span> <span class="title function_">createLegacyRoot</span>(</span><br><span class="line">    container,</span><br><span class="line">    shouldHydrate</span><br><span class="line">      ? &#123;</span><br><span class="line">          <span class="attr">hydrate</span>: <span class="literal">true</span>,</span><br><span class="line">        &#125;</span><br><span class="line">      : <span class="literal">undefined</span>,</span><br><span class="line">  );</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+<h5 id="createLegacyRoot-创建ReactRoot"><a href="#createLegacyRoot-创建ReactRoot" class="headerlink" title="createLegacyRoot 创建ReactRoot"></a>createLegacyRoot 创建ReactRoot</h5><figure class="highlight javascript"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">export</span> <span class="keyword">function</span> <span class="title function_">createLegacyRoot</span>(<span class="params"></span></span><br><span class="line"><span class="params">  container: Container,</span></span><br><span class="line"><span class="params">  options?: RootOptions,</span></span><br><span class="line"><span class="params"></span>): <span class="title class_">RootType</span> &#123;</span><br><span class="line">  <span class="comment">// </span></span><br><span class="line">  <span class="keyword">return</span> <span class="keyword">new</span> <span class="title class_">ReactDOMBlockingRoot</span>(container, <span class="title class_">LegacyRoot</span>, options);</span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line"><span class="keyword">function</span> <span class="title function_">ReactDOMBlockingRoot</span>(<span class="params"></span></span><br><span class="line"><span class="params">  container: Container,</span></span><br><span class="line"><span class="params">  tag: RootTag,</span></span><br><span class="line"><span class="params">  options: <span class="keyword">void</span> | RootOptions,</span></span><br><span class="line"><span class="params"></span>) &#123;</span><br><span class="line">  <span class="variable language_">this</span>.<span class="property">_internalRoot</span> = <span class="title function_">createRootImpl</span>(container, tag, options);</span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line"><span class="keyword">function</span> <span class="title function_">createRootImpl</span>(<span class="params"></span></span><br><span class="line"><span class="params">  container: Container,</span></span><br><span class="line"><span class="params">  <span class="comment">// 常量0,标识根节点</span></span></span><br><span class="line"><span class="params">  tag: RootTag,</span></span><br><span class="line"><span class="params">  options: <span class="keyword">void</span> | RootOptions,</span></span><br><span class="line"><span class="params"></span>) &#123;</span><br><span class="line">  <span class="comment">// createContainer 最终调用了createFiberRoot</span></span><br><span class="line">  <span class="keyword">const</span> root = <span class="title function_">createContainer</span>(container, tag, hydrate, hydrationCallbacks);</span><br><span class="line">  <span class="comment">//...</span></span><br><span class="line">  <span class="keyword">return</span> root;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+<h5 id="createFiberRoot"><a href="#createFiberRoot" class="headerlink" title="createFiberRoot"></a>createFiberRoot</h5><figure class="highlight javascript"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">export</span> <span class="keyword">function</span> <span class="title function_">createFiberRoot</span>(<span class="params"></span></span><br><span class="line"><span class="params">  containerInfo: any,</span></span><br><span class="line"><span class="params">  tag: RootTag,</span></span><br><span class="line"><span class="params">  hydrate: boolean,</span></span><br><span class="line"><span class="params">  hydrationCallbacks: <span class="literal">null</span> | SuspenseHydrationCallbacks,</span></span><br><span class="line"><span class="params"></span>): <span class="title class_">FiberRoot</span> &#123;</span><br><span class="line">  <span class="comment">// 容器节点本身是FiberRoot对象</span></span><br><span class="line">  <span class="keyword">const</span> <span class="attr">root</span>: <span class="title class_">FiberRoot</span> = (<span class="keyword">new</span> <span class="title class_">FiberRootNode</span>(containerInfo, tag, hydrate): any);</span><br><span class="line">  <span class="comment">// 创建的Fiber对象</span></span><br><span class="line">  <span class="keyword">const</span> uninitializedFiber = <span class="title function_">createHostRootFiber</span>(tag);</span><br><span class="line">  root.<span class="property">current</span> = uninitializedFiber;</span><br><span class="line">  uninitializedFiber.<span class="property">stateNode</span> = root;</span><br><span class="line">  <span class="comment">// 为原始的fiber节点添加updateQueue信息</span></span><br><span class="line">  <span class="comment">// function initializeUpdateQueue(fiber) &#123;</span></span><br><span class="line">  <span class="comment">//   var queue = &#123;</span></span><br><span class="line">  <span class="comment">//     baseState: fiber.memoizedState,</span></span><br><span class="line">  <span class="comment">//     firstBaseUpdate: null,</span></span><br><span class="line">  <span class="comment">//     lastBaseUpdate: null,</span></span><br><span class="line">  <span class="comment">//     shared: &#123;</span></span><br><span class="line">  <span class="comment">//       pending: null</span></span><br><span class="line">  <span class="comment">//     &#125;,</span></span><br><span class="line">  <span class="comment">//     effects: null</span></span><br><span class="line">  <span class="comment">//   &#125;;</span></span><br><span class="line">  <span class="comment">//   fiber.updateQueue = queue;</span></span><br><span class="line">  <span class="comment">// &#125;</span></span><br><span class="line">  <span class="title function_">initializeUpdateQueue</span>(uninitializedFiber);</span><br><span class="line">  <span class="keyword">return</span> root;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+<h5 id="updateContainer"><a href="#updateContainer" class="headerlink" title="updateContainer"></a>updateContainer</h5><figure class="highlight javascript"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">export</span> <span class="keyword">function</span> <span class="title function_">updateContainer</span>(<span class="params"></span></span><br><span class="line"><span class="params">  element: ReactNodeList,</span></span><br><span class="line"><span class="params">  container: OpaqueRoot,</span></span><br><span class="line"><span class="params">  parentComponent: ?React$Component&lt;any, any&gt;,</span></span><br><span class="line"><span class="params">  callback: ?<span class="built_in">Function</span>,</span></span><br><span class="line"><span class="params"></span>): <span class="title class_">Lane</span> &#123;</span><br><span class="line">  <span class="comment">// container = container._reactRootContainer = legacyCreateRootFromDOMContainer(container,forceHydrate)._internalRoot;</span></span><br><span class="line">  <span class="keyword">const</span> current = container.<span class="property">current</span>;</span><br><span class="line">  <span class="keyword">const</span> eventTime = <span class="title function_">requestEventTime</span>();</span><br><span class="line"></span><br><span class="line">  <span class="comment">//创将事件优先级</span></span><br><span class="line">  <span class="keyword">const</span> lane = <span class="title function_">requestUpdateLane</span>(current);</span><br><span class="line"></span><br><span class="line">  <span class="comment">// 创将更新对象</span></span><br><span class="line">  <span class="keyword">const</span> update = <span class="title function_">createUpdate</span>(eventTime, lane);</span><br><span class="line">  update.<span class="property">payload</span> = &#123;element&#125;;</span><br><span class="line"></span><br><span class="line">  <span class="comment">// 加入到更新队列中</span></span><br><span class="line">  <span class="title function_">enqueueUpdate</span>(current, update);</span><br><span class="line">  <span class="comment">// 调度更新</span></span><br><span class="line">  <span class="title function_">scheduleUpdateOnFiber</span>(current, lane, eventTime);</span><br><span class="line"></span><br><span class="line">  <span class="keyword">return</span> lane;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure> 
+      <!-- reward -->
+      
+    </div>
+    
+
+    <!-- copyright -->
+    
+    <footer class="article-footer">
+       
+  <ul class="article-tag-list" itemprop="keywords"><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/React/" rel="tag">React</a></li></ul>
+
+    </footer>
+  </div>
+
+   
+    
+</article>
+
+    
+    <article
+  id="post-node/express学习项目2"
+  class="article article-type-post"
+  itemscope
+  itemprop="blogPost"
+  data-scroll-reveal
+>
+  <div class="article-inner">
+    
+    <header class="article-header">
+       
+<h2 itemprop="name">
+  <a class="article-title" href="/posts/5b26283fba38/"
+    >Express实践 ② 完善核心功能</a> 
+</h2>
+ 
+
+      
+    </header>
+     
+    <div class="article-meta">
+      <a href="/posts/5b26283fba38/" class="article-date">
+  <time datetime="2021-02-10T02:03:12.000Z" itemprop="datePublished">2021-02-10</time>
+</a> 
+  <div class="article-category">
+    <a class="article-category-link" href="/categories/NodeJS/">NodeJS</a>
+  </div>
+   
+    </div>
+      
+    <div class="article-entry" itemprop="articleBody">
+       
+  <h4 id="密码加密-x2F-校验"><a href="#密码加密-x2F-校验" class="headerlink" title="密码加密&#x2F;校验"></a>密码加密&#x2F;校验</h4><ul>
+<li><p>密码不可以明文存储，需要生成 hash,在模型文件中，可以使用 <a target="_blank" rel="noopener" href="https://sequelize.org/docs/v6/core-concepts/getters-setters-virtuals/">Getters, Setters &amp; Virtuals</a> 方法并配合 <a target="_blank" rel="noopener" href="https://github.com/kelektiv/node.bcrypt.js">bcrypt 模块</a> 实现</p>
+<figure class="highlight js"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment">// models\user.js</span></span><br><span class="line"></span><br><span class="line"><span class="keyword">const</span> &#123; <span class="title class_">Model</span>, <span class="title class_">Op</span> &#125; = <span class="built_in">require</span>(<span class="string">&quot;sequelize&quot;</span>);</span><br><span class="line"><span class="keyword">const</span> bcrypt = <span class="built_in">require</span>(<span class="string">&quot;bcrypt&quot;</span>);</span><br><span class="line"><span class="variable language_">module</span>.<span class="property">exports</span> = <span class="function">(<span class="params">sequelize, DataTypes</span>) =&gt;</span> &#123;</span><br><span class="line">  <span class="keyword">class</span> <span class="title class_">User</span> <span class="keyword">extends</span> <span class="title class_ inherited__">Model</span> &#123;&#125;</span><br><span class="line">  <span class="title class_">User</span>.<span class="title function_">init</span>(</span><br><span class="line">    &#123;</span><br><span class="line">      <span class="attr">password</span>: &#123;</span><br><span class="line">        <span class="attr">type</span>: <span class="title class_">DataTypes</span>.<span class="property">STRING</span>,</span><br><span class="line">        <span class="title function_">set</span>(<span class="params">value</span>) &#123;</span><br><span class="line">          <span class="comment">// 在设置值或更新值得时候会执行这个方法</span></span><br><span class="line">          <span class="variable language_">this</span>.<span class="title function_">setDataValue</span>(<span class="string">&quot;password&quot;</span>, bcrypt.<span class="title function_">hashSync</span>(value, <span class="number">10</span>));</span><br><span class="line">        &#125;,</span><br><span class="line">      &#125;,</span><br><span class="line">    &#125;,</span><br><span class="line">    &#123;</span><br><span class="line">      sequelize,</span><br><span class="line">      <span class="attr">modelName</span>: <span class="string">&quot;User&quot;</span>,</span><br><span class="line">    &#125;</span><br><span class="line">  );</span><br><span class="line">  <span class="keyword">return</span> <span class="title class_">User</span>;</span><br><span class="line">&#125;;</span><br></pre></td></tr></table></figure>
+</li>
+<li><p>密码校验，<strong>模型校验方法只有设置或更新数据时触发，所以可以考虑将验证方法写在模型的类上，或是在路由中实现</strong></p>
+<figure class="highlight js"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment">// routes\user.js</span></span><br><span class="line"><span class="comment">// 路由中校验数据</span></span><br><span class="line"></span><br><span class="line">router.<span class="title function_">post</span>(<span class="string">&quot;/login&quot;</span>, <span class="keyword">async</span> <span class="keyword">function</span> (<span class="params">req, res, next</span>) &#123;</span><br><span class="line">  <span class="keyword">try</span> &#123;</span><br><span class="line">    <span class="keyword">const</span> data = <span class="keyword">await</span> <span class="title class_">User</span>.<span class="title function_">findOne</span>(&#123;</span><br><span class="line">      <span class="attr">where</span>: &#123;</span><br><span class="line">        <span class="attr">username</span>: req.<span class="property">body</span>.<span class="property">username</span>,</span><br><span class="line">        <span class="attr">email</span>: req.<span class="property">body</span>.<span class="property">email</span>,</span><br><span class="line">      &#125;,</span><br><span class="line">    &#125;);</span><br><span class="line"></span><br><span class="line">    <span class="keyword">if</span> (!bcrypt.<span class="title function_">compareSync</span>(req.<span class="property">body</span>.<span class="property">password</span>, data.<span class="property">password</span>)) &#123;</span><br><span class="line">      <span class="keyword">throw</span> <span class="keyword">new</span> <span class="title class_">Error</span>(<span class="string">&quot;密码错误&quot;</span>);</span><br><span class="line"></span><br><span class="line">      res.<span class="title function_">status</span>(<span class="number">401</span>);</span><br><span class="line">      <span class="keyword">return</span>;</span><br><span class="line">    &#125;</span><br><span class="line"></span><br><span class="line">    res.<span class="title function_">end</span>();</span><br><span class="line">  &#125; <span class="keyword">catch</span> (err) &#123;&#125;</span><br><span class="line">&#125;);</span><br></pre></td></tr></table></figure>
+</li>
+<li><p>生成 jwt，用户保存用户的登录状态, 需要依赖 <a target="_blank" rel="noopener" href="https://www.npmjs.com/package/jsonwebtoken">jsonwebtoken</a></p>
+<figure class="highlight js"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment">// routes\user.js</span></span><br><span class="line"></span><br><span class="line"><span class="keyword">const</span> bcrypt = <span class="built_in">require</span>(<span class="string">&quot;bcrypt&quot;</span>);</span><br><span class="line"><span class="keyword">const</span> jwt = <span class="built_in">require</span>(<span class="string">&quot;jsonwebtoken&quot;</span>);</span><br><span class="line"></span><br><span class="line">router.<span class="title function_">post</span>(<span class="string">&quot;/login&quot;</span>, <span class="keyword">async</span> <span class="keyword">function</span> (<span class="params">req, res, next</span>) &#123;</span><br><span class="line">  <span class="keyword">try</span> &#123;</span><br><span class="line">    <span class="keyword">const</span> data = <span class="keyword">await</span> <span class="title class_">User</span>.<span class="title function_">findOne</span>(&#123;</span><br><span class="line">      <span class="comment">// ...</span></span><br><span class="line">    &#125;);</span><br><span class="line">    <span class="keyword">const</span> token = jwt.<span class="title function_">sign</span>(</span><br><span class="line">      &#123;</span><br><span class="line">        <span class="attr">data</span>: <span class="string">&quot;foobar&quot;</span>,</span><br><span class="line">      &#125;,</span><br><span class="line">      process.<span class="property">env</span>.<span class="property">SECRET</span>,</span><br><span class="line">      &#123; <span class="attr">expiresIn</span>: <span class="string">&quot;30d&quot;</span> &#125;</span><br><span class="line">    );</span><br><span class="line">    res.<span class="title function_">end</span>(token);</span><br><span class="line">  &#125; <span class="keyword">catch</span> (err) &#123;&#125;</span><br><span class="line">&#125;);</span><br></pre></td></tr></table></figure>
+</li>
+<li><p>SECRET 通常作为环境变量，<strong>且禁止提交到仓库</strong>, 可以使用 crypto 生成随机密钥</p>
+<figure class="highlight js"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">crypto.<span class="title function_">randomBytes</span>(<span class="number">64</span>).<span class="title function_">toString</span>(<span class="string">&quot;hex&quot;</span>);</span><br></pre></td></tr></table></figure></li>
+</ul>
+<h4 id="中间件-x2F-校验-jwt"><a href="#中间件-x2F-校验-jwt" class="headerlink" title="中间件&#x2F;校验 jwt"></a>中间件&#x2F;校验 jwt</h4><p>对接口的校验权限的校验不止一个，所以不会再每个路由文件中实现一边逻辑，这就是用到了 <a target="_blank" rel="noopener" href="https://expressjs.com/en/guide/using-middleware.html"><strong>中间件</strong></a></p>
+<p>下面是一个路由级别的中间件，用于处理用户的 token 是否有效</p>
+<figure class="highlight js"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment">// middleware\auth.js</span></span><br><span class="line"></span><br><span class="line"><span class="keyword">const</span> jwt = <span class="built_in">require</span>(<span class="string">&quot;jsonwebtoken&quot;</span>);</span><br><span class="line"><span class="keyword">const</span> &#123; <span class="title class_">User</span> &#125; = <span class="built_in">require</span>(<span class="string">&quot;../models&quot;</span>);</span><br><span class="line"></span><br><span class="line"><span class="variable language_">module</span>.<span class="property">exports</span> = <span class="keyword">async</span> <span class="keyword">function</span> (<span class="params">req, res, next</span>) &#123;</span><br><span class="line">  <span class="keyword">try</span> &#123;</span><br><span class="line">    <span class="keyword">const</span> &#123; token &#125; = req.<span class="property">headers</span>;</span><br><span class="line">    <span class="keyword">if</span> (!token) &#123;</span><br><span class="line">      <span class="keyword">throw</span> <span class="keyword">new</span> <span class="title class_">Error</span>(<span class="string">&quot;用户未登录&quot;</span>);</span><br><span class="line">    &#125;</span><br><span class="line"></span><br><span class="line">    <span class="keyword">const</span> &#123; userId &#125; = jwt.<span class="title function_">verify</span>(token, process.<span class="property">env</span>.<span class="property">SECRET</span>);</span><br><span class="line"></span><br><span class="line">    <span class="keyword">const</span> user = <span class="keyword">await</span> <span class="title class_">User</span>.<span class="title function_">findByPk</span>(userId);</span><br><span class="line"></span><br><span class="line">    <span class="keyword">if</span> (!user) <span class="keyword">throw</span> <span class="keyword">new</span> <span class="title class_">Error</span>(<span class="string">&quot;用户不存在&quot;</span>);</span><br><span class="line"></span><br><span class="line">    <span class="keyword">if</span> (user.<span class="property">role</span> === <span class="string">&quot;[some role]&quot;</span>) <span class="keyword">throw</span> <span class="keyword">new</span> <span class="title class_">Error</span>(<span class="string">&quot;用户权限错误&quot;</span>);</span><br><span class="line"></span><br><span class="line">    <span class="comment">// 可以直接再路由的req上获取用户信息</span></span><br><span class="line">    req.<span class="property">user</span> = user;</span><br><span class="line">    <span class="title function_">next</span>();</span><br><span class="line">  &#125; <span class="keyword">catch</span> (err) &#123;</span><br><span class="line">    <span class="comment">// 客户端需要处理token失效的情况</span></span><br><span class="line"></span><br><span class="line">    res.<span class="title function_">status</span>(<span class="number">500</span>).<span class="title function_">json</span>(&#123;</span><br><span class="line">      <span class="attr">err</span>: err.<span class="property">message</span>,</span><br><span class="line">    &#125;);</span><br><span class="line">  &#125;</span><br><span class="line">&#125;;</span><br></pre></td></tr></table></figure>
+
+<h4 id="嵌套关联查询"><a href="#嵌套关联查询" class="headerlink" title="嵌套关联查询"></a>嵌套关联查询</h4><p>上一章讲解了一对多的关联查询，但是关联字段中可能还需要关联另一张表，也就是嵌套关联查询</p>
+<figure class="highlight js"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br><span class="line">35</span><br><span class="line">36</span><br></pre></td><td class="code"><pre><span class="line">router.<span class="title function_">get</span>(<span class="string">&quot;/&quot;</span>, <span class="keyword">async</span> <span class="keyword">function</span> (<span class="params">req, res, next</span>) &#123;</span><br><span class="line">  <span class="keyword">try</span> &#123;</span><br><span class="line">    <span class="keyword">const</span> condition = &#123;</span><br><span class="line">      <span class="attr">order</span>: [[<span class="string">&quot;id&quot;</span>, <span class="string">&quot;DESC&quot;</span>]],</span><br><span class="line">      <span class="comment">// 全局过滤 两个关联的外键</span></span><br><span class="line">      <span class="attr">attributes</span>: &#123;</span><br><span class="line">        <span class="attr">exclude</span>: [<span class="string">&quot;categoryId&quot;</span>, <span class="string">&quot;userId&quot;</span>],</span><br><span class="line">      &#125;,</span><br><span class="line">      <span class="attr">include</span>: [</span><br><span class="line">        <span class="comment">// as 关联字段别名，需要和model中的对应</span></span><br><span class="line">        <span class="comment">// attributes 用于过滤关联模型中的字段</span></span><br><span class="line">        &#123; <span class="attr">model</span>: <span class="title class_">User</span>, <span class="attr">as</span>: <span class="string">&quot;user&quot;</span>, <span class="attr">attributes</span>: [<span class="string">&quot;id&quot;</span>, <span class="string">&quot;username&quot;</span>] &#125;,</span><br><span class="line">        &#123;</span><br><span class="line">          <span class="attr">model</span>: <span class="title class_">Category</span>,</span><br><span class="line">          <span class="attr">as</span>: <span class="string">&quot;category&quot;</span>,</span><br><span class="line">          <span class="attr">attributes</span>: [<span class="string">&quot;id&quot;</span>, <span class="string">&quot;name&quot;</span>],</span><br><span class="line"></span><br><span class="line">          <span class="comment">// 通过嵌套 include 关联查询</span></span><br><span class="line">          <span class="attr">include</span>: &#123;</span><br><span class="line">            <span class="attr">model</span>: <span class="title class_">Article</span>,</span><br><span class="line">            <span class="attr">as</span>: <span class="string">&quot;article&quot;</span>,</span><br><span class="line">            <span class="attr">attributes</span>: [<span class="string">&quot;id&quot;</span>, <span class="string">&quot;title&quot;</span>],</span><br><span class="line">          &#125;,</span><br><span class="line">        &#125;,</span><br><span class="line">      ],</span><br><span class="line">    &#125;;</span><br><span class="line">    <span class="keyword">const</span> page = req.<span class="property">query</span>.<span class="property">page</span> || <span class="number">1</span>;</span><br><span class="line">    <span class="keyword">const</span> pageSize = req.<span class="property">query</span>.<span class="property">pageSize</span> || <span class="number">10</span>;</span><br><span class="line"></span><br><span class="line">    condition.<span class="property">limit</span> = pageSize;</span><br><span class="line">    condition.<span class="property">offset</span> = (page - <span class="number">1</span>) * pageSize;</span><br><span class="line"></span><br><span class="line">    <span class="keyword">const</span> &#123; count, rows &#125; = <span class="keyword">await</span> <span class="title class_">Course</span>.<span class="title function_">findAndCountAll</span>(condition);</span><br><span class="line">    res.<span class="title function_">json</span>(rows);</span><br><span class="line">  &#125; <span class="keyword">catch</span> (err) &#123;&#125;</span><br><span class="line">&#125;);</span><br></pre></td></tr></table></figure>
+
+<p>这会查出来如下嵌套的返回格式， 他们的关系是</p>
+<ul>
+<li>一个课程数据多个用户，也属于多个分类。或者说一个用户有多个课程，一个分类包含多个课程。</li>
+<li>一个分类属于多篇文章。或者说一个文章有多个分类。</li>
+</ul>
+<figure class="highlight json"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br><span class="line">35</span><br><span class="line">36</span><br><span class="line">37</span><br><span class="line">38</span><br></pre></td><td class="code"><pre><span class="line"><span class="punctuation">&#123;</span></span><br><span class="line">  <span class="attr">&quot;status&quot;</span><span class="punctuation">:</span> <span class="keyword">true</span><span class="punctuation">,</span></span><br><span class="line">  <span class="attr">&quot;message&quot;</span><span class="punctuation">:</span> <span class="keyword">null</span><span class="punctuation">,</span></span><br><span class="line">  <span class="attr">&quot;data&quot;</span><span class="punctuation">:</span> <span class="punctuation">&#123;</span></span><br><span class="line">    <span class="attr">&quot;course&quot;</span><span class="punctuation">:</span> <span class="punctuation">[</span></span><br><span class="line">      <span class="punctuation">&#123;</span></span><br><span class="line">        <span class="attr">&quot;id&quot;</span><span class="punctuation">:</span> <span class="number">12</span><span class="punctuation">,</span></span><br><span class="line">        <span class="attr">&quot;name&quot;</span><span class="punctuation">:</span> <span class="string">&quot;后端课程2&quot;</span><span class="punctuation">,</span></span><br><span class="line">        <span class="attr">&quot;image&quot;</span><span class="punctuation">:</span> <span class="string">&quot;xxx&quot;</span><span class="punctuation">,</span></span><br><span class="line">        <span class="attr">&quot;recommended&quot;</span><span class="punctuation">:</span> <span class="keyword">true</span><span class="punctuation">,</span></span><br><span class="line">        <span class="attr">&quot;introductory&quot;</span><span class="punctuation">:</span> <span class="keyword">false</span><span class="punctuation">,</span></span><br><span class="line">        <span class="attr">&quot;content&quot;</span><span class="punctuation">:</span> <span class="string">&quot;后端课程1,描述&quot;</span><span class="punctuation">,</span></span><br><span class="line">        <span class="attr">&quot;likesCount&quot;</span><span class="punctuation">:</span> <span class="number">10</span><span class="punctuation">,</span></span><br><span class="line">        <span class="attr">&quot;chaptersCount&quot;</span><span class="punctuation">:</span> <span class="number">10</span><span class="punctuation">,</span></span><br><span class="line">        <span class="attr">&quot;createdAt&quot;</span><span class="punctuation">:</span> <span class="string">&quot;2025-01-17T12:48:54.000Z&quot;</span><span class="punctuation">,</span></span><br><span class="line">        <span class="attr">&quot;updatedAt&quot;</span><span class="punctuation">:</span> <span class="string">&quot;2025-01-17T12:48:54.000Z&quot;</span><span class="punctuation">,</span></span><br><span class="line">        <span class="attr">&quot;user&quot;</span><span class="punctuation">:</span> <span class="punctuation">&#123;</span></span><br><span class="line">          <span class="attr">&quot;id&quot;</span><span class="punctuation">:</span> <span class="number">7</span><span class="punctuation">,</span></span><br><span class="line">          <span class="attr">&quot;username&quot;</span><span class="punctuation">:</span> <span class="string">&quot;user1&quot;</span></span><br><span class="line">        <span class="punctuation">&#125;</span><span class="punctuation">,</span></span><br><span class="line">        <span class="attr">&quot;category&quot;</span><span class="punctuation">:</span> <span class="punctuation">&#123;</span></span><br><span class="line">          <span class="attr">&quot;id&quot;</span><span class="punctuation">:</span> <span class="number">2</span><span class="punctuation">,</span></span><br><span class="line">          <span class="attr">&quot;name&quot;</span><span class="punctuation">:</span> <span class="string">&quot;后端课程&quot;</span><span class="punctuation">,</span></span><br><span class="line">          <span class="attr">&quot;article&quot;</span><span class="punctuation">:</span> <span class="punctuation">&#123;</span></span><br><span class="line">            <span class="attr">&quot;id&quot;</span><span class="punctuation">:</span> <span class="number">16</span><span class="punctuation">,</span></span><br><span class="line">            <span class="attr">&quot;title&quot;</span><span class="punctuation">:</span> <span class="string">&quot;标题100&quot;</span></span><br><span class="line">          <span class="punctuation">&#125;</span></span><br><span class="line">        <span class="punctuation">&#125;</span></span><br><span class="line">      <span class="punctuation">&#125;</span></span><br><span class="line">      <span class="comment">// ...剩余7条数据</span></span><br><span class="line">    <span class="punctuation">]</span><span class="punctuation">,</span></span><br><span class="line">    <span class="attr">&quot;pagination&quot;</span><span class="punctuation">:</span> <span class="punctuation">&#123;</span></span><br><span class="line">      <span class="attr">&quot;total&quot;</span><span class="punctuation">:</span> <span class="number">8</span><span class="punctuation">,</span></span><br><span class="line">      <span class="attr">&quot;page&quot;</span><span class="punctuation">:</span> <span class="number">1</span><span class="punctuation">,</span></span><br><span class="line">      <span class="attr">&quot;pageSize&quot;</span><span class="punctuation">:</span> <span class="number">10</span></span><br><span class="line">    <span class="punctuation">&#125;</span></span><br><span class="line">  <span class="punctuation">&#125;</span></span><br><span class="line"><span class="punctuation">&#125;</span></span><br></pre></td></tr></table></figure>
+
+<p>但是其我们是以课程的视角去查询，用户，分类，以及文章都属于当前课程的附属属性，并不需要用层级关系去体现。会希望他们以同级的字段展示。这也是 sequelize 中 <a target="_blank" rel="noopener" href="https://sequelize.org/docs/v6/core-concepts/assocs/#fetching-associations---eager-loading-vs-lazy-loading">Eager Loading vs Lazy Loading</a> 的概念。</p>
+<p>include 关联字段表示 Eager Loading, 会直接把数据返回。而 Lazy Loading 允许用方法调用的方式，选择哪些数据需要，而这种方式正好处理数据的层级问题。</p>
+<p><strong>上面的 findAndCountAll 是无法使用 Lazy 关联查询的，因为它查询的是整个列表，必须明确用数据结构说面关联关系，并不是针对某个课程的关联查询</strong></p>
+<p>下面是查询单独一个课程的关联信息， <strong>需要查询出关联的字段</strong></p>
+<figure class="highlight js"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br></pre></td><td class="code"><pre><span class="line">router.<span class="title function_">get</span>(<span class="string">&quot;/:id&quot;</span>, <span class="keyword">async</span> <span class="keyword">function</span> (<span class="params">req, res, next</span>) &#123;</span><br><span class="line">  <span class="keyword">try</span> &#123;</span><br><span class="line">    <span class="keyword">const</span> condition = &#123;</span><br><span class="line">      <span class="attr">order</span>: [[<span class="string">&quot;id&quot;</span>, <span class="string">&quot;DESC&quot;</span>]],</span><br><span class="line">      <span class="comment">//  注意不要排除了关联 ID, 否则查询不到</span></span><br><span class="line">      <span class="comment">//   attributes: &#123;</span></span><br><span class="line">      <span class="comment">//     exclude: [&quot;categoryId&quot;, &quot;userId&quot;],</span></span><br><span class="line">      <span class="comment">//   &#125;,</span></span><br><span class="line">    &#125;;</span><br><span class="line"></span><br><span class="line">    <span class="keyword">const</span> course = <span class="keyword">await</span> <span class="title class_">Course</span>.<span class="title function_">findByPk</span>(req.<span class="property">params</span>.<span class="property">id</span>, condition);</span><br><span class="line"></span><br><span class="line">    <span class="comment">// 通过课程查询分类，注意要带上关联的 articleId</span></span><br><span class="line">    <span class="keyword">const</span> category = <span class="keyword">await</span> course.<span class="title function_">getCategory</span>(&#123;</span><br><span class="line">      <span class="attr">attributes</span>: [<span class="string">&quot;id&quot;</span>, <span class="string">&quot;name&quot;</span>, <span class="string">&quot;articleId&quot;</span>],</span><br><span class="line">    &#125;);</span><br><span class="line"></span><br><span class="line">    <span class="comment">// 通过分类查询文章</span></span><br><span class="line">    <span class="keyword">const</span> article = <span class="keyword">await</span> category.<span class="title function_">getArticle</span>(&#123;</span><br><span class="line">      <span class="attr">attributes</span>: [<span class="string">&quot;id&quot;</span>, <span class="string">&quot;title&quot;</span>],</span><br><span class="line">    &#125;);</span><br><span class="line"></span><br><span class="line">    res.<span class="title function_">json</span>(&#123;</span><br><span class="line">      <span class="attr">status</span>: <span class="literal">true</span>,</span><br><span class="line">      <span class="attr">message</span>: <span class="literal">null</span>,</span><br><span class="line">      <span class="attr">data</span>: &#123;</span><br><span class="line">        course,</span><br><span class="line">        category,</span><br><span class="line">        article,</span><br><span class="line">      &#125;,</span><br><span class="line">    &#125;);</span><br><span class="line">  &#125; <span class="keyword">catch</span> (err) &#123;&#125;</span><br><span class="line">&#125;);</span><br></pre></td></tr></table></figure>
+
+<h4 id="多对多的查询"><a href="#多对多的查询" class="headerlink" title="多对多的查询"></a>多对多的查询</h4><p>实现一个点赞的功能：</p>
+<ul>
+<li>一个用户可以可以给多个课程点赞</li>
+<li>一个课程也可以被多个用户点赞</li>
+</ul>
+<p>虽然可以直接在用户表中储存点赞课程，但不是一个好的做法, 存在以下问题：</p>
+<p>无法保证数据一致性：难以通过外键验证课程是否存在。<br>查询复杂：查找特定课程的所有学生需要额外的解析逻辑。<br>扩展性差：不适合大规模、多条件查询的场景。</p>
+<p>最佳实践是使用中间表：</p>
+<p>数据一致性：中间表中的外键可以确保关联数据的完整性。<br>灵活性：中间表允许添加额外的信息（如时间戳、状态等）。<br>查询效率：数据库的索引可以优化多对多查询性能。<br>扩展性：关系较复杂时，可以轻松扩展中间表的结构。</p>
+<p>修改模型，通过点赞中间表建立课程表和用户之间的关系</p>
+<figure class="highlight js"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment">// models\user.js</span></span><br><span class="line"></span><br><span class="line"><span class="keyword">class</span> <span class="title class_">User</span> <span class="keyword">extends</span> <span class="title class_ inherited__">Model</span> &#123;</span><br><span class="line">  <span class="keyword">static</span> <span class="title function_">associate</span>(<span class="params">models</span>) &#123;</span><br><span class="line">    models.<span class="property">User</span>.<span class="title function_">belongsToMany</span>(models.<span class="property">Course</span>, &#123;</span><br><span class="line">      <span class="attr">through</span>: models.<span class="property">Like</span>,</span><br><span class="line">      <span class="attr">as</span>: <span class="string">&quot;likeCourse&quot;</span>,</span><br><span class="line">    &#125;);</span><br><span class="line">  &#125;</span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line"><span class="comment">// models\course.js</span></span><br><span class="line"><span class="keyword">class</span> <span class="title class_">User</span> <span class="keyword">extends</span> <span class="title class_ inherited__">Model</span> &#123;</span><br><span class="line">  <span class="keyword">static</span> <span class="title function_">associate</span>(<span class="params">models</span>) &#123;</span><br><span class="line">    models.<span class="property">Course</span>.<span class="title function_">belongsToMany</span>(models.<span class="property">User</span>, &#123;</span><br><span class="line">      <span class="attr">through</span>: models.<span class="property">Like</span>,</span><br><span class="line">      <span class="attr">as</span>: <span class="string">&quot;courseWithUsers&quot;</span>,</span><br><span class="line">    &#125;);</span><br><span class="line">  &#125;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+<p>查询某个用户喜欢的课程， <strong>如果使用 include 做查询在多对多的关系中无法实现分页,在 include 中无法对关联查询的数据分页，且模型中的 foreignKey 是必填的，否则会报错</strong></p>
+<figure class="highlight js"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br></pre></td><td class="code"><pre><span class="line">router.<span class="title function_">get</span>(<span class="string">&quot;/:id&quot;</span>, <span class="keyword">async</span> <span class="keyword">function</span> (<span class="params">req, res, next</span>) &#123;</span><br><span class="line">  <span class="keyword">try</span> &#123;</span><br><span class="line">    <span class="comment">// 获取user实例</span></span><br><span class="line">    <span class="keyword">const</span> user = <span class="keyword">await</span> <span class="title class_">User</span>.<span class="title function_">findByPk</span>(req.<span class="property">params</span>.<span class="property">id</span>, &#123;</span><br><span class="line">      <span class="attr">include</span>: [</span><br><span class="line">        &#123;</span><br><span class="line">          <span class="attr">model</span>: <span class="title class_">Course</span>,</span><br><span class="line">          <span class="attr">as</span>: <span class="string">&quot;likeCourses&quot;</span>,</span><br><span class="line">          <span class="comment">// 无法使用分页</span></span><br><span class="line">          <span class="comment">// limit: pageSize,</span></span><br><span class="line">          <span class="comment">// offset: (page - 1) * pageSize,</span></span><br><span class="line">        &#125;,</span><br><span class="line">      ],</span><br><span class="line">    &#125;);</span><br><span class="line"></span><br><span class="line">    res.<span class="title function_">json</span>(&#123;</span><br><span class="line">      <span class="comment">//...</span></span><br><span class="line">    &#125;);</span><br><span class="line">  &#125; <span class="keyword">catch</span> (err) &#123;&#125;</span><br><span class="line">&#125;);</span><br></pre></td></tr></table></figure>
+
+<p>所以可以使用 Lazy Loading 手动请求数据, 模型中提供了内置的方法，可以用于获取分页数据</p>
+<p>另外需要控制 <a target="_blank" rel="noopener" href="https://sequelize.org/docs/v6/core-concepts/assocs/#foobelongstomanybar--through-baz-">不显示中间表的数据</a></p>
+<figure class="highlight js"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br></pre></td><td class="code"><pre><span class="line">router.<span class="title function_">get</span>(<span class="string">&quot;/:id&quot;</span>, <span class="keyword">async</span> <span class="keyword">function</span> (<span class="params">req, res, next</span>) &#123;</span><br><span class="line">  <span class="keyword">try</span> &#123;</span><br><span class="line">    <span class="keyword">const</span> page = req.<span class="property">query</span>.<span class="property">page</span> || <span class="number">1</span>;</span><br><span class="line">    <span class="keyword">const</span> pageSize = req.<span class="property">query</span>.<span class="property">pageSize</span> || <span class="number">10</span>;</span><br><span class="line"></span><br><span class="line">    <span class="keyword">const</span> limit = pageSize;</span><br><span class="line">    <span class="keyword">const</span> offset = (page - <span class="number">1</span>) * pageSize;</span><br><span class="line">    <span class="keyword">const</span> user = <span class="keyword">await</span> <span class="title class_">User</span>.<span class="title function_">findByPk</span>(req.<span class="property">params</span>.<span class="property">id</span>);</span><br><span class="line"></span><br><span class="line">    <span class="comment">// getLikeCourses 是模型内部映射的方法，通过 get + as别名 命名</span></span><br><span class="line">    <span class="keyword">const</span> course = <span class="keyword">await</span> user.<span class="title function_">getLikeCourses</span>(&#123;</span><br><span class="line">      <span class="comment">// 不显示中间表的数据</span></span><br><span class="line">      <span class="attr">joinTableAttributes</span>: [],</span><br><span class="line">      <span class="attr">attributes</span>: [<span class="string">&quot;id&quot;</span>, <span class="string">&quot;name&quot;</span>],</span><br><span class="line">      limit,</span><br><span class="line">      offset,</span><br><span class="line">    &#125;);</span><br><span class="line"></span><br><span class="line">    <span class="comment">// 另一个映射方法用于获取总条数</span></span><br><span class="line">    <span class="keyword">const</span> total = <span class="keyword">await</span> user.<span class="title function_">countLikeCourses</span>();</span><br><span class="line"></span><br><span class="line">    res.<span class="title function_">json</span>(&#123;</span><br><span class="line">      <span class="comment">//...</span></span><br><span class="line">    &#125;);</span><br><span class="line">  &#125; <span class="keyword">catch</span> (err) &#123;&#125;</span><br><span class="line">&#125;);</span><br></pre></td></tr></table></figure>
+
+<h4 id="处理跨域"><a href="#处理跨域" class="headerlink" title="处理跨域"></a>处理跨域</h4><ul>
+<li>nginx</li>
+<li>cors</li>
+</ul>
+ 
+      <!-- reward -->
+      
+    </div>
+    
+
+    <!-- copyright -->
+    
+    <footer class="article-footer">
+       
+  <ul class="article-tag-list" itemprop="keywords"><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/NodeJS/" rel="tag">NodeJS</a></li></ul>
+
+    </footer>
+  </div>
+
+   
+    
+</article>
+
+    
+    <article
   id="post-node/express学习项目"
   class="article article-type-post"
   itemscope
@@ -234,6 +472,79 @@
 
     
     <article
+  id="post-vue/vue原理1"
+  class="article article-type-post"
+  itemscope
+  itemprop="blogPost"
+  data-scroll-reveal
+>
+  <div class="article-inner">
+    
+    <header class="article-header">
+       
+<h2 itemprop="name">
+  <a class="article-title" href="/posts/38407de60227/"
+    >vue原理A</a> 
+</h2>
+ 
+
+      
+    </header>
+     
+    <div class="article-meta">
+      <a href="/posts/38407de60227/" class="article-date">
+  <time datetime="2021-02-02T00:28:18.000Z" itemprop="datePublished">2021-02-02</time>
+</a> 
+  <div class="article-category">
+    <a class="article-category-link" href="/categories/Vue/">Vue</a>
+  </div>
+   
+    </div>
+      
+    <div class="article-entry" itemprop="articleBody">
+       
+  <h4 id="目录分析"><a href="#目录分析" class="headerlink" title="目录分析"></a>目录分析</h4><ul>
+<li><p>dist 打包出各种不同的规范文件，其中runtime(程序运行起来的状态)文件只包括运行时，runtime包括事件，响应式数数，vdom,<br>complier在线运行时对模板文件编译（在线编译） </p>
+</li>
+<li><p>src</p>
+<ul>
+<li>compiler 目录是编译模板</li>
+<li>core 核心文件<ul>
+<li>keep-alive</li>
+<li>vue 全局api use mixin</li>
+<li>event lifecycle</li>
+<li>observer 双向数据绑定 dep</li>
+</ul>
+</li>
+<li>entries 生产打包的入口</li>
+<li>platforms 是核心模块对应在各平台上的模块</li>
+<li>server 处理服务端渲染</li>
+<li>sfc 目录处理单文件 .vue</li>
+<li>shared 提供全局用到的工具函数</li>
+</ul>
+</li>
+</ul>
+ 
+      <!-- reward -->
+      
+    </div>
+    
+
+    <!-- copyright -->
+    
+    <footer class="article-footer">
+       
+  <ul class="article-tag-list" itemprop="keywords"><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/Vue/" rel="tag">Vue</a></li><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/%E5%BA%94%E7%94%A8%E6%A1%88%E4%BE%8B/" rel="tag">应用案例</a></li></ul>
+
+    </footer>
+  </div>
+
+   
+    
+</article>
+
+    
+    <article
   id="post-vue/vue原理"
   class="article article-type-post"
   itemscope
@@ -288,79 +599,6 @@
 </ul>
 <h4 id="双向数据绑定"><a href="#双向数据绑定" class="headerlink" title="双向数据绑定"></a>双向数据绑定</h4><p><img src="/posts/7485af0dbc40/0001.png"></p>
 <h5 id="OBSERVER"><a href="#OBSERVER" class="headerlink" title="OBSERVER"></a>OBSERVER</h5><p>Observer会观察两种类型的数据，Object 与 Array，对于Array类型的数据，由于 JavaScript 的限制， Vue 不能检测变化,会先重写操作数组的原型方法，重写后能达到两个目的，当数组发生变化时，触发 notify<br>如果是 push，unshift，splice 这些添加新元素的操作，则会使用observer观察新添加的数据，重写完原型方法后，遍历拿到数组中的每个数据 使用observer观察它而对于Object类型的数据，则遍历它的每个key，使用 defineProperty 设置 getter 和 setter，当触发getter的时候，observer则开始收集依赖，而触发setter的时候，observe则触发notify。</p>
- 
-      <!-- reward -->
-      
-    </div>
-    
-
-    <!-- copyright -->
-    
-    <footer class="article-footer">
-       
-  <ul class="article-tag-list" itemprop="keywords"><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/Vue/" rel="tag">Vue</a></li><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/%E5%BA%94%E7%94%A8%E6%A1%88%E4%BE%8B/" rel="tag">应用案例</a></li></ul>
-
-    </footer>
-  </div>
-
-   
-    
-</article>
-
-    
-    <article
-  id="post-vue/vue原理1"
-  class="article article-type-post"
-  itemscope
-  itemprop="blogPost"
-  data-scroll-reveal
->
-  <div class="article-inner">
-    
-    <header class="article-header">
-       
-<h2 itemprop="name">
-  <a class="article-title" href="/posts/38407de60227/"
-    >vue原理A</a> 
-</h2>
- 
-
-      
-    </header>
-     
-    <div class="article-meta">
-      <a href="/posts/38407de60227/" class="article-date">
-  <time datetime="2021-02-02T00:28:18.000Z" itemprop="datePublished">2021-02-02</time>
-</a> 
-  <div class="article-category">
-    <a class="article-category-link" href="/categories/Vue/">Vue</a>
-  </div>
-   
-    </div>
-      
-    <div class="article-entry" itemprop="articleBody">
-       
-  <h4 id="目录分析"><a href="#目录分析" class="headerlink" title="目录分析"></a>目录分析</h4><ul>
-<li><p>dist 打包出各种不同的规范文件，其中runtime(程序运行起来的状态)文件只包括运行时，runtime包括事件，响应式数数，vdom,<br>complier在线运行时对模板文件编译（在线编译） </p>
-</li>
-<li><p>src</p>
-<ul>
-<li>compiler 目录是编译模板</li>
-<li>core 核心文件<ul>
-<li>keep-alive</li>
-<li>vue 全局api use mixin</li>
-<li>event lifecycle</li>
-<li>observer 双向数据绑定 dep</li>
-</ul>
-</li>
-<li>entries 生产打包的入口</li>
-<li>platforms 是核心模块对应在各平台上的模块</li>
-<li>server 处理服务端渲染</li>
-<li>sfc 目录处理单文件 .vue</li>
-<li>shared 提供全局用到的工具函数</li>
-</ul>
-</li>
-</ul>
  
       <!-- reward -->
       
@@ -776,224 +1014,6 @@
     <footer class="article-footer">
        
   <ul class="article-tag-list" itemprop="keywords"><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/webpack/" rel="tag">webpack</a></li><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/%E5%B7%A5%E7%A8%8B%E5%8C%96/" rel="tag">工程化</a></li></ul>
-
-    </footer>
-  </div>
-
-   
-    
-</article>
-
-    
-    <article
-  id="post-algorithm/leetcode/填充每个节点的下一个右侧节点指针"
-  class="article article-type-post"
-  itemscope
-  itemprop="blogPost"
-  data-scroll-reveal
->
-  <div class="article-inner">
-    
-    <header class="article-header">
-       
-<h2 itemprop="name">
-  <a class="article-title" href="/posts/0d16fafcd38e/"
-    >LeetCode 填充每个节点的下一个右侧节点指针</a> 
-</h2>
- 
-
-      
-    </header>
-     
-    <div class="article-meta">
-      <a href="/posts/0d16fafcd38e/" class="article-date">
-  <time datetime="2021-01-20T07:35:11.000Z" itemprop="datePublished">2021-01-20</time>
-</a> 
-  <div class="article-category">
-    <a class="article-category-link" href="/categories/%E7%AE%97%E6%B3%95/">算法</a> / <a class="article-category-link" href="/categories/%E7%AE%97%E6%B3%95/%E5%85%B3%E8%81%94%E9%A2%98%E7%9B%AE/">关联题目</a>
-  </div>
-   
-    </div>
-      
-    <div class="article-entry" itemprop="articleBody">
-       
-  <p><a target="_blank" rel="noopener" href="https://leetcode.cn/problems/populating-next-right-pointers-in-each-node/description/">填充每个节点的下一个右侧节点指针</a></p>
-<h4 id="思考"><a href="#思考" class="headerlink" title="思考"></a>思考</h4><p>相同层级的操作可以想到的是层序遍,但是题目中有一个问题没有说清楚,下一个右侧节点表示紧邻的右侧节点,空节点也算是一个节点,换句话说空节点不能跳过</p>
-<p>在思考一下其中的细节,需要清楚一层有多少个节点，这样才能准确遍历到一层的末尾, 链接的时候空的节点不能跳过，因为这也是合法的节点。</p>
-<figure class="highlight js"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">const</span> <span class="title function_">connect</span> = (<span class="params">root</span>) =&gt; &#123;</span><br><span class="line">  <span class="keyword">if</span> (root === <span class="literal">null</span>) <span class="keyword">return</span> <span class="literal">null</span>;</span><br><span class="line"></span><br><span class="line">  <span class="keyword">const</span> queue = [root];</span><br><span class="line">  <span class="keyword">while</span> (queue.<span class="property">length</span>) &#123;</span><br><span class="line">    <span class="comment">// 记录每一层的长度</span></span><br><span class="line">    <span class="keyword">let</span> len = queue.<span class="property">length</span>;</span><br><span class="line"></span><br><span class="line">    <span class="keyword">while</span> (len--) &#123;</span><br><span class="line">      <span class="keyword">const</span> node = queue.<span class="title function_">shift</span>();</span><br><span class="line">      <span class="keyword">if</span> (len &amp;&amp; node) node.<span class="property">next</span> = queue[<span class="number">0</span>];</span><br><span class="line"></span><br><span class="line">      <span class="comment">// 不需要判断空节点</span></span><br><span class="line">      <span class="keyword">if</span> (node) queue.<span class="title function_">push</span>(node.<span class="property">left</span>, node.<span class="property">right</span>);</span><br><span class="line">    &#125;</span><br><span class="line">  &#125;</span><br><span class="line">  <span class="keyword">return</span> root;</span><br><span class="line">&#125;;</span><br></pre></td></tr></table></figure>
-
-<p>这个问题也可以用,递归来解决,因为它可以抽象成更小的子问题，也就是链接两个节点，需要知道的是哪些节点是需要链接的。</p>
-<p>如果盲目的套用递归框架就会困惑，在另外一个子树的节点，怎么能获取到呢。</p>
-<figure class="highlight js"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">const</span> <span class="title function_">connect</span> = (<span class="params">root</span>) =&gt; &#123;</span><br><span class="line">  <span class="keyword">if</span> (root === <span class="literal">null</span>) <span class="keyword">return</span> root;</span><br><span class="line"></span><br><span class="line">  <span class="keyword">if</span> (root.<span class="property">left</span>) root.<span class="property">next</span> = root.<span class="property">right</span>;</span><br><span class="line"></span><br><span class="line">  <span class="comment">// 无法获取另外子树的节点</span></span><br><span class="line"></span><br><span class="line">  <span class="keyword">return</span> root;</span><br><span class="line">&#125;;</span><br></pre></td></tr></table></figure>
-
-<p>所以需要指明，那两个节点需要链接，这也是一个先序遍历的模型，但是子问题需要传递更多的信息。</p>
-<figure class="highlight js"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">const</span> <span class="title function_">dig</span> = (<span class="params">left, right</span>) =&gt; &#123;</span><br><span class="line">  <span class="comment">// 链接两个节点</span></span><br><span class="line">  <span class="keyword">if</span> (left) left.<span class="property">next</span> = right;</span><br><span class="line">  <span class="keyword">if</span> (left) <span class="title function_">dig</span>(left.<span class="property">left</span>, left.<span class="property">right</span>);</span><br><span class="line">  <span class="keyword">if</span> (right) <span class="title function_">dig</span>(right.<span class="property">left</span>, right.<span class="property">right</span>);</span><br><span class="line">  <span class="comment">// 不同子树中需要连接的节点</span></span><br><span class="line">  <span class="keyword">if</span> (left &amp;&amp; right) <span class="title function_">dig</span>(left.<span class="property">right</span>, right.<span class="property">left</span>);</span><br><span class="line">&#125;;</span><br><span class="line"></span><br><span class="line"><span class="keyword">const</span> <span class="title function_">connect</span> = (<span class="params">root</span>) =&gt; &#123;</span><br><span class="line">  <span class="keyword">if</span> (root === <span class="literal">null</span>) <span class="keyword">return</span> root;</span><br><span class="line">  <span class="title function_">dig</span>(root.<span class="property">left</span>, root.<span class="property">right</span>);</span><br><span class="line">  <span class="keyword">return</span> root;</span><br><span class="line">&#125;;</span><br></pre></td></tr></table></figure>
- 
-      <!-- reward -->
-      
-    </div>
-    
-
-    <!-- copyright -->
-    
-    <footer class="article-footer">
-       
-  <ul class="article-tag-list" itemprop="keywords"><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/%E5%85%B3%E8%81%94%E9%A2%98%E7%9B%AE/" rel="tag">关联题目</a></li><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/%E7%AE%97%E6%B3%95/" rel="tag">算法</a></li></ul>
-
-    </footer>
-  </div>
-
-   
-    
-</article>
-
-    
-    <article
-  id="post-algorithm/leetcode/二叉树展开为链表"
-  class="article article-type-post"
-  itemscope
-  itemprop="blogPost"
-  data-scroll-reveal
->
-  <div class="article-inner">
-    
-    <header class="article-header">
-       
-<h2 itemprop="name">
-  <a class="article-title" href="/posts/13ae1e52470a/"
-    >LeetCode 二叉树展开为链表</a> 
-</h2>
- 
-
-      
-    </header>
-     
-    <div class="article-meta">
-      <a href="/posts/13ae1e52470a/" class="article-date">
-  <time datetime="2021-01-20T02:20:22.000Z" itemprop="datePublished">2021-01-20</time>
-</a> 
-  <div class="article-category">
-    <a class="article-category-link" href="/categories/%E7%AE%97%E6%B3%95/">算法</a> / <a class="article-category-link" href="/categories/%E7%AE%97%E6%B3%95/%E5%85%B3%E8%81%94%E9%A2%98%E7%9B%AE/">关联题目</a>
-  </div>
-   
-    </div>
-      
-    <div class="article-entry" itemprop="articleBody">
-       
-  <p><a target="_blank" rel="noopener" href="https://leetcode.cn/problems/flatten-binary-tree-to-linked-list/description/">二叉树展开为链表</a></p>
-<h4 id="思考"><a href="#思考" class="headerlink" title="思考"></a>思考</h4><p>可以很自然想到的是需要一个递归，因为他需要先序遍历<br>我们会直接进入到每个左边子树的左节点。<br>但是这经过的右子树是暂时用不到的，所以需要想办法把他们存起来，在稍后使用</p>
-<!-- It's natural to think that a recursive approach is needed, as it requires a pre-order traversal.
-We will directly move into the left node of each left subtree.
-However, the right subtrees encountered along the way are temporarily unused,
-so we need a way to store them for later use. -->
-
-<figure class="highlight javascript"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">const</span> <span class="title function_">flatten</span> = (<span class="params">root</span>) =&gt; &#123;</span><br><span class="line">  <span class="keyword">if</span> (root === <span class="literal">null</span>) <span class="keyword">return</span> root;</span><br><span class="line"></span><br><span class="line">  <span class="keyword">const</span> stack = [];</span><br><span class="line">  <span class="keyword">const</span> <span class="title function_">dig</span> = (<span class="params">root</span>) =&gt; &#123;</span><br><span class="line">    <span class="keyword">if</span> (root === <span class="literal">null</span>) <span class="keyword">return</span>;</span><br><span class="line">    <span class="keyword">const</span> right = root.<span class="property">right</span>;</span><br><span class="line">    root.<span class="property">right</span> = <span class="literal">null</span>;</span><br><span class="line">    <span class="comment">// 暂存右节点</span></span><br><span class="line">    <span class="keyword">if</span> (right !== <span class="literal">null</span>) stack.<span class="title function_">push</span>(right);</span><br><span class="line"></span><br><span class="line">    <span class="comment">// 将左节点放到有节点上</span></span><br><span class="line">    <span class="comment">// 并先序遍历继续递归向下</span></span><br><span class="line">    <span class="keyword">if</span> (root.<span class="property">left</span> !== <span class="literal">null</span>) &#123;</span><br><span class="line">      root.<span class="property">right</span> = root.<span class="property">left</span>;</span><br><span class="line">      root.<span class="property">left</span> = <span class="literal">null</span>;</span><br><span class="line">      <span class="title function_">dig</span>(root.<span class="property">right</span>);</span><br><span class="line">    &#125; <span class="keyword">else</span> &#123;</span><br><span class="line">      <span class="comment">// 如果已经没有下面的节点</span></span><br><span class="line">      <span class="comment">// 从队列中取出最后的右子树遍历</span></span><br><span class="line">      <span class="keyword">const</span> next = stack.<span class="title function_">pop</span>();</span><br><span class="line">      <span class="keyword">if</span> (next == <span class="literal">undefined</span>) <span class="keyword">return</span>;</span><br><span class="line">      root.<span class="property">right</span> = next;</span><br><span class="line">      <span class="title function_">dig</span>(next);</span><br><span class="line">    &#125;</span><br><span class="line">  &#125;;</span><br><span class="line">  <span class="title function_">dig</span>(root);</span><br><span class="line">  <span class="keyword">return</span> root;</span><br><span class="line">&#125;;</span><br></pre></td></tr></table></figure>
-
-<p>还可以思考用 O(1) 的空间复杂度，解决这个问题。既然不能用额外的储存空间，那么可以考虑将用到的信息放在树的节点上操作。</p>
-<p>题目要求是以先序遍历的顺序，并且通用右指针相连，对于右指针相连这个问题我们可以弱化它，因为这可以通过节点交换很容易的完成。</p>
-<p>而以先序遍历顺序返回，并不意味着一定要先访问根节点，只要处理之后的链表的顺序是先序遍历就可以了，所以对于一个只有三个节点的子树来说，将右节点接在左节点的后面就是先序遍历。</p>
-<p>那要如何保证在访问根节点的时候，左右子树都是一个处理好的链表，我们会想到后序遍历，因为在访问某个节点的时候，他的左右子树都已经在后序遍历的代码位置处理成了链表，可以直接拼接。</p>
-<p>所以可以写出下面的框架</p>
-<!-- We can also consider solving this problem with O(1) space complexity/kəmˈpleksəti/. Since(通常用于提供上下文或理由而不强调原因。) we cannot use extra/ˈekstrə/ storage space, we might think about leveraging(充分利用) the tree nodes themselves to store and operate on the required information.
-
-The problem requires linking nodes in pre-order traversal order using the right pointer. However, we can simplify this requirement for right-pointer linking, as it can be easily achieved through node rearrangement later.
-
-Returning the nodes in pre-order traversal order doesn't necessarily mean visiting the root node first. As long as the final linked list follows the pre-order traversal sequence, it's valid. For example, in a subtree with only three nodes, connecting the right child to the end of the left child's list achieves the pre-order traversal order.
-
-So, how can we ensure that, when visiting a root node, its left and right subtrees are already processed into linked lists? Post-order traversal comes to mind, as it ensures that when processing a node, its left and right subtrees have already been transformed into linked lists, making it easy to concatenate them.
-
-Based on this, we can construct the following framework: -->
-
-<figure class="highlight js"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">const</span> <span class="title function_">dig</span> = (<span class="params">root</span>) =&gt; &#123;</span><br><span class="line">  <span class="keyword">if</span> (root === <span class="literal">null</span>) <span class="keyword">return</span>;</span><br><span class="line">  <span class="title function_">dig</span>(root.<span class="property">left</span>);</span><br><span class="line">  <span class="title function_">dig</span>(root.<span class="property">right</span>);</span><br><span class="line"></span><br><span class="line">  <span class="comment">// 处理左右节点</span></span><br><span class="line">&#125;;</span><br><span class="line"></span><br><span class="line"><span class="keyword">const</span> <span class="title function_">flatten</span> = (<span class="params">root</span>) =&gt; &#123;</span><br><span class="line">  <span class="keyword">if</span> (root === <span class="literal">null</span>) <span class="keyword">return</span> root;</span><br><span class="line">  <span class="title function_">dig</span>(root);</span><br><span class="line">  <span class="keyword">return</span> root;</span><br><span class="line">&#125;;</span><br></pre></td></tr></table></figure>
-
-<p>思考一些具体的细节，当一个节点的左节点不存在的时候，可以直接跳过，因为它只有一个右节点的话不需要处理，或者右节点已经处理成一个链表。</p>
-<p>而当一个左节点存在的时候，需要能获取到左节点这个链表中的最后一个，才能和右节点相连，最后还需要交换左右节点。</p>
-<!-- When a node does not have a left child, we can simply skip it because if it only has a right child, there is no need for processing, or the right child has already been processed into a linked list.
-
-However, when a left child exists, we need to find the last node in the linked list formed by the left child to connect it with the right child. Finally, we need to swap the left and right children. -->
-
-<figure class="highlight js"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">const</span> <span class="title function_">dig</span> = (<span class="params">root</span>) =&gt; &#123;</span><br><span class="line">  <span class="keyword">if</span> (root === <span class="literal">null</span>) <span class="keyword">return</span>;</span><br><span class="line">  <span class="title function_">dig</span>(root.<span class="property">left</span>);</span><br><span class="line">  <span class="title function_">dig</span>(root.<span class="property">right</span>);</span><br><span class="line"></span><br><span class="line">  <span class="keyword">let</span> last = root.<span class="property">left</span>;</span><br><span class="line">  <span class="comment">// 左节点不存在，直接返回</span></span><br><span class="line">  <span class="keyword">if</span> (last === <span class="literal">null</span>) <span class="keyword">return</span>;</span><br><span class="line"></span><br><span class="line">  <span class="comment">// 获取最后一个节点</span></span><br><span class="line">  <span class="keyword">while</span> (last.<span class="property">right</span>) &#123;</span><br><span class="line">    last = last.<span class="property">right</span>;</span><br><span class="line">  &#125;</span><br><span class="line"></span><br><span class="line">  <span class="comment">// 交换左右子树</span></span><br><span class="line">  last.<span class="property">right</span> = root.<span class="property">right</span>;</span><br><span class="line">  root.<span class="property">right</span> = root.<span class="property">left</span>;</span><br><span class="line">  root.<span class="property">left</span> = <span class="literal">null</span>;</span><br><span class="line">&#125;;</span><br><span class="line"></span><br><span class="line"><span class="keyword">const</span> <span class="title function_">flatten</span> = (<span class="params">root</span>) =&gt; &#123;</span><br><span class="line">  <span class="keyword">if</span> (root === <span class="literal">null</span>) <span class="keyword">return</span> root;</span><br><span class="line">  <span class="title function_">dig</span>(root);</span><br><span class="line">  <span class="keyword">return</span> root;</span><br><span class="line">&#125;;</span><br></pre></td></tr></table></figure>
- 
-      <!-- reward -->
-      
-    </div>
-    
-
-    <!-- copyright -->
-    
-    <footer class="article-footer">
-       
-  <ul class="article-tag-list" itemprop="keywords"><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/%E5%85%B3%E8%81%94%E9%A2%98%E7%9B%AE/" rel="tag">关联题目</a></li><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/%E7%AE%97%E6%B3%95/" rel="tag">算法</a></li></ul>
-
-    </footer>
-  </div>
-
-   
-    
-</article>
-
-    
-    <article
-  id="post-algorithm/leetcode/二叉树直径"
-  class="article article-type-post"
-  itemscope
-  itemprop="blogPost"
-  data-scroll-reveal
->
-  <div class="article-inner">
-    
-    <header class="article-header">
-       
-<h2 itemprop="name">
-  <a class="article-title" href="/posts/6a338e4e2cab/"
-    >LeetCode 二叉树直径</a> 
-</h2>
- 
-
-      
-    </header>
-     
-    <div class="article-meta">
-      <a href="/posts/6a338e4e2cab/" class="article-date">
-  <time datetime="2021-01-19T15:31:22.000Z" itemprop="datePublished">2021-01-19</time>
-</a> 
-  <div class="article-category">
-    <a class="article-category-link" href="/categories/%E7%AE%97%E6%B3%95/">算法</a> / <a class="article-category-link" href="/categories/%E7%AE%97%E6%B3%95/%E5%85%B3%E8%81%94%E9%A2%98%E7%9B%AE/">关联题目</a>
-  </div>
-   
-    </div>
-      
-    <div class="article-entry" itemprop="articleBody">
-       
-  <p><a target="_blank" rel="noopener" href="https://leetcode.cn/problems/diameter-of-binary-tree/">二叉树直径</a></p>
-<h4 id="思考"><a href="#思考" class="headerlink" title="思考"></a>思考</h4><p>可以观察到两个现象</p>
-<ul>
-<li>直径可能并不会经过根节点</li>
-<li>所谓的直径就是某个节点的左子树深度加右子树深度最长的一条</li>
-</ul>
-<p>那既然是获取最长的子树，是不能能套用一个之前的求 <a href="/posts/8e3fe34f62a9/">二叉树最大深度</a> 的方法, 思考以下可以使用下面这个框架么</p>
-<p>这可能行不通，因为提出了 maxDeep 方法导致调用时，只能作用在根节点的左右子树。替他节点无法调用这个模式递归。</p>
-<figure class="highlight js"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">const</span> <span class="title function_">maxDeep</span> = (<span class="params">root</span>) =&gt; &#123;</span><br><span class="line">  <span class="keyword">if</span> (root === <span class="literal">null</span>) <span class="keyword">return</span> <span class="number">0</span>;</span><br><span class="line">  <span class="keyword">return</span> <span class="title class_">Math</span>.<span class="title function_">max</span>(<span class="title function_">maxDeep</span>(root.<span class="property">left</span>), <span class="title function_">maxDeep</span>(root.<span class="property">right</span>)) + <span class="number">1</span>;</span><br><span class="line">&#125;;</span><br><span class="line"><span class="keyword">var</span> diameterOfBinaryTree = <span class="keyword">function</span> (<span class="params">root</span>) &#123;</span><br><span class="line">  <span class="comment">//...</span></span><br><span class="line">&#125;;</span><br></pre></td></tr></table></figure>
-
-<p>既然这样就放到内部去做, 但是这种框架面临的问题是，返回值只有一个，希望可以知道左右子树的最大深度，又要保留着已经遍历过的子树的最大直径。</p>
-<figure class="highlight js"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">var</span> diameterOfBinaryTree = <span class="keyword">function</span> (<span class="params">root</span>) &#123;</span><br><span class="line">  <span class="keyword">if</span> (root === <span class="literal">null</span>) <span class="keyword">return</span> <span class="number">0</span>;</span><br><span class="line"></span><br><span class="line">  <span class="keyword">let</span> l = <span class="title function_">diameterOfBinaryTree</span>(root.<span class="property">left</span>);</span><br><span class="line">  <span class="keyword">let</span> r = <span class="title function_">diameterOfBinaryTree</span>(root.<span class="property">right</span>);</span><br><span class="line"></span><br><span class="line">  <span class="comment">// return Math.max(l + r, l, r) + 1;</span></span><br><span class="line">&#125;;</span><br></pre></td></tr></table></figure>
-
-<p>那就再引入一个额外的变量去保存，最大直径，让递归可以专注与子树的最大深度</p>
-<figure class="highlight js"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">var</span> diameterOfBinaryTree = <span class="keyword">function</span> (<span class="params">root</span>) &#123;</span><br><span class="line">  <span class="keyword">if</span> (root === <span class="literal">null</span>) <span class="keyword">return</span> <span class="number">0</span>;</span><br><span class="line"></span><br><span class="line">  <span class="keyword">let</span> max = <span class="number">0</span>;</span><br><span class="line"></span><br><span class="line">  <span class="keyword">const</span> <span class="title function_">dig</span> = (<span class="params">root</span>) =&gt; &#123;</span><br><span class="line">    <span class="keyword">if</span> (root === <span class="literal">null</span>) <span class="keyword">return</span> <span class="number">0</span>;</span><br><span class="line">    <span class="keyword">let</span> left = <span class="title function_">dig</span>(root.<span class="property">left</span>);</span><br><span class="line">    <span class="keyword">let</span> right = <span class="title function_">dig</span>(root.<span class="property">right</span>);</span><br><span class="line">    max = <span class="title class_">Math</span>.<span class="title function_">max</span>(max, left + right);</span><br><span class="line">    <span class="keyword">return</span> <span class="title class_">Math</span>.<span class="title function_">max</span>(left, right) + <span class="number">1</span>;</span><br><span class="line">  &#125;;</span><br><span class="line"></span><br><span class="line">  <span class="title function_">dig</span>(root);</span><br><span class="line"></span><br><span class="line">  <span class="keyword">return</span> max;</span><br><span class="line">&#125;;</span><br></pre></td></tr></table></figure>
-
-<p>再来看一下，其实用前序遍历也可以实现，但是需要每经历一个节点，就要获取以下当前节点的左右子树的最大深度。</p>
-<p>这是因为前序遍历只能获取当前节点的信息，而后序遍历则可以携带上一个节点返回的信息。</p>
- 
-      <!-- reward -->
-      
-    </div>
-    
-
-    <!-- copyright -->
-    
-    <footer class="article-footer">
-       
-  <ul class="article-tag-list" itemprop="keywords"><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/%E5%85%B3%E8%81%94%E9%A2%98%E7%9B%AE/" rel="tag">关联题目</a></li><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/%E7%AE%97%E6%B3%95/" rel="tag">算法</a></li></ul>
 
     </footer>
   </div>

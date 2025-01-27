@@ -112,6 +112,188 @@
     
     
     <article
+  id="posts-other/rsync备份"
+  class="article article-type-posts"
+  itemscope
+  itemprop="blogPost"
+  data-scroll-reveal
+>
+  <div class="article-inner">
+    
+    <header class="article-header">
+       
+<h2 itemprop="name">
+  <a class="article-title" href="/posts/e5a73bbf0194/"
+    >inotify + rsync 实现数据本地实时备份</a> 
+</h2>
+ 
+
+      
+    </header>
+     
+    <div class="article-meta">
+      <a href="/posts/e5a73bbf0194/" class="article-date">
+  <time datetime="2022-03-04T14:06:48.000Z" itemprop="datePublished">2022-03-04</time>
+</a> 
+  <div class="article-category">
+    <a class="article-category-link" href="/categories/%E5%85%B6%E4%BB%96/">其他</a>
+  </div>
+   
+    </div>
+      
+    <div class="article-entry" itemprop="articleBody">
+       
+  <h4 id="实现过程"><a href="#实现过程" class="headerlink" title="实现过程"></a>实现过程</h4><p>用 <code>inotify</code> 工具监听文件改变，将改变的文件使用 <code>rsync</code> 同步</p>
+<h4 id="inotify介绍"><a href="#inotify介绍" class="headerlink" title="inotify介绍"></a>inotify介绍</h4><p>inotify 是一种强大的、细粒度的、异步文件系统监控机制，它满足各种各样的文件监控需要，可以监控文件系统的访问属性、读写属性、权限属性、创建删除、移动等操作，也可以监控文件发生的一切变化。</p>
+<p>inotify-tools 是一个C库和一组命令行的工作提供Linux下inotify的简单接口。</p>
+<p>inotify-tools 中包含 inotifywait 和 inotifywatch 两个命令</p>
+<p>inotifywatch 命令用于收集关于被监控的文件系统的统计数据，包括每个inotify事件发生多少次。</p>
+<figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br><span class="line">35</span><br><span class="line">36</span><br><span class="line">37</span><br><span class="line">38</span><br><span class="line">39</span><br><span class="line">40</span><br><span class="line">41</span><br><span class="line">42</span><br><span class="line">43</span><br><span class="line">44</span><br><span class="line">45</span><br><span class="line">46</span><br><span class="line">47</span><br><span class="line">48</span><br><span class="line">49</span><br><span class="line">50</span><br><span class="line">51</span><br><span class="line">52</span><br><span class="line">53</span><br><span class="line">54</span><br><span class="line">55</span><br><span class="line">56</span><br><span class="line">57</span><br><span class="line">58</span><br><span class="line">59</span><br><span class="line">60</span><br><span class="line">61</span><br><span class="line">62</span><br><span class="line">63</span><br></pre></td><td class="code"><pre><span class="line">[root@backup ~]<span class="comment"># inotifywait --help</span></span><br><span class="line">inotifywait 3.14</span><br><span class="line">Wait <span class="keyword">for</span> a particular event on a file or <span class="built_in">set</span> of files.</span><br><span class="line">Usage: inotifywait [ options ] file1 [ file2 ] [ file3 ] [ ... ]</span><br><span class="line">Options:</span><br><span class="line">    -h|--<span class="built_in">help</span>         Show this <span class="built_in">help</span> text.</span><br><span class="line">    @&lt;file&gt;           Exclude the specified file from being watched.</span><br><span class="line">    --exclude &lt;pattern&gt;</span><br><span class="line">                      Exclude all events on files matching the</span><br><span class="line">                      extended regular expression &lt;pattern&gt;.指定排除部分文件</span><br><span class="line">    --excludei &lt;pattern&gt;</span><br><span class="line">                      Like --exclude but <span class="keyword">case</span> insensitive.（同上，排除且忽略大小写）</span><br><span class="line">    -m|--monitor      Keep listening <span class="keyword">for</span> events forever.  Without</span><br><span class="line">                      this option, inotifywait will <span class="built_in">exit</span> after one</span><br><span class="line">                      event is received.(持续监听）</span><br><span class="line">    -d|--daemon       Same as --monitor, except run <span class="keyword">in</span> the background</span><br><span class="line">                      logging events to a file specified by --outfile.</span><br><span class="line">                      Implies --syslog.（daemon模式）</span><br><span class="line">    -r|--recursive    Watch directories recursively.（递归子目录）</span><br><span class="line">    --fromfile &lt;file&gt;</span><br><span class="line">                      Read files to watch from &lt;file&gt; or <span class="string">&#x27;-&#x27;</span> <span class="keyword">for</span> stdin.</span><br><span class="line">    -o|--outfile &lt;file&gt;</span><br><span class="line">                      Print events to &lt;file&gt; rather than stdout. （将事件输出到文件，而不是屏幕）</span><br><span class="line">    -s|--syslog       Send errors to syslog rather than stderr.</span><br><span class="line">    -q|--quiet        Print less (only <span class="built_in">print</span> events).（打印事件）</span><br><span class="line">    -qq               Print nothing (not even events).（不打印事件）</span><br><span class="line">    --format &lt;<span class="built_in">fmt</span>&gt;    Print using a specified printf-like format</span><br><span class="line">                      string; <span class="built_in">read</span> the man page <span class="keyword">for</span> more details. (设置打印格式%T时间；%w触发事件文件所在绝对路径；%f触发事件文件名称；%e触发的事件名称；)</span><br><span class="line">    --timefmt &lt;<span class="built_in">fmt</span>&gt;    strftime-compatible format string <span class="keyword">for</span> use with</span><br><span class="line">                      %T <span class="keyword">in</span> --format string.（指定输出内容，相当于将时间赋值给%T）</span><br><span class="line">    -c|--csv          Print events <span class="keyword">in</span> CSV format.</span><br><span class="line">    -t|--<span class="built_in">timeout</span> &lt;seconds&gt;</span><br><span class="line">                      When listening <span class="keyword">for</span> a single event, time out after</span><br><span class="line">                      waiting <span class="keyword">for</span> an event <span class="keyword">for</span> &lt;seconds&gt; seconds.</span><br><span class="line">                      If &lt;seconds&gt; is 0, inotifywait will never time out.</span><br><span class="line">    -e|--event &lt;event1&gt; [ -e|--event &lt;event2&gt; ... ]</span><br><span class="line">        Listen <span class="keyword">for</span> specific event(s).  If omitted, all events are </span><br><span class="line">        listened <span class="keyword">for</span>.（指定要监听的事件，多个事件用逗号隔开）</span><br><span class="line"></span><br><span class="line">Exit status:</span><br><span class="line">    0  -  An event you asked to watch <span class="keyword">for</span> was received.</span><br><span class="line">    1  -  An event you did not ask to watch <span class="keyword">for</span> was received</span><br><span class="line">          (usually delete_self or unmount), or some error occurred.</span><br><span class="line">    2  -  The --<span class="built_in">timeout</span> option was given and no events occurred</span><br><span class="line">          <span class="keyword">in</span> the specified interval of time.</span><br><span class="line"></span><br><span class="line">Events:     （事件）</span><br><span class="line">    access        file or directory contents were <span class="built_in">read</span></span><br><span class="line">    modify        file or directory contents were written</span><br><span class="line">    attrib        file or directory attributes changed</span><br><span class="line">    close_write    file or directory closed, after being opened <span class="keyword">in</span></span><br><span class="line">                   writeable mode</span><br><span class="line">    close_nowrite    file or directory closed, after being opened <span class="keyword">in</span></span><br><span class="line">                   read-only mode</span><br><span class="line">    close        file or directory closed, regardless of <span class="built_in">read</span>/write mode</span><br><span class="line">    open        file or directory opened</span><br><span class="line">    moved_to    file or directory moved to watched directory</span><br><span class="line">    moved_from    file or directory moved from watched directory</span><br><span class="line">    move        file or directory moved to or from watched directory</span><br><span class="line">    create        file or directory created within watched directory</span><br><span class="line">    delete        file or directory deleted within watched directory</span><br><span class="line">    delete_self    file or directory was deleted</span><br><span class="line">    unmount        file system containing file or directory unmounted</span><br></pre></td></tr></table></figure>
+
+<p><strong>示例</strong> 监听&#x2F;backup&#x2F;目录下所有文件和目录的增删改操作</p>
+<figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">inotifywait -mrq -e <span class="string">&#x27;create,delete,close_write,attrib,moved_to&#x27;</span> --timefmt <span class="string">&#x27;%Y-%m-%d %H:%M&#x27;</span> --format <span class="string">&#x27;%T %w%f %e&#x27;</span> /backup/</span><br></pre></td></tr></table></figure>
+
+<h4 id="rsync介绍"><a href="#rsync介绍" class="headerlink" title="rsync介绍"></a>rsync介绍</h4><p>rsync是可以实现增量备份的工具。配合任务计划，rsync能实现定时或间隔同步，配合inotify或sersync，可以实现触发式的实时同步。</p>
+<p>Rsync的命令格式可以为以下六种：</p>
+<figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br></pre></td><td class="code"><pre><span class="line">rsync [OPTION]... SRC DEST</span><br><span class="line">rsync [OPTION]... SRC [USER@]HOST:DEST</span><br><span class="line">rsync [OPTION]... [USER@]HOST:SRC DEST</span><br><span class="line">rsync [OPTION]... [USER@]HOST::SRC DEST</span><br><span class="line">rsync [OPTION]... SRC [USER@]HOST::DEST</span><br><span class="line">rsync [OPTION]... rsync://[USER@]HOST[:PORT]/SRC [DEST]</span><br></pre></td></tr></table></figure>
+
+<p>对应于以上六种命令格式，rsync有六种不同的工作模式：</p>
+<p>　　1)拷贝本地文件。当SRC和DES路径信息都不包含有单个冒号”:”分隔符时就启动这种工作模式。如：rsync -a &#x2F;data &#x2F;backup</p>
+<p>　　2)使用一个远程shell程序(如rsh、ssh)来实现将本地机器的内容拷贝到远程机器。当DST路径地址包含单个冒号”:”分隔符时启动该模式。如：rsync -avz *.c foo:src</p>
+<p>　　3)使用一个远程shell程序(如rsh、ssh)来实现将远程机器的内容拷贝到本地机器。当SRC地址路径包含单个冒号”:”分隔符时启动该模式。如：rsync -avz foo:src&#x2F;bar &#x2F;data</p>
+<p>　　4)从远程rsync服务器中拷贝文件到本地机。当SRC路径信息包含”::”分隔符时启动该模式。如：rsync -av <a href="mailto:&#114;&#111;&#111;&#x74;&#64;&#49;&#x37;&#50;&#x2e;&#x31;&#x36;&#x2e;&#55;&#56;&#x2e;&#49;&#x39;&#50;">&#114;&#111;&#111;&#x74;&#64;&#49;&#x37;&#50;&#x2e;&#x31;&#x36;&#x2e;&#55;&#56;&#x2e;&#49;&#x39;&#50;</a>::www &#x2F;databack</p>
+<p>　　5)从本地机器拷贝文件到远程rsync服务器中。当DST路径信息包含”::”分隔符时启动该模式。如：rsync -av &#x2F;databack <a href="mailto:&#114;&#x6f;&#111;&#116;&#64;&#49;&#x37;&#x32;&#46;&#49;&#x36;&#46;&#x37;&#x38;&#x2e;&#49;&#x39;&#x32;">&#114;&#x6f;&#111;&#116;&#64;&#49;&#x37;&#x32;&#46;&#49;&#x36;&#46;&#x37;&#x38;&#x2e;&#49;&#x39;&#x32;</a>::www</p>
+<p>　　6)列远程机的文件列表。这类似于rsync传输，不过只要在命令中省略掉本地机信息即可。如：rsync -v rsync:&#x2F;&#x2F;172.16.78.192&#x2F;www</p>
+<p>rsync参数的具体解释如下：</p>
+<figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br><span class="line">35</span><br><span class="line">36</span><br><span class="line">37</span><br><span class="line">38</span><br><span class="line">39</span><br><span class="line">40</span><br><span class="line">41</span><br><span class="line">42</span><br><span class="line">43</span><br><span class="line">44</span><br><span class="line">45</span><br><span class="line">46</span><br><span class="line">47</span><br><span class="line">48</span><br><span class="line">49</span><br><span class="line">50</span><br><span class="line">51</span><br><span class="line">52</span><br><span class="line">53</span><br><span class="line">54</span><br><span class="line">55</span><br><span class="line">56</span><br><span class="line">57</span><br><span class="line">58</span><br><span class="line">59</span><br><span class="line">60</span><br><span class="line">61</span><br></pre></td><td class="code"><pre><span class="line">-v, --verbose 详细模式输出</span><br><span class="line">-q, --quiet 精简输出模式</span><br><span class="line">-c, --checksum 打开校验开关，强制对文件传输进行校验</span><br><span class="line">-a, --archive 归档模式，表示以递归方式传输文件，并保持所有文件属性，等于-rlptgoD</span><br><span class="line">-r, --recursive 对子目录以递归模式处理</span><br><span class="line">-R, --relative 使用相对路径信息</span><br><span class="line">-b, --backup 创建备份，也就是对于目的已经存在有同样的文件名时，将老的文件重新命名为~filename。可以使用--suffix选项来指定不同的备份文件前缀。</span><br><span class="line">--backup-dir 将备份文件(如~filename)存放在在目录下。</span><br><span class="line">-suffix=SUFFIX 定义备份文件前缀</span><br><span class="line">-u, --update 仅仅进行更新，也就是跳过所有已经存在于DST，并且文件时间晚于要备份的文件。(不覆盖更新的文件)</span><br><span class="line">-l, --links 保留软链结</span><br><span class="line">-L, --copy-links 想对待常规文件一样处理软链结</span><br><span class="line">--copy-unsafe-links 仅仅拷贝指向SRC路径目录树以外的链结</span><br><span class="line">--safe-links 忽略指向SRC路径目录树以外的链结</span><br><span class="line">-H, --hard-links 保留硬链结</span><br><span class="line">-p, --perms 保持文件权限</span><br><span class="line">-o, --owner 保持文件属主信息</span><br><span class="line">-g, --group 保持文件属组信息</span><br><span class="line">-D, --devices 保持设备文件信息</span><br><span class="line">-t, --<span class="built_in">times</span> 保持文件时间信息</span><br><span class="line">-S, --sparse 对稀疏文件进行特殊处理以节省DST的空间</span><br><span class="line">-n, --dry-run现实哪些文件将被传输</span><br><span class="line">-W, --whole-file 拷贝文件，不进行增量检测</span><br><span class="line">-x, --one-file-system 不要跨越文件系统边界</span><br><span class="line">-B, --block-size=SIZE 检验算法使用的块尺寸，默认是700字节</span><br><span class="line">-e, --rsh=COMMAND 指定使用rsh、ssh方式进行数据同步</span><br><span class="line">--rsync-path=PATH 指定远程服务器上的rsync命令所在路径信息</span><br><span class="line">-C, --cvs-exclude 使用和CVS一样的方法自动忽略文件，用来排除那些不希望传输的文件</span><br><span class="line">--existing 仅仅更新那些已经存在于DST的文件，而不备份那些新创建的文件</span><br><span class="line">--delete 删除那些DST中SRC没有的文件</span><br><span class="line">--delete-excluded 同样删除接收端那些被该选项指定排除的文件</span><br><span class="line">--delete-after 传输结束以后再删除</span><br><span class="line">--ignore-errors 及时出现IO错误也进行删除</span><br><span class="line">--max-delete=NUM 最多删除NUM个文件</span><br><span class="line">--partial 保留那些因故没有完全传输的文件，以是加快随后的再次传输</span><br><span class="line">--force 强制删除目录，即使不为空</span><br><span class="line">--numeric-ids 不将数字的用户和组ID匹配为用户名和组名</span><br><span class="line">--<span class="built_in">timeout</span>=TIME IP超时时间，单位为秒</span><br><span class="line">-I, --ignore-times 不跳过那些有同样的时间和长度的文件</span><br><span class="line">--size-only 当决定是否要备份文件时，仅仅察看文件大小而不考虑文件时间</span><br><span class="line">--modify-window=NUM 决定文件是否时间相同时使用的时间戳窗口，默认为0</span><br><span class="line">-T --temp-dir=DIR 在DIR中创建临时文件</span><br><span class="line">--compare-dest=DIR 同样比较DIR中的文件来决定是否需要备份</span><br><span class="line">-P 等同于 --partial</span><br><span class="line">--progress 显示备份过程</span><br><span class="line">-z, --compress 对备份的文件在传输时进行压缩处理</span><br><span class="line">--exclude=PATTERN 指定排除不需要传输的文件模式</span><br><span class="line">--include=PATTERN 指定不排除而需要传输的文件模式</span><br><span class="line">--exclude-from=FILE 排除FILE中指定模式的文件</span><br><span class="line">--include-from=FILE 不排除FILE指定模式匹配的文件</span><br><span class="line">--version 打印版本信息</span><br><span class="line">--address 绑定到特定的地址</span><br><span class="line">--config=FILE 指定其他的配置文件，不使用默认的rsyncd.conf文件</span><br><span class="line">--port=PORT 指定其他的rsync服务端口</span><br><span class="line">--blocking-io 对远程shell使用阻塞IO</span><br><span class="line">-stats 给出某些文件的传输状态</span><br><span class="line">--progress 在传输时现实传输过程</span><br><span class="line">--log-format=formAT 指定日志文件格式</span><br><span class="line">--password-file=FILE 从FILE中得到密码</span><br><span class="line">--bwlimit=KBPS 限制I/O带宽，KBytes per second</span><br><span class="line">-h, --<span class="built_in">help</span> 显示帮助信息</span><br></pre></td></tr></table></figure>
+
+<p><strong>示例1</strong> 将&#x2F;etc&#x2F;fstab拷贝到&#x2F;tmp目录下。</p>
+<figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">rsync /etc/fstab /tmp</span><br></pre></td></tr></table></figure>
+
+<p><strong>示例2</strong> 将&#x2F;etc&#x2F;cron.d目录拷贝到&#x2F;tmp下。</p>
+<figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">rsync -r /etc/cron.d /tmp</span><br></pre></td></tr></table></figure>
+
+<p><strong>说明</strong>：为了保持文件夹一致，可以将路径写为</p>
+<figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">rsync -avr /src/ /backup/</span><br></pre></td></tr></table></figure>
+
+<p>这样src下面的所有目录会被备份到 backup目录下面,而不会在backup文件夹下面创建src文件夹</p>
+<h4 id="创建同步脚本"><a href="#创建同步脚本" class="headerlink" title="创建同步脚本"></a>创建同步脚本</h4><figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br><span class="line">35</span><br><span class="line">36</span><br><span class="line">37</span><br><span class="line">38</span><br><span class="line">39</span><br><span class="line">40</span><br><span class="line">41</span><br><span class="line">42</span><br><span class="line">43</span><br><span class="line">44</span><br><span class="line">45</span><br><span class="line">46</span><br></pre></td><td class="code"><pre><span class="line"><span class="meta">#!/bin/bash</span></span><br><span class="line"></span><br><span class="line"><span class="function"><span class="title">fn</span></span>() &#123;</span><br><span class="line"></span><br><span class="line">	src=<span class="variable">$1</span>     <span class="comment"># 需要同步的源路径</span></span><br><span class="line">	des=<span class="variable">$2</span>     <span class="comment"># 目标路径</span></span><br><span class="line"></span><br><span class="line">	<span class="built_in">cd</span> <span class="variable">$&#123;src&#125;</span> <span class="comment">#定位到源文件下面</span></span><br><span class="line"></span><br><span class="line">	<span class="comment"># 此方法中，由于rsync同步的特性，这里必须要先cd到源目录，inotify再监听 ./ 才能rsync同步后目录结构一致</span></span><br><span class="line"></span><br><span class="line">	<span class="comment"># 把监控到有发生更改的&quot;文件路径列表&quot;循环</span></span><br><span class="line">	/usr/bin/inotifywait -mrq --format <span class="string">&#x27;%Xe %w%f&#x27;</span> -e modify,create,delete,attrib,close_write,move ./ | <span class="keyword">while</span> <span class="built_in">read</span> file; <span class="keyword">do</span></span><br><span class="line">		INO_EVENT=$(<span class="built_in">echo</span> <span class="variable">$file</span> | awk <span class="string">&#x27;&#123;print $1&#125;&#x27;</span>) <span class="comment"># 把inotify输出切割 把事件类型部分赋值给INO_EVENT</span></span><br><span class="line">		INO_FILE=$(<span class="built_in">echo</span> <span class="variable">$file</span> | awk <span class="string">&#x27;&#123;print $2&#125;&#x27;</span>)  <span class="comment"># 把inotify输出切割 把文件路径部分赋值给INO_FILE</span></span><br><span class="line">		<span class="built_in">echo</span> <span class="string">&quot;-------------------------------<span class="subst">$(date)</span>------------------------------------&quot;</span></span><br><span class="line">		<span class="built_in">echo</span> <span class="variable">$file</span></span><br><span class="line">		<span class="comment">#增加、修改、写入完成、移动进事件</span></span><br><span class="line">		<span class="comment">#增、改放在同一个判断，因为他们都肯定是针对文件的操作，即使是新建目录，要同步的也只是一个空目录，不会影响速度。</span></span><br><span class="line">		<span class="keyword">if</span> [[ <span class="variable">$INO_EVENT</span> =~ <span class="string">&#x27;CREATE&#x27;</span> ]] || [[ <span class="variable">$INO_EVENT</span> =~ <span class="string">&#x27;MODIFY&#x27;</span> ]] || [[ <span class="variable">$INO_EVENT</span> =~ <span class="string">&#x27;CLOSE_WRITE&#x27;</span> ]] || [[ <span class="variable">$INO_EVENT</span> =~ <span class="string">&#x27;MOVED_TO&#x27;</span> ]]; <span class="keyword">then</span> <span class="comment"># 判断事件类型</span></span><br><span class="line">			<span class="built_in">echo</span> <span class="string">&#x27;CREATE or MODIFY or CLOSE_WRITE or MOVED_TO&#x27;</span></span><br><span class="line">			<span class="comment"># INO_FILE变量代表路径  -c校验文件内容</span></span><br><span class="line">			rsync -avzcR $(<span class="built_in">dirname</span> <span class="variable">$&#123;INO_FILE&#125;</span>) <span class="variable">$&#123;des&#125;</span></span><br><span class="line"></span><br><span class="line">			<span class="comment">#上面的rsync同步命令 源是用了$(dirname $&#123;INO_FILE&#125;)变量 即每次只针对性的同步发生改变的文件的目录</span></span><br><span class="line">			<span class="comment">#只同步目标文件的方法在生产环境的某些极端环境下会漏文件 现在可以在不漏文件下也有不错的速度 做到平衡)</span></span><br><span class="line">			<span class="comment">#然后用-R参数把源的目录结构递归到目标后面 保证目录结构一致性</span></span><br><span class="line">		<span class="keyword">fi</span></span><br><span class="line">		<span class="comment">#删除、移动出事件</span></span><br><span class="line">		<span class="keyword">if</span> [[ <span class="variable">$INO_EVENT</span> =~ <span class="string">&#x27;DELETE&#x27;</span> ]] || [[ <span class="variable">$INO_EVENT</span> =~ <span class="string">&#x27;MOVED_FROM&#x27;</span> ]]; <span class="keyword">then</span></span><br><span class="line">			<span class="built_in">echo</span> <span class="string">&#x27;DELETE or MOVED_FROM&#x27;</span></span><br><span class="line">			<span class="comment">#并加上--delete来删除目标上有而源中没有的文件，这里不能做到指定文件删除，如果删除的路径越靠近根，则同步的目录月多，同步删除的操作就越花时间。</span></span><br><span class="line">			rsync -avzr --delete $(<span class="built_in">dirname</span> <span class="variable">$&#123;INO_FILE&#125;</span>) <span class="variable">$&#123;des&#125;</span></span><br><span class="line">		<span class="keyword">fi</span></span><br><span class="line">		<span class="comment">#修改属性事件 指 touch chmod chown等操作</span></span><br><span class="line">		<span class="keyword">if</span> [[ <span class="variable">$INO_EVENT</span> =~ <span class="string">&#x27;ATTRIB&#x27;</span> ]]; <span class="keyword">then</span></span><br><span class="line">			<span class="built_in">echo</span> <span class="string">&#x27;ATTRIB&#x27;</span></span><br><span class="line">			<span class="keyword">if</span> [ ! -d <span class="string">&quot;<span class="variable">$INO_FILE</span>&quot;</span> ]; <span class="keyword">then</span> <span class="comment"># 如果修改属性的是目录 则不同步，因为同步目录会发生递归扫描，等此目录下的文件发生同步时，rsync会顺带更新此目录。</span></span><br><span class="line">				rsync -avzcR $(<span class="built_in">dirname</span> <span class="variable">$&#123;INO_FILE&#125;</span>) <span class="variable">$&#123;des&#125;</span></span><br><span class="line">			<span class="keyword">fi</span></span><br><span class="line">		<span class="keyword">fi</span></span><br><span class="line">	<span class="keyword">done</span> </span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line">fn /home/supreme/Workspace/ /media/supreme/yes/Workspace/ &amp; <span class="comment">#加上&amp;符号表示在后台执行</span></span><br><span class="line">fn 源路径2 目标路径2 &amp; <span class="comment">#加上&amp;符号表示在后台执行</span></span><br></pre></td></tr></table></figure>
+
+<h4 id="添加开机启动项"><a href="#添加开机启动项" class="headerlink" title="添加开机启动项"></a>添加开机启动项</h4><p>将写好的脚本放到指定目录中</p>
+<figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">sudo <span class="built_in">cp</span> ./sync.sh /usr/sbin</span><br></pre></td></tr></table></figure>
+<p>创建一个服务文件 sync.service</p>
+<p>systemd有系统和用户区分；系统（&#x2F;user&#x2F;lib&#x2F;systemd&#x2F;system&#x2F;）、用户（&#x2F;etc&#x2F;lib&#x2F;systemd&#x2F;user&#x2F;）.</p>
+<p>一般系统管理员手工创建的单元文件建议存放在&#x2F;etc&#x2F;systemd&#x2F;system&#x2F;目录下面。</p>
+<figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br></pre></td><td class="code"><pre><span class="line">[Unit]</span><br><span class="line">Description= 服务的简单描述</span><br><span class="line">Documentation= 服务文档</span><br><span class="line"><span class="comment"># Before、After:定义启动顺序。Before=xxx.service,代表本服务在xxx.service启动之前启动。After=xxx.service,代表本服务在xxx.service之后启动。</span></span><br><span class="line">After=network.target</span><br><span class="line"></span><br><span class="line">[Service]</span><br><span class="line"><span class="comment"># systemd认为当该服务进程fork，且父进程退出后服务启动成功。对于常规的守护进程 daemon</span></span><br><span class="line"><span class="comment"># 除非你确定此启动方式无法满足需求，使用此类型启动即可。使用此启动类型应同时指定 PIDFile=，以便systemd能够跟踪服务的主进程。</span></span><br><span class="line">Type=forking</span><br><span class="line"></span><br><span class="line">ExecStart=/usr/sbin/sync.sh</span><br><span class="line"></span><br><span class="line">[Install]</span><br><span class="line"><span class="comment"># 单元被允许运行需要的弱依赖性单元，WantBy从Want列表获得依赖信息。</span></span><br><span class="line">WantedBy=multi-user.target</span><br></pre></td></tr></table></figure>
+
+<p>添加开机启动并重载服务</p>
+<figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br></pre></td><td class="code"><pre><span class="line">sudo systemctl daemon-reload</span><br><span class="line"></span><br><span class="line">sudo systemctl <span class="built_in">enable</span> sync.service</span><br><span class="line"></span><br><span class="line">sudo systemctl start sync.service</span><br><span class="line">sudo systemctl stop sync.service</span><br><span class="line">sudo systemctl reload sync.service</span><br><span class="line"></span><br></pre></td></tr></table></figure> 
+      <!-- reward -->
+      
+    </div>
+    
+
+    <!-- copyright -->
+    
+    <footer class="article-footer">
+       
+  <ul class="article-tag-list" itemprop="keywords"><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/Ubuntu/" rel="tag">Ubuntu</a></li><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/inotify/" rel="tag">inotify</a></li><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/rsync/" rel="tag">rsync</a></li></ul>
+
+    </footer>
+  </div>
+
+   
+    
+</article>
+
+    
+    <article
+  id="posts-other/Docker部署Jira"
+  class="article article-type-posts"
+  itemscope
+  itemprop="blogPost"
+  data-scroll-reveal
+>
+  <div class="article-inner">
+    
+    <header class="article-header">
+       
+<h2 itemprop="name">
+  <a class="article-title" href="/posts/84719102d07f/"
+    >Docker 部署Jira + 破解</a> 
+</h2>
+ 
+
+      
+    </header>
+     
+    <div class="article-meta">
+      <a href="/posts/84719102d07f/" class="article-date">
+  <time datetime="2022-03-04T14:00:05.000Z" itemprop="datePublished">2022-03-04</time>
+</a> 
+  <div class="article-category">
+    <a class="article-category-link" href="/categories/%E5%85%B6%E4%BB%96/">其他</a>
+  </div>
+   
+    </div>
+      
+    <div class="article-entry" itemprop="articleBody">
+       
+  <h4 id="创建必要目录"><a href="#创建必要目录" class="headerlink" title="创建必要目录"></a>创建必要目录</h4><figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line"><span class="built_in">mkdir</span> -p docker-compose/jira</span><br></pre></td></tr></table></figure>
+
+<h4 id="创建docker-compose-yml"><a href="#创建docker-compose-yml" class="headerlink" title="创建docker-compose.yml"></a>创建docker-compose.yml</h4><ul>
+<li>修改映射路径为当前文件夹下的相对路径</li>
+<li>JIRA_PROXY_NAME &#x3D; 域名</li>
+<li>JIRA_PROXY_PORT &#x3D; 外部端口</li>
+<li>JIRA_PROXY_SCHEME &#x3D; 协议</li>
+<li>POSTGRES_PASSWORD 修改数据库密码</li>
+</ul>
+<figure class="highlight yml"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br><span class="line">35</span><br><span class="line">36</span><br><span class="line">37</span><br><span class="line">38</span><br><span class="line">39</span><br><span class="line">40</span><br><span class="line">41</span><br><span class="line">42</span><br><span class="line">43</span><br><span class="line">44</span><br><span class="line">45</span><br><span class="line">46</span><br><span class="line">47</span><br><span class="line">48</span><br><span class="line">49</span><br><span class="line">50</span><br><span class="line">51</span><br><span class="line">52</span><br><span class="line">53</span><br><span class="line">54</span><br><span class="line">55</span><br><span class="line">56</span><br><span class="line">57</span><br><span class="line">58</span><br></pre></td><td class="code"><pre><span class="line"><span class="attr">version:</span> <span class="string">&#x27;3&#x27;</span></span><br><span class="line"></span><br><span class="line"><span class="attr">services:</span></span><br><span class="line">  <span class="attr">jira:</span></span><br><span class="line">    <span class="attr">depends_on:</span></span><br><span class="line">      <span class="bullet">-</span> <span class="string">postgresql</span></span><br><span class="line"></span><br><span class="line">    <span class="attr">image:</span> <span class="string">teamatldocker/jira:8.19.0</span></span><br><span class="line">    <span class="attr">networks:</span></span><br><span class="line">      <span class="bullet">-</span> <span class="string">jiranet</span></span><br><span class="line">    <span class="attr">volumes:</span></span><br><span class="line">      <span class="bullet">-</span> <span class="string">./jiradata:/var/atlassian/jira</span></span><br><span class="line">    <span class="attr">ports:</span></span><br><span class="line">      <span class="bullet">-</span> <span class="string">&#x27;1170:8080&#x27;</span></span><br><span class="line">    <span class="attr">environment:</span></span><br><span class="line">      <span class="bullet">-</span> <span class="string">&#x27;JIRA_DATABASE_URL=postgresql://jira@postgresql/jiradb&#x27;</span></span><br><span class="line">      <span class="bullet">-</span> <span class="string">&#x27;JIRA_DB_PASSWORD=w.521@@ong.COM&#x27;</span></span><br><span class="line">      <span class="bullet">-</span> <span class="string">&#x27;SETENV_JVM_MINIMUM_MEMORY=2048m&#x27;</span></span><br><span class="line">      <span class="bullet">-</span> <span class="string">&#x27;SETENV_JVM_MAXIMUM_MEMORY=4096m&#x27;</span></span><br><span class="line">      <span class="bullet">-</span> <span class="string">&#x27;JIRA_PROXY_NAME=jira.iftrue.club&#x27;</span></span><br><span class="line">      <span class="bullet">-</span> <span class="string">&#x27;JIRA_PROXY_PORT=1170&#x27;</span></span><br><span class="line">      <span class="bullet">-</span> <span class="string">&#x27;JIRA_PROXY_SCHEME=http&#x27;</span></span><br><span class="line">    <span class="attr">logging:</span></span><br><span class="line">      <span class="comment"># limit logs retained on host to 25MB</span></span><br><span class="line">      <span class="attr">driver:</span> <span class="string">&quot;json-file&quot;</span></span><br><span class="line">      <span class="attr">options:</span></span><br><span class="line">        <span class="attr">max-size:</span> <span class="string">&quot;500k&quot;</span></span><br><span class="line">        <span class="attr">max-file:</span> <span class="string">&quot;50&quot;</span></span><br><span class="line"></span><br><span class="line">  <span class="attr">postgresql:</span></span><br><span class="line">    <span class="attr">image:</span> <span class="string">postgres:12-alpine</span></span><br><span class="line">    <span class="attr">networks:</span></span><br><span class="line">      <span class="bullet">-</span> <span class="string">jiranet</span></span><br><span class="line">    <span class="attr">volumes:</span></span><br><span class="line">      <span class="bullet">-</span> <span class="string">./postgresqldata:/var/lib/postgresql/data</span></span><br><span class="line">    <span class="attr">environment:</span></span><br><span class="line">      <span class="bullet">-</span> <span class="string">&#x27;POSTGRES_USER=jira&#x27;</span></span><br><span class="line">      <span class="comment"># CHANGE THE PASSWORD!</span></span><br><span class="line">      <span class="bullet">-</span> <span class="string">&#x27;POSTGRES_PASSWORD=w.521@@ong.COM&#x27;</span></span><br><span class="line">      <span class="bullet">-</span> <span class="string">&#x27;POSTGRES_DB=jiradb&#x27;</span></span><br><span class="line">      <span class="bullet">-</span> <span class="string">&#x27;POSTGRES_ENCODING=UNICODE&#x27;</span></span><br><span class="line">      <span class="bullet">-</span> <span class="string">&#x27;POSTGRES_COLLATE=C&#x27;</span></span><br><span class="line">      <span class="bullet">-</span> <span class="string">&#x27;POSTGRES_COLLATE_TYPE=C&#x27;</span></span><br><span class="line">    <span class="attr">logging:</span></span><br><span class="line">      <span class="comment"># limit logs retained on host to 25MB</span></span><br><span class="line">      <span class="attr">driver:</span> <span class="string">&quot;json-file&quot;</span></span><br><span class="line">      <span class="attr">options:</span></span><br><span class="line">        <span class="attr">max-size:</span> <span class="string">&quot;500k&quot;</span></span><br><span class="line">        <span class="attr">max-file:</span> <span class="string">&quot;50&quot;</span></span><br><span class="line"></span><br><span class="line"><span class="attr">volumes:</span></span><br><span class="line">  <span class="attr">jiradata:</span></span><br><span class="line">    <span class="attr">external:</span> <span class="literal">false</span></span><br><span class="line">  <span class="attr">postgresqldata:</span></span><br><span class="line">    <span class="attr">external:</span> <span class="literal">false</span></span><br><span class="line"></span><br><span class="line"><span class="attr">networks:</span></span><br><span class="line">  <span class="attr">jiranet:</span></span><br></pre></td></tr></table></figure>
+
+<h4 id="破解"><a href="#破解" class="headerlink" title="破解"></a>破解</h4><ul>
+<li><p><a target="_blank" rel="noopener" href="https://github.com/xiaonandl/atlassian-agent">下载</a> atlassian-agent.jar 文件压缩包，并解压</p>
+</li>
+<li><p>将 <code>atlassian-agent.jar</code> 复制到容器内 <code>docker cp ./atlassian-agent.jar jira容器名称:/opt/jira</code></p>
+</li>
+<li><p>在 <code>docker-compose/jira</code> 目录下执行 <code>docker-compose up</code> 启动动容器</p>
+</li>
+<li><p>进入容器 <code>docker exec -it jira</code> 容器名称 <code>/bin/bash</code></p>
+</li>
+<li><p>修改环境变量 <code>cd /opt/jira/bin vi setenv.sh</code></p>
+</li>
+</ul>
+<p><img src="/posts/84719102d07f/0001.png"></p>
+<p>export JAVA_OPTS 修改为 export JAVA_OPTS&#x3D;”-javaagent:&#x2F;opt&#x2F;jira&#x2F;atlassian-agent.jar ${JAVA_OPTS}”</p>
+<ul>
+<li><p>重启容器, 在日志中可以看到 <code>========= agent working =========</code> 字样表示成功</p>
+</li>
+<li><p>再次进入容器 执行 <code>java -jar atlassian-agent.jar -p jsm -m aaa@bbb.com -n my_name -o https://zhile.io -s ABCD-1234-EFGH-5678</code></p>
+</li>
+</ul>
+<p><strong>特别注意 -p 参数设置，通过 java -jar atlassian-agent.jar 查看使用帮助，每种产品有不同的标识</strong></p>
+<p>-m 邮箱任意填写<br>-n 名称任意填写<br>-o 网址任意填写<br>-s server id 再安装时查看</p>
+<p>复制执行命令之后产生的激活码，复制到激活码的窗口完成激活。</p>
+ 
+      <!-- reward -->
+      
+    </div>
+    
+
+    <!-- copyright -->
+    
+    <footer class="article-footer">
+       
+  <ul class="article-tag-list" itemprop="keywords"><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/Docker/" rel="tag">Docker</a></li></ul>
+
+    </footer>
+  </div>
+
+   
+    
+</article>
+
+    
+    <article
   id="posts-pattern/③装饰者模式"
   class="article article-type-posts"
   itemscope
@@ -476,59 +658,6 @@
     <footer class="article-footer">
        
   <ul class="article-tag-list" itemprop="keywords"><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/React/" rel="tag">React</a></li><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/%E6%BA%90%E7%A0%81%E5%88%86%E6%9E%90/" rel="tag">源码分析</a></li></ul>
-
-    </footer>
-  </div>
-
-   
-    
-</article>
-
-    
-    <article
-  id="post-react/react常见问题"
-  class="article article-type-post"
-  itemscope
-  itemprop="blogPost"
-  data-scroll-reveal
->
-  <div class="article-inner">
-    
-    <header class="article-header">
-       
-<h2 itemprop="name">
-  <a class="article-title" href="/posts/e661e59beb46/"
-    >react 常见问题问题</a> 
-</h2>
- 
-
-      
-    </header>
-     
-    <div class="article-meta">
-      <a href="/posts/e661e59beb46/" class="article-date">
-  <time datetime="2021-12-05T16:42:47.000Z" itemprop="datePublished">2021-12-06</time>
-</a> 
-  <div class="article-category">
-    <a class="article-category-link" href="/categories/React/">React</a>
-  </div>
-   
-    </div>
-      
-    <div class="article-entry" itemprop="articleBody">
-       
-  <h4 id=""><a href="#" class="headerlink" title=""></a></h4><p>+ </p>
- 
-      <!-- reward -->
-      
-    </div>
-    
-
-    <!-- copyright -->
-    
-    <footer class="article-footer">
-       
-  <ul class="article-tag-list" itemprop="keywords"><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/React/" rel="tag">React</a></li></ul>
 
     </footer>
   </div>
@@ -1082,193 +1211,6 @@
     <footer class="article-footer">
        
   <ul class="article-tag-list" itemprop="keywords"><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/React/" rel="tag">React</a></li><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/%E6%BA%90%E7%A0%81%E5%88%86%E6%9E%90/" rel="tag">源码分析</a></li></ul>
-
-    </footer>
-  </div>
-
-   
-    
-</article>
-
-    
-    <article
-  id="post-react/⑫(原理)事件系统"
-  class="article article-type-post"
-  itemscope
-  itemprop="blogPost"
-  data-scroll-reveal
->
-  <div class="article-inner">
-    
-    <header class="article-header">
-       
-<h2 itemprop="name">
-  <a class="article-title" href="/posts/f95bd5c5972e/"
-    >React原理 事件系统</a> 
-</h2>
- 
-
-      
-    </header>
-     
-    <div class="article-meta">
-      <a href="/posts/f95bd5c5972e/" class="article-date">
-  <time datetime="2021-10-21T05:46:50.000Z" itemprop="datePublished">2021-10-21</time>
-</a> 
-  <div class="article-category">
-    <a class="article-category-link" href="/categories/React/">React</a>
-  </div>
-   
-    </div>
-      
-    <div class="article-entry" itemprop="articleBody">
-       
-  <h4 id="创建事件集合"><a href="#创建事件集合" class="headerlink" title="创建事件集合"></a>创建事件集合</h4><p>React会在初始化的时候生成事件系统所需要的事件对象集合。</p>
-<ul>
-<li>把系统事件按照优先级分为三大类，每种事件对应着一个优先级</li>
-</ul>
-<table>
-<thead>
-<tr>
-<th>事件类别</th>
-<th>变量名称</th>
-<th>说明</th>
-<th>优先级</th>
-<th>举例</th>
-</tr>
-</thead>
-<tbody><tr>
-<td>独立事件</td>
-<td>discreteEventPairsForSimpleEventPlugin</td>
-<td></td>
-<td>DiscreteEvent&#x3D;0</td>
-<td>例如: <code>click</code></td>
-</tr>
-<tr>
-<td>用户阻塞事件</td>
-<td>userBlockingPairsForSimpleEventPlugin</td>
-<td><div style='width:250px'>因为事件持触发，所以如果某段逻辑执行之间过长，会影响用户的交互</div></td>
-<td>UserBlockingEvent&#x3D;1</td>
-<td>例如：<code>drag</code></td>
-</tr>
-<tr>
-<td>连续事件</td>
-<td>continuousPairsForSimpleEventPlugin</td>
-<td>需要系统一直监听是否触发的事件</td>
-<td>ContinuousEvent&#x3D;2</td>
-<td>例如: <code>animationEnd</code></td>
-</tr>
-</tbody></table>
-<ul>
-<li>通过循环每种事件对应的数组，将事件保存在一下几种事件对象中</li>
-</ul>
-<table>
-<thead>
-<tr>
-<th>变量名称</th>
-<th>变量对象</th>
-<th>说明</th>
-</tr>
-</thead>
-<tbody><tr>
-<td>allNativeEvents</td>
-<td>Set集合</td>
-<td><div style='width:600px'>保存所有原生事件的名称 例如 <code>0:&quot;cancel&quot;</code></div></td>
-</tr>
-<tr>
-<td>eventPriorities</td>
-<td>Map集</td>
-<td><div style='width:600px'>保存事件名称和事件优先级对应关系 例如 <code>click=&gt;0</code> </div></td>
-</tr>
-<tr>
-<td>topLevelEventsToReactNames</td>
-<td>Map集</td>
-<td><div style='width:600px'>保存原始事件名称和 React事件的对应关系 例如 <code>&quot;cancel&quot; =&gt; &quot;onCancel&quot;</code> </div></td>
-</tr>
-<tr>
-<td>registrationNameDependencies</td>
-<td>Object</td>
-<td><div style='width:600px'>保存React事件和原生事件的对应关系 例如 <code>onClick:(1) [&#39;click&#39;]</code> 每个React事件对应一个数组用于保存合成事件对应关系</div></td>
-</tr>
-<tr>
-<td>possibleRegistrationNames</td>
-<td>Object</td>
-<td><div style='width:600px'>保存小写的React事件名称和正确的驼峰命名事件的对应关系，用于校验用户输入 例如 <code>onclick:onClick</code></div></td>
-</tr>
-</tbody></table>
-<ul>
-<li>注册合成事件</li>
-</ul>
-<p>合成事件： 某些React事件会对应多个原生事件 例如：</p>
-<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">&#x27;onChange&#x27; =&gt; [&#x27;change&#x27;, &#x27;click&#x27;, &#x27;focusin&#x27;, &#x27;focusout&#x27;, &#x27;input&#x27;, &#x27;keydown&#x27;, &#x27;keyup&#x27;, &#x27;selectionchange&#x27;]</span><br></pre></td></tr></table></figure>
-
-<p>合成事件会维护在<code>registrationNameDependencies</code>变量中，例如 <code>onChange</code>事件最终会变为 &#96;&#96;</p>
-<h4 id="创建事件对象"><a href="#创建事件对象" class="headerlink" title="创建事件对象"></a>创建事件对象</h4><p>事件对象用于不用的事件类型，当React事件触发时，将会传入对应的事件对象，而不是原生的事件对象</p>
-<figure class="highlight javascript"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">function</span> <span class="title function_">createSyntheticEvent</span>(<span class="params">Interface</span>) &#123;</span><br><span class="line">  <span class="keyword">function</span> <span class="title function_">SyntheticBaseEvent</span>(<span class="params">reactName, reactEventType, targetInst, nativeEvent, nativeEventTarget</span>) &#123;</span><br><span class="line">    <span class="variable language_">this</span>.<span class="property">_reactName</span> = reactName;</span><br><span class="line">    <span class="variable language_">this</span>.<span class="property">_targetInst</span> = targetInst;</span><br><span class="line">    <span class="variable language_">this</span>.<span class="property">type</span> = reactEventType;</span><br><span class="line">    <span class="variable language_">this</span>.<span class="property">nativeEvent</span> = nativeEvent;</span><br><span class="line">    <span class="variable language_">this</span>.<span class="property">target</span> = nativeEventTarget;</span><br><span class="line">    <span class="variable language_">this</span>.<span class="property">currentTarget</span> = <span class="literal">null</span>;</span><br><span class="line">  <span class="title function_">_assign</span>(<span class="title class_">SyntheticBaseEvent</span>.<span class="property"><span class="keyword">prototype</span></span>, &#123;</span><br><span class="line">    <span class="attr">preventDefault</span>: <span class="keyword">function</span> (<span class="params"></span>) &#123;&#125;,</span><br><span class="line">    <span class="attr">stopPropagation</span>: <span class="keyword">function</span> (<span class="params"></span>) &#123;<span class="variable language_">this</span>.<span class="property">isPropagationStopped</span> = functionThatReturnsTrue;&#125;,</span><br><span class="line">    <span class="attr">persist</span>: <span class="keyword">function</span> (<span class="params"></span>) &#123;&#125;,</span><br><span class="line">    <span class="attr">isPersistent</span>: functionThatReturnsTrue</span><br><span class="line">  &#125;);</span><br><span class="line"></span><br><span class="line">  <span class="keyword">return</span> <span class="title class_">SyntheticBaseEvent</span>;</span><br><span class="line">&#125;</span><br><span class="line"><span class="keyword">var</span> <span class="title class_">UIEventInterface</span> = <span class="title function_">_assign</span>(&#123;&#125;, <span class="title class_">EventInterface</span>, &#123;</span><br><span class="line">  <span class="attr">view</span>: <span class="number">0</span>,</span><br><span class="line">  <span class="attr">detail</span>: <span class="number">0</span></span><br><span class="line">&#125;);</span><br><span class="line"></span><br><span class="line"><span class="keyword">var</span> <span class="title class_">SyntheticUIEvent</span> = <span class="title function_">createSyntheticEvent</span>(<span class="title class_">UIEventInterface</span>);</span><br><span class="line"></span><br></pre></td></tr></table></figure>
-
-<h4 id="事件绑定"><a href="#事件绑定" class="headerlink" title="事件绑定"></a>事件绑定</h4><p>React 创建 <code>FiberRoot</code> 根节点阶段, 会循环所有的原声事件，将事件绑定在 <code>root</code> 元素上。</p>
-<figure class="highlight javascript"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">function</span> <span class="title function_">listenToAllSupportedEvents</span>(<span class="params">rootContainerElement</span>) &#123;</span><br><span class="line">  &#123;</span><br><span class="line">    <span class="keyword">var</span> listeningMarker = <span class="string">&#x27;_reactListening&#x27;</span> + <span class="title class_">Math</span>.<span class="title function_">random</span>().<span class="title function_">toString</span>(<span class="number">36</span>).<span class="title function_">slice</span>(<span class="number">2</span>);</span><br><span class="line">    rootContainerElement[listeningMarker] = <span class="literal">true</span>;</span><br><span class="line">    allNativeEvents.<span class="title function_">forEach</span>(<span class="keyword">function</span> (<span class="params">domEventName</span>) &#123;</span><br><span class="line">      <span class="comment">// 没有事件委托的事件，也就是不能冒泡到document的事件</span></span><br><span class="line">      <span class="keyword">if</span> (!nonDelegatedEvents.<span class="title function_">has</span>(domEventName)) &#123;</span><br><span class="line">        <span class="title function_">listenToNativeEvent</span>(domEventName, <span class="literal">false</span>, rootContainerElement, <span class="literal">null</span>);</span><br><span class="line">      &#125;</span><br><span class="line"></span><br><span class="line">      <span class="title function_">listenToNativeEvent</span>(domEventName, <span class="literal">true</span>, rootContainerElement, <span class="literal">null</span>);</span><br><span class="line">    &#125;);</span><br><span class="line">  &#125;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
-
-<p>根据事件的优先级不同，事件类型不同，绑定的事件处理函数也会不同。</p>
-<figure class="highlight javascript"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">function</span> <span class="title function_">createEventListenerWrapperWithPriority</span>(<span class="params">targetContainer, domEventName, eventSystemFlags</span>) &#123;</span><br><span class="line">  <span class="keyword">var</span> eventPriority = <span class="title function_">getEventPriorityForPluginSystem</span>(domEventName);</span><br><span class="line">  <span class="keyword">var</span> listenerWrapper;</span><br><span class="line"></span><br><span class="line">  <span class="keyword">switch</span> (eventPriority) &#123;</span><br><span class="line">    <span class="keyword">case</span> <span class="title class_">DiscreteEvent</span>:</span><br><span class="line">      listenerWrapper = dispatchDiscreteEvent;</span><br><span class="line">      <span class="keyword">break</span>;</span><br><span class="line"></span><br><span class="line">    <span class="keyword">case</span> <span class="title class_">UserBlockingEvent</span>:</span><br><span class="line">      listenerWrapper = dispatchUserBlockingUpdate;</span><br><span class="line">      <span class="keyword">break</span>;</span><br><span class="line"></span><br><span class="line">    <span class="keyword">case</span> <span class="title class_">ContinuousEvent</span>:</span><br><span class="line">    <span class="attr">default</span>:</span><br><span class="line">      listenerWrapper = dispatchEvent;</span><br><span class="line">      <span class="keyword">break</span>;</span><br><span class="line">  &#125;</span><br><span class="line"></span><br><span class="line">  <span class="keyword">return</span> listenerWrapper.<span class="title function_">bind</span>(<span class="literal">null</span>, domEventName, eventSystemFlags, targetContainer);</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
-
-<ul>
-<li>对于独立事件，如果更新时存在副作用，会在下一个事件前立即执行</li>
-</ul>
-<figure class="highlight javascript"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">function</span> <span class="title function_">flushDiscreteUpdates</span>(<span class="params"></span>) &#123;</span><br><span class="line">  <span class="title function_">flushPendingDiscreteUpdates</span>();</span><br><span class="line">  <span class="title function_">flushPassiveEffects</span>();</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
-
-<p>对于用户阻塞事件，通过原生事件的<code>target</code> 或 <code>srcElement</code> 获取到触发事件的元素，再通过定义在原生DOM上的属性 <code>internalInstanceKey</code> 找到DOM对应的Fiber节点</p>
-<figure class="highlight javascript"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">var</span> targetInst = targetNode[internalInstanceKey];</span><br></pre></td></tr></table></figure>
-
-<p>通过 <code>batchedEventUpdates</code> 标记批处理</p>
-<figure class="highlight javascript"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">function</span> <span class="title function_">batchedEventUpdates</span>(<span class="params">fn, a, b</span>) &#123;</span><br><span class="line">  <span class="keyword">if</span> (isBatchingEventUpdates) &#123;</span><br><span class="line">    <span class="comment">// If we are currently inside another batch, we need to wait until it</span></span><br><span class="line">    <span class="comment">// fully completes before restoring state.</span></span><br><span class="line">    <span class="keyword">return</span> <span class="title function_">fn</span>(a, b);</span><br><span class="line">  &#125;</span><br><span class="line"></span><br><span class="line">  isBatchingEventUpdates = <span class="literal">true</span>;</span><br><span class="line"></span><br><span class="line">  <span class="keyword">try</span> &#123;</span><br><span class="line">    <span class="keyword">return</span> <span class="title function_">batchedEventUpdatesImpl</span>(fn, a, b);</span><br><span class="line">  &#125; <span class="keyword">finally</span> &#123;</span><br><span class="line">    isBatchingEventUpdates = <span class="literal">false</span>;</span><br><span class="line">    <span class="title function_">finishEventHandler</span>();</span><br><span class="line">  &#125;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
-
-<p>为不同的事件类型选择不同的事件对象，通过FiberNode上的props属性获取到事件，加入事件队列，<br>用队列来模拟冒泡事件和捕获事件</p>
-<figure class="highlight javascript"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br><span class="line">35</span><br><span class="line">36</span><br><span class="line">37</span><br><span class="line">38</span><br><span class="line">39</span><br><span class="line">40</span><br><span class="line">41</span><br><span class="line">42</span><br><span class="line">43</span><br><span class="line">44</span><br><span class="line">45</span><br><span class="line">46</span><br><span class="line">47</span><br><span class="line">48</span><br><span class="line">49</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">switch</span> (domEventName) &#123;</span><br><span class="line">  <span class="keyword">case</span> <span class="string">&#x27;click&#x27;</span>:</span><br><span class="line">    <span class="comment">// Firefox creates a click event on right mouse clicks. This removes the</span></span><br><span class="line">    <span class="comment">// unwanted click events.</span></span><br><span class="line">    <span class="keyword">if</span> (nativeEvent.<span class="property">button</span> === <span class="number">2</span>) &#123;</span><br><span class="line">      <span class="keyword">return</span>;</span><br><span class="line">    &#125;</span><br><span class="line"></span><br><span class="line">  <span class="keyword">case</span> <span class="string">&#x27;auxclick&#x27;</span>:</span><br><span class="line">  <span class="keyword">case</span> <span class="string">&#x27;dblclick&#x27;</span>:</span><br><span class="line">  <span class="keyword">case</span> <span class="string">&#x27;mousedown&#x27;</span>:</span><br><span class="line">  <span class="keyword">case</span> <span class="string">&#x27;mousemove&#x27;</span>:</span><br><span class="line">  <span class="keyword">case</span> <span class="string">&#x27;mouseup&#x27;</span>: <span class="comment">// <span class="doctag">TODO:</span> Disabled elements should not respond to mouse events</span></span><br><span class="line"></span><br><span class="line">  <span class="comment">/* falls through */</span></span><br><span class="line"></span><br><span class="line">  <span class="keyword">case</span> <span class="string">&#x27;mouseout&#x27;</span>:</span><br><span class="line">  <span class="keyword">case</span> <span class="string">&#x27;mouseover&#x27;</span>:</span><br><span class="line">  <span class="keyword">case</span> <span class="string">&#x27;contextmenu&#x27;</span>:</span><br><span class="line">    <span class="title class_">SyntheticEventCtor</span> = <span class="title class_">SyntheticMouseEvent</span>;</span><br><span class="line">    <span class="keyword">break</span>;</span><br><span class="line">&#125;</span><br><span class="line"><span class="keyword">while</span> (instance !== <span class="literal">null</span>) &#123;</span><br><span class="line">  <span class="keyword">var</span> _instance2 = instance,</span><br><span class="line">      stateNode = _instance2.<span class="property">stateNode</span>,</span><br><span class="line">      tag = _instance2.<span class="property">tag</span>; <span class="comment">// Handle listeners that are on HostComponents (i.e. &lt;div&gt;)</span></span><br><span class="line"></span><br><span class="line">    <span class="keyword">if</span> (reactEventName !== <span class="literal">null</span>) &#123;</span><br><span class="line">      <span class="keyword">var</span> props = <span class="title function_">getFiberCurrentPropsFromNode</span>(stateNode);</span><br><span class="line">      <span class="keyword">var</span> listener = props[registrationName];</span><br><span class="line"></span><br><span class="line">     <span class="keyword">if</span> (captureListener != <span class="literal">null</span>) &#123;</span><br><span class="line">        listeners.<span class="title function_">unshift</span>(<span class="title function_">createDispatchListener</span>(instance, captureListener, currentTarget));</span><br><span class="line">      &#125;</span><br><span class="line"></span><br><span class="line">      <span class="keyword">var</span> bubbleListener = <span class="title function_">getListener</span>(instance, reactName);</span><br><span class="line"></span><br><span class="line">      <span class="keyword">if</span> (bubbleListener != <span class="literal">null</span>) &#123;</span><br><span class="line">        listeners.<span class="title function_">push</span>(<span class="title function_">createDispatchListener</span>(instance, bubbleListener, currentTarget));</span><br><span class="line">      &#125;</span><br><span class="line">    &#125;</span><br><span class="line">  instance = instance.<span class="property">return</span>;</span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line"></span><br><span class="line">dispatchQueue.<span class="title function_">push</span>(&#123;</span><br><span class="line">  <span class="attr">event</span>: _event,</span><br><span class="line">  <span class="attr">listeners</span>: _listeners</span><br><span class="line">&#125;);</span><br></pre></td></tr></table></figure>
-
-<p>循环事件队列，如果执行过<code>stopPropagation</code> 直接跳出循环，方法定义在上面的事件对象中</p>
-<figure class="highlight javascript"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">function</span> <span class="title function_">processDispatchQueueItemsInOrder</span>(<span class="params">event, dispatchListeners, inCapturePhase</span>) &#123;gfdg</span><br><span class="line">  <span class="keyword">var</span> previousInstance;</span><br><span class="line"></span><br><span class="line">  <span class="keyword">for</span> (<span class="keyword">var</span> i = dispatchListeners.<span class="property">length</span> - <span class="number">1</span>; i &gt;= <span class="number">0</span>; i--) &#123;</span><br><span class="line">    <span class="keyword">var</span> _dispatchListeners$i = dispatchListeners[i],</span><br><span class="line">        instance = _dispatchListeners$i.<span class="property">instance</span>,</span><br><span class="line">        currentTarget = _dispatchListeners$i.<span class="property">currentTarget</span>,</span><br><span class="line">        listener = _dispatchListeners$i.<span class="property">listener</span>;</span><br><span class="line"></span><br><span class="line">    <span class="keyword">if</span> (instance !== previousInstance &amp;&amp; event.<span class="title function_">isPropagationStopped</span>()) &#123;</span><br><span class="line">      <span class="keyword">return</span>;</span><br><span class="line">    &#125;</span><br><span class="line"></span><br><span class="line">    <span class="title function_">executeDispatch</span>(event, listener, currentTarget);</span><br><span class="line">    previousInstance = instance;</span><br><span class="line">  &#125;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
-
-<h4 id="FAQ"><a href="#FAQ" class="headerlink" title="FAQ"></a>FAQ</h4><ul>
-<li>React 为什么有自己的事件系统？</li>
-</ul>
-<p>为了抹平浏览器间差异，封装了事件对象，模拟了事件冒泡和捕获。</p>
-<ul>
-<li>什么是事件合成？</li>
-</ul>
-<p>一个React可能是一个事件，也可能是多个原生事件。而且事件对象也是封装过的对象。</p>
-<ul>
-<li>如何实现的批量更新？</li>
-</ul>
-<p>通过 <code>isBatchingEventUpdates</code> 标记批处理开始， 一次用户阻塞事件中的所有相同类型事件，都会合并成一次更新</p>
-<ul>
-<li>事件系统如何模拟冒泡和捕获阶段？</li>
-</ul>
-<p>通过队列，冒泡事件插入在队列尾部，捕获事件插入队列的头部</p>
-<ul>
-<li>如何通过 dom 元素找到与之匹配的fiber？</li>
-</ul>
-<p>通过原生事件对象获取触发事件的DOM元素，通过DOM元素上的内置属性，获取fiber节点</p>
-<ul>
-<li>阻止默认行为 ？</li>
-</ul>
-<p>原生事件： e.preventDefault() 和 return false 可以用来阻止事件默认行为，由于在 React 中给元素的事件并不是真正的事件处理函数。所以导致 return false 方法在 React 应用中完全失去了作用。</p>
-<p>React事件 在React应用中，可以用 e.preventDefault() 阻止事件默认行为，这个方法并非是原生事件的 preventDefault ，由于 React 事件源 e 也是独立组建的，所以 preventDefault 也是单独处理的。</p>
-<ul>
-<li>事件是绑定在真实的dom上吗？如何不是绑定在哪里？</li>
-</ul>
-<p>绑定在root节点上</p>
- 
-      <!-- reward -->
-      
-    </div>
-    
-
-    <!-- copyright -->
-    
-    <footer class="article-footer">
-       
-  <ul class="article-tag-list" itemprop="keywords"><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/JSX/" rel="tag">JSX</a></li><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/React/" rel="tag">React</a></li></ul>
 
     </footer>
   </div>

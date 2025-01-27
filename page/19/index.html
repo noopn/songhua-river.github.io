@@ -112,6 +112,195 @@
     
     
     <article
+  id="post-javascript/Ramda_私有方法"
+  class="article article-type-post"
+  itemscope
+  itemprop="blogPost"
+  data-scroll-reveal
+>
+  <div class="article-inner">
+    
+    <header class="article-header">
+       
+<h2 itemprop="name">
+  <a class="article-title" href="/posts/589c737a0260/"
+    >Ramda 私有方法源码分析</a> 
+</h2>
+ 
+
+      
+    </header>
+     
+    <div class="article-meta">
+      <a href="/posts/589c737a0260/" class="article-date">
+  <time datetime="2021-01-16T08:26:50.000Z" itemprop="datePublished">2021-01-16</time>
+</a> 
+  <div class="article-category">
+    <a class="article-category-link" href="/categories/JavaScript/">JavaScript</a>
+  </div>
+   
+    </div>
+      
+    <div class="article-entry" itemprop="articleBody">
+       
+  <h4 id="objectIs"><a href="#objectIs" class="headerlink" title="_objectIs"></a>_objectIs</h4><p><a target="_blank" rel="noopener" href="https://developer.mozilla.org/zh-cn/docs/web/javascript/reference/global_objects/object/is">Object.is</a> 用于判断两值是否项等</p>
+<figure class="highlight javascript"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">function</span> <span class="title function_">_objectIs</span>(<span class="params">a, b</span>) &#123;</span><br><span class="line">  <span class="comment">// MDN polyfill</span></span><br><span class="line">  <span class="keyword">if</span> (a === b) &#123;</span><br><span class="line">    <span class="comment">// Steps 6.b-6.e: +0 != -0</span></span><br><span class="line">    <span class="keyword">return</span> a !== <span class="number">0</span> || <span class="number">1</span> / a === <span class="number">1</span> / b;</span><br><span class="line">  &#125; <span class="keyword">else</span> &#123;</span><br><span class="line">    <span class="comment">// Step 6.a: NaN == NaN</span></span><br><span class="line">    <span class="keyword">return</span> a !== a &amp;&amp; b !== b;</span><br><span class="line">  &#125;</span><br><span class="line">&#125;</span><br><span class="line"><span class="keyword">export</span> <span class="keyword">default</span> <span class="keyword">typeof</span> <span class="title class_">Object</span>.<span class="property">is</span> === <span class="string">&#x27;function&#x27;</span> ? <span class="title class_">Object</span>.<span class="property">is</span> : _objectIs;</span><br><span class="line"></span><br></pre></td></tr></table></figure>
+
+<h4 id="arrayFromIterator"><a href="#arrayFromIterator" class="headerlink" title="_arrayFromIterator"></a>_arrayFromIterator</h4><figure class="highlight javascript"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">export</span> <span class="keyword">default</span> <span class="keyword">function</span> <span class="title function_">_arrayFromIterator</span>(<span class="params">iter</span>) &#123;</span><br><span class="line">  <span class="keyword">var</span> list = [];</span><br><span class="line">  <span class="keyword">var</span> next;</span><br><span class="line">  <span class="keyword">while</span> (!(next = iter.<span class="title function_">next</span>()).<span class="property">done</span>) &#123;</span><br><span class="line">    list.<span class="title function_">push</span>(next.<span class="property">value</span>);</span><br><span class="line">  &#125;</span><br><span class="line">  <span class="keyword">return</span> list;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+<h4 id="functionName"><a href="#functionName" class="headerlink" title="_functionName"></a>_functionName</h4><p><a target="_blank" rel="noopener" href="https://developer.mozilla.org/zh-cn/docs/web/javascript/reference/global_objects/function/name">function.name</a> 可能被压缩工具修改，不能依赖函数名来判断函数</p>
+<p>作者通过正则方式判断</p>
+<figure class="highlight javascript"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">export</span> <span class="keyword">default</span> <span class="keyword">function</span> <span class="title function_">_functionName</span>(<span class="params">f</span>) &#123;</span><br><span class="line">  <span class="comment">// String(x =&gt; x) evaluates to &quot;x =&gt; x&quot;, so the pattern may not match.</span></span><br><span class="line">  <span class="keyword">var</span> match = <span class="title class_">String</span>(f).<span class="title function_">match</span>(<span class="regexp">/^function (\w*)/</span>);</span><br><span class="line">  <span class="keyword">return</span> match == <span class="literal">null</span> ? <span class="string">&#x27;&#x27;</span> : match[<span class="number">1</span>];</span><br><span class="line">&#125;</span><br><span class="line"></span><br></pre></td></tr></table></figure>
+
+<h4 id="has"><a href="#has" class="headerlink" title="_has"></a>_has</h4><p>判断属性在对象的实例上，而不是在原型上</p>
+<figure class="highlight javascript"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">export</span> <span class="keyword">default</span> <span class="keyword">function</span> <span class="title function_">_has</span>(<span class="params">prop, obj</span>) &#123;</span><br><span class="line">  <span class="keyword">return</span> <span class="title class_">Object</span>.<span class="property"><span class="keyword">prototype</span></span>.<span class="property">hasOwnProperty</span>.<span class="title function_">call</span>(obj, prop);</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+<p>等价于</p>
+<figure class="highlight javascript"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line"><span class="title class_">Reflect</span>.<span class="title function_">has</span>(obj, prop)</span><br></pre></td></tr></table></figure>
+
+
+<h4 id="isArguments"><a href="#isArguments" class="headerlink" title="_isArguments"></a>_isArguments</h4><p>实现了 <code>callee</code> 方法数组也可以当作是形式参数</p>
+<figure class="highlight javascript"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">var</span> toString = <span class="title class_">Object</span>.<span class="property"><span class="keyword">prototype</span></span>.<span class="property">toString</span>;</span><br><span class="line"><span class="keyword">var</span> _isArguments = (<span class="keyword">function</span>(<span class="params"></span>) &#123;</span><br><span class="line">  <span class="keyword">return</span> toString.<span class="title function_">call</span>(<span class="variable language_">arguments</span>) === <span class="string">&#x27;[object Arguments]&#x27;</span> ?</span><br><span class="line">    <span class="keyword">function</span> <span class="title function_">_isArguments</span>(<span class="params">x</span>) &#123; <span class="keyword">return</span> toString.<span class="title function_">call</span>(x) === <span class="string">&#x27;[object Arguments]&#x27;</span>; &#125; :</span><br><span class="line">    <span class="keyword">function</span> <span class="title function_">_isArguments</span>(<span class="params">x</span>) &#123; <span class="keyword">return</span> <span class="title function_">_has</span>(<span class="string">&#x27;callee&#x27;</span>, x); &#125;;</span><br><span class="line">&#125;());</span><br></pre></td></tr></table></figure>
+
+<h4 id="concat"><a href="#concat" class="headerlink" title="_concat"></a>_concat</h4><p>通过双循环，涵盖了array-like类型，</p>
+<figure class="highlight javascript"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment">/**</span></span><br><span class="line"><span class="comment"> * Private `concat` function to merge two array-like objects.</span></span><br><span class="line"><span class="comment"> *</span></span><br><span class="line"><span class="comment"> * <span class="doctag">@private</span></span></span><br><span class="line"><span class="comment"> * <span class="doctag">@param</span> &#123;<span class="type">Array|Arguments</span>&#125; [set1=[]] An array-like object.</span></span><br><span class="line"><span class="comment"> * <span class="doctag">@param</span> &#123;<span class="type">Array|Arguments</span>&#125; [set2=[]] An array-like object.</span></span><br><span class="line"><span class="comment"> * <span class="doctag">@return</span> &#123;<span class="type">Array</span>&#125; A new, merged array.</span></span><br><span class="line"><span class="comment"> * <span class="doctag">@example</span></span></span><br><span class="line"><span class="comment"> *</span></span><br><span class="line"><span class="comment"> *      _concat([4, 5, 6], [1, 2, 3]); //=&gt; [4, 5, 6, 1, 2, 3]</span></span><br><span class="line"><span class="comment"> */</span></span><br><span class="line"><span class="keyword">export</span> <span class="keyword">default</span> <span class="keyword">function</span> <span class="title function_">_concat</span>(<span class="params">set1, set2</span>) &#123;</span><br><span class="line">  set1 = set1 || [];</span><br><span class="line">  set2 = set2 || [];</span><br><span class="line">  <span class="keyword">var</span> idx;</span><br><span class="line">  <span class="keyword">var</span> len1 = set1.<span class="property">length</span>;</span><br><span class="line">  <span class="keyword">var</span> len2 = set2.<span class="property">length</span>;</span><br><span class="line">  <span class="keyword">var</span> result = [];</span><br><span class="line"></span><br><span class="line">  idx = <span class="number">0</span>;</span><br><span class="line">  <span class="keyword">while</span> (idx &lt; len1) &#123;</span><br><span class="line">    result[result.<span class="property">length</span>] = set1[idx];</span><br><span class="line">    idx += <span class="number">1</span>;</span><br><span class="line">  &#125;</span><br><span class="line">  idx = <span class="number">0</span>;</span><br><span class="line">  <span class="keyword">while</span> (idx &lt; len2) &#123;</span><br><span class="line">    result[result.<span class="property">length</span>] = set2[idx];</span><br><span class="line">    idx += <span class="number">1</span>;</span><br><span class="line">  &#125;</span><br><span class="line">  <span class="keyword">return</span> result;</span><br><span class="line">&#125;</span><br><span class="line"></span><br></pre></td></tr></table></figure>
+
+
+<h4 id="dispatchable"><a href="#dispatchable" class="headerlink" title="_dispatchable"></a>_dispatchable</h4><p>dispatchable翻译为调度单元，这个方法用在了类似 <a href="/posts/6ac7a6cf/#all"><code>R.all</code></a> 遍历每一项的方法上</p>
+<p>如果如参是一个数组会按照常规循环方式处理，如果不是数组但是对象携带了传入的方法s数组(<code>[all]</code>)其中的一个，将会调用对象携带的方法</p>
+<figure class="highlight javascript"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">export</span> <span class="keyword">default</span> <span class="keyword">function</span> <span class="title function_">_dispatchable</span>(<span class="params">methodNames, transducerCreator, fn</span>) &#123;</span><br><span class="line">  <span class="keyword">return</span> <span class="keyword">function</span>(<span class="params"></span>) &#123;</span><br><span class="line">    <span class="keyword">if</span> (<span class="variable language_">arguments</span>.<span class="property">length</span> === <span class="number">0</span>) &#123;</span><br><span class="line">      <span class="keyword">return</span> <span class="title function_">fn</span>();</span><br><span class="line">    &#125;</span><br><span class="line">    <span class="keyword">var</span> obj = <span class="variable language_">arguments</span>[<span class="variable language_">arguments</span>.<span class="property">length</span> - <span class="number">1</span>];</span><br><span class="line">    <span class="keyword">if</span> (!<span class="title function_">_isArray</span>(obj)) &#123;</span><br><span class="line">      <span class="keyword">var</span> idx = <span class="number">0</span>;</span><br><span class="line">      <span class="keyword">while</span> (idx &lt; methodNames.<span class="property">length</span>) &#123;</span><br><span class="line">        <span class="keyword">if</span> (<span class="keyword">typeof</span> obj[methodNames[idx]] === <span class="string">&#x27;function&#x27;</span>) &#123;</span><br><span class="line">          <span class="keyword">return</span> obj[methodNames[idx]].<span class="title function_">apply</span>(obj, <span class="title class_">Array</span>.<span class="property"><span class="keyword">prototype</span></span>.<span class="property">slice</span>.<span class="title function_">call</span>(<span class="variable language_">arguments</span>, <span class="number">0</span>, -<span class="number">1</span>));</span><br><span class="line">        &#125;</span><br><span class="line">        idx += <span class="number">1</span>;</span><br><span class="line">      &#125;</span><br><span class="line">      <span class="keyword">if</span> (<span class="title function_">_isTransformer</span>(obj)) &#123;</span><br><span class="line">        <span class="keyword">var</span> transducer = transducerCreator.<span class="title function_">apply</span>(<span class="literal">null</span>, <span class="title class_">Array</span>.<span class="property"><span class="keyword">prototype</span></span>.<span class="property">slice</span>.<span class="title function_">call</span>(<span class="variable language_">arguments</span>, <span class="number">0</span>, -<span class="number">1</span>));</span><br><span class="line">        <span class="keyword">return</span> <span class="title function_">transducer</span>(obj);</span><br><span class="line">      &#125;</span><br><span class="line">    &#125;</span><br><span class="line">    <span class="keyword">return</span> fn.<span class="title function_">apply</span>(<span class="variable language_">this</span>, <span class="variable language_">arguments</span>);</span><br><span class="line">  &#125;;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+<h4 id="arrayFromIterator-1"><a href="#arrayFromIterator-1" class="headerlink" title="_arrayFromIterator"></a>_arrayFromIterator</h4><figure class="highlight javascript"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">export</span> <span class="keyword">default</span> <span class="keyword">function</span> <span class="title function_">_arrayFromIterator</span>(<span class="params">iter</span>) &#123;</span><br><span class="line">  <span class="keyword">var</span> list = [];</span><br><span class="line">  <span class="keyword">var</span> next;</span><br><span class="line">  <span class="keyword">while</span> (!(next = iter.<span class="title function_">next</span>()).<span class="property">done</span>) &#123;</span><br><span class="line">    list.<span class="title function_">push</span>(next.<span class="property">value</span>);</span><br><span class="line">  &#125;</span><br><span class="line">  <span class="keyword">return</span> list;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+<h4 id="equals"><a href="#equals" class="headerlink" title="_equals"></a>_equals</h4><p>用在了涉及到比较的方法上,例如 <code>R.equals</code></p>
+<p><a href="/posts/2b6baf0c/#_objectIs">_objectIs</a></p>
+<p><a href="/posts/54a7cf63/#type">type</a></p>
+<p><a href="/posts/54a7cf63/#_arrayFromIterator">_arrayFromIterator</a></p>
+<figure class="highlight javascript"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br><span class="line">35</span><br><span class="line">36</span><br><span class="line">37</span><br><span class="line">38</span><br><span class="line">39</span><br><span class="line">40</span><br><span class="line">41</span><br><span class="line">42</span><br><span class="line">43</span><br><span class="line">44</span><br><span class="line">45</span><br><span class="line">46</span><br><span class="line">47</span><br><span class="line">48</span><br><span class="line">49</span><br><span class="line">50</span><br><span class="line">51</span><br><span class="line">52</span><br><span class="line">53</span><br><span class="line">54</span><br><span class="line">55</span><br><span class="line">56</span><br><span class="line">57</span><br><span class="line">58</span><br><span class="line">59</span><br><span class="line">60</span><br><span class="line">61</span><br><span class="line">62</span><br><span class="line">63</span><br><span class="line">64</span><br><span class="line">65</span><br><span class="line">66</span><br><span class="line">67</span><br><span class="line">68</span><br><span class="line">69</span><br><span class="line">70</span><br><span class="line">71</span><br><span class="line">72</span><br><span class="line">73</span><br><span class="line">74</span><br><span class="line">75</span><br><span class="line">76</span><br><span class="line">77</span><br><span class="line">78</span><br><span class="line">79</span><br><span class="line">80</span><br><span class="line">81</span><br><span class="line">82</span><br><span class="line">83</span><br><span class="line">84</span><br><span class="line">85</span><br><span class="line">86</span><br><span class="line">87</span><br><span class="line">88</span><br><span class="line">89</span><br><span class="line">90</span><br><span class="line">91</span><br><span class="line">92</span><br><span class="line">93</span><br><span class="line">94</span><br><span class="line">95</span><br><span class="line">96</span><br><span class="line">97</span><br><span class="line">98</span><br><span class="line">99</span><br><span class="line">100</span><br><span class="line">101</span><br><span class="line">102</span><br><span class="line">103</span><br><span class="line">104</span><br><span class="line">105</span><br><span class="line">106</span><br><span class="line">107</span><br><span class="line">108</span><br><span class="line">109</span><br><span class="line">110</span><br><span class="line">111</span><br><span class="line">112</span><br><span class="line">113</span><br><span class="line">114</span><br><span class="line">115</span><br><span class="line">116</span><br><span class="line">117</span><br><span class="line">118</span><br><span class="line">119</span><br><span class="line">120</span><br><span class="line">121</span><br><span class="line">122</span><br><span class="line">123</span><br><span class="line">124</span><br><span class="line">125</span><br><span class="line">126</span><br><span class="line">127</span><br><span class="line">128</span><br><span class="line">129</span><br><span class="line">130</span><br><span class="line">131</span><br><span class="line">132</span><br><span class="line">133</span><br><span class="line">134</span><br><span class="line">135</span><br><span class="line">136</span><br><span class="line">137</span><br><span class="line">138</span><br><span class="line">139</span><br><span class="line">140</span><br><span class="line">141</span><br><span class="line">142</span><br><span class="line">143</span><br><span class="line">144</span><br><span class="line">145</span><br><span class="line">146</span><br><span class="line">147</span><br><span class="line">148</span><br><span class="line">149</span><br><span class="line">150</span><br></pre></td><td class="code"><pre><span class="line"></span><br><span class="line"><span class="comment">// 处理map set 集合</span></span><br><span class="line"></span><br><span class="line"><span class="keyword">function</span> <span class="title function_">_uniqContentEquals</span>(<span class="params">aIterator, bIterator, stackA, stackB</span>) &#123;</span><br><span class="line">  <span class="keyword">var</span> a = <span class="title function_">_arrayFromIterator</span>(aIterator);</span><br><span class="line">  <span class="keyword">var</span> b = <span class="title function_">_arrayFromIterator</span>(bIterator);</span><br><span class="line"></span><br><span class="line">  <span class="keyword">function</span> <span class="title function_">eq</span>(<span class="params">_a, _b</span>) &#123;</span><br><span class="line">    <span class="keyword">return</span> <span class="title function_">_equals</span>(_a, _b, stackA.<span class="title function_">slice</span>(), stackB.<span class="title function_">slice</span>());</span><br><span class="line">  &#125;</span><br><span class="line"></span><br><span class="line">  <span class="comment">// if *a* array contains any element that is not included in *b*</span></span><br><span class="line">  <span class="keyword">return</span> !<span class="title function_">_includesWith</span>(<span class="keyword">function</span>(<span class="params">b, aItem</span>) &#123;</span><br><span class="line">    <span class="keyword">return</span> !<span class="title function_">_includesWith</span>(eq, aItem, b);</span><br><span class="line">  &#125;, b, a);</span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line"><span class="keyword">export</span> <span class="keyword">default</span> <span class="keyword">function</span> <span class="title function_">_equals</span>(<span class="params">a, b, stackA, stackB</span>) &#123;</span><br><span class="line">  <span class="comment">// 引用相同，基本类型的值相同</span></span><br><span class="line">  <span class="keyword">if</span> (<span class="title function_">_objectIs</span>(a, b)) &#123;</span><br><span class="line">    <span class="keyword">return</span> <span class="literal">true</span>;</span><br><span class="line">  &#125;</span><br><span class="line"></span><br><span class="line">  <span class="comment">// 类型不同</span></span><br><span class="line">  <span class="keyword">var</span> typeA = <span class="title function_">type</span>(a);</span><br><span class="line"></span><br><span class="line">  <span class="keyword">if</span> (typeA !== <span class="title function_">type</span>(b)) &#123;</span><br><span class="line">    <span class="keyword">return</span> <span class="literal">false</span>;</span><br><span class="line">  &#125;</span><br><span class="line"></span><br><span class="line">  <span class="comment">// 引用不同的情况</span></span><br><span class="line">  <span class="comment">//  ??????</span></span><br><span class="line">  <span class="keyword">if</span> (<span class="keyword">typeof</span> a[<span class="string">&#x27;fantasy-land/equals&#x27;</span>] === <span class="string">&#x27;function&#x27;</span> || <span class="keyword">typeof</span> b[<span class="string">&#x27;fantasy-land/equals&#x27;</span>] === <span class="string">&#x27;function&#x27;</span>) &#123;</span><br><span class="line">    <span class="keyword">return</span> <span class="keyword">typeof</span> a[<span class="string">&#x27;fantasy-land/equals&#x27;</span>] === <span class="string">&#x27;function&#x27;</span> &amp;&amp; a[<span class="string">&#x27;fantasy-land/equals&#x27;</span>](b) &amp;&amp;</span><br><span class="line">      <span class="keyword">typeof</span> b[<span class="string">&#x27;fantasy-land/equals&#x27;</span>] === <span class="string">&#x27;function&#x27;</span> &amp;&amp; b[<span class="string">&#x27;fantasy-land/equals&#x27;</span>](a);</span><br><span class="line">  &#125;</span><br><span class="line"></span><br><span class="line">  <span class="comment">// 如果自身实现了equals方法</span></span><br><span class="line">  <span class="keyword">if</span> (<span class="keyword">typeof</span> a.<span class="property">equals</span> === <span class="string">&#x27;function&#x27;</span> || <span class="keyword">typeof</span> b.<span class="property">equals</span> === <span class="string">&#x27;function&#x27;</span>) &#123;</span><br><span class="line">    <span class="keyword">return</span> <span class="keyword">typeof</span> a.<span class="property">equals</span> === <span class="string">&#x27;function&#x27;</span> &amp;&amp; a.<span class="title function_">equals</span>(b) &amp;&amp;</span><br><span class="line">      <span class="keyword">typeof</span> b.<span class="property">equals</span> === <span class="string">&#x27;function&#x27;</span> &amp;&amp; b.<span class="title function_">equals</span>(a);</span><br><span class="line">  &#125;</span><br><span class="line"></span><br><span class="line">  <span class="comment">// 其他引用类型</span></span><br><span class="line">  <span class="keyword">switch</span> (typeA) &#123;</span><br><span class="line">    <span class="keyword">case</span> <span class="string">&#x27;Arguments&#x27;</span>:</span><br><span class="line">    <span class="keyword">case</span> <span class="string">&#x27;Array&#x27;</span>:</span><br><span class="line">    <span class="keyword">case</span> <span class="string">&#x27;Object&#x27;</span>:</span><br><span class="line">      <span class="comment">// 引用类型如果为Promise实例，看作是项等的</span></span><br><span class="line">      <span class="keyword">if</span> (<span class="keyword">typeof</span> a.<span class="property">constructor</span> === <span class="string">&#x27;function&#x27;</span> &amp;&amp;</span><br><span class="line">        <span class="title function_">_functionName</span>(a.<span class="property">constructor</span>) === <span class="string">&#x27;Promise&#x27;</span>) &#123;</span><br><span class="line">        <span class="keyword">return</span> a === b;</span><br><span class="line">      &#125;</span><br><span class="line">      <span class="keyword">break</span>;</span><br><span class="line">    <span class="comment">// 基本类型的装箱对象</span></span><br><span class="line">    <span class="keyword">case</span> <span class="string">&#x27;Boolean&#x27;</span>:</span><br><span class="line">    <span class="keyword">case</span> <span class="string">&#x27;Number&#x27;</span>:</span><br><span class="line">    <span class="keyword">case</span> <span class="string">&#x27;String&#x27;</span>:</span><br><span class="line">      <span class="keyword">if</span> (!(<span class="keyword">typeof</span> a === <span class="keyword">typeof</span> b &amp;&amp; <span class="title function_">_objectIs</span>(a.<span class="title function_">valueOf</span>(), b.<span class="title function_">valueOf</span>()))) &#123;</span><br><span class="line">        <span class="keyword">return</span> <span class="literal">false</span>;</span><br><span class="line">      &#125;</span><br><span class="line">      <span class="keyword">break</span>;</span><br><span class="line">    <span class="keyword">case</span> <span class="string">&#x27;Date&#x27;</span>:</span><br><span class="line">    <span class="comment">// 时间类型转为事件戳</span></span><br><span class="line">      <span class="keyword">if</span> (!<span class="title function_">_objectIs</span>(a.<span class="title function_">valueOf</span>(), b.<span class="title function_">valueOf</span>())) &#123;</span><br><span class="line">        <span class="keyword">return</span> <span class="literal">false</span>;</span><br><span class="line">      &#125;</span><br><span class="line">      <span class="keyword">break</span>;</span><br><span class="line">    <span class="keyword">case</span> <span class="string">&#x27;Error&#x27;</span>:</span><br><span class="line">      <span class="keyword">return</span> a.<span class="property">name</span> === b.<span class="property">name</span> &amp;&amp; a.<span class="property">message</span> === b.<span class="property">message</span>;</span><br><span class="line">    <span class="keyword">case</span> <span class="string">&#x27;RegExp&#x27;</span>:</span><br><span class="line">    <span class="comment">// 正则类型的所有实例方法的实现相同</span></span><br><span class="line">      <span class="keyword">if</span> (!(a.<span class="property">source</span> === b.<span class="property">source</span> &amp;&amp;</span><br><span class="line">          a.<span class="property">global</span> === b.<span class="property">global</span> &amp;&amp;</span><br><span class="line">          a.<span class="property">ignoreCase</span> === b.<span class="property">ignoreCase</span> &amp;&amp;</span><br><span class="line">          a.<span class="property">multiline</span> === b.<span class="property">multiline</span> &amp;&amp;</span><br><span class="line">          a.<span class="property">sticky</span> === b.<span class="property">sticky</span> &amp;&amp;</span><br><span class="line">          a.<span class="property">unicode</span> === b.<span class="property">unicode</span>)) &#123;</span><br><span class="line">        <span class="keyword">return</span> <span class="literal">false</span>;</span><br><span class="line">      &#125;</span><br><span class="line">      <span class="keyword">break</span>;</span><br><span class="line">  &#125;</span><br><span class="line">  <span class="comment">// 处理map set集合</span></span><br><span class="line">  <span class="keyword">var</span> idx = stackA.<span class="property">length</span> - <span class="number">1</span>;</span><br><span class="line">  <span class="keyword">while</span> (idx &gt;= <span class="number">0</span>) &#123;</span><br><span class="line">    <span class="keyword">if</span> (stackA[idx] === a) &#123;</span><br><span class="line">      <span class="keyword">return</span> stackB[idx] === b;</span><br><span class="line">    &#125;</span><br><span class="line">    idx -= <span class="number">1</span>;</span><br><span class="line">  &#125;</span><br><span class="line"></span><br><span class="line">  <span class="keyword">switch</span> (typeA) &#123;</span><br><span class="line">    <span class="keyword">case</span> <span class="string">&#x27;Map&#x27;</span>:</span><br><span class="line">      <span class="keyword">if</span> (a.<span class="property">size</span> !== b.<span class="property">size</span>) &#123;</span><br><span class="line">        <span class="keyword">return</span> <span class="literal">false</span>;</span><br><span class="line">      &#125;</span><br><span class="line"></span><br><span class="line">      <span class="keyword">return</span> <span class="title function_">_uniqContentEquals</span>(a.<span class="title function_">entries</span>(), b.<span class="title function_">entries</span>(), stackA.<span class="title function_">concat</span>([a]), stackB.<span class="title function_">concat</span>([b]));</span><br><span class="line">    <span class="keyword">case</span> <span class="string">&#x27;Set&#x27;</span>:</span><br><span class="line">      <span class="keyword">if</span> (a.<span class="property">size</span> !== b.<span class="property">size</span>) &#123;</span><br><span class="line">        <span class="keyword">return</span> <span class="literal">false</span>;</span><br><span class="line">      &#125;</span><br><span class="line"></span><br><span class="line">      <span class="keyword">return</span> <span class="title function_">_uniqContentEquals</span>(a.<span class="title function_">values</span>(), b.<span class="title function_">values</span>(), stackA.<span class="title function_">concat</span>([a]), stackB.<span class="title function_">concat</span>([b]));</span><br><span class="line">    <span class="keyword">case</span> <span class="string">&#x27;Arguments&#x27;</span>:</span><br><span class="line">    <span class="keyword">case</span> <span class="string">&#x27;Array&#x27;</span>:</span><br><span class="line">    <span class="keyword">case</span> <span class="string">&#x27;Object&#x27;</span>:</span><br><span class="line">    <span class="keyword">case</span> <span class="string">&#x27;Boolean&#x27;</span>:</span><br><span class="line">    <span class="keyword">case</span> <span class="string">&#x27;Number&#x27;</span>:</span><br><span class="line">    <span class="keyword">case</span> <span class="string">&#x27;String&#x27;</span>:</span><br><span class="line">    <span class="keyword">case</span> <span class="string">&#x27;Date&#x27;</span>:</span><br><span class="line">    <span class="keyword">case</span> <span class="string">&#x27;Error&#x27;</span>:</span><br><span class="line">    <span class="keyword">case</span> <span class="string">&#x27;RegExp&#x27;</span>:</span><br><span class="line">    <span class="keyword">case</span> <span class="string">&#x27;Int8Array&#x27;</span>:</span><br><span class="line">    <span class="keyword">case</span> <span class="string">&#x27;Uint8Array&#x27;</span>:</span><br><span class="line">    <span class="keyword">case</span> <span class="string">&#x27;Uint8ClampedArray&#x27;</span>:</span><br><span class="line">    <span class="keyword">case</span> <span class="string">&#x27;Int16Array&#x27;</span>:</span><br><span class="line">    <span class="keyword">case</span> <span class="string">&#x27;Uint16Array&#x27;</span>:</span><br><span class="line">    <span class="keyword">case</span> <span class="string">&#x27;Int32Array&#x27;</span>:</span><br><span class="line">    <span class="keyword">case</span> <span class="string">&#x27;Uint32Array&#x27;</span>:</span><br><span class="line">    <span class="keyword">case</span> <span class="string">&#x27;Float32Array&#x27;</span>:</span><br><span class="line">    <span class="keyword">case</span> <span class="string">&#x27;Float64Array&#x27;</span>:</span><br><span class="line">    <span class="keyword">case</span> <span class="string">&#x27;ArrayBuffer&#x27;</span>:</span><br><span class="line">      <span class="keyword">break</span>;</span><br><span class="line">    <span class="attr">default</span>:</span><br><span class="line">      <span class="comment">// Values of other types are only equal if identical.</span></span><br><span class="line">      <span class="comment">// 其他类型只有引用相同才算项等</span></span><br><span class="line">      <span class="keyword">return</span> <span class="literal">false</span>;</span><br><span class="line">  &#125;</span><br><span class="line"></span><br><span class="line">  <span class="comment">// 处理数组或对象的每一个值是否项等</span></span><br><span class="line">  <span class="keyword">var</span> keysA = <span class="title function_">keys</span>(a);</span><br><span class="line">  <span class="keyword">if</span> (keysA.<span class="property">length</span> !== <span class="title function_">keys</span>(b).<span class="property">length</span>) &#123;</span><br><span class="line">    <span class="keyword">return</span> <span class="literal">false</span>;</span><br><span class="line">  &#125;</span><br><span class="line"></span><br><span class="line">  <span class="keyword">var</span> extendedStackA = stackA.<span class="title function_">concat</span>([a]);</span><br><span class="line">  <span class="keyword">var</span> extendedStackB = stackB.<span class="title function_">concat</span>([b]);</span><br><span class="line"></span><br><span class="line">  idx = keysA.<span class="property">length</span> - <span class="number">1</span>;</span><br><span class="line">  <span class="keyword">while</span> (idx &gt;= <span class="number">0</span>) &#123;</span><br><span class="line">    <span class="keyword">var</span> key = keysA[idx];</span><br><span class="line">    <span class="keyword">if</span> (!(<span class="title function_">_has</span>(key, b) &amp;&amp; <span class="title function_">_equals</span>(b[key], a[key], extendedStackA, extendedStackB))) &#123;</span><br><span class="line">      <span class="keyword">return</span> <span class="literal">false</span>;</span><br><span class="line">    &#125;</span><br><span class="line">    idx -= <span class="number">1</span>;</span><br><span class="line">  &#125;</span><br><span class="line">  <span class="keyword">return</span> <span class="literal">true</span>;</span><br><span class="line">&#125;</span><br><span class="line"></span><br></pre></td></tr></table></figure> 
+      <!-- reward -->
+      
+    </div>
+    
+
+    <!-- copyright -->
+    
+    <footer class="article-footer">
+       
+  <ul class="article-tag-list" itemprop="keywords"><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/Ramda/" rel="tag">Ramda</a></li><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/%E5%87%BD%E6%95%B0%E5%BC%8F%E7%BC%96%E7%A8%8B/" rel="tag">函数式编程</a></li></ul>
+
+    </footer>
+  </div>
+
+   
+    
+</article>
+
+    
+    <article
+  id="post-javascript/Ramda_Relation方法"
+  class="article article-type-post"
+  itemscope
+  itemprop="blogPost"
+  data-scroll-reveal
+>
+  <div class="article-inner">
+    
+    <header class="article-header">
+       
+<h2 itemprop="name">
+  <a class="article-title" href="/posts/4b3e617e083b/"
+    >Ramda Relation 方法源码分析</a> 
+</h2>
+ 
+
+      
+    </header>
+     
+    <div class="article-meta">
+      <a href="/posts/4b3e617e083b/" class="article-date">
+  <time datetime="2021-01-16T08:14:44.000Z" itemprop="datePublished">2021-01-16</time>
+</a> 
+  <div class="article-category">
+    <a class="article-category-link" href="/categories/JavaScript/">JavaScript</a>
+  </div>
+   
+    </div>
+      
+    <div class="article-entry" itemprop="articleBody">
+       
+   
+      <!-- reward -->
+      
+    </div>
+    
+
+    <!-- copyright -->
+    
+    <footer class="article-footer">
+       
+  <ul class="article-tag-list" itemprop="keywords"><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/Ramda/" rel="tag">Ramda</a></li><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/%E5%87%BD%E6%95%B0%E5%BC%8F%E7%BC%96%E7%A8%8B/" rel="tag">函数式编程</a></li></ul>
+
+    </footer>
+  </div>
+
+   
+    
+</article>
+
+    
+    <article
+  id="post-javascript/Ramda_Math方法"
+  class="article article-type-post"
+  itemscope
+  itemprop="blogPost"
+  data-scroll-reveal
+>
+  <div class="article-inner">
+    
+    <header class="article-header">
+       
+<h2 itemprop="name">
+  <a class="article-title" href="/posts/fe66a7d19245/"
+    >Ramda Math 方法源码分析</a> 
+</h2>
+ 
+
+      
+    </header>
+     
+    <div class="article-meta">
+      <a href="/posts/fe66a7d19245/" class="article-date">
+  <time datetime="2021-01-16T07:45:51.000Z" itemprop="datePublished">2021-01-16</time>
+</a> 
+  <div class="article-category">
+    <a class="article-category-link" href="/categories/JavaScript/">JavaScript</a>
+  </div>
+   
+    </div>
+      
+    <div class="article-entry" itemprop="articleBody">
+       
+   
+      <!-- reward -->
+      
+    </div>
+    
+
+    <!-- copyright -->
+    
+    <footer class="article-footer">
+       
+  <ul class="article-tag-list" itemprop="keywords"><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/Ramda/" rel="tag">Ramda</a></li><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/%E5%87%BD%E6%95%B0%E5%BC%8F%E7%BC%96%E7%A8%8B/" rel="tag">函数式编程</a></li></ul>
+
+    </footer>
+  </div>
+
+   
+    
+</article>
+
+    
+    <article
   id="post-javascript/Ramda中的柯理化"
   class="article article-type-post"
   itemscope
@@ -824,178 +1013,6 @@
     <footer class="article-footer">
        
   <ul class="article-tag-list" itemprop="keywords"><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/webpack/" rel="tag">webpack</a></li><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/%E5%B7%A5%E7%A8%8B%E5%8C%96/" rel="tag">工程化</a></li></ul>
-
-    </footer>
-  </div>
-
-   
-    
-</article>
-
-    
-    <article
-  id="post-devops/热部署代码"
-  class="article article-type-post"
-  itemscope
-  itemprop="blogPost"
-  data-scroll-reveal
->
-  <div class="article-inner">
-    
-    <header class="article-header">
-       
-<h2 itemprop="name">
-  <a class="article-title" href="/posts/d192bdaa6516/"
-    >热部署代码</a> 
-</h2>
- 
-
-      
-    </header>
-     
-    <div class="article-meta">
-      <a href="/posts/d192bdaa6516/" class="article-date">
-  <time datetime="2020-12-26T13:26:36.000Z" itemprop="datePublished">2020-12-26</time>
-</a> 
-  <div class="article-category">
-    <a class="article-category-link" href="/categories/DevOps/">DevOps</a>
-  </div>
-   
-    </div>
-      
-    <div class="article-entry" itemprop="articleBody">
-       
-  <figure class="highlight javascript"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br><span class="line">35</span><br><span class="line">36</span><br><span class="line">37</span><br><span class="line">38</span><br><span class="line">39</span><br><span class="line">40</span><br><span class="line">41</span><br><span class="line">42</span><br><span class="line">43</span><br><span class="line">44</span><br><span class="line">45</span><br><span class="line">46</span><br><span class="line">47</span><br><span class="line">48</span><br><span class="line">49</span><br><span class="line">50</span><br><span class="line">51</span><br><span class="line">52</span><br><span class="line">53</span><br><span class="line">54</span><br><span class="line">55</span><br><span class="line">56</span><br><span class="line">57</span><br><span class="line">58</span><br><span class="line">59</span><br><span class="line">60</span><br><span class="line">61</span><br><span class="line">62</span><br><span class="line">63</span><br><span class="line">64</span><br><span class="line">65</span><br><span class="line">66</span><br><span class="line">67</span><br><span class="line">68</span><br><span class="line">69</span><br><span class="line">70</span><br><span class="line">71</span><br><span class="line">72</span><br><span class="line">73</span><br><span class="line">74</span><br><span class="line">75</span><br><span class="line">76</span><br><span class="line">77</span><br><span class="line">78</span><br><span class="line">79</span><br><span class="line">80</span><br><span class="line">81</span><br><span class="line">82</span><br><span class="line">83</span><br><span class="line">84</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">const</span> fs = <span class="built_in">require</span>(<span class="string">&quot;fs&quot;</span>);</span><br><span class="line"><span class="keyword">const</span> path = <span class="built_in">require</span>(<span class="string">&quot;path&quot;</span>);</span><br><span class="line"><span class="keyword">const</span> vm = <span class="built_in">require</span>(<span class="string">&quot;vm&quot;</span>);</span><br><span class="line"></span><br><span class="line"><span class="keyword">const</span> handlerMap = &#123;&#125;;</span><br><span class="line"><span class="keyword">const</span> hotsPath = path.<span class="title function_">join</span>(__dirname, <span class="string">&quot;hots&quot;</span>);</span><br><span class="line"></span><br><span class="line"><span class="comment">// 加载文件代码 并 监听指定文件夹目录文件内容变动</span></span><br><span class="line"><span class="keyword">const</span> <span class="title function_">loadHandlers</span> = <span class="keyword">async</span> (<span class="params"></span>) =&gt; &#123;</span><br><span class="line">  <span class="comment">// 遍历出指定文件夹下的所有文件</span></span><br><span class="line">  <span class="keyword">const</span> files = <span class="keyword">await</span> <span class="keyword">new</span> <span class="title class_">Promise</span>(<span class="function">(<span class="params">resolve, reject</span>) =&gt;</span> &#123;</span><br><span class="line">    <span class="comment">//https://nodejs.org/dist/latest-v14.x/docs/api/fs.html#fs_fs_readdir_path_options_callback</span></span><br><span class="line">    <span class="comment">//异步读取指定目录下的文件和文件夹，返回一个数组</span></span><br><span class="line">    fs.<span class="title function_">readdir</span>(hotsPath, <span class="function">(<span class="params">err, files</span>) =&gt;</span> &#123;</span><br><span class="line">      <span class="keyword">if</span> (err) &#123;</span><br><span class="line">        <span class="title function_">reject</span>(err);</span><br><span class="line">      &#125; <span class="keyword">else</span> &#123;</span><br><span class="line">        <span class="title function_">resolve</span>(files);</span><br><span class="line">      &#125;</span><br><span class="line">    &#125;);</span><br><span class="line">  &#125;);</span><br><span class="line">  <span class="comment">// 初始化加载所有文件 把每个文件结果缓存到handlerMap变量当中</span></span><br><span class="line">  <span class="keyword">for</span> (<span class="keyword">let</span> f <span class="keyword">in</span> files) &#123;</span><br><span class="line">    handlerMap[files[f]] = <span class="keyword">await</span> <span class="title function_">loadHandler</span>(path.<span class="title function_">join</span>(hotsPath, files[f]));</span><br><span class="line">  &#125;</span><br><span class="line"></span><br><span class="line">  <span class="comment">// 监听指定文件夹的文件内容变动</span></span><br><span class="line">  <span class="keyword">await</span> <span class="title function_">watchHandlers</span>();</span><br><span class="line">&#125;;</span><br><span class="line"></span><br><span class="line"><span class="comment">// 监视指定文件夹下的文件变动</span></span><br><span class="line"><span class="keyword">const</span> <span class="title function_">watchHandlers</span> = <span class="keyword">async</span> (<span class="params"></span>) =&gt; &#123;</span><br><span class="line">  <span class="comment">// 这里建议用chokidar的npm包代替文件夹监听 </span></span><br><span class="line">  <span class="comment">// 监听所有子文件夹</span></span><br><span class="line">  fs.<span class="title function_">watch</span>(hotsPath, &#123; <span class="attr">recursive</span>: <span class="literal">true</span> &#125;, <span class="keyword">async</span> (eventType, filename) =&gt; &#123;</span><br><span class="line">    <span class="comment">// 获取到每个文件的绝对路径 </span></span><br><span class="line">    <span class="comment">// 包一层require.resolve的原因，拼接好路径以后，它会主动去帮你判断这个路径下的文件是否存在</span></span><br><span class="line">    <span class="comment">//使用require.resolve函数查询模块文件名时并不会加载该模块。</span></span><br><span class="line">    <span class="keyword">const</span> targetFile = <span class="built_in">require</span>.<span class="title function_">resolve</span>(path.<span class="title function_">join</span>(hotsPath, filename));</span><br><span class="line">    <span class="comment">// 使用require加载一个模块后，模块的数据就会缓存到require.cache中，下次再加载相同模块，就会直接走require.cache</span></span><br><span class="line">    <span class="comment">// 所以我们热加载部署，首要做的就是清除require.cache中对应文件的缓存</span></span><br><span class="line">    <span class="keyword">const</span> cacheModule = <span class="built_in">require</span>.<span class="property">cache</span>[targetFile];</span><br><span class="line">    <span class="comment">// 去除掉在require.cache缓存中parent对当前模块的引用，否则会引起内存泄露，具体解释可以看下面的文章</span></span><br><span class="line">	<span class="comment">// 《记录一次由一行代码引发的“血案”》https://cnodejs.org/topic/5aaba2dc19b2e3db18959e63</span></span><br><span class="line">	<span class="comment">// 《一行 delete require.cache 引发的内存泄漏血案》https://zhuanlan.zhihu.com/p/34702356</span></span><br><span class="line">    <span class="keyword">if</span> (cacheModule.<span class="property">parent</span>) &#123;    </span><br><span class="line">        cacheModule.<span class="property">parent</span>.<span class="property">children</span>.<span class="title function_">splice</span>(cacheModule.<span class="property">parent</span>.<span class="property">children</span>.<span class="title function_">indexOf</span>(cacheModule), <span class="number">1</span>);</span><br><span class="line">    &#125;</span><br><span class="line">    <span class="comment">// 清除指定路径对应模块的require.cache缓存</span></span><br><span class="line">    <span class="built_in">require</span>.<span class="property">cache</span>[targetFile] = <span class="literal">null</span>;</span><br><span class="line"></span><br><span class="line">    <span class="comment">// 重新加载发生变动后的模块文件，实现热加载部署效果，并将重新加载后的结果，更新到handlerMap变量当中</span></span><br><span class="line">    <span class="keyword">const</span> code = <span class="keyword">await</span> <span class="title function_">loadHandler</span>(targetFile)</span><br><span class="line">    handlerMap[filename] = code;</span><br><span class="line">    <span class="variable language_">console</span>.<span class="title function_">log</span>(<span class="string">&quot;热部署文件：&quot;</span>, filename, <span class="string">&quot;，执行结果：&quot;</span>, handlerMap);</span><br><span class="line">  &#125;);</span><br><span class="line">&#125;;</span><br><span class="line"></span><br><span class="line"><span class="comment">// 加载指定文件的代码</span></span><br><span class="line"><span class="keyword">const</span> <span class="title function_">loadHandler</span> = filename =&gt; &#123;</span><br><span class="line">  <span class="keyword">return</span> <span class="keyword">new</span> <span class="title class_">Promise</span>(<span class="function">(<span class="params">resolve, reject</span>) =&gt;</span> &#123;</span><br><span class="line">    <span class="comment">//https://nodejs.org/dist/latest-v14.x/docs/api/fs.html#fs_fs_readfile_path_options_callback</span></span><br><span class="line">    <span class="comment">//读取文件中的内容 默认返回buffer</span></span><br><span class="line">    <span class="comment">//当目录为文件夹时抛出错误</span></span><br><span class="line">    fs.<span class="title function_">readFile</span>(filename, <span class="function">(<span class="params">err, data</span>) =&gt;</span> &#123;</span><br><span class="line">      <span class="keyword">if</span> (err) &#123;</span><br><span class="line">        <span class="title function_">resolve</span>(<span class="literal">null</span>);</span><br><span class="line">      &#125; <span class="keyword">else</span> &#123;</span><br><span class="line">        <span class="keyword">try</span> &#123;</span><br><span class="line">          <span class="comment">// 使用vm模块的Script方法来预编译发生变化后的文件代码，检查语法错误，提前发现是否存在语法错误等报错</span></span><br><span class="line">          <span class="keyword">new</span> vm.<span class="title class_">Script</span>(data);</span><br><span class="line">        &#125; <span class="keyword">catch</span> (e) &#123;</span><br><span class="line">          <span class="comment">// 语法错误,编译失败</span></span><br><span class="line">          <span class="title function_">reject</span>(e);</span><br><span class="line">          <span class="keyword">return</span>;</span><br><span class="line">        &#125;</span><br><span class="line">        <span class="comment">// 编译通过后，重新require加载最新的代码</span></span><br><span class="line">        <span class="title function_">resolve</span>(<span class="built_in">require</span>(filename));</span><br><span class="line">      &#125;</span><br><span class="line">    &#125;);</span><br><span class="line">  &#125;);</span><br><span class="line">&#125;;</span><br><span class="line"></span><br><span class="line"><span class="title function_">loadHandlers</span>()</span><br></pre></td></tr></table></figure> 
-      <!-- reward -->
-      
-    </div>
-    
-
-    <!-- copyright -->
-    
-    <footer class="article-footer">
-       
-  <ul class="article-tag-list" itemprop="keywords"><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/DevOps/" rel="tag">DevOps</a></li><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/%E5%B7%A5%E7%A8%8B%E5%8C%96/" rel="tag">工程化</a></li></ul>
-
-    </footer>
-  </div>
-
-   
-    
-</article>
-
-    
-    <article
-  id="post-devops/文件自动同步服务器"
-  class="article article-type-post"
-  itemscope
-  itemprop="blogPost"
-  data-scroll-reveal
->
-  <div class="article-inner">
-    
-    <header class="article-header">
-       
-<h2 itemprop="name">
-  <a class="article-title" href="/posts/db8fc5f7ed73/"
-    >文件自动同步服务器</a> 
-</h2>
- 
-
-      
-    </header>
-     
-    <div class="article-meta">
-      <a href="/posts/db8fc5f7ed73/" class="article-date">
-  <time datetime="2020-12-26T13:20:25.000Z" itemprop="datePublished">2020-12-26</time>
-</a> 
-  <div class="article-category">
-    <a class="article-category-link" href="/categories/DevOps/">DevOps</a>
-  </div>
-   
-    </div>
-      
-    <div class="article-entry" itemprop="articleBody">
-       
-  <h4 id="index-js"><a href="#index-js" class="headerlink" title="index.js"></a>index.js</h4><figure class="highlight javascript"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br></pre></td><td class="code"><pre><span class="line"><span class="meta">#!/usr/bin/env node</span></span><br><span class="line"></span><br><span class="line"><span class="keyword">const</span> shell = <span class="built_in">require</span>(<span class="string">&#x27;shelljs&#x27;</span>)</span><br><span class="line"><span class="keyword">const</span> chokidar = <span class="built_in">require</span>(<span class="string">&#x27;chokidar&#x27;</span>)</span><br><span class="line"><span class="keyword">const</span> home = <span class="built_in">require</span>(<span class="string">&#x27;user-home&#x27;</span>)</span><br><span class="line"><span class="keyword">const</span> path = <span class="built_in">require</span>(<span class="string">&#x27;path&#x27;</span>)</span><br><span class="line"></span><br><span class="line"><span class="keyword">const</span> <span class="variable constant_">WORKSPACE_PATH</span> = path.<span class="title function_">resolve</span>(home, <span class="string">&#x27;Workspace&#x27;</span>);</span><br><span class="line"></span><br><span class="line"><span class="keyword">const</span> expectPath = path.<span class="title function_">join</span>(__dirname, <span class="string">&#x27;./expect.exp&#x27;</span>)</span><br><span class="line"><span class="keyword">const</span> to = <span class="string">&#x27;root@144.xxx.xxx.92:/home/backup&#x27;</span></span><br><span class="line"></span><br><span class="line">chokidar</span><br><span class="line">  .<span class="title function_">watch</span>(<span class="string">&#x27;./index.js&#x27;</span>, &#123;</span><br><span class="line">    <span class="attr">ignored</span>: <span class="function">(<span class="params">path</span>) =&gt;</span> path.<span class="title function_">includes</span>(<span class="string">&#x27;node_modules&#x27;</span>) || path.<span class="title function_">includes</span>(<span class="string">&#x27;.git&#x27;</span>)</span><br><span class="line">  &#125;)</span><br><span class="line">  .<span class="title function_">on</span>(<span class="string">&#x27;all&#x27;</span>, <span class="function">(<span class="params">event, path</span>) =&gt;</span> &#123;</span><br><span class="line">    <span class="variable language_">console</span>.<span class="title function_">log</span>(event, path);</span><br><span class="line">    shell.<span class="title function_">exec</span>(<span class="string">`expect <span class="subst">$&#123;expectPath&#125;</span> <span class="subst">$&#123;path&#125;</span> <span class="subst">$&#123;to&#125;</span>`</span>)</span><br><span class="line">  &#125;); </span><br><span class="line"></span><br></pre></td></tr></table></figure>
-
-<h4 id="expect-exp"><a href="#expect-exp" class="headerlink" title="expect.exp"></a>expect.exp</h4><figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment">#expect 不能写错</span></span><br><span class="line"><span class="comment">#!/usr/bin/expect</span></span><br><span class="line"></span><br><span class="line"><span class="built_in">set</span> from [lindex <span class="variable">$argv</span> 0]</span><br><span class="line"><span class="built_in">set</span> to [lindex <span class="variable">$argv</span> 1]</span><br><span class="line"></span><br><span class="line"><span class="built_in">set</span> <span class="built_in">timeout</span> 30</span><br><span class="line"></span><br><span class="line">spawn bash -c <span class="string">&quot;scp <span class="variable">$from</span> <span class="variable">$to</span>&quot;</span></span><br><span class="line"></span><br><span class="line"><span class="comment"># 特殊符号需要转移 回车符号不需要</span></span><br><span class="line"><span class="comment"># \ 需转义为 \\\</span></span><br><span class="line"><span class="comment"># &#125; 需转义为 \&#125;</span></span><br><span class="line"><span class="comment"># [ 需转义为 \[</span></span><br><span class="line"><span class="comment"># $ 需转义为 \\\$</span></span><br><span class="line"><span class="comment"># ` 需转义为 \`</span></span><br><span class="line"><span class="comment"># &quot; 需转义为 \\\&quot;</span></span><br><span class="line"><span class="comment"># ( 需转义为 \(</span></span><br><span class="line"></span><br><span class="line"></span><br><span class="line">expect &#123;</span><br><span class="line">  <span class="string">&quot;*password:&quot;</span> &#123; send -- <span class="string">&quot;j\(S7?xx#ky6\[0n=R\r&quot;</span> &#125;</span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line"><span class="comment"># 必须要加这一句，在执行完毕后把持交互状态，把控制台，这时候就可以进行你想要进行的操作了。如果没有这一句，在登陆完成之后就会退出，而不是留在远程终端上。</span></span><br><span class="line">interact</span><br></pre></td></tr></table></figure> 
-      <!-- reward -->
-      
-    </div>
-    
-
-    <!-- copyright -->
-    
-    <footer class="article-footer">
-       
-  <ul class="article-tag-list" itemprop="keywords"><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/DevOps/" rel="tag">DevOps</a></li><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/%E5%B7%A5%E7%A8%8B%E5%8C%96/" rel="tag">工程化</a></li></ul>
-
-    </footer>
-  </div>
-
-   
-    
-</article>
-
-    
-    <article
-  id="post-javascript/性能优化"
-  class="article article-type-post"
-  itemscope
-  itemprop="blogPost"
-  data-scroll-reveal
->
-  <div class="article-inner">
-    
-    <header class="article-header">
-       
-<h2 itemprop="name">
-  <a class="article-title" href="/posts/9d3898150489/"
-    >性能优化</a> 
-</h2>
- 
-
-      
-    </header>
-     
-    <div class="article-meta">
-      <a href="/posts/9d3898150489/" class="article-date">
-  <time datetime="2020-12-23T14:36:38.000Z" itemprop="datePublished">2020-12-23</time>
-</a> 
-  <div class="article-category">
-    <a class="article-category-link" href="/categories/JavaScript/">JavaScript</a>
-  </div>
-   
-    </div>
-      
-    <div class="article-entry" itemprop="articleBody">
-       
-  <h4 id="性能优化开篇"><a href="#性能优化开篇" class="headerlink" title="性能优化开篇"></a>性能优化开篇</h4><p>Html 数量控制 -&gt; 压缩合并（30k为标准，请求变少） -&gt; 开启CDN， gzip,brotli压缩方式 -&gt; 服务端开启keep-alive http2 -&gt; 测速 -&gt; 缓存</p>
-<p>离线缓存</p>
-<p>localStorage 5M 低端机型，不能占用过高</p>
-<p>script 放在底部，不会影响dom的解析，但是会影响dom的渲染</p>
-<figure class="highlight html"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br></pre></td><td class="code"><pre><span class="line"><span class="tag">&lt;<span class="name">body</span>&gt;</span></span><br><span class="line">  <span class="tag">&lt;<span class="name">h1</span>&gt;</span>标题<span class="tag">&lt;/<span class="name">h1</span>&gt;</span></span><br><span class="line">  <span class="tag">&lt;<span class="name">script</span>&gt;</span></span><br><span class="line">    alert(0)</span><br><span class="line">  <span class="tag">&lt;/<span class="name">script</span>&gt;</span></span><br><span class="line"><span class="tag">&lt;/<span class="name">body</span>&gt;</span></span><br></pre></td></tr></table></figure>
-<p>同样css不会影响dom的解析，但是影响dom的渲染</p>
-<figure class="highlight html"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br></pre></td><td class="code"><pre><span class="line"><span class="tag">&lt;<span class="name">head</span>&gt;</span></span><br><span class="line">  <span class="tag">&lt;<span class="name">meta</span> <span class="attr">charset</span>=<span class="string">&quot;UTF-8&quot;</span>&gt;</span></span><br><span class="line">  <span class="tag">&lt;<span class="name">meta</span> <span class="attr">name</span>=<span class="string">&quot;viewport&quot;</span> <span class="attr">content</span>=<span class="string">&quot;width=device-width, initial-scale=1.0&quot;</span>&gt;</span></span><br><span class="line">  <span class="tag">&lt;<span class="name">title</span>&gt;</span>Document<span class="tag">&lt;/<span class="name">title</span>&gt;</span></span><br><span class="line">  <span class="tag">&lt;<span class="name">link</span> <span class="attr">rel</span>=<span class="string">&quot;stylesheet&quot;</span> <span class="attr">href</span>=<span class="string">&quot;./css&quot;</span>&gt;</span></span><br><span class="line"><span class="tag">&lt;/<span class="name">head</span>&gt;</span></span><br><span class="line"></span><br><span class="line"><span class="tag">&lt;<span class="name">body</span>&gt;</span></span><br><span class="line">  <span class="tag">&lt;<span class="name">h1</span>&gt;</span>标题<span class="tag">&lt;/<span class="name">h1</span>&gt;</span></span><br><span class="line"><span class="tag">&lt;/<span class="name">body</span>&gt;</span></span><br></pre></td></tr></table></figure>
-
-<p>css 加载会阻塞js的执行，因为不知道js中是否使用了css, 但是不会影响dom的解析</p>
-<figure class="highlight html"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br></pre></td><td class="code"><pre><span class="line"><span class="tag">&lt;<span class="name">head</span>&gt;</span></span><br><span class="line">  <span class="tag">&lt;<span class="name">meta</span> <span class="attr">charset</span>=<span class="string">&quot;UTF-8&quot;</span>&gt;</span></span><br><span class="line">  <span class="tag">&lt;<span class="name">meta</span> <span class="attr">name</span>=<span class="string">&quot;viewport&quot;</span> <span class="attr">content</span>=<span class="string">&quot;width=device-width, initial-scale=1.0&quot;</span>&gt;</span></span><br><span class="line">  <span class="tag">&lt;<span class="name">title</span>&gt;</span>Document<span class="tag">&lt;/<span class="name">title</span>&gt;</span></span><br><span class="line">  <span class="tag">&lt;<span class="name">link</span> <span class="attr">rel</span>=<span class="string">&quot;stylesheet&quot;</span> <span class="attr">href</span>=<span class="string">&quot;./css&quot;</span>&gt;</span></span><br><span class="line"><span class="tag">&lt;/<span class="name">head</span>&gt;</span></span><br><span class="line"></span><br><span class="line"><span class="tag">&lt;<span class="name">body</span>&gt;</span></span><br><span class="line">  <span class="tag">&lt;<span class="name">h1</span>&gt;</span>标题<span class="tag">&lt;/<span class="name">h1</span>&gt;</span></span><br><span class="line">  <span class="tag">&lt;<span class="name">script</span>&gt;</span></span><br><span class="line">    alert(0)</span><br><span class="line">  <span class="tag">&lt;/<span class="name">script</span>&gt;</span></span><br><span class="line"><span class="tag">&lt;/<span class="name">body</span>&gt;</span></span><br></pre></td></tr></table></figure>
-
-<p>css的加载不会影响dom ready,但是如果css,下面有js脚本，则不会执行dom ready，因为不知道是否使用了css样式</p>
-<figure class="highlight html"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br></pre></td><td class="code"><pre><span class="line"><span class="tag">&lt;<span class="name">head</span>&gt;</span></span><br><span class="line">  <span class="tag">&lt;<span class="name">meta</span> <span class="attr">charset</span>=<span class="string">&quot;UTF-8&quot;</span>&gt;</span></span><br><span class="line">  <span class="tag">&lt;<span class="name">meta</span> <span class="attr">name</span>=<span class="string">&quot;viewport&quot;</span> <span class="attr">content</span>=<span class="string">&quot;width=device-width, initial-scale=1.0&quot;</span>&gt;</span></span><br><span class="line">  <span class="tag">&lt;<span class="name">title</span>&gt;</span>Document<span class="tag">&lt;/<span class="name">title</span>&gt;</span></span><br><span class="line">  <span class="tag">&lt;<span class="name">script</span>&gt;</span><span class="language-javascript"></span></span><br><span class="line"><span class="language-javascript">    <span class="variable language_">document</span>.<span class="title function_">addEventlister</span>(<span class="string">&#x27;DomContentloaded&#x27;</span>,<span class="function">()=&gt;</span>&#123;<span class="variable language_">console</span>.<span class="title function_">log</span>(<span class="string">&#x27;ready&#x27;</span>)&#125;)</span></span><br><span class="line"><span class="language-javascript">  </span><span class="tag">&lt;/<span class="name">script</span>&gt;</span></span><br><span class="line">  <span class="tag">&lt;<span class="name">link</span> <span class="attr">rel</span>=<span class="string">&quot;stylesheet&quot;</span> <span class="attr">href</span>=<span class="string">&quot;./css&quot;</span>&gt;</span></span><br><span class="line"><span class="tag">&lt;/<span class="name">head</span>&gt;</span></span><br><span class="line"></span><br><span class="line"><span class="tag">&lt;<span class="name">body</span>&gt;</span></span><br><span class="line">  <span class="tag">&lt;<span class="name">h1</span>&gt;</span>标题<span class="tag">&lt;/<span class="name">h1</span>&gt;</span></span><br><span class="line">  <span class="comment">&lt;!-- &lt;script&gt;</span></span><br><span class="line"><span class="comment">    alert(0)</span></span><br><span class="line"><span class="comment">  &lt;/script&gt; --&gt;</span></span><br><span class="line"><span class="tag">&lt;/<span class="name">body</span>&gt;</span></span><br></pre></td></tr></table></figure>
-
-<h4 id="渲染中的性能优化"><a href="#渲染中的性能优化" class="headerlink" title="渲染中的性能优化"></a>渲染中的性能优化</h4> 
-      <!-- reward -->
-      
-    </div>
-    
-
-    <!-- copyright -->
-    
-    <footer class="article-footer">
-       
-  <ul class="article-tag-list" itemprop="keywords"><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/JavaScript/" rel="tag">JavaScript</a></li></ul>
 
     </footer>
   </div>

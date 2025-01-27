@@ -112,6 +112,183 @@
     
     
     <article
+  id="posts-pattern/④工厂模式"
+  class="article article-type-posts"
+  itemscope
+  itemprop="blogPost"
+  data-scroll-reveal
+>
+  <div class="article-inner">
+    
+    <header class="article-header">
+       
+<h2 itemprop="name">
+  <a class="article-title" href="/posts/7634c4874d92/"
+    >④隐藏new操作符-工厂模式</a> 
+</h2>
+ 
+
+      
+    </header>
+     
+    <div class="article-meta">
+      <a href="/posts/7634c4874d92/" class="article-date">
+  <time datetime="2023-01-04T01:36:43.000Z" itemprop="datePublished">2023-01-04</time>
+</a> 
+  <div class="article-category">
+    <a class="article-category-link" href="/categories/%E8%AE%BE%E8%AE%A1%E6%A8%A1%E5%BC%8F/">设计模式</a>
+  </div>
+   
+    </div>
+      
+    <div class="article-entry" itemprop="articleBody">
+       
+  <h4 id="new-有什么不对"><a href="#new-有什么不对" class="headerlink" title="new 有什么不对"></a>new 有什么不对</h4><p><strong>实例化对象的过程不应该总是公开的进行，这里面会有一些耦合的问题。</strong></p>
+<p>对 new 本身来讲并没有什么不对，需要通过 new 操作符实例化对象。但是对于设计模式来讲，new 操作符让我们针对业务编写代码，初始化的逻辑可能在一段条件语句中，如果添加了新的类，必须修改原来的代码。也就是说我们代码没有对修改关闭。</p>
+<p>当有一些相关类实例化的时候，可能会写出下面的代码，每当加入新的类这段代码就会被修改，也就违反对修改关闭的设计原则。</p>
+<figure class="highlight ts"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">if</span> (picnic) &#123;duck = <span class="keyword">new</span> <span class="title class_">MallardDuck</span>();&#125;</span><br><span class="line"><span class="keyword">else</span> <span class="keyword">if</span> (hunting) (duck = <span class="keyword">new</span> <span class="title class_">DecoyDuck</span>();)</span><br><span class="line"><span class="keyword">else</span> <span class="keyword">if</span> (inBathTub) &#123;duck = <span class="keyword">new</span> <span class="title class_">RubberDuck</span>()&#125;</span><br></pre></td></tr></table></figure>
+
+<h4 id="简单工厂"><a href="#简单工厂" class="headerlink" title="简单工厂"></a>简单工厂</h4><p>一个最简单的工厂就是把实例化对象的过程提取出来，单独放到一个工厂类中，并暴露方法，允许第三方类通过这个方法实例化对象。</p>
+<figure class="highlight ts"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br><span class="line">35</span><br><span class="line">36</span><br><span class="line">37</span><br><span class="line">38</span><br><span class="line">39</span><br><span class="line">40</span><br><span class="line">41</span><br><span class="line">42</span><br><span class="line">43</span><br><span class="line">44</span><br><span class="line">45</span><br><span class="line">46</span><br><span class="line">47</span><br><span class="line">48</span><br><span class="line">49</span><br><span class="line">50</span><br><span class="line">51</span><br><span class="line">52</span><br><span class="line">53</span><br><span class="line">54</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">abstract</span> <span class="keyword">class</span> <span class="title class_">FruitFactory</span> &#123;</span><br><span class="line">  <span class="comment">// 抽象工厂类的公用方法</span></span><br><span class="line">  <span class="title function_">common</span>(<span class="params"></span>) &#123;&#125;</span><br><span class="line">  <span class="comment">// 需要子类重新实现</span></span><br><span class="line">  <span class="keyword">abstract</span> <span class="title function_">createTea</span>(<span class="attr">type</span>: <span class="built_in">string</span>): <span class="title class_">AppleTea</span>;</span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line"><span class="keyword">interface</span> <span class="title class_">AppleTea</span> &#123;</span><br><span class="line">  <span class="title function_">name</span>(): <span class="built_in">void</span>;</span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line"><span class="keyword">class</span> <span class="title class_">Type1AppleTea</span> <span class="keyword">implements</span> <span class="title class_">AppleTea</span> &#123;</span><br><span class="line">  <span class="title function_">name</span>(<span class="params"></span>) &#123;</span><br><span class="line">    <span class="variable language_">console</span>.<span class="title function_">log</span>(<span class="string">&quot;苹果茶类型1&quot;</span>);</span><br><span class="line">  &#125;</span><br><span class="line">&#125;</span><br><span class="line"><span class="keyword">class</span> <span class="title class_">Type2AppleTea</span> <span class="keyword">implements</span> <span class="title class_">AppleTea</span> &#123;</span><br><span class="line">  <span class="title function_">name</span>(<span class="params"></span>) &#123;</span><br><span class="line">    <span class="variable language_">console</span>.<span class="title function_">log</span>(<span class="string">&quot;苹果茶类型2&quot;</span>);</span><br><span class="line">  &#125;</span><br><span class="line">&#125;</span><br><span class="line"><span class="keyword">class</span> <span class="title class_">Apple</span> <span class="keyword">extends</span> <span class="title class_ inherited__">FruitFactory</span> &#123;</span><br><span class="line">  <span class="title function_">taste</span>(<span class="params"></span>) &#123;</span><br><span class="line">    <span class="variable language_">console</span>.<span class="title function_">log</span>(<span class="string">&quot;苹果很甜&quot;</span>);</span><br><span class="line">  &#125;</span><br><span class="line">  <span class="keyword">public</span> <span class="title function_">createTea</span>(<span class="attr">type</span>: <span class="built_in">string</span>): <span class="title class_">AppleTea</span> &#123;</span><br><span class="line">    <span class="keyword">if</span> (<span class="keyword">type</span> == <span class="string">&quot;appleTeaType1&quot;</span>) &#123;</span><br><span class="line">      <span class="keyword">return</span> <span class="keyword">new</span> <span class="title class_">Type1AppleTea</span>();</span><br><span class="line">    &#125; <span class="keyword">else</span> <span class="keyword">if</span> (<span class="keyword">type</span> == <span class="string">&quot;appleTeaType1&quot;</span>) &#123;</span><br><span class="line">      <span class="keyword">return</span> <span class="keyword">new</span> <span class="title class_">Type2AppleTea</span>();</span><br><span class="line">    &#125;</span><br><span class="line">    <span class="keyword">return</span> <span class="keyword">new</span> <span class="title class_">Type1AppleTea</span>();</span><br><span class="line">  &#125;</span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line"><span class="keyword">class</span> <span class="title class_">FruitStore</span> &#123;</span><br><span class="line">  <span class="attr">factory</span>: <span class="title class_">FruitFactory</span>;</span><br><span class="line">  <span class="title function_">constructor</span>(<span class="params">factory: FruitFactory</span>) &#123;</span><br><span class="line">    <span class="variable language_">this</span>.<span class="property">factory</span> = factory;</span><br><span class="line">  &#125;</span><br><span class="line">  <span class="title function_">makeFruitTea</span>(<span class="params"><span class="keyword">type</span>: <span class="built_in">string</span></span>) &#123;</span><br><span class="line">    <span class="keyword">return</span> <span class="variable language_">this</span>.<span class="property">factory</span>.<span class="title function_">createTea</span>(<span class="string">&quot;type1&quot;</span>);</span><br><span class="line">  &#125;</span><br><span class="line">  <span class="title function_">orderTea</span>(<span class="params"></span>) &#123;</span><br><span class="line">    <span class="keyword">const</span> tea = <span class="variable language_">this</span>.<span class="title function_">makeFruitTea</span>(<span class="string">&quot;type1&quot;</span>);</span><br><span class="line">    tea.<span class="title function_">name</span>();</span><br><span class="line">  &#125;</span><br><span class="line"></span><br><span class="line">  <span class="comment">//  公用的茶的制作方法</span></span><br><span class="line">  <span class="comment">//  ...</span></span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line"><span class="keyword">const</span> store = <span class="keyword">new</span> <span class="title class_">FruitStore</span>(<span class="keyword">new</span> <span class="title class_">Apple</span>());</span><br><span class="line">store.<span class="title function_">orderTea</span>();</span><br></pre></td></tr></table></figure>
+
+<p><strong>工厂方法模式： 定义了一个创建对象的接口，但由子类决定要实例化的类是哪一个的，工厂方法让类把实例化推迟到子类。</strong></p>
+<p>上面的代码中可以看到工厂是外部传入，可以创建不同类型的茶，但是茶的制作行为更像是 Store 的一部分，所以做一点改变。</p>
+<ul>
+<li>定义一个 Store 的抽象类，所有的 Store 都要实现这个抽象类。</li>
+<li>在 Store 抽象类中定义 createTea 的抽象方法，这个方法的内容就是之前外部传入的工厂。</li>
+<li>换句话说， 工厂方法转移到子类中实现</li>
+</ul>
+<figure class="highlight ts"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br><span class="line">35</span><br><span class="line">36</span><br><span class="line">37</span><br><span class="line">38</span><br><span class="line">39</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">interface</span> <span class="title class_">AppleTea</span> &#123;</span><br><span class="line">  <span class="title function_">name</span>(): <span class="built_in">void</span>;</span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line"><span class="keyword">class</span> <span class="title class_">Type1AppleTea</span> <span class="keyword">implements</span> <span class="title class_">AppleTea</span> &#123;</span><br><span class="line">  <span class="title function_">name</span>(<span class="params"></span>) &#123;</span><br><span class="line">    <span class="variable language_">console</span>.<span class="title function_">log</span>(<span class="string">&quot;苹果茶类型1&quot;</span>);</span><br><span class="line">  &#125;</span><br><span class="line">&#125;</span><br><span class="line"><span class="keyword">class</span> <span class="title class_">Type2AppleTea</span> <span class="keyword">implements</span> <span class="title class_">AppleTea</span> &#123;</span><br><span class="line">  <span class="title function_">name</span>(<span class="params"></span>) &#123;</span><br><span class="line">    <span class="variable language_">console</span>.<span class="title function_">log</span>(<span class="string">&quot;苹果茶类型2&quot;</span>);</span><br><span class="line">  &#125;</span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line"><span class="keyword">abstract</span> <span class="keyword">class</span> <span class="title class_">FruitStore</span> &#123;</span><br><span class="line">  <span class="keyword">abstract</span> <span class="title function_">createTea</span>(<span class="attr">type</span>: <span class="built_in">string</span>): <span class="built_in">any</span>;</span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line"><span class="keyword">class</span> <span class="title class_">AppleFruitStore</span> <span class="keyword">extends</span> <span class="title class_ inherited__">FruitStore</span> &#123;</span><br><span class="line">  <span class="title function_">constructor</span>(<span class="params"></span>) &#123;</span><br><span class="line">    <span class="variable language_">super</span>();</span><br><span class="line">  &#125;</span><br><span class="line">  <span class="keyword">public</span> <span class="title function_">createTea</span>(<span class="attr">type</span>: <span class="built_in">string</span>): <span class="title class_">AppleTea</span> &#123;</span><br><span class="line">    <span class="keyword">if</span> (<span class="keyword">type</span> == <span class="string">&quot;type1&quot;</span>) &#123;</span><br><span class="line">      <span class="keyword">return</span> <span class="keyword">new</span> <span class="title class_">Type1AppleTea</span>();</span><br><span class="line">    &#125; <span class="keyword">else</span> <span class="keyword">if</span> (<span class="keyword">type</span> == <span class="string">&quot;type2&quot;</span>) &#123;</span><br><span class="line">      <span class="keyword">return</span> <span class="keyword">new</span> <span class="title class_">Type2AppleTea</span>();</span><br><span class="line">    &#125;</span><br><span class="line">    <span class="keyword">return</span> <span class="keyword">new</span> <span class="title class_">Type1AppleTea</span>();</span><br><span class="line">  &#125;</span><br><span class="line">  <span class="title function_">orderTea</span>(<span class="params"></span>) &#123;</span><br><span class="line">    <span class="keyword">const</span> tea = <span class="variable language_">this</span>.<span class="title function_">createTea</span>(<span class="string">&quot;type1&quot;</span>);</span><br><span class="line">    tea.<span class="title function_">name</span>();</span><br><span class="line">  &#125;</span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line"><span class="keyword">const</span> store = <span class="keyword">new</span> <span class="title class_">AppleFruitStore</span>();</span><br><span class="line">store.<span class="title function_">orderTea</span>();</span><br></pre></td></tr></table></figure>
+
+<p><strong>所有的工厂模式都是用来封装对象创建的。</strong>， <strong>创建者类</strong> 需要有一个抽象创建者类，定义了一个<strong>抽象工厂方法</strong>，所有实现了抽象创建者类的子类，都可以用自己实现的工厂方法生产产品。<strong>产品类</strong> 是在创建者实例的工厂方法中创建出来的。</p>
+<h4 id="依赖倒置与抽象工厂"><a href="#依赖倒置与抽象工厂" class="headerlink" title="依赖倒置与抽象工厂"></a>依赖倒置与抽象工厂</h4><p><strong>依赖倒置原则：要依赖抽象，不要依赖具体类</strong>，这句话很像是要面向接口编程，而不是具体的类。没错，但是这句话更强调，高层的组件不应该依赖低层的组件，而是应该两者都依赖于 <strong>抽象</strong>。抽象可以是接口，也可以是抽象类。</p>
+<p><strong>抽象工厂模式：提供一个接口，用于创建相关或依赖对象的家族，而不需要明确指定具体类</strong>。</p>
+<h4 id="思考"><a href="#思考" class="headerlink" title="思考"></a>思考</h4><ul>
+<li>当只有一个创建者类的时候是否应该使用工厂模式，答案是肯定的，工厂模式让你便于扩展，并将产品类的创建与使用解耦。</li>
+<li>所有的工厂都是用来封装对象的创建</li>
+<li>简单工厂，虽然不是真正的设计模式，但仍不失为一个简单的方法，可以将客户程序从具体类解耦。</li>
+<li>工厂方法使用继承:把对象的创建委托给子类，子类实现工厂方法来创建对象。</li>
+<li>抽象工厂使用对象组合:对象的创建被实现在工厂接口所暴露出来的方法中</li>
+<li>所有工厂模式都通过减少应用程序和具体类之间的依赖促进松耦合。</li>
+<li>工厂方法允许类将实例化延迟到子类进行。</li>
+<li>抽象工厂创建相关的对象家族，而不需要依赖它们的具体类。</li>
+<li>依赖倒置原则，指导我们避免依赖具体类型，而要尽量依赖抽象。</li>
+<li>工厂是很有威力的技巧，帮助我们针对抽象编程，而不要针对具体类编程。</li>
+</ul>
+ 
+      <!-- reward -->
+      
+    </div>
+    
+
+    <!-- copyright -->
+    
+    <footer class="article-footer">
+       
+  <ul class="article-tag-list" itemprop="keywords"><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/%E8%AE%BE%E8%AE%A1%E6%A8%A1%E5%BC%8F/" rel="tag">设计模式</a></li></ul>
+
+    </footer>
+  </div>
+
+   
+    
+</article>
+
+    
+    <article
+  id="posts-pattern/①策略模式"
+  class="article article-type-posts"
+  itemscope
+  itemprop="blogPost"
+  data-scroll-reveal
+>
+  <div class="article-inner">
+    
+    <header class="article-header">
+       
+<h2 itemprop="name">
+  <a class="article-title" href="/posts/179e99c7ede5/"
+    >①从继承中解脱-策略模式</a> 
+</h2>
+ 
+
+      
+    </header>
+     
+    <div class="article-meta">
+      <a href="/posts/179e99c7ede5/" class="article-date">
+  <time datetime="2022-12-27T04:49:16.000Z" itemprop="datePublished">2022-12-27</time>
+</a> 
+  <div class="article-category">
+    <a class="article-category-link" href="/categories/%E8%AE%BE%E8%AE%A1%E6%A8%A1%E5%BC%8F/">设计模式</a>
+  </div>
+   
+    </div>
+      
+    <div class="article-entry" itemprop="articleBody">
+       
+  <h4 id="继承真的合理么"><a href="#继承真的合理么" class="headerlink" title="继承真的合理么"></a>继承真的合理么</h4><p>想象一下有一个汽车类，你用它创造了很多汽车，他们都跑在虚拟游戏世界里面。</p>
+<figure class="highlight ts"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">class</span> <span class="title class_">CarSuper</span> &#123;</span><br><span class="line">  <span class="keyword">public</span> <span class="title function_">run</span>(<span class="params"></span>) &#123;</span><br><span class="line">    <span class="variable language_">console</span>.<span class="title function_">log</span>(<span class="string">&quot;快快跑&quot;</span>);</span><br><span class="line">  &#125;</span><br><span class="line">  <span class="keyword">public</span> <span class="title function_">blow</span>(<span class="params"></span>) &#123;</span><br><span class="line">    <span class="variable language_">console</span>.<span class="title function_">log</span>(<span class="string">&quot;滴滴叫&quot;</span>);</span><br><span class="line">  &#125;</span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line"><span class="keyword">const</span> benz = <span class="keyword">new</span> <span class="title class_">CarSuper</span>();</span><br><span class="line"><span class="keyword">const</span> bmw = <span class="keyword">new</span> <span class="title class_">CarSuper</span>();</span><br></pre></td></tr></table></figure>
+
+<p>但是并不是所有的汽车都是 <code>快快跑</code> ，它们都有自己的极限速度，所以你很容易想到应该有一个子类，让子类去实现特有方法。</p>
+<figure class="highlight ts"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">class</span> <span class="title class_">Benz</span> <span class="keyword">extends</span> <span class="title class_ inherited__">CarSuper</span> &#123;</span><br><span class="line">  <span class="keyword">public</span> <span class="title function_">run</span>(<span class="params"></span>) &#123;</span><br><span class="line">    <span class="variable language_">console</span>.<span class="title function_">log</span>(<span class="string">&quot;飞速跑&quot;</span>);</span><br><span class="line">  &#125;</span><br><span class="line">&#125;</span><br><span class="line"><span class="keyword">const</span> benz = <span class="keyword">new</span> <span class="title class_">Benz</span>();</span><br></pre></td></tr></table></figure>
+
+<p>现在你已经在继承中体会到了好处，突然有一天，你觉得创造出来的汽车应该可以载人，这正是你擅长的东西，所以不假思索的在 <code>CarSuper</code>类上添加了 <code>carrying</code> 公用方法,并开心的睡觉去了。</p>
+<figure class="highlight ts"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">class</span> <span class="title class_">CarSuper</span> &#123;</span><br><span class="line">  <span class="keyword">public</span> <span class="title function_">run</span>(<span class="params"></span>) &#123;</span><br><span class="line">    <span class="variable language_">console</span>.<span class="title function_">log</span>(<span class="string">&quot;快快跑&quot;</span>);</span><br><span class="line">  &#125;</span><br><span class="line">  <span class="keyword">public</span> <span class="title function_">blow</span>(<span class="params"></span>) &#123;</span><br><span class="line">    <span class="variable language_">console</span>.<span class="title function_">log</span>(<span class="string">&quot;滴滴叫&quot;</span>);</span><br><span class="line">  &#125;</span><br><span class="line">  <span class="keyword">public</span> <span class="title function_">carrying</span>(<span class="params"></span>) &#123;&#125;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+<p>第二天起来，你不敢相信自己的眼睛，一位乘客上了一辆玩具车，所以你赶紧关停了游戏服务。并紧急的思考对策，显然载人的行为并不通用，每一个不能载人的车，都需要重写载人的方法，例如玩具车。</p>
+<p>其实你还有一个想法，既然载人的方法不通用，不如把类似载人这样的功能看作是一个接口，每一个子类都需要实现这个接口</p>
+<figure class="highlight ts"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">interface</span> <span class="title class_">Carrying</span> &#123;</span><br><span class="line">  <span class="attr">carrying</span>: <span class="function">() =&gt;</span> <span class="built_in">void</span>;</span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line"><span class="keyword">class</span> <span class="title class_">Benz</span> <span class="keyword">extends</span> <span class="title class_ inherited__">CarSuper</span> <span class="keyword">implements</span> <span class="title class_">Carrying</span> &#123;</span><br><span class="line">  <span class="keyword">public</span> <span class="title function_">run</span>(<span class="params"></span>) &#123;</span><br><span class="line">    <span class="variable language_">console</span>.<span class="title function_">log</span>(<span class="string">&quot;飞速跑&quot;</span>);</span><br><span class="line">  &#125;</span><br><span class="line">  <span class="keyword">public</span> <span class="title function_">carrying</span>(<span class="params"></span>) &#123;</span><br><span class="line">    <span class="variable language_">console</span>.<span class="title function_">log</span>(<span class="string">&quot;拉商人&quot;</span>);</span><br><span class="line">  &#125;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+<p>这显然不是一个好办法，<strong>接口不具有实现代码</strong>，虽然子类自己实现增加了灵活性，但却使子类显的非常冗余，每一个子类后面都跟着一串各不相同且需要独立实现的接口。</p>
+<blockquote>
+<p>为了复用而是用继承可能是导致难以维护<br>比如上面的玩具车可以载人，是因为没有重写子类载人的方法。</p>
+</blockquote>
+<h4 id="找到变化之处"><a href="#找到变化之处" class="headerlink" title="找到变化之处"></a>找到变化之处</h4><p>类的行为在不断改变，所以一旦把这个行为变成类的一部分，就需要大量的经历去跟踪这些行为会在那里造成影响，有一个原则能帮助我们 <strong>❤‍🔥 把变化的内容独立出来，不要和稳定的代码混在一起</strong></p>
+<p>现在就可以着手于将载人的行为分离出来，那么这个行为应该以哪种形式存在呢，方法，类，还是对象？ 其实一谈到设计模式绕不开的就是 OO(面向对象设计模式)，所以我们还是采用 OO 的思想，使用类来实现这个行为。</p>
+<figure class="highlight ts"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br><span class="line">35</span><br><span class="line">36</span><br><span class="line">37</span><br><span class="line">38</span><br><span class="line">39</span><br><span class="line">40</span><br><span class="line">41</span><br><span class="line">42</span><br><span class="line">43</span><br><span class="line">44</span><br><span class="line">45</span><br><span class="line">46</span><br><span class="line">47</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">interface</span> <span class="title class_">CarryingBehavior</span> &#123;</span><br><span class="line">  <span class="attr">carrying</span>: <span class="function">() =&gt;</span> <span class="built_in">void</span>;</span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line"><span class="keyword">class</span> <span class="title class_">BusinessCarrying</span> <span class="keyword">implements</span> <span class="title class_">CarryingBehavior</span> &#123;</span><br><span class="line">  <span class="keyword">public</span> <span class="title function_">carrying</span>(<span class="params"></span>) &#123;</span><br><span class="line">    <span class="variable language_">console</span>.<span class="title function_">log</span>(<span class="string">&quot;载商人&quot;</span>);</span><br><span class="line">  &#125;</span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line"><span class="keyword">class</span> <span class="title class_">ToyCarrying</span> <span class="keyword">implements</span> <span class="title class_">CarryingBehavior</span> &#123;</span><br><span class="line">  <span class="keyword">public</span> <span class="title function_">carrying</span>(<span class="params"></span>) &#123;</span><br><span class="line">    <span class="variable language_">console</span>.<span class="title function_">log</span>(<span class="string">&quot;载玩具&quot;</span>);</span><br><span class="line">  &#125;</span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line"><span class="keyword">class</span> <span class="title class_">CarSuper</span> &#123;</span><br><span class="line">  <span class="keyword">protected</span> <span class="attr">carryingBehavior</span>: <span class="title class_">CarryingBehavior</span>;</span><br><span class="line">  <span class="comment">// 提供初始化时的参数，以提供默认的行为</span></span><br><span class="line">  <span class="title function_">constructor</span>(<span class="params">&#123; carryingBehavior &#125;: &#123; carryingBehavior: CarryingBehavior &#125;</span>) &#123;</span><br><span class="line">    <span class="variable language_">this</span>.<span class="property">carryingBehavior</span> = carryingBehavior;</span><br><span class="line">  &#125;</span><br><span class="line">  <span class="keyword">public</span> <span class="title function_">run</span>(<span class="params"></span>) &#123;&#125;</span><br><span class="line">  <span class="keyword">public</span> <span class="title function_">blow</span>(<span class="params"></span>) &#123;&#125;</span><br><span class="line">  <span class="keyword">public</span> <span class="title function_">carrying</span>(<span class="params"></span>) &#123;</span><br><span class="line">    <span class="variable language_">this</span>.<span class="property">carryingBehavior</span>.<span class="title function_">carrying</span>();</span><br><span class="line">  &#125;</span><br><span class="line">  <span class="comment">// 增加set方法是为了可以在运行时改变对象的行为</span></span><br><span class="line">  <span class="keyword">public</span> <span class="title function_">setCarryingBehavior</span>(<span class="params">behavior: CarryingBehavior</span>) &#123;</span><br><span class="line">    <span class="variable language_">this</span>.<span class="property">carryingBehavior</span> = behavior;</span><br><span class="line">  &#125;</span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line"><span class="keyword">class</span> <span class="title class_">Benz</span> <span class="keyword">extends</span> <span class="title class_ inherited__">CarSuper</span> &#123;</span><br><span class="line">  <span class="title function_">constructor</span>(<span class="params"></span>) &#123;</span><br><span class="line">    <span class="variable language_">super</span>(&#123;</span><br><span class="line">      <span class="attr">carryingBehavior</span>: <span class="keyword">new</span> <span class="title class_">BusinessCarrying</span>(),</span><br><span class="line">    &#125;);</span><br><span class="line">  &#125;</span><br><span class="line">  <span class="keyword">public</span> <span class="title function_">run</span>(<span class="params"></span>) &#123;</span><br><span class="line">    <span class="variable language_">console</span>.<span class="title function_">log</span>(<span class="string">&quot;飞速跑&quot;</span>);</span><br><span class="line">  &#125;</span><br><span class="line">&#125;</span><br><span class="line"><span class="keyword">const</span> benz = <span class="keyword">new</span> <span class="title class_">Benz</span>();</span><br><span class="line">benz.<span class="title function_">carrying</span>();</span><br><span class="line">benz.<span class="title function_">setCarryingBehavior</span>(<span class="keyword">new</span> <span class="title class_">ToyCarrying</span>());</span><br><span class="line">benz.<span class="title function_">carrying</span>();</span><br></pre></td></tr></table></figure>
+
+<p>我们将汽车的行为抽象为 <code>BusinessCarrying</code> 类，抽象为类和抽象为接口的区别就是<strong>分离了实现</strong>。</p>
+<p>而 <code>BusinessCarrying</code> 类有自己的行为类接口，可就保证了行为类的灵活性，为相同的行为实现不同的效果，例如汽车载人坐在前排还是后排。</p>
+<p>通过上面的改造，只需要让汽车类提供一个能设置行为的方法，就可以实现行为的动态化，这也是另一个设计原则 <strong>❤‍🔥 针对接口，而不是实现编程</strong>。</p>
+<blockquote>
+<p>这样的话和私有方法有什么区别？ 行为是可抽象的，是可以被穷举的，他会动态的散布在各种各样的汽车子类中。而私有方法是无法被穷举的，一旦定义一个新的子类，那么他就有自己的私有方法和私有属性。</p>
+</blockquote>
+<p>现在我们分离了一种行为类，在共有类中被声明但不会实现，而是在子类中实例化这个行为类，这其中的原则就是 <strong>❤‍🔥 多用组合，少用继承</strong>， 巧合的是 React 哲学中也提到了这样的思想。</p>
+<p>最后用官方语言定义策略模式： <strong>定义算法族，分别封装起来，让他们之间可以相互替换，让算法的变换独立于使用算法的客户</strong></p>
+<ul>
+<li>知道 OO 基础，并不足以让你设计出良好的 OO 系统。</li>
+<li>良好的 OO 设计必须具备可复用、可扩充、可维护三个特性。</li>
+<li>模式可以让我们建造出具有良好 OO 设计质量的系统。</li>
+<li>模式被认为是历经验证的 O0 设计经验。</li>
+<li>模式不是代码，而是针对设计问题的通用解决方案。你可把它们应用到特定的应用中。</li>
+<li>模式不是被发明，而是被发现。</li>
+<li>大多数的模式和原则，都着眼于软件变化的主题。</li>
+<li>大多数的模式都允许系统局部改变独立于其他部分。</li>
+<li>我们常把系统中会变化的部分抽出来封装。</li>
+<li>模式让开发人员之间有共享的语言，能够最大化沟通的价值。</li>
+</ul>
+ 
+      <!-- reward -->
+      
+    </div>
+    
+
+    <!-- copyright -->
+    
+    <footer class="article-footer">
+       
+  <ul class="article-tag-list" itemprop="keywords"><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/%E8%AE%BE%E8%AE%A1%E6%A8%A1%E5%BC%8F/" rel="tag">设计模式</a></li></ul>
+
+    </footer>
+  </div>
+
+   
+    
+</article>
+
+    
+    <article
   id="posts-pattern/②观察者模式"
   class="article article-type-posts"
   itemscope
@@ -1005,350 +1182,6 @@
 <p>ROW_NUMBER 连续排名<br>RANK 值相同排名相同,排名跳跃<br>DENSE_RANK 值相同排名相同,排名连续</p>
 <p><img src="/posts/baf7f14e48f8/0001.png"></p>
 <p><a href="">查询所有同学最高分对应的科目名称</a></p>
- 
-      <!-- reward -->
-      
-    </div>
-    
-
-    <!-- copyright -->
-    
-    <footer class="article-footer">
-       
-  <ul class="article-tag-list" itemprop="keywords"><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/MySQL/" rel="tag">MySQL</a></li><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/%E6%95%B0%E6%8D%AE%E5%BA%93/" rel="tag">数据库</a></li></ul>
-
-    </footer>
-  </div>
-
-   
-    
-</article>
-
-    
-    <article
-  id="posts-db/局部变量"
-  class="article article-type-posts"
-  itemscope
-  itemprop="blogPost"
-  data-scroll-reveal
->
-  <div class="article-inner">
-    
-    <header class="article-header">
-       
-<h2 itemprop="name">
-  <a class="article-title" href="/posts/53b58b276684/"
-    >MySQL 局部变量</a> 
-</h2>
- 
-
-      
-    </header>
-     
-    <div class="article-meta">
-      <a href="/posts/53b58b276684/" class="article-date">
-  <time datetime="2022-05-15T06:36:17.000Z" itemprop="datePublished">2022-05-15</time>
-</a> 
-  <div class="article-category">
-    <a class="article-category-link" href="/categories/%E6%95%B0%E6%8D%AE%E5%BA%93/">数据库</a>
-  </div>
-   
-    </div>
-      
-    <div class="article-entry" itemprop="articleBody">
-       
-  <p>Transact-SQL 局部变量是可以保存特定类型的单个数据值的对象。在脚本或批处理中通常会使用变量</p>
-<ul>
-<li>作为计数器来计算循环执行的次数或控制循环执行的次数。</li>
-<li>保存流程控制中的测试值</li>
-<li>保存要由存储过程返回码或函数返回值返回的数据值。</li>
-</ul>
-<h4 id="SELECT-local-variable"><a href="#SELECT-local-variable" class="headerlink" title="SELECT @local_variable"></a>SELECT @local_variable</h4><figure class="highlight sql"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">SELECT</span> &#123; <span class="variable">@local</span>_variable &#123; <span class="operator">=</span> <span class="operator">|</span> <span class="operator">+</span><span class="operator">=</span> <span class="operator">|</span> <span class="operator">-</span><span class="operator">=</span> <span class="operator">|</span> <span class="operator">*</span><span class="operator">=</span> <span class="operator">|</span> <span class="operator">/</span><span class="operator">=</span> <span class="operator">|</span> <span class="operator">%</span><span class="operator">=</span> <span class="operator">|</span> <span class="operator">&amp;</span><span class="operator">=</span> <span class="operator">|</span> <span class="operator">^</span><span class="operator">=</span> <span class="operator">|</span> <span class="operator">|</span><span class="operator">=</span> &#125; expression &#125;</span><br><span class="line">    [ ,...n ] [ ; ]</span><br></pre></td></tr></table></figure>
-
-<p>将右边的值赋给左边的变量。</p>
-<table>
-<thead>
-<tr>
-<th>操作员</th>
-<th>行动</th>
-</tr>
-</thead>
-<tbody><tr>
-<td>&#x3D;</td>
-<td>将后面的表达式分配给变量。</td>
-</tr>
-<tr>
-<td>+&#x3D;</td>
-<td>添加和分配</td>
-</tr>
-<tr>
-<td>-&#x3D;</td>
-<td>减法和赋值</td>
-</tr>
-<tr>
-<td>*&#x3D;</td>
-<td>相乘并赋值</td>
-</tr>
-<tr>
-<td>&#x2F;&#x3D;</td>
-<td>划分和分配</td>
-</tr>
-<tr>
-<td>%&#x3D;</td>
-<td>取模和赋值</td>
-</tr>
-<tr>
-<td>&amp;&#x3D;</td>
-<td>按位与并赋值</td>
-</tr>
-<tr>
-<td>^&#x3D;</td>
-<td>按位异或并赋值</td>
-</tr>
-<tr>
-<td>| &#x3D;</td>
-<td>按位或并赋值</td>
-</tr>
-</tbody></table>
-<p>SELECT @local_variable 通常用于将单个值返回到变量中。但是，当表达式是列名时，它可以返回多个值。如果 SELECT 语句返回多个值，则为变量分配最后一个返回的值。</p>
-<p>如果 SELECT 语句没有返回任何行，则变量保留其当前值。如果表达式是不返回值的标量子查询，则变量设置为 NULL。</p>
-<p>一个 SELECT 语句可以初始化多个局部变量。</p>
-<ul>
-<li>查询最近 12 个月的数据量, 没有的用 0 补全</li>
-</ul>
-<p>因为把表中的所有月份 group by 之后,已有的月份不足 12 个月, 需要补齐,所以先生成一张 12 个月的空表</p>
-<p>注意子查询中的日期不能使用 date_format 因为会失去时间格式,导致上面的变量在 addDate 中不可使用</p>
-<figure class="highlight sql"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">select</span> DATE_FORMAT( <span class="variable">@u</span> :<span class="operator">=</span> ADDDATE(<span class="variable">@u</span>,<span class="type">INTERVAL</span> <span class="number">1</span> <span class="keyword">Month</span>),<span class="string">&#x27;%Y-%m&#x27;</span>) <span class="keyword">as</span> <span class="type">date</span> <span class="keyword">from</span> (</span><br><span class="line">	<span class="keyword">select</span>  <span class="variable">@u</span> :<span class="operator">=</span> ADDDATE(now(),<span class="type">INTERVAL</span> <span class="number">-6</span> <span class="keyword">Month</span>) <span class="keyword">from</span> Student s limit <span class="number">12</span></span><br><span class="line">) <span class="keyword">as</span> t;</span><br></pre></td></tr></table></figure>
-
-<p>在拼接已存在的数据</p>
-<figure class="highlight sql"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">select</span> DATE_FORMAT( <span class="variable">@u</span> :<span class="operator">=</span> ADDDATE(<span class="variable">@u</span>,<span class="type">INTERVAL</span> <span class="number">1</span> <span class="keyword">Month</span>),<span class="string">&#x27;%Y-%m&#x27;</span>) <span class="keyword">as</span> <span class="type">date</span> <span class="keyword">from</span> (</span><br><span class="line">	<span class="keyword">select</span>  <span class="variable">@u</span> :<span class="operator">=</span> ADDDATE(now(),<span class="type">INTERVAL</span> <span class="number">-6</span> <span class="keyword">Month</span>) <span class="keyword">from</span> Student s limit <span class="number">12</span></span><br><span class="line">) <span class="keyword">as</span> t</span><br><span class="line"></span><br><span class="line"><span class="keyword">left</span> <span class="keyword">join</span> (</span><br><span class="line">	<span class="keyword">select</span> <span class="built_in">count</span>(<span class="operator">*</span>) <span class="keyword">as</span> sum,DATE_FORMAT(s.date,<span class="string">&#x27;%Y-%m&#x27;</span>) <span class="keyword">as</span> <span class="type">date</span>  <span class="keyword">from</span> Student s</span><br><span class="line">	<span class="keyword">group</span> <span class="keyword">by</span> DATE_FORMAT(s.date,<span class="string">&#x27;%Y-%m&#x27;</span>)</span><br><span class="line">) <span class="keyword">as</span> t2 <span class="keyword">on</span> t2.date  <span class="operator">=</span> t.date</span><br></pre></td></tr></table></figure>
-
-<p>最后把空值处理为 0</p>
-<figure class="highlight sql"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">select</span> <span class="type">date</span>, if(ISNULL(d.sum),<span class="number">0</span>,d.sum) <span class="keyword">as</span> sum <span class="keyword">from</span> (</span><br><span class="line">	<span class="keyword">select</span> DATE_FORMAT( <span class="variable">@u</span> :<span class="operator">=</span> ADDDATE(<span class="variable">@u</span>,<span class="type">INTERVAL</span> <span class="number">1</span> <span class="keyword">Month</span>),<span class="string">&#x27;%Y-%m&#x27;</span>) <span class="keyword">as</span> <span class="type">date</span> <span class="keyword">from</span> (</span><br><span class="line">		<span class="keyword">select</span>  <span class="variable">@u</span> :<span class="operator">=</span> ADDDATE(now(),<span class="type">INTERVAL</span> <span class="number">-6</span> <span class="keyword">Month</span>) <span class="keyword">from</span> Student s limit <span class="number">12</span></span><br><span class="line">	) <span class="keyword">as</span> t</span><br><span class="line"></span><br><span class="line">	<span class="keyword">left</span> <span class="keyword">join</span> (</span><br><span class="line">		<span class="keyword">select</span> <span class="built_in">count</span>(<span class="operator">*</span>) <span class="keyword">as</span> sum,DATE_FORMAT(s.date,<span class="string">&#x27;%Y-%m&#x27;</span>) <span class="keyword">as</span> <span class="type">date</span>  <span class="keyword">from</span> Student s</span><br><span class="line">		<span class="keyword">group</span> <span class="keyword">by</span> DATE_FORMAT(s.date,<span class="string">&#x27;%Y-%m&#x27;</span>)</span><br><span class="line">	) <span class="keyword">as</span> t2 <span class="keyword">on</span> t2.date  <span class="operator">=</span> t.date</span><br><span class="line">) <span class="keyword">as</span> d</span><br></pre></td></tr></table></figure>
- 
-      <!-- reward -->
-      
-    </div>
-    
-
-    <!-- copyright -->
-    
-    <footer class="article-footer">
-       
-  <ul class="article-tag-list" itemprop="keywords"><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/MySQL/" rel="tag">MySQL</a></li><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/%E6%95%B0%E6%8D%AE%E5%BA%93/" rel="tag">数据库</a></li></ul>
-
-    </footer>
-  </div>
-
-   
-    
-</article>
-
-    
-    <article
-  id="posts-db/日期时间函数"
-  class="article article-type-posts"
-  itemscope
-  itemprop="blogPost"
-  data-scroll-reveal
->
-  <div class="article-inner">
-    
-    <header class="article-header">
-       
-<h2 itemprop="name">
-  <a class="article-title" href="/posts/f608af7ca97b/"
-    >MySQL 日期时间函数</a> 
-</h2>
- 
-
-      
-    </header>
-     
-    <div class="article-meta">
-      <a href="/posts/f608af7ca97b/" class="article-date">
-  <time datetime="2022-05-15T05:59:06.000Z" itemprop="datePublished">2022-05-15</time>
-</a> 
-  <div class="article-category">
-    <a class="article-category-link" href="/categories/%E6%95%B0%E6%8D%AE%E5%BA%93/">数据库</a>
-  </div>
-   
-    </div>
-      
-    <div class="article-entry" itemprop="articleBody">
-       
-  <h4 id="ADDDATE"><a href="#ADDDATE" class="headerlink" title="ADDDATE()"></a>ADDDATE()</h4><figure class="highlight sql"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment">-- date时间字段名  expr时间间隔</span></span><br><span class="line"><span class="comment">-- unit单位 指的时间单位 天day 小时hour表示等</span></span><br><span class="line">DATE_ADD(<span class="type">date</span>,<span class="type">INTERVAL</span> expr unit)</span><br><span class="line"></span><br><span class="line"><span class="comment">-- 采用这种写法的时候,使用方法与DATE_ADD一致</span></span><br></pre></td></tr></table></figure>
-
-<ul>
-<li>日期+天数</li>
-</ul>
-<figure class="highlight sql"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">SELECT</span> ADDDATE(<span class="string">&#x27;2020-01-02 00:00:00&#x27;</span>, <span class="type">INTERVAL</span> <span class="number">1</span> <span class="keyword">day</span>) <span class="keyword">from</span> orders</span><br><span class="line"></span><br><span class="line"><span class="comment">--打印字段为：2020-01-03 00:00:00</span></span><br><span class="line"></span><br><span class="line"><span class="comment">-- 下面同理， 在写增加天为单位时 可以缩写成</span></span><br><span class="line"><span class="keyword">SELECT</span> ADDDATE(<span class="string">&#x27;2020-01-02 00:00:00&#x27;</span>, <span class="number">1</span>) <span class="keyword">from</span> orders</span><br><span class="line"></span><br><span class="line"><span class="comment">--默认为day</span></span><br><span class="line"><span class="comment">--打印字段为：2020-01-03 00:00:00</span></span><br><span class="line"></span><br><span class="line"><span class="comment">--如果减一天 则为 -1   这里也可写成字符串</span></span><br><span class="line"><span class="keyword">SELECT</span> ADDDATE(<span class="string">&#x27;2020-01-01 00:00:00&#x27;</span>, <span class="string">&#x27;-1&#x27;</span>) <span class="keyword">from</span> orders</span><br><span class="line"></span><br><span class="line"><span class="comment">--打印字段为：2020-01-01 00:00:00</span></span><br><span class="line"></span><br></pre></td></tr></table></figure>
-
-<ul>
-<li>日期+小时</li>
-</ul>
-<figure class="highlight sql"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">SELECT</span> ADDDATE(<span class="string">&#x27;2020-01-02 00:00:00&#x27;</span>, <span class="type">INTERVAL</span> <span class="number">1</span> <span class="keyword">HOUR</span>) <span class="keyword">from</span> orders</span><br><span class="line"><span class="comment">-- 打印字段为：2020-01-01 01:00:00</span></span><br></pre></td></tr></table></figure>
-
-<ul>
-<li>日期+分钟</li>
-</ul>
-<figure class="highlight sql"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">SELECT</span> ADDDATE(<span class="string">&#x27;2020-01-02 00:00:00&#x27;</span>, <span class="type">INTERVAL</span> <span class="number">1</span> <span class="keyword">MINUTE</span>) <span class="keyword">from</span> orders</span><br><span class="line"><span class="comment">-- 打印字段为：2020-01-01 00:01:00</span></span><br></pre></td></tr></table></figure>
-
-<ul>
-<li>日期+秒</li>
-</ul>
-<figure class="highlight sql"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">SELECT</span> ADDDATE(<span class="string">&#x27;2020-01-02 00:00:00&#x27;</span>, <span class="type">INTERVAL</span> <span class="number">1</span> <span class="keyword">SECOND</span>) <span class="keyword">from</span> orders</span><br><span class="line"><span class="comment">-- 打印字段为：2020-01-01 00:00:01</span></span><br></pre></td></tr></table></figure>
-
-<h4 id="DATE-FORMAT"><a href="#DATE-FORMAT" class="headerlink" title="DATE_FORMAT()"></a>DATE_FORMAT()</h4><p>date 参数是合法的日期。format 规定日期&#x2F;时间的输出格式。</p>
-<figure class="highlight sql"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">DATE_FORMAT(<span class="type">date</span>,format)</span><br></pre></td></tr></table></figure>
-
-<table>
-<thead>
-<tr>
-<th>格式</th>
-<th>描述</th>
-</tr>
-</thead>
-<tbody><tr>
-<td>%a</td>
-<td>缩写星期名</td>
-</tr>
-<tr>
-<td>%b</td>
-<td>缩写月名</td>
-</tr>
-<tr>
-<td>%c</td>
-<td>月，数值</td>
-</tr>
-<tr>
-<td>%D</td>
-<td>带有英文前缀的月中的天</td>
-</tr>
-<tr>
-<td>%d</td>
-<td>月的天，数值(00-31)</td>
-</tr>
-<tr>
-<td>%e</td>
-<td>月的天，数值(0-31)</td>
-</tr>
-<tr>
-<td>%f</td>
-<td>微秒</td>
-</tr>
-<tr>
-<td>%H</td>
-<td>小时 (00-23)</td>
-</tr>
-<tr>
-<td>%h</td>
-<td>小时 (01-12)</td>
-</tr>
-<tr>
-<td>%I</td>
-<td>小时 (01-12)</td>
-</tr>
-<tr>
-<td>%i</td>
-<td>分钟，数值(00-59)</td>
-</tr>
-<tr>
-<td>%j</td>
-<td>年的天 (001-366)</td>
-</tr>
-<tr>
-<td>%k</td>
-<td>小时 (0-23)</td>
-</tr>
-<tr>
-<td>%l</td>
-<td>小时 (1-12)</td>
-</tr>
-<tr>
-<td>%M</td>
-<td>月名</td>
-</tr>
-<tr>
-<td>%m</td>
-<td>月，数值(00-12)</td>
-</tr>
-<tr>
-<td>%p</td>
-<td>AM 或 PM</td>
-</tr>
-<tr>
-<td>%r</td>
-<td>时间，12-小时（hh:mm:ss AM 或 PM）</td>
-</tr>
-<tr>
-<td>%S</td>
-<td>秒(00-59)</td>
-</tr>
-<tr>
-<td>%s</td>
-<td>秒(00-59)</td>
-</tr>
-<tr>
-<td>%T</td>
-<td>时间, 24-小时 (hh:mm:ss)</td>
-</tr>
-<tr>
-<td>%U</td>
-<td>周 (00-53) 星期日是一周的第一天</td>
-</tr>
-<tr>
-<td>%u</td>
-<td>周 (00-53) 星期一是一周的第一天</td>
-</tr>
-<tr>
-<td>%V</td>
-<td>周 (01-53) 星期日是一周的第一天，与 %X 使用</td>
-</tr>
-<tr>
-<td>%v</td>
-<td>周 (01-53) 星期一是一周的第一天，与 %x 使用</td>
-</tr>
-<tr>
-<td>%W</td>
-<td>星期名</td>
-</tr>
-<tr>
-<td>%w</td>
-<td>周的天 （0&#x3D;星期日, 6&#x3D;星期六）</td>
-</tr>
-<tr>
-<td>%X</td>
-<td>年，其中的星期日是周的第一天，4 位，与 %V 使用</td>
-</tr>
-<tr>
-<td>%x</td>
-<td>年，其中的星期一是周的第一天，4 位，与 %v 使用</td>
-</tr>
-<tr>
-<td>%Y</td>
-<td>年，4 位</td>
-</tr>
-<tr>
-<td>%y</td>
-<td>年，2 位</td>
-</tr>
-</tbody></table>
-<h4 id="NOW-CURDATE-CURTIME"><a href="#NOW-CURDATE-CURTIME" class="headerlink" title="NOW() CURDATE() CURTIME()"></a>NOW() CURDATE() CURTIME()</h4><p>函数返回当前的日期和时间。</p>
-<table>
-<thead>
-<tr>
-<th>NOW()</th>
-<th>CURDATE()</th>
-<th>CURTIME()</th>
-</tr>
-</thead>
-<tbody><tr>
-<td>2008-12-29 16:25:46</td>
-<td>2008-12-29</td>
-<td>16:25:46</td>
-</tr>
-</tbody></table>
  
       <!-- reward -->
       
