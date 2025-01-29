@@ -1,0 +1,609 @@
+<!DOCTYPE html>
+
+
+<html lang="zh-CN">
+  
+
+    <head>
+      <meta charset="utf-8" />
+       
+      <meta name="keywords" content="前端 web react" />
+       
+      <meta name="description" content="前端技术与生活。" />
+      
+      <meta
+        name="viewport"
+        content="width=device-width, initial-scale=1, maximum-scale=1"
+      />
+      <title>React Saga 解析 |  四月八日</title>
+  <meta name="generator" content="hexo-theme-ayer">
+      
+      <link rel="shortcut icon" href="/favicon.ico" />
+       
+<link rel="stylesheet" href="/dist/main.css">
+ 
+<link rel="stylesheet" href="/css/fonts/remixicon.css">
+ 
+<link rel="stylesheet" href="/css/custom.css">
+ 
+      <script src="/js/pace.min.js"></script>
+       
+ 
+
+      <link rel="stylesheet" href="/css/bulma.min.css" />
+      <script src="/js/sweetalert2.min.js"></script>
+
+      <!-- mermaid -->
+      
+      <script src="https://cdn.staticfile.org/mermaid/8.14.0/mermaid.min.js"></script>
+      
+      <style>
+        .swal2-styled.swal2-confirm {
+          font-size: 1.6rem;
+        }
+      </style>
+    <!-- hexo injector head_end start -->
+<link rel="stylesheet" href="/css/katex.min.css">
+
+<link rel="stylesheet" href="/css/style.css">
+<!-- hexo injector head_end end --></head>
+  </html>
+</html>
+
+
+<body>
+  <div id="app">
+    
+      
+    <main class="content on">
+      <section class="outer">
+  <article
+  id="post-react/redux-saga"
+  class="article article-type-post"
+  itemscope
+  itemprop="blogPost"
+  data-scroll-reveal
+>
+  <div class="article-inner">
+    
+    <header class="article-header">
+       
+<h1 class="article-title sea-center" style="border-left:0" itemprop="name">
+  React Saga 解析
+</h1>
+ 
+
+      
+    </header>
+     
+    <div class="article-meta">
+      <a href="/posts/58de54c362c1/" class="article-date">
+  <time datetime="2023-01-30T12:22:50.000Z" itemprop="datePublished">2023-01-30</time>
+</a> 
+  <div class="article-category">
+    <a class="article-category-link" href="/categories/React/">React</a>
+  </div>
+  
+<div class="word_count">
+    <span class="post-time">
+        <span class="post-meta-item-icon">
+            <i class="ri-quill-pen-line"></i>
+            <span class="post-meta-item-text"> 字数统计:</span>
+            <span class="post-count">1.5k</span>
+        </span>
+    </span>
+
+    <span class="post-time">
+        &nbsp; | &nbsp;
+        <span class="post-meta-item-icon">
+            <i class="ri-book-open-line"></i>
+            <span class="post-meta-item-text"> 阅读时长≈</span>
+            <span class="post-count">7 分钟</span>
+        </span>
+    </span>
+</div>
+ 
+    </div>
+      
+    <div class="tocbot"></div>
+
+
+
+
+  
+    <div class="article-entry" itemprop="articleBody">
+       
+  <p>项目启动时 saga 启动一个生成器函数，并提供对应的指令，可以利用 saga 的中间件控制指令的执行。</p>
+<h4 id="最小化应用"><a href="#最小化应用" class="headerlink" title="最小化应用"></a>最小化应用</h4><figure class="highlight js"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment">// app.js</span></span><br><span class="line"><span class="keyword">import</span> &#123; configureStore &#125; <span class="keyword">from</span> <span class="string">&quot;@reduxjs/toolkit&quot;</span>;</span><br><span class="line"><span class="keyword">import</span> createSagaMiddleware <span class="keyword">from</span> <span class="string">&quot;redux-saga&quot;</span>;</span><br><span class="line"></span><br><span class="line"><span class="keyword">import</span> counterReducer <span class="keyword">from</span> <span class="string">&quot;./reducers/counterSlice&quot;</span>;</span><br><span class="line"><span class="keyword">import</span> counterSaga <span class="keyword">from</span> <span class="string">&quot;./sagas/counterSaga&quot;</span>;</span><br><span class="line"></span><br><span class="line"><span class="keyword">import</span> <span class="title class_">App</span> <span class="keyword">from</span> <span class="string">&quot;./App&quot;</span>;</span><br><span class="line"></span><br><span class="line"></span><br><span class="line"><span class="keyword">const</span> sagaMiddleware = <span class="title function_">createSagaMiddleware</span>();</span><br><span class="line"></span><br><span class="line"><span class="keyword">const</span> store = <span class="title function_">configureStore</span>(&#123;</span><br><span class="line">  <span class="attr">reducer</span>: &#123;</span><br><span class="line">    <span class="attr">counter</span>: counterReducer, <span class="comment">// Add counter slice reducer</span></span><br><span class="line">  &#125;,</span><br><span class="line">  <span class="attr">middleware</span>: <span class="function">(<span class="params">getDefaultMiddleware</span>) =&gt;</span></span><br><span class="line">    <span class="title function_">getDefaultMiddleware</span>().<span class="title function_">concat</span>(sagaMiddleware), <span class="comment">// Add saga middleware</span></span><br><span class="line">&#125;);</span><br><span class="line"></span><br><span class="line"></span><br><span class="line">sagaMiddleware.<span class="title function_">run</span>(counterSaga);</span><br><span class="line"></span><br><span class="line"><span class="keyword">const</span> root = <span class="title class_">ReactDOM</span>.<span class="title function_">createRoot</span>(<span class="variable language_">document</span>.<span class="title function_">getElementById</span>(<span class="string">&quot;root&quot;</span>));</span><br><span class="line">root.<span class="title function_">render</span>(<span class="comment">//...);</span></span><br><span class="line"></span><br></pre></td></tr></table></figure>
+
+<figure class="highlight js"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment">// sagas/counterSaga.js</span></span><br><span class="line"></span><br><span class="line"><span class="keyword">import</span> &#123; takeEvery, put, delay &#125; <span class="keyword">from</span> <span class="string">&quot;redux-saga/effects&quot;</span>;</span><br><span class="line"><span class="keyword">import</span> &#123; increment, setLoading &#125; <span class="keyword">from</span> <span class="string">&quot;../reducers/counterSlice&quot;</span>;</span><br><span class="line"></span><br><span class="line"><span class="keyword">export</span> <span class="keyword">const</span> <span class="title function_">asyncIncrement</span> = (<span class="params"></span>) =&gt; (&#123; <span class="attr">type</span>: <span class="string">&quot;counter/asyncIncrement&quot;</span> &#125;);</span><br><span class="line"></span><br><span class="line"><span class="keyword">function</span>* <span class="title function_">handleAsyncIncrement</span>(<span class="params"></span>) &#123;</span><br><span class="line">  <span class="keyword">yield</span> <span class="title function_">put</span>(<span class="title function_">setLoading</span>(<span class="literal">true</span>));</span><br><span class="line">  <span class="keyword">yield</span> <span class="title function_">delay</span>(<span class="number">1000</span>);</span><br><span class="line">  <span class="keyword">yield</span> <span class="title function_">put</span>(<span class="title function_">increment</span>());</span><br><span class="line">  <span class="keyword">yield</span> <span class="title function_">put</span>(<span class="title function_">setLoading</span>(<span class="literal">false</span>));</span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line"><span class="keyword">function</span>* <span class="title function_">counterSaga</span>(<span class="params"></span>) &#123;</span><br><span class="line">  <span class="keyword">yield</span> <span class="title function_">takeEvery</span>(<span class="string">&quot;counter/asyncIncrement&quot;</span>, handleAsyncIncrement);</span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line"><span class="keyword">export</span> <span class="keyword">default</span> counterSaga;</span><br></pre></td></tr></table></figure>
+
+<h4 id="指令"><a href="#指令" class="headerlink" title="指令"></a>指令</h4><p>saga 的生成器函数执行完成，中间件就执行结束，无法再响应 action.</p>
+<ul>
+<li><p>take 监听某个 action,监听一次, yield 返回完整 action, 造成阻塞, 等待对应的 action 被触发。</p>
+</li>
+<li><p>all 接受一个数组，数组中放入生成器，等待所有的生成器结束才会继续执行，可以用于拆分监听到不同的文件中，造成阻塞</p>
+<figure class="highlight js"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment">// rootSaga.js</span></span><br><span class="line"><span class="keyword">import</span> &#123; takeEvery, put, delay, all &#125; <span class="keyword">from</span> <span class="string">&quot;redux-saga/effects&quot;</span>;</span><br><span class="line"><span class="keyword">import</span> product <span class="keyword">from</span> <span class="string">&quot;./product&quot;</span>;</span><br><span class="line"><span class="keyword">import</span> counterSaga <span class="keyword">from</span> <span class="string">&quot;./counterSaga&quot;</span>;</span><br><span class="line"></span><br><span class="line"><span class="keyword">export</span> <span class="keyword">default</span> <span class="keyword">function</span>* () &#123;</span><br><span class="line">  <span class="keyword">yield</span> <span class="title function_">all</span>([<span class="title function_">counterSaga</span>(), <span class="title function_">product</span>()]);</span><br><span class="line">  <span class="comment">// 下面的代码不会执行，直到所有的生成器直接结束</span></span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+</li>
+<li><p>takeEvery 循环监听 action,不会阻塞,也就是这个生成器永远不会结束。</p>
+<figure class="highlight js"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">export</span> <span class="keyword">default</span> <span class="keyword">function</span>* () &#123;</span><br><span class="line">  <span class="keyword">yield</span> <span class="title function_">takeEvery</span>(<span class="string">&quot;some action&quot;</span>, <span class="keyword">function</span>* () &#123;&#125;);</span><br><span class="line">  <span class="comment">// 下面的代码会执行，不会阻塞</span></span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+</li>
+<li><p>delay 延迟执行,阻塞</p>
+<figure class="highlight js"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">export</span> <span class="keyword">default</span> <span class="keyword">function</span>* () &#123;</span><br><span class="line">  <span class="keyword">yield</span> <span class="title function_">delay</span>(<span class="number">1000</span>);</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+</li>
+<li><p>put 触发一个 action, 非阻塞</p>
+</li>
+<li><p>call 用于副作用的函数调用，是否阻塞取决与调用的函数是否异步</p>
+<figure class="highlight js"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">function</span> <span class="title function_">fetchData</span>(<span class="params"></span>) &#123;</span><br><span class="line">  <span class="keyword">return</span> <span class="keyword">new</span> <span class="title class_">Promise</span>(<span class="function">(<span class="params">resolve</span>) =&gt;</span> <span class="built_in">setTimeout</span>(resolve));</span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line"><span class="keyword">function</span> <span class="title function_">fetchDataReject</span>(<span class="params"></span>) &#123;</span><br><span class="line">  <span class="keyword">return</span> <span class="keyword">new</span> <span class="title class_">Promise</span>(<span class="function">(<span class="params">resolve, reject</span>) =&gt;</span> <span class="built_in">setTimeout</span>(reject));</span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line"><span class="keyword">export</span> <span class="keyword">default</span> <span class="keyword">function</span>* () &#123;</span><br><span class="line">  <span class="keyword">let</span> data;</span><br><span class="line">  <span class="keyword">try</span> &#123;</span><br><span class="line">    data = <span class="keyword">yield</span> <span class="title function_">fetchDataReject</span>();</span><br><span class="line">    <span class="comment">// 如果报错，saga会通过生成器的throw抛出错误，</span></span><br><span class="line">    <span class="comment">// 需要自己处理</span></span><br><span class="line">  &#125; <span class="keyword">catch</span> &#123;&#125;</span><br><span class="line"></span><br><span class="line">  <span class="comment">// 推荐使用 call 来处理异步</span></span><br><span class="line">  data = <span class="keyword">yield</span> <span class="title function_">call</span>(fetchData, <span class="string">&quot;调用参数&quot;</span>);</span><br><span class="line"></span><br><span class="line">  data = <span class="keyword">yield</span> <span class="title function_">call</span>([<span class="string">&quot;this 的绑定对象&quot;</span>，fetchData], <span class="string">&quot;自定义参数&quot;</span>);</span><br><span class="line">  <span class="comment">// 效果相同</span></span><br><span class="line">  data = <span class="keyword">yield</span> <span class="title function_">call</span>(&#123;<span class="attr">context</span>:<span class="variable language_">this</span>,<span class="attr">fn</span>:fetchData&#125;, <span class="string">&quot;自定义参数&quot;</span>);</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+</li>
+<li><p>select 取出 store 中的数据</p>
+<figure class="highlight js"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">export</span> <span class="keyword">default</span> <span class="keyword">function</span>* () &#123;</span><br><span class="line">  <span class="keyword">const</span> state = <span class="keyword">yield</span> <span class="title function_">select</span>(<span class="function">(<span class="params">store</span>) =&gt;</span> store);</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+</li>
+<li><p>cps 用于调用采用回调方式的异步函数</p>
+<figure class="highlight js"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">function</span> asyncFn = <span class="function">(<span class="params"><span class="string">&#x27;调用参数&#x27;</span>,fn</span>) =&gt;</span> &#123;</span><br><span class="line">  <span class="built_in">setTimeout</span>(fn,<span class="number">3000</span>)</span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line"><span class="keyword">export</span> <span class="keyword">default</span> <span class="keyword">function</span>* () &#123;</span><br><span class="line">  <span class="comment">// 无需传入回调函数 saga 自动处理</span></span><br><span class="line">  <span class="keyword">const</span> state = <span class="keyword">yield</span> <span class="title function_">cps</span>(asyncFn,<span class="string">&#x27;调用参数&#x27;</span>);</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+</li>
+<li><p>fork 启用一个新任务，不会阻塞，返回一个 Task 内部对象，可以配合 cancel 取消本次任务<br>cancel 不传递参数取消当前任务线。</p>
+<figure class="highlight js"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">function</span>* <span class="title function_">nextTask</span>(<span class="params"></span>) &#123;&#125;</span><br><span class="line"></span><br><span class="line"><span class="keyword">export</span> <span class="keyword">default</span> <span class="keyword">function</span>* () &#123;</span><br><span class="line">  <span class="keyword">let</span> task;</span><br><span class="line">  <span class="keyword">while</span> (<span class="literal">true</span>) &#123;</span><br><span class="line">    <span class="keyword">if</span> (task) &#123;</span><br><span class="line">      <span class="keyword">yield</span> <span class="title function_">cancel</span>(task);</span><br><span class="line">    &#125;</span><br><span class="line">    task = <span class="keyword">yield</span> <span class="title function_">fork</span>(nextTask);</span><br><span class="line">  &#125;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+</li>
+<li><p>cancelled 判断当前任务线是否被取消掉。</p>
+</li>
+<li><p>race 传递多个指令，其中一个结束就结束。</p>
+</li>
+</ul>
+<h4 id="saga-简单实现"><a href="#saga-简单实现" class="headerlink" title="saga 简单实现"></a>saga 简单实现</h4><figure class="highlight js"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br><span class="line">35</span><br><span class="line">36</span><br><span class="line">37</span><br><span class="line">38</span><br><span class="line">39</span><br><span class="line">40</span><br><span class="line">41</span><br><span class="line">42</span><br><span class="line">43</span><br><span class="line">44</span><br><span class="line">45</span><br><span class="line">46</span><br><span class="line">47</span><br><span class="line">48</span><br><span class="line">49</span><br><span class="line">50</span><br><span class="line">51</span><br><span class="line">52</span><br><span class="line">53</span><br><span class="line">54</span><br><span class="line">55</span><br><span class="line">56</span><br><span class="line">57</span><br><span class="line">58</span><br><span class="line">59</span><br><span class="line">60</span><br><span class="line">61</span><br><span class="line">62</span><br><span class="line">63</span><br><span class="line">64</span><br><span class="line">65</span><br><span class="line">66</span><br><span class="line">67</span><br><span class="line">68</span><br><span class="line">69</span><br><span class="line">70</span><br><span class="line">71</span><br><span class="line">72</span><br><span class="line">73</span><br><span class="line">74</span><br><span class="line">75</span><br><span class="line">76</span><br><span class="line">77</span><br><span class="line">78</span><br><span class="line">79</span><br><span class="line">80</span><br><span class="line">81</span><br><span class="line">82</span><br><span class="line">83</span><br><span class="line">84</span><br><span class="line">85</span><br><span class="line">86</span><br><span class="line">87</span><br><span class="line">88</span><br><span class="line">89</span><br><span class="line">90</span><br><span class="line">91</span><br><span class="line">92</span><br><span class="line">93</span><br><span class="line">94</span><br><span class="line">95</span><br><span class="line">96</span><br><span class="line">97</span><br><span class="line">98</span><br><span class="line">99</span><br><span class="line">100</span><br><span class="line">101</span><br><span class="line">102</span><br><span class="line">103</span><br><span class="line">104</span><br><span class="line">105</span><br><span class="line">106</span><br><span class="line">107</span><br><span class="line">108</span><br><span class="line">109</span><br><span class="line">110</span><br><span class="line">111</span><br><span class="line">112</span><br><span class="line">113</span><br><span class="line">114</span><br><span class="line">115</span><br><span class="line">116</span><br><span class="line">117</span><br><span class="line">118</span><br><span class="line">119</span><br><span class="line">120</span><br><span class="line">121</span><br><span class="line">122</span><br><span class="line">123</span><br><span class="line">124</span><br><span class="line">125</span><br><span class="line">126</span><br><span class="line">127</span><br><span class="line">128</span><br><span class="line">129</span><br><span class="line">130</span><br><span class="line">131</span><br><span class="line">132</span><br><span class="line">133</span><br><span class="line">134</span><br><span class="line">135</span><br><span class="line">136</span><br><span class="line">137</span><br><span class="line">138</span><br><span class="line">139</span><br><span class="line">140</span><br><span class="line">141</span><br><span class="line">142</span><br><span class="line">143</span><br><span class="line">144</span><br><span class="line">145</span><br><span class="line">146</span><br><span class="line">147</span><br><span class="line">148</span><br><span class="line">149</span><br><span class="line">150</span><br><span class="line">151</span><br><span class="line">152</span><br><span class="line">153</span><br><span class="line">154</span><br><span class="line">155</span><br><span class="line">156</span><br><span class="line">157</span><br><span class="line">158</span><br><span class="line">159</span><br><span class="line">160</span><br><span class="line">161</span><br><span class="line">162</span><br><span class="line">163</span><br><span class="line">164</span><br><span class="line">165</span><br><span class="line">166</span><br><span class="line">167</span><br><span class="line">168</span><br><span class="line">169</span><br><span class="line">170</span><br><span class="line">171</span><br><span class="line">172</span><br><span class="line">173</span><br><span class="line">174</span><br><span class="line">175</span><br><span class="line">176</span><br><span class="line">177</span><br><span class="line">178</span><br><span class="line">179</span><br><span class="line">180</span><br><span class="line">181</span><br><span class="line">182</span><br><span class="line">183</span><br><span class="line">184</span><br><span class="line">185</span><br><span class="line">186</span><br><span class="line">187</span><br><span class="line">188</span><br><span class="line">189</span><br><span class="line">190</span><br><span class="line">191</span><br><span class="line">192</span><br><span class="line">193</span><br><span class="line">194</span><br><span class="line">195</span><br><span class="line">196</span><br><span class="line">197</span><br><span class="line">198</span><br><span class="line">199</span><br><span class="line">200</span><br><span class="line">201</span><br><span class="line">202</span><br><span class="line">203</span><br><span class="line">204</span><br><span class="line">205</span><br><span class="line">206</span><br><span class="line">207</span><br><span class="line">208</span><br><span class="line">209</span><br><span class="line">210</span><br><span class="line">211</span><br><span class="line">212</span><br><span class="line">213</span><br><span class="line">214</span><br><span class="line">215</span><br><span class="line">216</span><br><span class="line">217</span><br><span class="line">218</span><br><span class="line">219</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">export</span> <span class="keyword">function</span> <span class="title function_">createSagaMiddleware</span>(<span class="params"></span>) &#123;</span><br><span class="line">  <span class="keyword">return</span> <span class="keyword">function</span> <span class="title function_">sagaMiddleware</span>(<span class="params">store</span>) &#123;</span><br><span class="line">    <span class="comment">// 会使用到store中的数据，所以要写在里面</span></span><br><span class="line"></span><br><span class="line">    <span class="keyword">const</span> env = &#123;</span><br><span class="line">      store,</span><br><span class="line">      <span class="attr">channel</span>: <span class="keyword">new</span> <span class="title class_">Channel</span>(),</span><br><span class="line">    &#125;;</span><br><span class="line">    sagaMiddleware.<span class="property">run</span> = runSaga.<span class="title function_">bind</span>(<span class="literal">null</span>, env);</span><br><span class="line">    <span class="keyword">return</span> <span class="keyword">function</span> (<span class="params">next</span>) &#123;</span><br><span class="line">      <span class="keyword">return</span> <span class="keyword">function</span> (<span class="params">action</span>) &#123;</span><br><span class="line">        <span class="keyword">const</span> result = <span class="title function_">next</span>(action);</span><br><span class="line">        <span class="comment">// 触发 take 的订阅</span></span><br><span class="line">        env.<span class="property">channel</span>.<span class="title function_">put</span>(action.<span class="property">type</span>);</span><br><span class="line"></span><br><span class="line">        <span class="keyword">return</span> result;</span><br><span class="line">      &#125;;</span><br><span class="line">    &#125;;</span><br><span class="line">  &#125;;</span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line"><span class="comment">//</span></span><br><span class="line"><span class="keyword">function</span> <span class="title function_">runSaga</span>(<span class="params">env, generatorFn</span>) &#123;</span><br><span class="line">  <span class="keyword">const</span> iterator = <span class="title function_">generatorFn</span>();</span><br><span class="line"></span><br><span class="line">  <span class="keyword">if</span> (<span class="keyword">typeof</span> generatorFn == <span class="string">&quot;function&quot;</span>) &#123;</span><br><span class="line">    <span class="comment">//如果是普通函数直接执行</span></span><br><span class="line">  &#125;</span><br><span class="line">  <span class="title function_">next</span>();</span><br><span class="line">  <span class="comment">// nextValue 是给将要执行下一次迭代传递的值</span></span><br><span class="line">  <span class="keyword">function</span> <span class="title function_">next</span>(<span class="params">nextValue, err, isOver</span>) &#123;</span><br><span class="line">    <span class="keyword">let</span> result;</span><br><span class="line">    <span class="keyword">if</span> (err) &#123;</span><br><span class="line">      result = iterator.<span class="keyword">throw</span>(err);</span><br><span class="line">    &#125; <span class="keyword">else</span> <span class="keyword">if</span> (isOver) &#123;</span><br><span class="line">      result = iterator.<span class="keyword">return</span>();</span><br><span class="line">    &#125; <span class="keyword">else</span> &#123;</span><br><span class="line">      result = iterator.<span class="title function_">next</span>(nextValue);</span><br><span class="line">    &#125;</span><br><span class="line"></span><br><span class="line">    <span class="keyword">if</span> (result.<span class="property">done</span>) &#123;</span><br><span class="line">      <span class="keyword">return</span> result;</span><br><span class="line">    &#125;</span><br><span class="line"></span><br><span class="line">    <span class="comment">// 解析 Effect 对象</span></span><br><span class="line">    <span class="comment">// &#123; @@redux-saga/IO :true，combinator：true，payload：[],type: ALL</span></span><br><span class="line"></span><br><span class="line">    <span class="title function_">solveResult</span>(result.<span class="property">value</span>);</span><br><span class="line">  &#125;</span><br><span class="line"></span><br><span class="line">  <span class="keyword">function</span> <span class="title function_">solveResult</span>(<span class="params">effect</span>) &#123;</span><br><span class="line">    <span class="keyword">if</span> (<span class="title class_">EffectType</span>[effect.<span class="property">type</span>]) &#123;</span><br><span class="line">      <span class="title function_">runEffect</span>(env, effect, next);</span><br><span class="line">    &#125; <span class="keyword">else</span> &#123;</span><br><span class="line">      <span class="comment">// 可以是 Promise 或是一般值</span></span><br><span class="line">      <span class="keyword">if</span> (effect <span class="keyword">instanceof</span> <span class="title class_">Promise</span>) &#123;</span><br><span class="line">        effect.<span class="title function_">then</span>(<span class="function">(<span class="params">res</span>) =&gt;</span> <span class="title function_">next</span>(res)).<span class="title function_">catch</span>(<span class="function">(<span class="params">err</span>) =&gt;</span> <span class="title function_">next</span>(<span class="keyword">void</span> <span class="number">0</span>, err));</span><br><span class="line">      &#125; <span class="keyword">else</span> &#123;</span><br><span class="line">        <span class="title function_">next</span>(effect);</span><br><span class="line">      &#125;</span><br><span class="line">    &#125;</span><br><span class="line">  &#125;</span><br><span class="line"></span><br><span class="line">  <span class="comment">// 用于取消任务</span></span><br><span class="line">  <span class="keyword">return</span> <span class="keyword">new</span> <span class="title class_">Task</span>(next);</span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line"><span class="comment">// 所有的指令都是返回Effect对象，通过不同的处理函数，执行effect对象</span></span><br><span class="line"><span class="keyword">function</span> <span class="title function_">createEffect</span>(<span class="params">type, payload</span>) &#123;</span><br><span class="line">  <span class="keyword">return</span> &#123;</span><br><span class="line">    type,</span><br><span class="line">    payload,</span><br><span class="line">  &#125;;</span><br><span class="line">&#125;</span><br><span class="line"><span class="comment">// 接受store对象，</span></span><br><span class="line"><span class="keyword">function</span> <span class="title function_">runEffect</span>(<span class="params">env, effect, next</span>) &#123;</span><br><span class="line">  <span class="keyword">switch</span> (effect.<span class="property">type</span>) &#123;</span><br><span class="line">    <span class="keyword">case</span> <span class="title class_">EffectType</span>.<span class="property">CALL</span>:</span><br><span class="line">      <span class="title function_">handleCall</span>(effect, next);</span><br><span class="line">      <span class="keyword">break</span>;</span><br><span class="line">    <span class="keyword">case</span> <span class="title class_">EffectType</span>.<span class="property">PUT</span>:</span><br><span class="line">      <span class="title function_">handlePut</span>(env, effect, next);</span><br><span class="line">      <span class="keyword">break</span>;</span><br><span class="line">    <span class="keyword">case</span> <span class="title class_">EffectType</span>.<span class="property">TAKE</span>:</span><br><span class="line">      <span class="title function_">handleTake</span>(env, effect, next);</span><br><span class="line">      <span class="keyword">break</span>;</span><br><span class="line">    <span class="keyword">case</span> <span class="title class_">EffectType</span>.<span class="property">FORK</span>:</span><br><span class="line">      <span class="title function_">handleFork</span>(env, effect, next);</span><br><span class="line">      <span class="keyword">break</span>;</span><br><span class="line">    <span class="keyword">case</span> <span class="title class_">EffectType</span>.<span class="property">TAKE_EVERY</span>:</span><br><span class="line">      <span class="title function_">handleTakeEvery</span>(env, effect, next);</span><br><span class="line">      <span class="keyword">break</span>;</span><br><span class="line">    <span class="attr">default</span>:</span><br><span class="line">      <span class="keyword">return</span>;</span><br><span class="line">  &#125;</span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line"><span class="keyword">export</span> <span class="keyword">function</span> <span class="title function_">call</span>(<span class="params">fn, ...args</span>) &#123;</span><br><span class="line">  <span class="keyword">return</span> <span class="title function_">createEffect</span>(<span class="title class_">EffectType</span>.<span class="property">CALL</span>, [fn, args]);</span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line"><span class="keyword">function</span> <span class="title function_">handleCall</span>(<span class="params">effect, next</span>) &#123;</span><br><span class="line">  <span class="keyword">const</span> &#123;</span><br><span class="line">    <span class="attr">payload</span>: [fn, args],</span><br><span class="line">  &#125; = effect;</span><br><span class="line">  <span class="keyword">if</span> (<span class="keyword">typeof</span> fn === <span class="string">&quot;function&quot;</span>) &#123;</span><br><span class="line">    <span class="keyword">const</span> res = <span class="title function_">fn</span>(...args);</span><br><span class="line">    <span class="keyword">if</span> (res <span class="keyword">instanceof</span> <span class="title class_">Promise</span>) &#123;</span><br><span class="line">      res.<span class="title function_">then</span>(<span class="function">(<span class="params">res</span>) =&gt;</span> <span class="title function_">next</span>(res));</span><br><span class="line">    &#125; <span class="keyword">else</span> &#123;</span><br><span class="line">      <span class="title function_">next</span>(res);</span><br><span class="line">    &#125;</span><br><span class="line">  &#125;</span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line"><span class="comment">// delay 就是用 call 实现的延迟方法</span></span><br><span class="line"><span class="keyword">export</span> <span class="keyword">function</span> <span class="title function_">delay</span>(<span class="params">timer = <span class="number">0</span></span>) &#123;</span><br><span class="line">  <span class="keyword">return</span> <span class="title function_">call</span>(<span class="keyword">function</span> (<span class="params"></span>) &#123;</span><br><span class="line">    <span class="keyword">return</span> <span class="keyword">new</span> <span class="title class_">Promise</span>(<span class="function">(<span class="params">resolve</span>) =&gt;</span> &#123;</span><br><span class="line">      <span class="built_in">setTimeout</span>(resolve, timer);</span><br><span class="line">    &#125;);</span><br><span class="line">  &#125;);</span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line"><span class="keyword">export</span> <span class="keyword">function</span> <span class="title function_">put</span>(<span class="params">action</span>) &#123;</span><br><span class="line">  <span class="keyword">return</span> <span class="title function_">createEffect</span>(<span class="title class_">EffectType</span>.<span class="property">PUT</span>, [action]);</span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line"><span class="keyword">function</span> <span class="title function_">handlePut</span>(<span class="params">env, effect, next</span>) &#123;</span><br><span class="line">  <span class="keyword">const</span> &#123; dispatch &#125; = env.<span class="property">store</span>;</span><br><span class="line">  <span class="keyword">const</span> [action] = effect.<span class="property">payload</span>;</span><br><span class="line">  <span class="keyword">const</span> res = <span class="title function_">dispatch</span>(action);</span><br><span class="line">  <span class="title function_">next</span>(res);</span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line"><span class="keyword">export</span> <span class="keyword">function</span> <span class="title function_">take</span>(<span class="params">action</span>) &#123;</span><br><span class="line">  <span class="keyword">return</span> <span class="title function_">createEffect</span>(<span class="title class_">EffectType</span>.<span class="property">TAKE</span>, [action]);</span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line"><span class="comment">// take 的阻塞行为意味着需要能监听dispatch被触发</span></span><br><span class="line"><span class="comment">// 使用观察者模式监听take的订阅</span></span><br><span class="line"><span class="keyword">function</span> <span class="title function_">handleTake</span>(<span class="params">env, effect, next</span>) &#123;</span><br><span class="line">  <span class="keyword">const</span> &#123; channel &#125; = env;</span><br><span class="line">  <span class="keyword">const</span> [action] = effect.<span class="property">payload</span>;</span><br><span class="line"></span><br><span class="line">  channel.<span class="title function_">take</span>(action.<span class="property">type</span>, <span class="function">() =&gt;</span> &#123;</span><br><span class="line">    <span class="title function_">next</span>(action);</span><br><span class="line">  &#125;);</span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line"><span class="keyword">export</span> <span class="keyword">function</span> <span class="title function_">fork</span>(<span class="params">generatorFn</span>) &#123;</span><br><span class="line">  <span class="keyword">return</span> <span class="title function_">createEffect</span>(<span class="title class_">EffectType</span>.<span class="property">FORK</span>, [generatorFn]);</span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line"><span class="comment">// 接受一个generator</span></span><br><span class="line"><span class="keyword">function</span> <span class="title function_">handleFork</span>(<span class="params">env, effect, next</span>) &#123;</span><br><span class="line">  <span class="keyword">const</span> [generatorFn] = effect.<span class="property">payload</span>;</span><br><span class="line">  <span class="keyword">const</span> task = <span class="title function_">runSaga</span>(env, generatorFn);</span><br><span class="line"></span><br><span class="line">  <span class="title function_">next</span>(task);</span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line"><span class="keyword">export</span> <span class="keyword">function</span> <span class="title function_">takeEvery</span>(<span class="params">action, generatorFn</span>) &#123;</span><br><span class="line">  <span class="keyword">return</span> <span class="title function_">createEffect</span>(<span class="title class_">EffectType</span>.<span class="property">TAKE_EVERY</span>, [action, generatorFn]);</span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line"><span class="keyword">function</span> <span class="title function_">handleTakeEvery</span>(<span class="params">env, effect, next</span>) &#123;</span><br><span class="line">  <span class="keyword">const</span> [action, generatorFn] = effect.<span class="property">payload</span>;</span><br><span class="line"></span><br><span class="line">  <span class="keyword">return</span> <span class="title function_">fork</span>(<span class="keyword">function</span>* () &#123;</span><br><span class="line">    <span class="keyword">while</span> (<span class="literal">true</span>) &#123;</span><br><span class="line">      <span class="keyword">yield</span> <span class="title function_">take</span>(action);</span><br><span class="line">      <span class="keyword">yield</span> <span class="title function_">fork</span>(generatorFn);</span><br><span class="line">    &#125;</span><br><span class="line">  &#125;);</span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line"><span class="keyword">export</span> <span class="keyword">function</span> <span class="title function_">all</span>(<span class="params">generators</span>) &#123;</span><br><span class="line">  <span class="keyword">return</span> <span class="title function_">createEffect</span>(<span class="title class_">EffectType</span>.<span class="property">TAKE_EVERY</span>, [generators]);</span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line"><span class="keyword">const</span> <span class="title class_">EffectType</span> = &#123;</span><br><span class="line">  <span class="attr">ALL</span>: <span class="string">&quot;ALL&quot;</span>,</span><br><span class="line">  <span class="attr">CALL</span>: <span class="string">&quot;CALL&quot;</span>,</span><br><span class="line">  <span class="attr">PUT</span>: <span class="string">&quot;PUT&quot;</span>,</span><br><span class="line">  <span class="attr">TAKE</span>: <span class="string">&quot;TAKE&quot;</span>,</span><br><span class="line">  <span class="attr">FORK</span>: <span class="string">&quot;FORK&quot;</span>,</span><br><span class="line">  <span class="attr">TAKE_EVERY</span>: <span class="string">&quot;TAKE_EVERY&quot;</span>,</span><br><span class="line">&#125;;</span><br><span class="line"></span><br><span class="line"><span class="keyword">export</span> <span class="keyword">class</span> <span class="title class_">Channel</span> &#123;</span><br><span class="line">  listeners = &#123;&#125;;</span><br><span class="line">  <span class="title function_">take</span>(<span class="params">prop, fn</span>) &#123;</span><br><span class="line">    <span class="keyword">if</span> (!<span class="variable language_">this</span>.<span class="property">listeners</span>[prop]) <span class="variable language_">this</span>.<span class="property">listeners</span>[prop] = [];</span><br><span class="line">    <span class="variable language_">this</span>.<span class="property">listeners</span>[prop].<span class="title function_">push</span>(fn);</span><br><span class="line">  &#125;</span><br><span class="line"></span><br><span class="line">  <span class="comment">// 触发监听</span></span><br><span class="line">  <span class="title function_">put</span>(<span class="params">prop, ...args</span>) &#123;</span><br><span class="line">    <span class="keyword">if</span> (!<span class="variable language_">this</span>.<span class="property">listeners</span>[prop]) <span class="keyword">return</span>;</span><br><span class="line"></span><br><span class="line">    <span class="keyword">const</span> listeners = <span class="variable language_">this</span>.<span class="property">listeners</span>[prop];</span><br><span class="line"></span><br><span class="line">    <span class="comment">// 一定要先删除再运行，避免take中会再次添加新的监听</span></span><br><span class="line">    <span class="variable language_">this</span>.<span class="property">listeners</span>[prop] = <span class="keyword">void</span> <span class="number">0</span>;</span><br><span class="line"></span><br><span class="line">    listeners.<span class="title function_">forEach</span>(<span class="function">(<span class="params">fn</span>) =&gt;</span> &#123;</span><br><span class="line">      <span class="title function_">fn</span>(...args);</span><br><span class="line">    &#125;);</span><br><span class="line">  &#125;</span><br><span class="line">&#125;</span><br><span class="line"><span class="keyword">class</span> <span class="title class_">Task</span> &#123;</span><br><span class="line">  <span class="title function_">constructor</span>(<span class="params">next</span>) &#123;</span><br><span class="line">    <span class="variable language_">this</span>.<span class="property">next</span> = next;</span><br><span class="line">  &#125;</span><br><span class="line">  <span class="title function_">cancel</span>(<span class="params"></span>) &#123;</span><br><span class="line">    <span class="variable language_">this</span>.<span class="title function_">next</span>(<span class="literal">null</span>, <span class="literal">null</span>, <span class="literal">true</span>);</span><br><span class="line">  &#125;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+ 
+      <!-- reward -->
+      
+      <div id="reword-out">
+        <div id="reward-btn">
+          打赏
+        </div>
+      </div>
+      
+    </div>
+    
+
+    <!-- copyright -->
+    
+    <div class="declare">
+      <ul class="post-copyright">
+        <li>
+          <i class="ri-copyright-line"></i>
+          <strong>版权声明： </strong>
+          
+          本博客所有文章除特别声明外，著作权归作者所有。转载请注明出处！
+          
+        </li>
+      </ul>
+    </div>
+    
+    <footer class="article-footer">
+       
+  <ul class="article-tag-list" itemprop="keywords"><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/React/" rel="tag">React</a></li><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/React-Router/" rel="tag">React Router</a></li></ul>
+
+    </footer>
+  </div>
+
+   
+  <nav class="article-nav">
+    
+      <a href="/posts/b72cda69fef3/" class="article-nav-link">
+        <strong class="article-nav-caption">上一篇</strong>
+        <div class="article-nav-title">
+          
+            ⑨集合管理-迭代器和组合模式
+          
+        </div>
+      </a>
+    
+    
+      <a href="/posts/1430ebf25b0e/" class="article-nav-link">
+        <strong class="article-nav-caption">下一篇</strong>
+        <div class="article-nav-title">鼠标，触摸，指针事件</div>
+      </a>
+    
+  </nav>
+
+  
+   
+<div class="gitalk" id="gitalk-container"></div>
+
+<link rel="stylesheet" href="https://cdn.staticfile.org/gitalk/1.7.2/gitalk.min.css">
+
+
+<script src="https://cdn.staticfile.org/gitalk/1.7.2/gitalk.min.js"></script>
+
+
+<script src="https://cdn.staticfile.org/blueimp-md5/2.19.0/js/md5.min.js"></script>
+
+<script type="text/javascript">
+  var gitalk = new Gitalk({
+    clientID: 'bce2317b25da7c3c18f6',
+    clientSecret: 'e0ab868ca9054234798be82c2b1c0c9dd8632307',
+    repo: 'noopn.github.io',
+    owner: 'noopn',
+    admin: ['noopn'],
+    // id: location.pathname,      // Ensure uniqueness and length less than 50
+    id: md5(location.pathname),
+    distractionFreeMode: false,  // Facebook-like distraction free mode
+    pagerDirection: 'last'
+  })
+
+  gitalk.render('gitalk-container')
+</script>
+
+     
+</article>
+
+</section>
+      <footer class="footer">
+  <div class="outer">
+    <ul>
+      <li>
+        Copyrights &copy;
+        2015-2025
+        <i class="ri-heart-fill heart_icon"></i> SunZhiqi
+      </li>
+    </ul>
+    <ul>
+      <li>
+        
+      </li>
+    </ul>
+    <ul>
+      <li>
+        
+      </li>
+    </ul>
+    <ul>
+      
+    </ul>
+    <ul>
+      
+    </ul>
+    <ul>
+      <li>
+        <!-- cnzz统计 -->
+        
+      </li>
+    </ul>
+  </div>
+</footer>    
+    </main>
+    <div class="float_btns">
+      <div class="totop" id="totop">
+  <i class="ri-arrow-up-line"></i>
+</div>
+
+    </div>
+    <aside class="sidebar on">
+      <button class="navbar-toggle"></button>
+<nav class="navbar">
+  
+  <div class="logo">
+    <a href="/"><img src="/images/ayer-side.png" alt="四月八日"></a>
+  </div>
+  
+  <ul class="nav nav-main">
+    
+    <li class="nav-item">
+      <a class="nav-item-link" href="/">主页</a>
+    </li>
+    
+    <li class="nav-item">
+      <a class="nav-item-link" href="/archives">归档</a>
+    </li>
+    
+    <li class="nav-item">
+      <a class="nav-item-link" href="/categories">分类</a>
+    </li>
+    
+    <li class="nav-item">
+      <a class="nav-item-link" href="/tags">标签</a>
+    </li>
+    
+  </ul>
+</nav>
+<nav class="navbar navbar-bottom">
+  <ul class="nav">
+    <li class="nav-item">
+      
+      <a class="nav-item-link nav-item-search"  title="搜索">
+        <i class="ri-search-line"></i>
+      </a>
+      
+      
+    </li>
+  </ul>
+</nav>
+<div class="search-form-wrap">
+  <div class="local-search local-search-plugin">
+  <input type="search" id="local-search-input" class="local-search-input" placeholder="Search...">
+  <div id="local-search-result" class="local-search-result"></div>
+</div>
+</div>
+    </aside>
+    <div id="mask"></div>
+
+<!-- #reward -->
+<div id="reward">
+  <span class="close"><i class="ri-close-line"></i></span>
+  <p class="reward-p"><i class="ri-cup-line"></i>此时无声胜有声！</p>
+  <div class="reward-box">
+    
+    <div class="reward-item">
+      <img class="reward-img" src="/images/alipay.jpg">
+      <span class="reward-type">支付宝</span>
+    </div>
+    
+    
+    <div class="reward-item">
+      <img class="reward-img" src="/images/wechat.jpg">
+      <span class="reward-type">微信</span>
+    </div>
+    
+  </div>
+</div>
+    
+<script src="/js/jquery-3.6.0.min.js"></script>
+ 
+<script src="/js/lazyload.min.js"></script>
+
+<!-- Tocbot -->
+ 
+<script src="/js/tocbot.min.js"></script>
+
+<script>
+  tocbot.init({
+    tocSelector: ".tocbot",
+    contentSelector: ".article-entry",
+    headingSelector: "h1, h2, h3, h4, h5, h6",
+    hasInnerContainers: true,
+    scrollSmooth: true,
+    scrollContainer: "main",
+    positionFixedSelector: ".tocbot",
+    positionFixedClass: "is-position-fixed",
+    fixedSidebarOffset: "auto",
+  });
+</script>
+
+<script src="/js/jquery.modal.min.js"></script>
+<link rel="stylesheet" href="/css/jquery.modal.min.css" />
+<script src="/js/jquery.justifiedGallery.min.js"></script>
+
+<script src="/dist/main.js"></script>
+
+<!-- ImageViewer -->
+ <!-- Root element of PhotoSwipe. Must have class pswp. -->
+<div class="pswp" tabindex="-1" role="dialog" aria-hidden="true">
+  <!-- Background of PhotoSwipe. 
+         It's a separate element as animating opacity is faster than rgba(). -->
+  <div class="pswp__bg"></div>
+
+  <!-- Slides wrapper with overflow:hidden. -->
+  <div class="pswp__scroll-wrap">
+    <!-- Container that holds slides. 
+            PhotoSwipe keeps only 3 of them in the DOM to save memory.
+            Don't modify these 3 pswp__item elements, data is added later on. -->
+    <div class="pswp__container">
+      <div class="pswp__item"></div>
+      <div class="pswp__item"></div>
+      <div class="pswp__item"></div>
+    </div>
+
+    <!-- Default (PhotoSwipeUI_Default) interface on top of sliding area. Can be changed. -->
+    <div class="pswp__ui pswp__ui--hidden">
+      <div class="pswp__top-bar">
+        <!--  Controls are self-explanatory. Order can be changed. -->
+
+        <div class="pswp__counter"></div>
+
+        <button
+          class="pswp__button pswp__button--close"
+          title="Close (Esc)"
+        ></button>
+
+        <button
+          class="pswp__button pswp__button--share"
+          style="display: none"
+          title="Share"
+        ></button>
+
+        <button
+          class="pswp__button pswp__button--fs"
+          title="Toggle fullscreen"
+        ></button>
+
+        <button
+          class="pswp__button pswp__button--zoom"
+          title="Zoom in/out"
+        ></button>
+
+        <!-- Preloader demo http://codepen.io/dimsemenov/pen/yyBWoR -->
+        <!-- element will get class pswp__preloader--active when preloader is running -->
+        <div class="pswp__preloader">
+          <div class="pswp__preloader__icn">
+            <div class="pswp__preloader__cut">
+              <div class="pswp__preloader__donut"></div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <div class="pswp__share-modal pswp__share-modal--hidden pswp__single-tap">
+        <div class="pswp__share-tooltip"></div>
+      </div>
+
+      <button
+        class="pswp__button pswp__button--arrow--left"
+        title="Previous (arrow left)"
+      ></button>
+
+      <button
+        class="pswp__button pswp__button--arrow--right"
+        title="Next (arrow right)"
+      ></button>
+
+      <div class="pswp__caption">
+        <div class="pswp__caption__center"></div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<link rel="stylesheet" href="/css/photoswipe.min.css" />
+<link rel="stylesheet" href="/css/default-skin.min.css" />
+<script src="/js/photoswipe.min.js"></script>
+<script src="/js/photoswipe-ui-default.min.js"></script>
+
+<script>
+  function viewer_init() {
+    let pswpElement = document.querySelectorAll(".pswp")[0];
+    let $imgArr = document.querySelectorAll(
+      ".article-entry img:not(.reward-img)"
+    );
+
+    $imgArr.forEach(($em, i) => {
+      $em.onclick = () => {
+        // slider展开状态
+        // todo: 这样不好，后面改成状态
+        if (document.querySelector(".left-col.show")) return;
+        let items = [];
+        $imgArr.forEach(($em2, i2) => {
+          let img = $em2.getAttribute("data-idx", i2);
+          let src =
+            $em2.getAttribute("data-target") || $em2.getAttribute("src");
+          let title = $em2.getAttribute("alt");
+          // 获得原图尺寸
+          const image = new Image();
+          image.src = src;
+          items.push({
+            src: src,
+            w: image.width || $em2.width,
+            h: image.height || $em2.height,
+            title: title,
+          });
+        });
+        var gallery = new PhotoSwipe(pswpElement, PhotoSwipeUI_Default, items, {
+          index: parseInt(i),
+        });
+        gallery.init();
+      };
+    });
+  }
+  viewer_init();
+</script>
+ 
+<!-- MathJax -->
+ <script type="text/x-mathjax-config">
+  MathJax.Hub.Config({
+      tex2jax: {
+          inlineMath: [ ['$','$'], ["\\(","\\)"]  ],
+          processEscapes: true,
+          skipTags: ['script', 'noscript', 'style', 'textarea', 'pre', 'code']
+      }
+  });
+
+  MathJax.Hub.Queue(function() {
+      var all = MathJax.Hub.getAllJax(), i;
+      for(i=0; i < all.length; i += 1) {
+          all[i].SourceElement().parentNode.className += ' has-jax';
+      }
+  });
+</script>
+
+<script src="/js/MathJax.js"></script>
+<script src="/js/TeX-AMS-MML_HTMLorMML-full.js"></script>
+
+<script>
+  var ayerConfig = {
+    mathjax: true,
+  };
+</script>
+
+<!-- Katex -->
+
+<!-- busuanzi  -->
+
+<!-- ClickLove -->
+
+<!-- ClickBoom1 -->
+
+<!-- ClickBoom2 -->
+
+<!-- CodeCopy -->
+ 
+<link rel="stylesheet" href="/css/clipboard.css">
+ <script src="/js/clipboard.min.js"></script>
+<script>
+  function wait(callback, seconds) {
+    var timelag = null;
+    timelag = window.setTimeout(callback, seconds);
+  }
+  !(function (e, t, a) {
+    var initCopyCode = function () {
+      var copyHtml = "";
+      copyHtml += '<button class="btn-copy" data-clipboard-snippet="">';
+      copyHtml += '<i class="ri-file-copy-2-line"></i><span>COPY</span>';
+      copyHtml += "</button>";
+      $(".highlight .code pre").before(copyHtml);
+      $(".article pre code").before(copyHtml);
+      var clipboard = new ClipboardJS(".btn-copy", {
+        target: function (trigger) {
+          return trigger.nextElementSibling;
+        },
+      });
+      clipboard.on("success", function (e) {
+        let $btn = $(e.trigger);
+        $btn.addClass("copied");
+        let $icon = $($btn.find("i"));
+        $icon.removeClass("ri-file-copy-2-line");
+        $icon.addClass("ri-checkbox-circle-line");
+        let $span = $($btn.find("span"));
+        $span[0].innerText = "COPIED";
+
+        wait(function () {
+          // 等待两秒钟后恢复
+          $icon.removeClass("ri-checkbox-circle-line");
+          $icon.addClass("ri-file-copy-2-line");
+          $span[0].innerText = "COPY";
+        }, 2000);
+      });
+      clipboard.on("error", function (e) {
+        e.clearSelection();
+        let $btn = $(e.trigger);
+        $btn.addClass("copy-failed");
+        let $icon = $($btn.find("i"));
+        $icon.removeClass("ri-file-copy-2-line");
+        $icon.addClass("ri-time-line");
+        let $span = $($btn.find("span"));
+        $span[0].innerText = "COPY FAILED";
+
+        wait(function () {
+          // 等待两秒钟后恢复
+          $icon.removeClass("ri-time-line");
+          $icon.addClass("ri-file-copy-2-line");
+          $span[0].innerText = "COPY";
+        }, 2000);
+      });
+    };
+    initCopyCode();
+  })(window, document);
+</script>
+ 
+<!-- CanvasBackground -->
+
+<script>
+  if (window.mermaid) {
+    mermaid.initialize({ theme: "default" });
+  }
+</script>
+
+
+    
+    
+
+  </div>
+</body>
+
+</html>

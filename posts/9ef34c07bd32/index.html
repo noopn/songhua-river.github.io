@@ -1,0 +1,619 @@
+<!DOCTYPE html>
+
+
+<html lang="zh-CN">
+  
+
+    <head>
+      <meta charset="utf-8" />
+       
+      <meta name="keywords" content="前端 web react" />
+       
+      <meta name="description" content="前端技术与生活。" />
+      
+      <meta
+        name="viewport"
+        content="width=device-width, initial-scale=1, maximum-scale=1"
+      />
+      <title>React Router 解析 |  四月八日</title>
+  <meta name="generator" content="hexo-theme-ayer">
+      
+      <link rel="shortcut icon" href="/favicon.ico" />
+       
+<link rel="stylesheet" href="/dist/main.css">
+ 
+<link rel="stylesheet" href="/css/fonts/remixicon.css">
+ 
+<link rel="stylesheet" href="/css/custom.css">
+ 
+      <script src="/js/pace.min.js"></script>
+       
+ 
+
+      <link rel="stylesheet" href="/css/bulma.min.css" />
+      <script src="/js/sweetalert2.min.js"></script>
+
+      <!-- mermaid -->
+      
+      <script src="https://cdn.staticfile.org/mermaid/8.14.0/mermaid.min.js"></script>
+      
+      <style>
+        .swal2-styled.swal2-confirm {
+          font-size: 1.6rem;
+        }
+      </style>
+    <!-- hexo injector head_end start -->
+<link rel="stylesheet" href="/css/katex.min.css">
+
+<link rel="stylesheet" href="/css/style.css">
+<!-- hexo injector head_end end --></head>
+  </html>
+</html>
+
+
+<body>
+  <div id="app">
+    
+      
+    <main class="content on">
+      <section class="outer">
+  <article
+  id="post-react/React-Router-源码"
+  class="article article-type-post"
+  itemscope
+  itemprop="blogPost"
+  data-scroll-reveal
+>
+  <div class="article-inner">
+    
+    <header class="article-header">
+       
+<h1 class="article-title sea-center" style="border-left:0" itemprop="name">
+  React Router 解析
+</h1>
+ 
+
+      
+    </header>
+     
+    <div class="article-meta">
+      <a href="/posts/9ef34c07bd32/" class="article-date">
+  <time datetime="2023-01-23T09:57:50.000Z" itemprop="datePublished">2023-01-23</time>
+</a> 
+  <div class="article-category">
+    <a class="article-category-link" href="/categories/React/">React</a>
+  </div>
+  
+<div class="word_count">
+    <span class="post-time">
+        <span class="post-meta-item-icon">
+            <i class="ri-quill-pen-line"></i>
+            <span class="post-meta-item-text"> 字数统计:</span>
+            <span class="post-count">2.2k</span>
+        </span>
+    </span>
+
+    <span class="post-time">
+        &nbsp; | &nbsp;
+        <span class="post-meta-item-icon">
+            <i class="ri-book-open-line"></i>
+            <span class="post-meta-item-text"> 阅读时长≈</span>
+            <span class="post-count">11 分钟</span>
+        </span>
+    </span>
+</div>
+ 
+    </div>
+      
+    <div class="tocbot"></div>
+
+
+
+
+  
+    <div class="article-entry" itemprop="articleBody">
+       
+  <p>整个项目大致分为三个包：</p>
+<ul>
+<li><p>router<br>实现了各种类型的 history, 完成了路由配置的底层实现，例如导航，路由 loader，lazy</p>
+</li>
+<li><p>react-router<br>实现了各类 hooks, 根组件的 Provider, 可以用组件形式配置的 Route 组件，最终还是会被解析为 routes 配置。</p>
+</li>
+<li><p>react-router-com<br>完善了 React 组件，可以直接用组件去声明 BrowserRouter 还是 HashRouter 以及 Link 等业务组件。</p>
+</li>
+</ul>
+<blockquote>
+<p><strong>history.pushState 参数解释</strong><br>state（状态对象）一个 JavaScript 对象，用于保存与当前历史记录条目关联的状态数据。当用户通过浏览器的前进&#x2F;后退按钮导航到该记录时，可以通过 popstate 事件 (event.state) 获取到这个对象。可以存储当前页面的状态（例如：滚动位置、表单数据、组件状态等），以便在导航回该页面时恢复状态。<br>title（标题）理论上用于设置浏览器历史记录中该条目的标题，但目前所有主流浏览器均忽略此参数。<br>url（新的 URL）指定浏览器地址栏显示的新 URL。页面不会重新加载，但必须满足同源策略（Same-origin Policy）。<br><strong>使用 pushState 不会触发 popstate 事件</strong>,popstate 事件仅在用户点击浏览器的后退，前进按钮或通过 JavaScript 调用 history.back()、history.forward() 或 history.go() 方法时触发。</p>
+</blockquote>
+<blockquote>
+<p><strong>go 方法的行为</strong>,不会删除 history 的记录栈，它只是移动指针指向之前或是之后的历史地址。如果地址栏是 hash 改变默认不会刷新页面，如果是 path 改变默认会刷新页面。</p>
+</blockquote>
+<h4 id="Browser-History"><a href="#Browser-History" class="headerlink" title="Browser History"></a>Browser History</h4><p>提供对以下接口对 history 对象进行控制。可以发现并没有对原生对象封装或扩展，而是创建了一个新对象。因此 history 对象只在 react router 内部使用。</p>
+<figure class="highlight ts"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br><span class="line">35</span><br><span class="line">36</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">function</span> <span class="title function_">createBrowserLocation</span>(<span class="params"></span>) &#123;</span><br><span class="line">    <span class="keyword">return</span> <span class="keyword">let</span> <span class="attr">history</span>: <span class="title class_">History</span> = &#123;</span><br><span class="line">    <span class="keyword">get</span> <span class="title function_">action</span>() &#123;</span><br><span class="line">      <span class="keyword">return</span> action;</span><br><span class="line">    &#125;,</span><br><span class="line">    <span class="keyword">get</span> <span class="title function_">location</span>() &#123;</span><br><span class="line">      <span class="keyword">return</span> <span class="title function_">getLocation</span>(<span class="variable language_">window</span>, globalHistory);</span><br><span class="line">    &#125;,</span><br><span class="line">    <span class="title function_">listen</span>(<span class="params">fn: Listener</span>) &#123;</span><br><span class="line"></span><br><span class="line">      <span class="variable language_">window</span>.<span class="title function_">addEventListener</span>(<span class="title class_">PopStateEventType</span>, handlePop);</span><br><span class="line">      listener = fn;</span><br><span class="line"></span><br><span class="line">      <span class="keyword">return</span> <span class="function">() =&gt;</span> &#123;</span><br><span class="line">        <span class="variable language_">window</span>.<span class="title function_">removeEventListener</span>(<span class="title class_">PopStateEventType</span>, handlePop);</span><br><span class="line">        listener = <span class="literal">null</span>;</span><br><span class="line">      &#125;;</span><br><span class="line">    &#125;,</span><br><span class="line">    <span class="title function_">createHref</span>(<span class="params">to</span>) &#123;</span><br><span class="line">      <span class="keyword">return</span> <span class="title function_">createHref</span>(<span class="variable language_">window</span>, to);</span><br><span class="line">    &#125;,</span><br><span class="line">    createURL,</span><br><span class="line">    <span class="title function_">encodeLocation</span>(<span class="params">to</span>) &#123;</span><br><span class="line">      <span class="keyword">let</span> url = <span class="title function_">createURL</span>(to);</span><br><span class="line">      <span class="keyword">return</span> &#123;</span><br><span class="line">        <span class="attr">pathname</span>: url.<span class="property">pathname</span>,</span><br><span class="line">        <span class="attr">search</span>: url.<span class="property">search</span>,</span><br><span class="line">        <span class="attr">hash</span>: url.<span class="property">hash</span>,</span><br><span class="line">      &#125;;</span><br><span class="line">    &#125;,</span><br><span class="line">    push,</span><br><span class="line">    replace,</span><br><span class="line">    <span class="title function_">go</span>(<span class="params">n</span>) &#123;</span><br><span class="line">      <span class="keyword">return</span> globalHistory.<span class="title function_">go</span>(n);</span><br><span class="line">    &#125;,</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+<p>push 方法实现</p>
+<figure class="highlight ts"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">function</span> <span class="title function_">push</span>(<span class="params">to: To, state?: <span class="built_in">any</span></span>) &#123;</span><br><span class="line">  action = <span class="title class_">Action</span>.<span class="property">Push</span>;</span><br><span class="line">  <span class="keyword">let</span> location = <span class="title function_">createLocation</span>(history.<span class="property">location</span>, to, state);</span><br><span class="line">  <span class="keyword">if</span> (validateLocation) <span class="title function_">validateLocation</span>(location, to);</span><br><span class="line"></span><br><span class="line">  index = <span class="title function_">getIndex</span>() + <span class="number">1</span>;</span><br><span class="line">  <span class="keyword">let</span> historyState = <span class="title function_">getHistoryState</span>(location, index);</span><br><span class="line">  <span class="keyword">let</span> url = history.<span class="title function_">createHref</span>(location);</span><br><span class="line"></span><br><span class="line">  <span class="comment">/// ios 有 100条 pushState 的限制</span></span><br><span class="line">  <span class="keyword">try</span> &#123;</span><br><span class="line">    globalHistory.<span class="title function_">pushState</span>(historyState, <span class="string">&quot;&quot;</span>, url);</span><br><span class="line">  &#125; <span class="keyword">catch</span> (error) &#123;</span><br><span class="line">    <span class="keyword">if</span> (error <span class="keyword">instanceof</span> <span class="title class_">DOMException</span> &amp;&amp; error.<span class="property">name</span> === <span class="string">&quot;DataCloneError&quot;</span>) &#123;</span><br><span class="line">      <span class="keyword">throw</span> error;</span><br><span class="line">    &#125;</span><br><span class="line">    <span class="variable language_">window</span>.<span class="property">location</span>.<span class="title function_">assign</span>(url);</span><br><span class="line">  &#125;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+<h4 id="Hash-History"><a href="#Hash-History" class="headerlink" title="Hash History"></a>Hash History</h4><p>Hash Router 多用于静态托管环境无法配置服务器将所有路径重定向到入口文件。</p>
+<p>hash router 的设计与 browser router 共用了对外接口的实现，因为对于浏览器来说无论是地址变化还是 hash 变化都是 pushState，当浏览器返回或前进是都会触发 popstate 事件，因此区别只是在于处理的参数不同。</p>
+<p>react router v6 版本并没有使用 hashchange 实现事件监听。hashchange IE8+ 开始支持，popstate IE10+ 开始支持。</p>
+<h4 id="Memory-History"><a href="#Memory-History" class="headerlink" title="Memory History"></a>Memory History</h4><p>使用数组作为历史记录栈，且监听函数不能多次绑定</p>
+<figure class="highlight ts"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br><span class="line">35</span><br><span class="line">36</span><br><span class="line">37</span><br><span class="line">38</span><br><span class="line">39</span><br><span class="line">40</span><br><span class="line">41</span><br><span class="line">42</span><br><span class="line">43</span><br><span class="line">44</span><br><span class="line">45</span><br><span class="line">46</span><br><span class="line">47</span><br><span class="line">48</span><br><span class="line">49</span><br><span class="line">50</span><br><span class="line">51</span><br><span class="line">52</span><br><span class="line">53</span><br><span class="line">54</span><br><span class="line">55</span><br><span class="line">56</span><br><span class="line">57</span><br><span class="line">58</span><br><span class="line">59</span><br><span class="line">60</span><br><span class="line">61</span><br><span class="line">62</span><br><span class="line">63</span><br><span class="line">64</span><br><span class="line">65</span><br><span class="line">66</span><br><span class="line">67</span><br><span class="line">68</span><br><span class="line">69</span><br><span class="line">70</span><br><span class="line">71</span><br><span class="line">72</span><br><span class="line">73</span><br><span class="line">74</span><br><span class="line">75</span><br><span class="line">76</span><br><span class="line">77</span><br><span class="line">78</span><br><span class="line">79</span><br><span class="line">80</span><br><span class="line">81</span><br><span class="line">82</span><br><span class="line">83</span><br><span class="line">84</span><br><span class="line">85</span><br><span class="line">86</span><br><span class="line">87</span><br><span class="line">88</span><br><span class="line">89</span><br><span class="line">90</span><br><span class="line">91</span><br><span class="line">92</span><br><span class="line">93</span><br><span class="line">94</span><br><span class="line">95</span><br><span class="line">96</span><br><span class="line">97</span><br><span class="line">98</span><br><span class="line">99</span><br><span class="line">100</span><br><span class="line">101</span><br><span class="line">102</span><br><span class="line">103</span><br><span class="line">104</span><br><span class="line">105</span><br><span class="line">106</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">export</span> <span class="keyword">function</span> <span class="title function_">createMemoryHistory</span>(<span class="params"></span></span><br><span class="line"><span class="params">  options: MemoryHistoryOptions = &#123;&#125;</span></span><br><span class="line"><span class="params"></span>): <span class="title class_">MemoryHistory</span> &#123;</span><br><span class="line">  <span class="keyword">let</span> &#123; initialEntries = [<span class="string">&quot;/&quot;</span>], initialIndex, v5Compat = <span class="literal">false</span> &#125; = options;</span><br><span class="line">  <span class="keyword">let</span> <span class="attr">entries</span>: <span class="title class_">Location</span>[]; <span class="comment">// Declare so we can access from createMemoryLocation</span></span><br><span class="line">  entries = initialEntries.<span class="title function_">map</span>(<span class="function">(<span class="params">entry, index</span>) =&gt;</span></span><br><span class="line">    <span class="title function_">createMemoryLocation</span>(</span><br><span class="line">      entry,</span><br><span class="line">      <span class="keyword">typeof</span> entry === <span class="string">&quot;string&quot;</span> ? <span class="literal">null</span> : entry.<span class="property">state</span>,</span><br><span class="line">      index === <span class="number">0</span> ? <span class="string">&quot;default&quot;</span> : <span class="literal">undefined</span></span><br><span class="line">    )</span><br><span class="line">  );</span><br><span class="line">  <span class="keyword">let</span> index = <span class="title function_">clampIndex</span>(</span><br><span class="line">    initialIndex == <span class="literal">null</span> ? entries.<span class="property">length</span> - <span class="number">1</span> : initialIndex</span><br><span class="line">  );</span><br><span class="line">  <span class="keyword">let</span> action = <span class="title class_">Action</span>.<span class="property">Pop</span>;</span><br><span class="line">  <span class="keyword">let</span> <span class="attr">listener</span>: <span class="title class_">Listener</span> | <span class="literal">null</span> = <span class="literal">null</span>;</span><br><span class="line"></span><br><span class="line">  <span class="keyword">function</span> <span class="title function_">clampIndex</span>(<span class="params">n: <span class="built_in">number</span></span>): <span class="built_in">number</span> &#123;</span><br><span class="line">    <span class="keyword">return</span> <span class="title class_">Math</span>.<span class="title function_">min</span>(<span class="title class_">Math</span>.<span class="title function_">max</span>(n, <span class="number">0</span>), entries.<span class="property">length</span> - <span class="number">1</span>);</span><br><span class="line">  &#125;</span><br><span class="line">  <span class="keyword">function</span> <span class="title function_">getCurrentLocation</span>(<span class="params"></span>): <span class="title class_">Location</span> &#123;</span><br><span class="line">    <span class="keyword">return</span> entries[index];</span><br><span class="line">  &#125;</span><br><span class="line">  <span class="keyword">function</span> <span class="title function_">createMemoryLocation</span>(<span class="params"></span></span><br><span class="line"><span class="params">    to: To,</span></span><br><span class="line"><span class="params">    state: <span class="built_in">any</span> = <span class="literal">null</span>,</span></span><br><span class="line"><span class="params">    key?: <span class="built_in">string</span></span></span><br><span class="line"><span class="params">  </span>): <span class="title class_">Location</span> &#123;</span><br><span class="line">    <span class="keyword">let</span> location = <span class="title function_">createLocation</span>(</span><br><span class="line">      entries ? <span class="title function_">getCurrentLocation</span>().<span class="property">pathname</span> : <span class="string">&quot;/&quot;</span>,</span><br><span class="line">      to,</span><br><span class="line">      state,</span><br><span class="line">      key</span><br><span class="line">    );</span><br><span class="line">    <span class="title function_">warning</span>(</span><br><span class="line">      location.<span class="property">pathname</span>.<span class="title function_">charAt</span>(<span class="number">0</span>) === <span class="string">&quot;/&quot;</span>,</span><br><span class="line">      <span class="string">`relative pathnames are not supported in memory history: <span class="subst">$&#123;<span class="built_in">JSON</span>.stringify(</span></span></span><br><span class="line"><span class="subst"><span class="string">        to</span></span></span><br><span class="line"><span class="subst"><span class="string">      )&#125;</span>`</span></span><br><span class="line">    );</span><br><span class="line">    <span class="keyword">return</span> location;</span><br><span class="line">  &#125;</span><br><span class="line"></span><br><span class="line">  <span class="keyword">function</span> <span class="title function_">createHref</span>(<span class="params">to: To</span>) &#123;</span><br><span class="line">    <span class="keyword">return</span> <span class="keyword">typeof</span> to === <span class="string">&quot;string&quot;</span> ? to : <span class="title function_">createPath</span>(to);</span><br><span class="line">  &#125;</span><br><span class="line"></span><br><span class="line">  <span class="keyword">let</span> <span class="attr">history</span>: <span class="title class_">MemoryHistory</span> = &#123;</span><br><span class="line">    <span class="keyword">get</span> <span class="title function_">index</span>() &#123;</span><br><span class="line">      <span class="keyword">return</span> index;</span><br><span class="line">    &#125;,</span><br><span class="line">    <span class="keyword">get</span> <span class="title function_">action</span>() &#123;</span><br><span class="line">      <span class="keyword">return</span> action;</span><br><span class="line">    &#125;,</span><br><span class="line">    <span class="keyword">get</span> <span class="title function_">location</span>() &#123;</span><br><span class="line">      <span class="keyword">return</span> <span class="title function_">getCurrentLocation</span>();</span><br><span class="line">    &#125;,</span><br><span class="line">    createHref,</span><br><span class="line">    <span class="title function_">createURL</span>(<span class="params">to</span>) &#123;</span><br><span class="line">      <span class="keyword">return</span> <span class="keyword">new</span> <span class="title function_">URL</span>(<span class="title function_">createHref</span>(to), <span class="string">&quot;http://localhost&quot;</span>);</span><br><span class="line">    &#125;,</span><br><span class="line">    <span class="title function_">encodeLocation</span>(<span class="params">to: To</span>) &#123;</span><br><span class="line">      <span class="keyword">let</span> path = <span class="keyword">typeof</span> to === <span class="string">&quot;string&quot;</span> ? <span class="title function_">parsePath</span>(to) : to;</span><br><span class="line">      <span class="keyword">return</span> &#123;</span><br><span class="line">        <span class="attr">pathname</span>: path.<span class="property">pathname</span> || <span class="string">&quot;&quot;</span>,</span><br><span class="line">        <span class="attr">search</span>: path.<span class="property">search</span> || <span class="string">&quot;&quot;</span>,</span><br><span class="line">        <span class="attr">hash</span>: path.<span class="property">hash</span> || <span class="string">&quot;&quot;</span>,</span><br><span class="line">      &#125;;</span><br><span class="line">    &#125;,</span><br><span class="line">    <span class="title function_">push</span>(<span class="params">to, state</span>) &#123;</span><br><span class="line">      action = <span class="title class_">Action</span>.<span class="property">Push</span>;</span><br><span class="line">      <span class="keyword">let</span> nextLocation = <span class="title function_">createMemoryLocation</span>(to, state);</span><br><span class="line">      index += <span class="number">1</span>;</span><br><span class="line">      entries.<span class="title function_">splice</span>(index, entries.<span class="property">length</span>, nextLocation);</span><br><span class="line">      <span class="keyword">if</span> (v5Compat &amp;&amp; listener) &#123;</span><br><span class="line">        <span class="title function_">listener</span>(&#123; action, <span class="attr">location</span>: nextLocation, <span class="attr">delta</span>: <span class="number">1</span> &#125;);</span><br><span class="line">      &#125;</span><br><span class="line">    &#125;,</span><br><span class="line">    <span class="title function_">replace</span>(<span class="params">to, state</span>) &#123;</span><br><span class="line">      action = <span class="title class_">Action</span>.<span class="property">Replace</span>;</span><br><span class="line">      <span class="keyword">let</span> nextLocation = <span class="title function_">createMemoryLocation</span>(to, state);</span><br><span class="line">      entries[index] = nextLocation;</span><br><span class="line">      <span class="keyword">if</span> (v5Compat &amp;&amp; listener) &#123;</span><br><span class="line">        <span class="title function_">listener</span>(&#123; action, <span class="attr">location</span>: nextLocation, <span class="attr">delta</span>: <span class="number">0</span> &#125;);</span><br><span class="line">      &#125;</span><br><span class="line">    &#125;,</span><br><span class="line">    <span class="title function_">go</span>(<span class="params">delta</span>) &#123;</span><br><span class="line">      action = <span class="title class_">Action</span>.<span class="property">Pop</span>;</span><br><span class="line">      <span class="keyword">let</span> nextIndex = <span class="title function_">clampIndex</span>(index + delta);</span><br><span class="line">      <span class="keyword">let</span> nextLocation = entries[nextIndex];</span><br><span class="line">      index = nextIndex;</span><br><span class="line">      <span class="keyword">if</span> (listener) &#123;</span><br><span class="line">        <span class="title function_">listener</span>(&#123; action, <span class="attr">location</span>: nextLocation, delta &#125;);</span><br><span class="line">      &#125;</span><br><span class="line">    &#125;,</span><br><span class="line">    <span class="title function_">listen</span>(<span class="params">fn: Listener</span>) &#123;</span><br><span class="line">      listener = fn;</span><br><span class="line">      <span class="keyword">return</span> <span class="function">() =&gt;</span> &#123;</span><br><span class="line">        listener = <span class="literal">null</span>;</span><br><span class="line">      &#125;;</span><br><span class="line">    &#125;,</span><br><span class="line">  &#125;;</span><br><span class="line"></span><br><span class="line">  <span class="keyword">return</span> history;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+<h4 id="navigate"><a href="#navigate" class="headerlink" title="navigate"></a>navigate</h4><p>navigate 是 router 包中的核心方法，执行导航流程，中间处理各种配置，数据加载策略，loader,lazy 也会在导航过程中处理</p>
+<figure class="highlight js"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">const</span> route = <span class="title function_">createRoute</span>([</span><br><span class="line">  &#123;</span><br><span class="line">    <span class="attr">path</span>: <span class="string">&quot;/&quot;</span>,</span><br><span class="line">  &#125;,</span><br><span class="line">  &#123;</span><br><span class="line">    <span class="attr">id</span>: <span class="string">&quot;json&quot;</span>,</span><br><span class="line">    <span class="attr">path</span>: <span class="string">&quot;/test&quot;</span>,</span><br><span class="line">    <span class="attr">loader</span>: <span class="literal">true</span>,</span><br><span class="line">    <span class="attr">children</span>: [</span><br><span class="line">      &#123;</span><br><span class="line">        <span class="attr">id</span>: <span class="string">&quot;text&quot;</span>,</span><br><span class="line">        <span class="attr">index</span>: <span class="literal">true</span>,</span><br><span class="line">        <span class="attr">loader</span>: <span class="literal">true</span>,</span><br><span class="line">      &#125;,</span><br><span class="line">    ],</span><br><span class="line">  &#125;,</span><br><span class="line">]);</span><br><span class="line"></span><br><span class="line"><span class="keyword">await</span> route.<span class="title function_">navigate</span>(<span class="string">&quot;/test&quot;</span>);</span><br></pre></td></tr></table></figure>
+
+<figure class="highlight ts"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br><span class="line">35</span><br><span class="line">36</span><br><span class="line">37</span><br><span class="line">38</span><br><span class="line">39</span><br><span class="line">40</span><br><span class="line">41</span><br><span class="line">42</span><br><span class="line">43</span><br><span class="line">44</span><br><span class="line">45</span><br><span class="line">46</span><br><span class="line">47</span><br><span class="line">48</span><br><span class="line">49</span><br><span class="line">50</span><br><span class="line">51</span><br><span class="line">52</span><br><span class="line">53</span><br><span class="line">54</span><br><span class="line">55</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">async</span> <span class="keyword">function</span> <span class="title function_">navigate</span>(<span class="params"></span></span><br><span class="line"><span class="params">  to: <span class="built_in">number</span> | To | <span class="literal">null</span>,</span></span><br><span class="line"><span class="params">  opts?: RouterNavigateOptions</span></span><br><span class="line"><span class="params"></span>): <span class="title class_">Promise</span>&lt;<span class="built_in">void</span>&gt; &#123;</span><br><span class="line">  <span class="comment">// 传入数字特殊处理，相当于 history.go</span></span><br><span class="line">  <span class="keyword">if</span> (<span class="keyword">typeof</span> to === <span class="string">&quot;number&quot;</span>) &#123;</span><br><span class="line">    init.<span class="property">history</span>.<span class="title function_">go</span>(to);</span><br><span class="line">    <span class="keyword">return</span>;</span><br><span class="line">  &#125;</span><br><span class="line"></span><br><span class="line">  <span class="comment">// 根据参数创建将要导航的地址</span></span><br><span class="line">  <span class="comment">// &#123;pathname: &#x27;/test&#x27;, search: &#x27;&#x27;, hash: &#x27;&#x27;, state: null, key: &#x27;h5jaikrx&#x27;&#125;</span></span><br><span class="line">  nextLocation = &#123;</span><br><span class="line">    ...nextLocation,</span><br><span class="line">    ...init.<span class="property">history</span>.<span class="title function_">encodeLocation</span>(nextLocation),</span><br><span class="line">  &#125;;</span><br><span class="line"></span><br><span class="line">  <span class="comment">// 记录滚动条的位置</span></span><br><span class="line">  <span class="title function_">saveScrollPosition</span>(state.<span class="property">location</span>, state.<span class="property">matches</span>);</span><br><span class="line"></span><br><span class="line">  <span class="comment">// 找出匹配了哪些路由</span></span><br><span class="line">  <span class="keyword">let</span> matched = <span class="title function_">matchRoutes</span>(routesToUse, location, basename);</span><br><span class="line"></span><br><span class="line">  <span class="comment">// 处理 lazy 属性</span></span><br><span class="line">  <span class="keyword">let</span> loadRouteDefinitionsPromises = matches.<span class="title function_">map</span>(<span class="function">(<span class="params">m</span>) =&gt;</span></span><br><span class="line">    m.<span class="property">route</span>.<span class="property">lazy</span></span><br><span class="line">      ? <span class="title function_">loadLazyRouteModule</span>(m.<span class="property">route</span>, mapRouteProperties, manifest)</span><br><span class="line">      : <span class="literal">undefined</span></span><br><span class="line">  );</span><br><span class="line"></span><br><span class="line">  <span class="comment">// 处理路由中需要请求的数据</span></span><br><span class="line">  <span class="keyword">let</span> results = <span class="keyword">await</span> <span class="title function_">dataStrategyImpl</span>(&#123;</span><br><span class="line">    <span class="attr">matches</span>: dsMatches,</span><br><span class="line">    request,</span><br><span class="line">    <span class="attr">params</span>: matches[<span class="number">0</span>].<span class="property">params</span>,</span><br><span class="line">    fetcherKey,</span><br><span class="line">    <span class="attr">context</span>: requestContext,</span><br><span class="line">  &#125;);</span><br><span class="line"></span><br><span class="line">  <span class="comment">// 如果 loader 返回 redirect</span></span><br><span class="line">  <span class="keyword">let</span> redirect = <span class="title function_">findRedirect</span>(loaderResults);</span><br><span class="line">  <span class="keyword">if</span> (redirect) &#123;</span><br><span class="line">    <span class="keyword">await</span> <span class="title function_">startRedirectNavigation</span>(request, redirect.<span class="property">result</span>, <span class="literal">true</span>, &#123;</span><br><span class="line">      replace,</span><br><span class="line">    &#125;);</span><br><span class="line">    <span class="keyword">return</span> &#123; <span class="attr">shortCircuited</span>: <span class="literal">true</span> &#125;;</span><br><span class="line">  &#125;</span><br><span class="line"></span><br><span class="line">  <span class="comment">// 更新内部状态，执行 subscribers 添加的监听方法</span></span><br><span class="line">  <span class="title function_">updateState</span>();</span><br><span class="line">  <span class="comment">// 获取到数据，pushState 提交导航</span></span><br><span class="line">  <span class="keyword">if</span> (pendingAction === <span class="title class_">HistoryAction</span>.<span class="property">Push</span>) &#123;</span><br><span class="line">    init.<span class="property">history</span>.<span class="title function_">push</span>(location, location.<span class="property">state</span>);</span><br><span class="line">  &#125;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+<h4 id="组件更新绑定"><a href="#组件更新绑定" class="headerlink" title="组件更新绑定"></a>组件更新绑定</h4><figure class="highlight js"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">const</span> router = <span class="title function_">createBrowserRouter</span>([</span><br><span class="line">  &#123;</span><br><span class="line">    <span class="attr">path</span>: <span class="string">&quot;/&quot;</span>,</span><br><span class="line">    <span class="attr">element</span>: <span class="language-xml"><span class="tag">&lt;<span class="name">Root</span> /&gt;</span></span>,</span><br><span class="line">    <span class="attr">children</span>: [</span><br><span class="line">      &#123;</span><br><span class="line">        <span class="attr">path</span>: <span class="string">&quot;dashboard&quot;</span>,</span><br><span class="line">        <span class="attr">element</span>: <span class="language-xml"><span class="tag">&lt;<span class="name">Dashboard</span> /&gt;</span></span>,</span><br><span class="line">      &#125;,</span><br><span class="line">      &#123;</span><br><span class="line">        <span class="attr">path</span>: <span class="string">&quot;about&quot;</span>,</span><br><span class="line">        <span class="attr">element</span>: <span class="language-xml"><span class="tag">&lt;<span class="name">About</span> /&gt;</span></span>,</span><br><span class="line">      &#125;,</span><br><span class="line">    ],</span><br><span class="line">  &#125;,</span><br><span class="line">]);</span><br><span class="line"></span><br><span class="line"><span class="language-xml"><span class="tag">&lt;<span class="name">RouterProvider</span> <span class="attr">router</span>=<span class="string">&#123;router&#125;</span> <span class="attr">fallbackElement</span>=<span class="string">&#123;</span>&lt;<span class="attr">BigSpinner</span> /&gt;</span>&#125; /&gt;</span>;</span><br></pre></td></tr></table></figure>
+
+<p>RouterProvider 会注册监听函数到 router 的 subscribes, 当 navigate 执行结束，会执行 subscribes 中注册的回调函数</p>
+<p><strong>当通过 RouterProvider 定义路由时，React Router 会自动优化组件的重用和渲染逻辑</strong> 推荐使用上面的写法，而不是组件的写法。</p>
+<figure class="highlight ts"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br><span class="line">35</span><br><span class="line">36</span><br><span class="line">37</span><br><span class="line">38</span><br><span class="line">39</span><br><span class="line">40</span><br><span class="line">41</span><br><span class="line">42</span><br><span class="line">43</span><br><span class="line">44</span><br><span class="line">45</span><br><span class="line">46</span><br><span class="line">47</span><br><span class="line">48</span><br><span class="line">49</span><br><span class="line">50</span><br><span class="line">51</span><br><span class="line">52</span><br><span class="line">53</span><br><span class="line">54</span><br><span class="line">55</span><br><span class="line">56</span><br><span class="line">57</span><br><span class="line">58</span><br><span class="line">59</span><br><span class="line">60</span><br><span class="line">61</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">export</span> <span class="keyword">function</span> <span class="title function_">RouterProvider</span>(<span class="params">&#123;</span></span><br><span class="line"><span class="params">  fallbackElement,</span></span><br><span class="line"><span class="params">  router,</span></span><br><span class="line"><span class="params">  future,</span></span><br><span class="line"><span class="params">&#125;: RouterProviderProps</span>): <span class="title class_">React</span>.<span class="property">ReactElement</span> &#123;</span><br><span class="line">  <span class="keyword">let</span> [state, setStateImpl] = <span class="title class_">React</span>.<span class="title function_">useState</span>(router.<span class="property">state</span>);</span><br><span class="line"></span><br><span class="line">  <span class="keyword">let</span> setState = <span class="title class_">React</span>.<span class="property">useCallback</span>&lt;<span class="title class_">RouterSubscriber</span>&gt;(</span><br><span class="line">    <span class="function">(<span class="params">newState: RouterState</span>) =&gt;</span> &#123;</span><br><span class="line">      <span class="title function_">setStateImpl</span>(newState);</span><br><span class="line">    &#125;,</span><br><span class="line">    [setStateImpl]</span><br><span class="line">  );</span><br><span class="line"></span><br><span class="line">  <span class="comment">// 导航结束会触发更新</span></span><br><span class="line">  <span class="title class_">React</span>.<span class="title function_">useLayoutEffect</span>(<span class="function">() =&gt;</span> router.<span class="title function_">subscribe</span>(setState), [router, setState]);</span><br><span class="line"></span><br><span class="line">  <span class="keyword">let</span> navigator = <span class="title class_">React</span>.<span class="title function_">useMemo</span>((): <span class="function"><span class="params">Navigator</span> =&gt;</span> &#123;</span><br><span class="line">    <span class="keyword">return</span> &#123;</span><br><span class="line">      <span class="comment">//...</span></span><br><span class="line">    &#125;;</span><br><span class="line">  &#125;, [router]);</span><br><span class="line"></span><br><span class="line">  <span class="keyword">let</span> basename = router.<span class="property">basename</span> || <span class="string">&quot;/&quot;</span>;</span><br><span class="line"></span><br><span class="line">  <span class="keyword">let</span> dataRouterContext = <span class="title class_">React</span>.<span class="title function_">useMemo</span>(</span><br><span class="line">    <span class="function">() =&gt;</span> (&#123;</span><br><span class="line">      router,</span><br><span class="line">      navigator,</span><br><span class="line">      <span class="attr">static</span>: <span class="literal">false</span>,</span><br><span class="line">      basename,</span><br><span class="line">    &#125;),</span><br><span class="line">    [router, navigator, basename]</span><br><span class="line">  );</span><br><span class="line"></span><br><span class="line">  <span class="keyword">return</span> (</span><br><span class="line">    <span class="language-xml"><span class="tag">&lt;&gt;</span></span></span><br><span class="line"><span class="language-xml">      <span class="tag">&lt;<span class="name">DataRouterContext.Provider</span> <span class="attr">value</span>=<span class="string">&#123;dataRouterContext&#125;</span>&gt;</span></span></span><br><span class="line"><span class="language-xml">        <span class="tag">&lt;<span class="name">DataRouterStateContext.Provider</span> <span class="attr">value</span>=<span class="string">&#123;state&#125;</span>&gt;</span></span></span><br><span class="line"><span class="language-xml">          <span class="tag">&lt;<span class="name">Router</span></span></span></span><br><span class="line"><span class="tag"><span class="language-xml">            <span class="attr">basename</span>=<span class="string">&#123;basename&#125;</span></span></span></span><br><span class="line"><span class="tag"><span class="language-xml">            <span class="attr">location</span>=<span class="string">&#123;state.location&#125;</span></span></span></span><br><span class="line"><span class="tag"><span class="language-xml">            <span class="attr">navigationType</span>=<span class="string">&#123;state.historyAction&#125;</span></span></span></span><br><span class="line"><span class="tag"><span class="language-xml">            <span class="attr">navigator</span>=<span class="string">&#123;navigator&#125;</span></span></span></span><br><span class="line"><span class="tag"><span class="language-xml">          &gt;</span></span></span><br><span class="line"><span class="language-xml">            &#123;state.initialized || router.future.v7_partialHydration ? (</span></span><br><span class="line"><span class="language-xml">              <span class="tag">&lt;<span class="name">DataRoutes</span></span></span></span><br><span class="line"><span class="tag"><span class="language-xml">                <span class="attr">routes</span>=<span class="string">&#123;router.routes&#125;</span></span></span></span><br><span class="line"><span class="tag"><span class="language-xml">                <span class="attr">future</span>=<span class="string">&#123;router.future&#125;</span></span></span></span><br><span class="line"><span class="tag"><span class="language-xml">                <span class="attr">state</span>=<span class="string">&#123;state&#125;</span></span></span></span><br><span class="line"><span class="tag"><span class="language-xml">              /&gt;</span></span></span><br><span class="line"><span class="language-xml">            ) : (</span></span><br><span class="line"><span class="language-xml">              fallbackElement</span></span><br><span class="line"><span class="language-xml">            )&#125;</span></span><br><span class="line"><span class="language-xml">          <span class="tag">&lt;/<span class="name">Router</span>&gt;</span></span></span><br><span class="line"><span class="language-xml">        <span class="tag">&lt;/<span class="name">DataRouterStateContext.Provider</span>&gt;</span></span></span><br><span class="line"><span class="language-xml">      <span class="tag">&lt;/<span class="name">DataRouterContext.Provider</span>&gt;</span></span></span><br><span class="line"><span class="language-xml">      &#123;null&#125;</span></span><br><span class="line"><span class="language-xml">    <span class="tag">&lt;/&gt;</span></span></span><br><span class="line">  );</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+<p>DataRoutes 会递归处理 routers 数组，生成嵌套关系的组件树。</p>
+<figure class="highlight ts"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br><span class="line">35</span><br><span class="line">36</span><br><span class="line">37</span><br><span class="line">38</span><br><span class="line">39</span><br><span class="line">40</span><br><span class="line">41</span><br><span class="line">42</span><br><span class="line">43</span><br><span class="line">44</span><br><span class="line">45</span><br><span class="line">46</span><br><span class="line">47</span><br><span class="line">48</span><br><span class="line">49</span><br><span class="line">50</span><br><span class="line">51</span><br><span class="line">52</span><br><span class="line">53</span><br><span class="line">54</span><br><span class="line">55</span><br><span class="line">56</span><br><span class="line">57</span><br><span class="line">58</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">if</span> (dataRouterState &amp;&amp; future &amp;&amp; future.<span class="property">v7_partialHydration</span>) &#123;</span><br><span class="line">  <span class="keyword">for</span> (<span class="keyword">let</span> i = <span class="number">0</span>; i &lt; renderedMatches.<span class="property">length</span>; i++) &#123;</span><br><span class="line">    <span class="keyword">let</span> match = renderedMatches[i];</span><br><span class="line">    <span class="keyword">if</span> (match.<span class="property">route</span>.<span class="property">HydrateFallback</span> || match.<span class="property">route</span>.<span class="property">hydrateFallbackElement</span>) &#123;</span><br><span class="line">      fallbackIndex = i;</span><br><span class="line">    &#125;</span><br><span class="line"></span><br><span class="line">    <span class="keyword">if</span> (match.<span class="property">route</span>.<span class="property">id</span>) &#123;</span><br><span class="line">      <span class="keyword">let</span> &#123; loaderData, errors &#125; = dataRouterState;</span><br><span class="line">      <span class="keyword">let</span> needsToRunLoader =</span><br><span class="line">        match.<span class="property">route</span>.<span class="property">loader</span> &amp;&amp;</span><br><span class="line">        loaderData[match.<span class="property">route</span>.<span class="property">id</span>] === <span class="literal">undefined</span> &amp;&amp;</span><br><span class="line">        (!errors || errors[match.<span class="property">route</span>.<span class="property">id</span>] === <span class="literal">undefined</span>);</span><br><span class="line">      <span class="keyword">if</span> (match.<span class="property">route</span>.<span class="property">lazy</span> || needsToRunLoader) &#123;</span><br><span class="line">        renderFallback = <span class="literal">true</span>;</span><br><span class="line">        <span class="keyword">if</span> (fallbackIndex &gt;= <span class="number">0</span>) &#123;</span><br><span class="line">          renderedMatches = renderedMatches.<span class="title function_">slice</span>(<span class="number">0</span>, fallbackIndex + <span class="number">1</span>);</span><br><span class="line">        &#125; <span class="keyword">else</span> &#123;</span><br><span class="line">          renderedMatches = [renderedMatches[<span class="number">0</span>]];</span><br><span class="line">        &#125;</span><br><span class="line">        <span class="keyword">break</span>;</span><br><span class="line">      &#125;</span><br><span class="line">    &#125;</span><br><span class="line">  &#125;</span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line"><span class="keyword">return</span> renderedMatches.<span class="title function_">reduceRight</span>(<span class="function">(<span class="params">outlet, match, index</span>) =&gt;</span> &#123;</span><br><span class="line">    <span class="keyword">let</span> <span class="attr">error</span>: <span class="built_in">any</span>;</span><br><span class="line">    <span class="keyword">let</span> shouldRenderHydrateFallback = <span class="literal">false</span>;</span><br><span class="line">    <span class="keyword">let</span> <span class="attr">errorElement</span>: <span class="title class_">React</span>.<span class="property">ReactNode</span> | <span class="literal">null</span> = <span class="literal">null</span>;</span><br><span class="line">    <span class="keyword">let</span> <span class="attr">hydrateFallbackElement</span>: <span class="title class_">React</span>.<span class="property">ReactNode</span> | <span class="literal">null</span> = <span class="literal">null</span>;</span><br><span class="line">    <span class="keyword">let</span> matches = parentMatches.<span class="title function_">concat</span>(renderedMatches.<span class="title function_">slice</span>(<span class="number">0</span>, index + <span class="number">1</span>));</span><br><span class="line">    <span class="keyword">let</span> <span class="title function_">getChildren</span> = (<span class="params"></span>) =&gt; &#123;</span><br><span class="line">      <span class="keyword">let</span> <span class="attr">children</span>: <span class="title class_">React</span>.<span class="property">ReactNode</span>;</span><br><span class="line">      <span class="keyword">if</span> (error) &#123;</span><br><span class="line">        children = errorElement;</span><br><span class="line">      &#125; <span class="keyword">else</span> <span class="keyword">if</span> (shouldRenderHydrateFallback) &#123;</span><br><span class="line">        children = hydrateFallbackElement;</span><br><span class="line">      &#125; <span class="keyword">else</span> <span class="keyword">if</span> (match.<span class="property">route</span>.<span class="property">Component</span>) &#123;</span><br><span class="line">        children = <span class="language-xml"><span class="tag">&lt;<span class="name">match.route.Component</span> /&gt;</span></span>;</span><br><span class="line">      &#125; <span class="keyword">else</span> <span class="keyword">if</span> (match.<span class="property">route</span>.<span class="property">element</span>) &#123;</span><br><span class="line">        children = match.<span class="property">route</span>.<span class="property">element</span>;</span><br><span class="line">      &#125; <span class="keyword">else</span> &#123;</span><br><span class="line">        children = outlet;</span><br><span class="line">      &#125;</span><br><span class="line">      <span class="keyword">return</span> (</span><br><span class="line">        <span class="language-xml"><span class="tag">&lt;<span class="name">RenderedRoute</span></span></span></span><br><span class="line"><span class="tag"><span class="language-xml">          <span class="attr">match</span>=<span class="string">&#123;match&#125;</span></span></span></span><br><span class="line"><span class="tag"><span class="language-xml">          <span class="attr">routeContext</span>=<span class="string">&#123;&#123;</span></span></span></span><br><span class="line"><span class="tag"><span class="language-xml">            <span class="attr">outlet</span>,</span></span></span><br><span class="line"><span class="tag"><span class="language-xml">            <span class="attr">matches</span>,</span></span></span><br><span class="line"><span class="tag"><span class="language-xml">            <span class="attr">isDataRoute:</span> <span class="attr">dataRouterState</span> != <span class="string">null,</span></span></span></span><br><span class="line"><span class="tag"><span class="language-xml">          &#125;&#125;</span></span></span><br><span class="line"><span class="tag"><span class="language-xml">          <span class="attr">children</span>=<span class="string">&#123;children&#125;</span></span></span></span><br><span class="line"><span class="tag"><span class="language-xml">        /&gt;</span></span></span><br><span class="line">      );</span><br><span class="line">    &#125;;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+<h4 id="组件路由是如何工作的"><a href="#组件路由是如何工作的" class="headerlink" title="组件路由是如何工作的"></a>组件路由是如何工作的</h4><p>可以使用组件的方式来组织路由，Routes 会收集它下面的所有 Route 并渲染匹配的路由。</p>
+<figure class="highlight ts"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">function</span> <span class="title function_">App</span>(<span class="params"></span>) &#123;</span><br><span class="line">  <span class="keyword">return</span> (</span><br><span class="line">    <span class="language-xml"><span class="tag">&lt;<span class="name">BrowserRouter</span> <span class="attr">basename</span>=<span class="string">&quot;/app&quot;</span>&gt;</span></span></span><br><span class="line"><span class="language-xml">      <span class="tag">&lt;<span class="name">Routes</span>&gt;</span></span></span><br><span class="line"><span class="language-xml">        <span class="tag">&lt;<span class="name">Route</span> <span class="attr">path</span>=<span class="string">&quot;/&quot;</span> /&gt;</span> &#123;/* 👈 Renders at /app/ */&#125;</span></span><br><span class="line"><span class="language-xml">      <span class="tag">&lt;/<span class="name">Routes</span>&gt;</span></span></span><br><span class="line"><span class="language-xml">    <span class="tag">&lt;/<span class="name">BrowserRouter</span>&gt;</span></span></span><br><span class="line">  );</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+<p>Routers 会遍历自己所有的子元素，解析出组件的树结构，同样会交给上面处理 renderedMatches 的方法</p>
+<figure class="highlight ts"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">export</span> <span class="keyword">function</span> <span class="title function_">Routes</span>(<span class="params">&#123;</span></span><br><span class="line"><span class="params">  children,</span></span><br><span class="line"><span class="params">  location,</span></span><br><span class="line"><span class="params">&#125;: RoutesProps</span>): <span class="title class_">React</span>.<span class="property">ReactElement</span> | <span class="literal">null</span> &#123;</span><br><span class="line">  <span class="keyword">function</span> <span class="title function_">createRoutesFromChildren</span>(<span class="params">children</span>) &#123;</span><br><span class="line">    <span class="keyword">let</span> <span class="attr">routes</span>: <span class="title class_">RouteObject</span>[] = [];</span><br><span class="line">    <span class="title class_">React</span>.<span class="property">Children</span>.<span class="title function_">forEach</span>(children, <span class="function">(<span class="params">element, index</span>) =&gt;</span> &#123;</span><br><span class="line">      <span class="keyword">if</span> (!<span class="title class_">React</span>.<span class="title function_">isValidElement</span>(element)) &#123;</span><br><span class="line">        <span class="keyword">return</span>;</span><br><span class="line">      &#125;</span><br><span class="line"></span><br><span class="line">      <span class="keyword">let</span> treePath = [...parentPath, index];</span><br><span class="line"></span><br><span class="line">      <span class="keyword">let</span> <span class="attr">route</span>: <span class="title class_">RouteObject</span> = &#123;&#125;;</span><br><span class="line"></span><br><span class="line">      <span class="keyword">if</span> (element.<span class="property">props</span>.<span class="property">children</span>) &#123;</span><br><span class="line">        route.<span class="property">children</span> = <span class="title function_">createRoutesFromChildren</span>(</span><br><span class="line">          element.<span class="property">props</span>.<span class="property">children</span>,</span><br><span class="line">          treePath</span><br><span class="line">        );</span><br><span class="line">      &#125;</span><br><span class="line"></span><br><span class="line">      routes.<span class="title function_">push</span>(route);</span><br><span class="line">    &#125;);</span><br><span class="line"></span><br><span class="line">    <span class="keyword">return</span> routes;</span><br><span class="line">  &#125;</span><br><span class="line">  <span class="keyword">return</span> <span class="title function_">useRoutes</span>(<span class="title function_">createRoutesFromChildren</span>(children));</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+<h4 id="全局拦截器"><a href="#全局拦截器" class="headerlink" title="全局拦截器"></a>全局拦截器</h4><figure class="highlight js"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">const</span> <span class="title function_">GlobalInterceptor</span> = (<span class="params">props</span>) =&gt; &#123;</span><br><span class="line">  <span class="keyword">const</span> location = <span class="title function_">useLocation</span>();</span><br><span class="line"></span><br><span class="line">  <span class="keyword">if</span> (!<span class="title function_">isAuthenticated</span>() &amp;&amp; location.<span class="property">pathname</span> !== <span class="string">&quot;/login&quot;</span>)</span><br><span class="line">    <span class="keyword">return</span> <span class="language-xml"><span class="tag">&lt;<span class="name">Navigate</span> <span class="attr">to</span>=<span class="string">&quot;/login&quot;</span> <span class="attr">replace</span>=<span class="string">&#123;true&#125;</span> /&gt;</span></span>;</span><br><span class="line">  <span class="keyword">return</span> props.<span class="property">children</span>;</span><br><span class="line">&#125;;</span><br><span class="line"></span><br><span class="line"><span class="keyword">const</span> <span class="title function_">App</span> = (<span class="params"></span>) =&gt; &#123;</span><br><span class="line">  <span class="keyword">return</span> (</span><br><span class="line">    <span class="language-xml"><span class="tag">&lt;<span class="name">Router</span>&gt;</span></span></span><br><span class="line"><span class="language-xml">      <span class="tag">&lt;<span class="name">GlobalInterceptor</span>&gt;</span></span></span><br><span class="line"><span class="language-xml">        <span class="tag">&lt;<span class="name">Routes</span>&gt;</span></span></span><br><span class="line"><span class="language-xml">          <span class="tag">&lt;<span class="name">Route</span> <span class="attr">path</span>=<span class="string">&quot;/dashboard&quot;</span> <span class="attr">element</span>=<span class="string">&#123;</span>&lt;<span class="attr">Dashboard</span> /&gt;</span>&#125; /&gt;</span></span><br><span class="line"><span class="language-xml">        <span class="tag">&lt;/<span class="name">Routes</span>&gt;</span></span></span><br><span class="line"><span class="language-xml">      <span class="tag">&lt;/<span class="name">GlobalInterceptor</span>&gt;</span></span></span><br><span class="line"><span class="language-xml">    <span class="tag">&lt;/<span class="name">Router</span>&gt;</span></span></span><br><span class="line">  );</span><br><span class="line">&#125;;</span><br></pre></td></tr></table></figure>
+ 
+      <!-- reward -->
+      
+      <div id="reword-out">
+        <div id="reward-btn">
+          打赏
+        </div>
+      </div>
+      
+    </div>
+    
+
+    <!-- copyright -->
+    
+    <div class="declare">
+      <ul class="post-copyright">
+        <li>
+          <i class="ri-copyright-line"></i>
+          <strong>版权声明： </strong>
+          
+          本博客所有文章除特别声明外，著作权归作者所有。转载请注明出处！
+          
+        </li>
+      </ul>
+    </div>
+    
+    <footer class="article-footer">
+       
+  <ul class="article-tag-list" itemprop="keywords"><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/React/" rel="tag">React</a></li><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/React-Router/" rel="tag">React Router</a></li></ul>
+
+    </footer>
+  </div>
+
+   
+  <nav class="article-nav">
+    
+      <a href="/posts/1430ebf25b0e/" class="article-nav-link">
+        <strong class="article-nav-caption">上一篇</strong>
+        <div class="article-nav-title">
+          
+            鼠标，触摸，指针事件
+          
+        </div>
+      </a>
+    
+    
+      <a href="/posts/2c770da8eb2f/" class="article-nav-link">
+        <strong class="article-nav-caption">下一篇</strong>
+        <div class="article-nav-title">解析 React Transition Group ①</div>
+      </a>
+    
+  </nav>
+
+  
+   
+<div class="gitalk" id="gitalk-container"></div>
+
+<link rel="stylesheet" href="https://cdn.staticfile.org/gitalk/1.7.2/gitalk.min.css">
+
+
+<script src="https://cdn.staticfile.org/gitalk/1.7.2/gitalk.min.js"></script>
+
+
+<script src="https://cdn.staticfile.org/blueimp-md5/2.19.0/js/md5.min.js"></script>
+
+<script type="text/javascript">
+  var gitalk = new Gitalk({
+    clientID: 'bce2317b25da7c3c18f6',
+    clientSecret: 'e0ab868ca9054234798be82c2b1c0c9dd8632307',
+    repo: 'noopn.github.io',
+    owner: 'noopn',
+    admin: ['noopn'],
+    // id: location.pathname,      // Ensure uniqueness and length less than 50
+    id: md5(location.pathname),
+    distractionFreeMode: false,  // Facebook-like distraction free mode
+    pagerDirection: 'last'
+  })
+
+  gitalk.render('gitalk-container')
+</script>
+
+     
+</article>
+
+</section>
+      <footer class="footer">
+  <div class="outer">
+    <ul>
+      <li>
+        Copyrights &copy;
+        2015-2025
+        <i class="ri-heart-fill heart_icon"></i> SunZhiqi
+      </li>
+    </ul>
+    <ul>
+      <li>
+        
+      </li>
+    </ul>
+    <ul>
+      <li>
+        
+      </li>
+    </ul>
+    <ul>
+      
+    </ul>
+    <ul>
+      
+    </ul>
+    <ul>
+      <li>
+        <!-- cnzz统计 -->
+        
+      </li>
+    </ul>
+  </div>
+</footer>    
+    </main>
+    <div class="float_btns">
+      <div class="totop" id="totop">
+  <i class="ri-arrow-up-line"></i>
+</div>
+
+    </div>
+    <aside class="sidebar on">
+      <button class="navbar-toggle"></button>
+<nav class="navbar">
+  
+  <div class="logo">
+    <a href="/"><img src="/images/ayer-side.png" alt="四月八日"></a>
+  </div>
+  
+  <ul class="nav nav-main">
+    
+    <li class="nav-item">
+      <a class="nav-item-link" href="/">主页</a>
+    </li>
+    
+    <li class="nav-item">
+      <a class="nav-item-link" href="/archives">归档</a>
+    </li>
+    
+    <li class="nav-item">
+      <a class="nav-item-link" href="/categories">分类</a>
+    </li>
+    
+    <li class="nav-item">
+      <a class="nav-item-link" href="/tags">标签</a>
+    </li>
+    
+  </ul>
+</nav>
+<nav class="navbar navbar-bottom">
+  <ul class="nav">
+    <li class="nav-item">
+      
+      <a class="nav-item-link nav-item-search"  title="搜索">
+        <i class="ri-search-line"></i>
+      </a>
+      
+      
+    </li>
+  </ul>
+</nav>
+<div class="search-form-wrap">
+  <div class="local-search local-search-plugin">
+  <input type="search" id="local-search-input" class="local-search-input" placeholder="Search...">
+  <div id="local-search-result" class="local-search-result"></div>
+</div>
+</div>
+    </aside>
+    <div id="mask"></div>
+
+<!-- #reward -->
+<div id="reward">
+  <span class="close"><i class="ri-close-line"></i></span>
+  <p class="reward-p"><i class="ri-cup-line"></i>此时无声胜有声！</p>
+  <div class="reward-box">
+    
+    <div class="reward-item">
+      <img class="reward-img" src="/images/alipay.jpg">
+      <span class="reward-type">支付宝</span>
+    </div>
+    
+    
+    <div class="reward-item">
+      <img class="reward-img" src="/images/wechat.jpg">
+      <span class="reward-type">微信</span>
+    </div>
+    
+  </div>
+</div>
+    
+<script src="/js/jquery-3.6.0.min.js"></script>
+ 
+<script src="/js/lazyload.min.js"></script>
+
+<!-- Tocbot -->
+ 
+<script src="/js/tocbot.min.js"></script>
+
+<script>
+  tocbot.init({
+    tocSelector: ".tocbot",
+    contentSelector: ".article-entry",
+    headingSelector: "h1, h2, h3, h4, h5, h6",
+    hasInnerContainers: true,
+    scrollSmooth: true,
+    scrollContainer: "main",
+    positionFixedSelector: ".tocbot",
+    positionFixedClass: "is-position-fixed",
+    fixedSidebarOffset: "auto",
+  });
+</script>
+
+<script src="/js/jquery.modal.min.js"></script>
+<link rel="stylesheet" href="/css/jquery.modal.min.css" />
+<script src="/js/jquery.justifiedGallery.min.js"></script>
+
+<script src="/dist/main.js"></script>
+
+<!-- ImageViewer -->
+ <!-- Root element of PhotoSwipe. Must have class pswp. -->
+<div class="pswp" tabindex="-1" role="dialog" aria-hidden="true">
+  <!-- Background of PhotoSwipe. 
+         It's a separate element as animating opacity is faster than rgba(). -->
+  <div class="pswp__bg"></div>
+
+  <!-- Slides wrapper with overflow:hidden. -->
+  <div class="pswp__scroll-wrap">
+    <!-- Container that holds slides. 
+            PhotoSwipe keeps only 3 of them in the DOM to save memory.
+            Don't modify these 3 pswp__item elements, data is added later on. -->
+    <div class="pswp__container">
+      <div class="pswp__item"></div>
+      <div class="pswp__item"></div>
+      <div class="pswp__item"></div>
+    </div>
+
+    <!-- Default (PhotoSwipeUI_Default) interface on top of sliding area. Can be changed. -->
+    <div class="pswp__ui pswp__ui--hidden">
+      <div class="pswp__top-bar">
+        <!--  Controls are self-explanatory. Order can be changed. -->
+
+        <div class="pswp__counter"></div>
+
+        <button
+          class="pswp__button pswp__button--close"
+          title="Close (Esc)"
+        ></button>
+
+        <button
+          class="pswp__button pswp__button--share"
+          style="display: none"
+          title="Share"
+        ></button>
+
+        <button
+          class="pswp__button pswp__button--fs"
+          title="Toggle fullscreen"
+        ></button>
+
+        <button
+          class="pswp__button pswp__button--zoom"
+          title="Zoom in/out"
+        ></button>
+
+        <!-- Preloader demo http://codepen.io/dimsemenov/pen/yyBWoR -->
+        <!-- element will get class pswp__preloader--active when preloader is running -->
+        <div class="pswp__preloader">
+          <div class="pswp__preloader__icn">
+            <div class="pswp__preloader__cut">
+              <div class="pswp__preloader__donut"></div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <div class="pswp__share-modal pswp__share-modal--hidden pswp__single-tap">
+        <div class="pswp__share-tooltip"></div>
+      </div>
+
+      <button
+        class="pswp__button pswp__button--arrow--left"
+        title="Previous (arrow left)"
+      ></button>
+
+      <button
+        class="pswp__button pswp__button--arrow--right"
+        title="Next (arrow right)"
+      ></button>
+
+      <div class="pswp__caption">
+        <div class="pswp__caption__center"></div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<link rel="stylesheet" href="/css/photoswipe.min.css" />
+<link rel="stylesheet" href="/css/default-skin.min.css" />
+<script src="/js/photoswipe.min.js"></script>
+<script src="/js/photoswipe-ui-default.min.js"></script>
+
+<script>
+  function viewer_init() {
+    let pswpElement = document.querySelectorAll(".pswp")[0];
+    let $imgArr = document.querySelectorAll(
+      ".article-entry img:not(.reward-img)"
+    );
+
+    $imgArr.forEach(($em, i) => {
+      $em.onclick = () => {
+        // slider展开状态
+        // todo: 这样不好，后面改成状态
+        if (document.querySelector(".left-col.show")) return;
+        let items = [];
+        $imgArr.forEach(($em2, i2) => {
+          let img = $em2.getAttribute("data-idx", i2);
+          let src =
+            $em2.getAttribute("data-target") || $em2.getAttribute("src");
+          let title = $em2.getAttribute("alt");
+          // 获得原图尺寸
+          const image = new Image();
+          image.src = src;
+          items.push({
+            src: src,
+            w: image.width || $em2.width,
+            h: image.height || $em2.height,
+            title: title,
+          });
+        });
+        var gallery = new PhotoSwipe(pswpElement, PhotoSwipeUI_Default, items, {
+          index: parseInt(i),
+        });
+        gallery.init();
+      };
+    });
+  }
+  viewer_init();
+</script>
+ 
+<!-- MathJax -->
+ <script type="text/x-mathjax-config">
+  MathJax.Hub.Config({
+      tex2jax: {
+          inlineMath: [ ['$','$'], ["\\(","\\)"]  ],
+          processEscapes: true,
+          skipTags: ['script', 'noscript', 'style', 'textarea', 'pre', 'code']
+      }
+  });
+
+  MathJax.Hub.Queue(function() {
+      var all = MathJax.Hub.getAllJax(), i;
+      for(i=0; i < all.length; i += 1) {
+          all[i].SourceElement().parentNode.className += ' has-jax';
+      }
+  });
+</script>
+
+<script src="/js/MathJax.js"></script>
+<script src="/js/TeX-AMS-MML_HTMLorMML-full.js"></script>
+
+<script>
+  var ayerConfig = {
+    mathjax: true,
+  };
+</script>
+
+<!-- Katex -->
+
+<!-- busuanzi  -->
+
+<!-- ClickLove -->
+
+<!-- ClickBoom1 -->
+
+<!-- ClickBoom2 -->
+
+<!-- CodeCopy -->
+ 
+<link rel="stylesheet" href="/css/clipboard.css">
+ <script src="/js/clipboard.min.js"></script>
+<script>
+  function wait(callback, seconds) {
+    var timelag = null;
+    timelag = window.setTimeout(callback, seconds);
+  }
+  !(function (e, t, a) {
+    var initCopyCode = function () {
+      var copyHtml = "";
+      copyHtml += '<button class="btn-copy" data-clipboard-snippet="">';
+      copyHtml += '<i class="ri-file-copy-2-line"></i><span>COPY</span>';
+      copyHtml += "</button>";
+      $(".highlight .code pre").before(copyHtml);
+      $(".article pre code").before(copyHtml);
+      var clipboard = new ClipboardJS(".btn-copy", {
+        target: function (trigger) {
+          return trigger.nextElementSibling;
+        },
+      });
+      clipboard.on("success", function (e) {
+        let $btn = $(e.trigger);
+        $btn.addClass("copied");
+        let $icon = $($btn.find("i"));
+        $icon.removeClass("ri-file-copy-2-line");
+        $icon.addClass("ri-checkbox-circle-line");
+        let $span = $($btn.find("span"));
+        $span[0].innerText = "COPIED";
+
+        wait(function () {
+          // 等待两秒钟后恢复
+          $icon.removeClass("ri-checkbox-circle-line");
+          $icon.addClass("ri-file-copy-2-line");
+          $span[0].innerText = "COPY";
+        }, 2000);
+      });
+      clipboard.on("error", function (e) {
+        e.clearSelection();
+        let $btn = $(e.trigger);
+        $btn.addClass("copy-failed");
+        let $icon = $($btn.find("i"));
+        $icon.removeClass("ri-file-copy-2-line");
+        $icon.addClass("ri-time-line");
+        let $span = $($btn.find("span"));
+        $span[0].innerText = "COPY FAILED";
+
+        wait(function () {
+          // 等待两秒钟后恢复
+          $icon.removeClass("ri-time-line");
+          $icon.addClass("ri-file-copy-2-line");
+          $span[0].innerText = "COPY";
+        }, 2000);
+      });
+    };
+    initCopyCode();
+  })(window, document);
+</script>
+ 
+<!-- CanvasBackground -->
+
+<script>
+  if (window.mermaid) {
+    mermaid.initialize({ theme: "default" });
+  }
+</script>
+
+
+    
+    
+
+  </div>
+</body>
+
+</html>

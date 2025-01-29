@@ -112,6 +112,253 @@
     
     
     <article
+  id="post-react/基础/useEffect指南"
+  class="article article-type-post"
+  itemscope
+  itemprop="blogPost"
+  data-scroll-reveal
+>
+  <div class="article-inner">
+    
+    <header class="article-header">
+       
+<h2 itemprop="name">
+  <a class="article-title" href="/posts/4af037980b34/"
+    >useEffect指南</a> 
+</h2>
+ 
+
+      
+    </header>
+     
+    <div class="article-meta">
+      <a href="/posts/4af037980b34/" class="article-date">
+  <time datetime="2021-06-02T01:00:44.000Z" itemprop="datePublished">2021-06-02</time>
+</a> 
+  <div class="article-category">
+    <a class="article-category-link" href="/categories/React/">React</a> / <a class="article-category-link" href="/categories/React/%E5%9F%BA%E7%A1%80/">基础</a>
+  </div>
+   
+    </div>
+      
+    <div class="article-entry" itemprop="articleBody">
+       
+  <h4 id="每次渲染时，UseEffect都是一个新的自己"><a href="#每次渲染时，UseEffect都是一个新的自己" class="headerlink" title="每次渲染时，UseEffect都是一个新的自己"></a>每次渲染时，UseEffect都是一个新的自己</h4><p>每次重新渲染的时，useEffect都会重新执行，而且如果没有添加依赖项数组的时候，每个useEffect都是全新的</p>
+<p>而且useEffect内部用到的变量都是属于，当前此次执行时捕获到的变量，所以如下：</p>
+<figure class="highlight javascript"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">function</span> <span class="title function_">Counter</span>(<span class="params"></span>) &#123;</span><br><span class="line">  <span class="keyword">const</span> [count, setCount] = <span class="title function_">useState</span>(<span class="number">0</span>);</span><br><span class="line"></span><br><span class="line">  <span class="keyword">function</span> <span class="title function_">handleAlertClick</span>(<span class="params"></span>) &#123;</span><br><span class="line">    <span class="built_in">setTimeout</span>(<span class="function">() =&gt;</span> &#123;</span><br><span class="line">      <span class="title function_">alert</span>(<span class="string">&#x27;You clicked on: &#x27;</span> + count);</span><br><span class="line">    &#125;, <span class="number">3000</span>);</span><br><span class="line">  &#125;</span><br><span class="line"></span><br><span class="line">  <span class="keyword">return</span> (</span><br><span class="line">    <span class="language-xml"><span class="tag">&lt;<span class="name">div</span>&gt;</span></span></span><br><span class="line"><span class="language-xml">      <span class="tag">&lt;<span class="name">p</span>&gt;</span>You clicked &#123;count&#125; times<span class="tag">&lt;/<span class="name">p</span>&gt;</span></span></span><br><span class="line"><span class="language-xml">      <span class="tag">&lt;<span class="name">button</span> <span class="attr">onClick</span>=<span class="string">&#123;()</span> =&gt;</span> setCount(count + 1)&#125;&gt;</span></span><br><span class="line"><span class="language-xml">        Click me</span></span><br><span class="line"><span class="language-xml">      <span class="tag">&lt;/<span class="name">button</span>&gt;</span></span></span><br><span class="line"><span class="language-xml">      <span class="tag">&lt;<span class="name">button</span> <span class="attr">onClick</span>=<span class="string">&#123;handleAlertClick&#125;</span>&gt;</span></span></span><br><span class="line"><span class="language-xml">        Show alert</span></span><br><span class="line"><span class="language-xml">      <span class="tag">&lt;/<span class="name">button</span>&gt;</span></span></span><br><span class="line"><span class="language-xml">    <span class="tag">&lt;/<span class="name">div</span>&gt;</span></span></span><br><span class="line">  );</span><br><span class="line">&#125; </span><br></pre></td></tr></table></figure>
+
+<p>点击alert按钮之后快速点击click按钮，在定时器结束之后并不会弹出修改后的值，而是弹出在点击alert时useEffect捕获到的状态</p>
+<p>如果你想读取一个过去或是未来的值，你可以用一个Ref去保存，因此对数据的操作不是在react的默认行为中，这样虽然显得代码不够干净，但可以确认是需要这样做。</p>
+<h4 id="useEffect中的清理"><a href="#useEffect中的清理" class="headerlink" title="useEffect中的清理"></a>useEffect中的清理</h4><p>React只会在浏览器绘制后运行effects。这使得你的应用更流畅因为大多数effects并不会阻塞屏幕的更新。Effect的清除同样被延迟了。<strong>上一次的effect会在重新渲染后被清除</strong></p>
+<p>执行的过程应该是: <strong>渲染新UI -&gt; 清除旧的Effect -&gt; 执行新的Effect</strong></p>
+<p><strong>清除函数只能读取到在旧的Effect执行时捕获到的变量</strong></p>
+<h4 id="Effect依赖"><a href="#Effect依赖" class="headerlink" title="Effect依赖"></a>Effect依赖</h4><p>React它统一描述了初始渲染和之后的更新，React会根据我们当前的props和state同步到DOM，useEffect使你能够根据props和state同步React tree之外的东西，也包括常说的副作用。</p>
+<p>如果你试图写一个effect会根据是否第一次渲染而表现不一致，可能违背了React初衷</p>
+<p>但是如果诚实的告诉了Effect依赖，还可能存在问题:</p>
+<figure class="highlight javascript"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br></pre></td><td class="code"><pre><span class="line"><span class="title function_">useEffect</span>(<span class="function">() =&gt;</span> &#123;</span><br><span class="line">  <span class="keyword">const</span> id = <span class="built_in">setInterval</span>(<span class="function">() =&gt;</span> &#123;</span><br><span class="line">    <span class="title function_">setCount</span>(count + <span class="number">1</span>);</span><br><span class="line">  &#125;, <span class="number">1000</span>);</span><br><span class="line">  <span class="keyword">return</span> <span class="function">() =&gt;</span> <span class="built_in">clearInterval</span>(id);</span><br><span class="line">&#125;, [count]);</span><br></pre></td></tr></table></figure>
+
+<p>由于依赖项的改变定时器被清除</p>
+<p>有两种方法可以解决，使用setState回调函数，或者使用useReducer, <strong>如果useReducer还需要依赖其他的内部变量，可以吧useReducer放到函数组建内部定义</strong></p>
+<p>有的时候可能会觉得一个函数不会变换，所以没有加到依赖中，但事实上</p>
+<figure class="highlight javascript"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">function</span> <span class="title function_">SearchResults</span>(<span class="params"></span>) &#123;</span><br><span class="line">  <span class="keyword">const</span> [query, setQuery] = <span class="title function_">useState</span>(<span class="string">&#x27;react&#x27;</span>);</span><br><span class="line"></span><br><span class="line">  <span class="keyword">function</span> <span class="title function_">getFetchUrl</span>(<span class="params"></span>) &#123;</span><br><span class="line">    <span class="keyword">return</span> <span class="string">&#x27;https://hn.algolia.com/api/v1/search?query=&#x27;</span> + query;</span><br><span class="line">  &#125;</span><br><span class="line"></span><br><span class="line">  <span class="keyword">async</span> <span class="keyword">function</span> <span class="title function_">fetchData</span>(<span class="params"></span>) &#123;</span><br><span class="line">    <span class="keyword">const</span> result = <span class="keyword">await</span> <span class="title function_">axios</span>(<span class="title function_">getFetchUrl</span>());</span><br><span class="line">    <span class="title function_">setData</span>(result.<span class="property">data</span>);</span><br><span class="line">  &#125;</span><br><span class="line"></span><br><span class="line">  <span class="title function_">useEffect</span>(<span class="function">() =&gt;</span> &#123;</span><br><span class="line">    <span class="title function_">fetchData</span>();</span><br><span class="line">  &#125;, []);</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+<p>函数依赖的参数可能在其他的方法中变化</p>
+<p>简单处理的话可以吧相关的函数都放到useEffect中，而依赖项只是简单的query</p>
+<p><strong>另外也可以吧getFetchUrl放到组件外部，把query当做参数传入，或者使用useCallback包裹getFetchUrl</strong></p>
+<h4 id="竞态问题"><a href="#竞态问题" class="headerlink" title="竞态问题"></a>竞态问题</h4><figure class="highlight javascript"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">class</span> <span class="title class_">Article</span> <span class="keyword">extends</span> <span class="title class_ inherited__">Component</span> &#123;</span><br><span class="line">  state = &#123;</span><br><span class="line">    <span class="attr">article</span>: <span class="literal">null</span></span><br><span class="line">  &#125;;</span><br><span class="line">  <span class="title function_">componentDidMount</span>(<span class="params"></span>) &#123;</span><br><span class="line">    <span class="variable language_">this</span>.<span class="title function_">fetchData</span>(<span class="variable language_">this</span>.<span class="property">props</span>.<span class="property">id</span>);</span><br><span class="line">  &#125;</span><br><span class="line">  <span class="title function_">componentDidUpdate</span>(<span class="params">prevProps</span>) &#123;</span><br><span class="line">    <span class="keyword">if</span> (prevProps.<span class="property">id</span> !== <span class="variable language_">this</span>.<span class="property">props</span>.<span class="property">id</span>) &#123;</span><br><span class="line">      <span class="variable language_">this</span>.<span class="title function_">fetchData</span>(<span class="variable language_">this</span>.<span class="property">props</span>.<span class="property">id</span>);</span><br><span class="line">    &#125;</span><br><span class="line">  &#125;</span><br><span class="line">  <span class="keyword">async</span> <span class="title function_">fetchData</span>(<span class="params">id</span>) &#123;</span><br><span class="line">    <span class="keyword">const</span> article = <span class="keyword">await</span> <span class="variable constant_">API</span>.<span class="title function_">fetchArticle</span>(id);</span><br><span class="line">    <span class="variable language_">this</span>.<span class="title function_">setState</span>(&#123; article &#125;);</span><br><span class="line">  &#125;</span><br><span class="line">  <span class="comment">// ...</span></span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+<p>如果componentDidUpdate中的请求比componentDidMount中的请求慢，那么更新中的请求数据会被初始化的请求数据覆盖</p>
+<p>我们想做的是，可以打断旧的更新</p>
+<figure class="highlight javascript"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">function</span> <span class="title function_">Article</span>(<span class="params">&#123; id &#125;</span>) &#123;</span><br><span class="line">  <span class="keyword">const</span> [article, setArticle] = <span class="title function_">useState</span>(<span class="literal">null</span>);</span><br><span class="line"></span><br><span class="line">  <span class="title function_">useEffect</span>(<span class="function">() =&gt;</span> &#123;</span><br><span class="line">    <span class="keyword">let</span> didCancel = <span class="literal">false</span>;</span><br><span class="line"></span><br><span class="line">    <span class="keyword">async</span> <span class="keyword">function</span> <span class="title function_">fetchData</span>(<span class="params"></span>) &#123;</span><br><span class="line">      <span class="keyword">const</span> article = <span class="keyword">await</span> <span class="variable constant_">API</span>.<span class="title function_">fetchArticle</span>(id);</span><br><span class="line">      <span class="keyword">if</span> (!didCancel) &#123;</span><br><span class="line">        <span class="title function_">setArticle</span>(article);</span><br><span class="line">      &#125;</span><br><span class="line">    &#125;</span><br><span class="line">    <span class="title function_">fetchData</span>();</span><br><span class="line">    <span class="keyword">return</span> <span class="function">() =&gt;</span> &#123;</span><br><span class="line">      didCancel = <span class="literal">true</span>;</span><br><span class="line">    &#125;;</span><br><span class="line">  &#125;, [id]);</span><br><span class="line">&#125;</span><br><span class="line"></span><br></pre></td></tr></table></figure> 
+      <!-- reward -->
+      
+    </div>
+    
+
+    <!-- copyright -->
+    
+    <footer class="article-footer">
+       
+  <ul class="article-tag-list" itemprop="keywords"><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/React/" rel="tag">React</a></li></ul>
+
+    </footer>
+  </div>
+
+   
+    
+</article>
+
+    
+    <article
+  id="post-javascript/跨域CORS"
+  class="article article-type-post"
+  itemscope
+  itemprop="blogPost"
+  data-scroll-reveal
+>
+  <div class="article-inner">
+    
+    <header class="article-header">
+       
+<h2 itemprop="name">
+  <a class="article-title" href="/posts/2db9089a78d8/"
+    >跨域CORS</a> 
+</h2>
+ 
+
+      
+    </header>
+     
+    <div class="article-meta">
+      <a href="/posts/2db9089a78d8/" class="article-date">
+  <time datetime="2021-05-31T03:20:46.000Z" itemprop="datePublished">2021-05-31</time>
+</a> 
+  <div class="article-category">
+    <a class="article-category-link" href="/categories/JavaScript/">JavaScript</a>
+  </div>
+   
+    </div>
+      
+    <div class="article-entry" itemprop="articleBody">
+       
+  <h4 id="cors是什么"><a href="#cors是什么" class="headerlink" title="cors是什么"></a>cors是什么</h4><p>由于浏览器的同源策略，不允许访问非同源的资源，cors的目的就是解决这个问题，也就是常说的跨域访问。</p>
+<p>CORS需要浏览器和服务器同时支持。目前，所有浏览器都支持该功能，IE浏览器不能低于IE10。</p>
+<p>整个CORS通信过程，都是浏览器自动完成，不需要用户参与。对于开发者来说，CORS通信与同源的AJAX通信没有差别，代码完全一样。浏览器一旦发现AJAX请求跨源，就会自动添加一些附加的头信息，有时还会多出一次附加的请求，但用户不会有感觉。</p>
+<p>因此，实现CORS通信的关键是服务器。只要服务器实现了CORS接口，就可以跨源通信。</p>
+<h4 id="两种请求"><a href="#两种请求" class="headerlink" title="两种请求"></a>两种请求</h4><p>浏览器将CORS请求分成两类：简单请求（simple request）和非简单请求（not-so-simple request）。</p>
+<p>只要同时满足以下两大条件，就属于简单请求。</p>
+<blockquote>
+<p>1.请求方法是以下三种方法之一： HEAD GET POST<br>2.HTTP的头信息不超出以下几种字段： Accept | Accept-Language | Content-Language | Last-Event-ID<br>Content-Type：只限于三个值application&#x2F;x-www-form-urlencoded、multipart&#x2F;form-data、text&#x2F;plain</p>
+</blockquote>
+<figure class="highlight javascript"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br></pre></td><td class="code"><pre><span class="line"><span class="title function_">fetch</span>(<span class="string">&quot;http://xxx&quot;</span>,&#123;</span><br><span class="line">  <span class="attr">headers</span>:&#123;</span><br><span class="line">      <span class="string">&#x27;content-type&#x27;</span>:<span class="string">&#x27;application/json&#x27;</span></span><br><span class="line">  &#125;</span><br><span class="line">  <span class="attr">method</span>:<span class="string">&#x27;POST&#x27;</span>,</span><br><span class="line">  <span class="attr">body</span>: <span class="title class_">JSON</span>.<span class="title function_">stringify</span>(body)</span><br><span class="line">&#125;)</span><br></pre></td></tr></table></figure>
+
+
+<p>这是为了兼容表单（form），因为历史上表单一直可以发出跨域请求。AJAX 的跨域设计就是，只要表单可以发，AJAX 就可以直接发。</p>
+<p>凡是不同时满足上面两个条件，就属于非简单请求。</p>
+<h4 id="简单请求"><a href="#简单请求" class="headerlink" title="简单请求"></a>简单请求</h4><p>对于简单请求，浏览器直接发出CORS请求。具体来说，就是在头信息之中，增加一个Origin字段。</p>
+<blockquote>
+<p>Origin: http://xxx</p>
+</blockquote>
+<p>上面的头信息中，Origin字段用来说明，本次请求来自哪个源（协议 + 域名 + 端口）。服务器根据这个值，决定是否同意这次请求。</p>
+<p>如果Origin指定的源，不在许可范围内，服务器会返回一个正常的HTTP回应。浏览器发现，这个回应的头信息没有包含Access-Control-Allow-Origin字段（详见下文），就知道出错了，从而抛出一个错误，被XMLHttpRequest的onerror回调函数捕获。注意，这种错误无法通过状态码识别，因为HTTP回应的状态码有可能是200。</p>
+<p>如果Origin指定的域名在许可范围内，服务器返回的响应，会多出几个头信息字段。</p>
+<blockquote>
+<p>Access-Control-Allow-Origin: http://xxx<br>Access-Control-Allow-Credentials: true<br>Access-Control-Expose-Headers: FooBar<br>Content-Type: text&#x2F;html; charset&#x3D;utf-8</p>
+</blockquote>
+<p>上面的头信息之中，有三个与CORS请求相关的字段，都以Access-Control-开头。</p>
+<ul>
+<li>Access-Control-Allow-Origin</li>
+</ul>
+<p>该字段是必须的。它的值要么是请求时Origin字段的值，要么是一个*，表示接受任意域名的请求。</p>
+<ul>
+<li>Access-Control-Allow-Credentials</li>
+</ul>
+<p>该字段可选。它的值是一个布尔值，表示是否允许发送Cookie。默认情况下，Cookie不包括在CORS请求之中。设为true，即表示服务器明确许可，Cookie可以包含在请求中，一起发给服务器。这个值也只能设为true，如果服务器不要浏览器发送Cookie，删除该字段即可。</p>
+<ul>
+<li>Access-Control-Expose-Headers</li>
+</ul>
+<p>该字段可选。CORS请求时，XMLHttpRequest对象的getResponseHeader()方法只能拿到6个基本字段：Cache-Control、Content-Language、Content-Type、Expires、Last-Modified、Pragma。如果想拿到其他字段，就必须在Access-Control-Expose-Headers里面指定。上面的例子指定，getResponseHeader(‘FooBar’)可以返回FooBar字段的值。</p>
+<ul>
+<li>withCredentials 属性</li>
+</ul>
+<p>上面说到，CORS请求默认不发送Cookie和HTTP认证信息。如果要把Cookie发到服务器，一方面要服务器同意，指定Access-Control-Allow-Credentials字段。</p>
+<blockquote>
+<p>Access-Control-Allow-Credentials: true</p>
+</blockquote>
+<p>另一方面，开发者必须在AJAX请求中打开withCredentials属性。</p>
+<figure class="highlight javascript"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">var</span> xhr = <span class="keyword">new</span> <span class="title class_">XMLHttpRequest</span>();</span><br><span class="line">xhr.<span class="property">withCredentials</span> = <span class="literal">true</span>;</span><br></pre></td></tr></table></figure>
+
+<p>否则，即使服务器同意发送Cookie，浏览器也不会发送。或者，服务器要求设置Cookie，浏览器也不会处理。</p>
+<p>但是，如果省略withCredentials设置，有的浏览器还是会一起发送Cookie。这时，可以显式关闭withCredentials。</p>
+<figure class="highlight javascript"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">xhr.<span class="property">withCredentials</span> = <span class="literal">false</span>;</span><br></pre></td></tr></table></figure>
+
+<p><strong>需要注意的是，如果要发送Cookie，Access-Control-Allow-Origin就不能设为星号，必须指定明确的、与请求网页一致的域名。同时，Cookie依然遵循同源政策，只有用服务器域名设置的Cookie才会上传，其他域名的Cookie并不会上传，且（跨源）原网页代码中的document.cookie也无法读取服务器域名下的Cookie。</strong></p>
+<h4 id="非简单请求"><a href="#非简单请求" class="headerlink" title="非简单请求"></a>非简单请求</h4><p>非简单请求是那种对服务器有特殊要求的请求，比如请求方法是PUT或DELETE，或者Content-Type字段的类型是application&#x2F;json。</p>
+<p>非简单请求的CORS请求，会在正式通信之前，增加一次HTTP查询请求，称为”预检”请求（preflight）。</p>
+<p>浏览器先询问服务器，当前网页所在的域名是否在服务器的许可名单之中，以及可以使用哪些HTTP动词和头信息字段。只有得到肯定答复，浏览器才会发出正式的XMLHttpRequest请求，否则就报错。</p>
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br></pre></td><td class="code"><pre><span class="line">OPTIONS /cors HTTP/1.1</span><br><span class="line">Origin: xxx</span><br><span class="line">Access-Control-Request-Method: PUT</span><br><span class="line">Access-Control-Request-Headers: X-Custom-Header</span><br><span class="line">Host: api.alice.com</span><br><span class="line">Accept-Language: en-US</span><br><span class="line">Connection: keep-alive</span><br><span class="line">User-Agent: Mozilla/5.0...</span><br></pre></td></tr></table></figure>
+
+<p>“预检”请求用的请求方法是OPTIONS，表示这个请求是用来询问的。头信息里面，关键字段是Origin，表示请求来自哪个源。</p>
+<p>除了Origin字段，”预检”请求的头信息包括两个特殊字段。</p>
+<ul>
+<li>Access-Control-Request-Method</li>
+</ul>
+<p>该字段是必须的，用来列出浏览器的CORS请求会用到哪些HTTP方法，上例是PUT。</p>
+<ul>
+<li>Access-Control-Request-Headers</li>
+</ul>
+<p>该字段是一个逗号分隔的字符串，指定浏览器CORS请求会额外发送的头信息字段，上例是X-Custom-Header。</p>
+<h4 id="预检请求的回应"><a href="#预检请求的回应" class="headerlink" title="预检请求的回应"></a>预检请求的回应</h4><p>服务器收到”预检”请求以后，检查了Origin、Access-Control-Request-Method和Access-Control-Request-Headers字段以后，确认允许跨源请求，就可以做出回应。</p>
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br></pre></td><td class="code"><pre><span class="line">HTTP/1.1 200 OK</span><br><span class="line">Date: Mon, 01 Dec 2008 01:15:39 GMT</span><br><span class="line">Server: Apache/2.0.61 (Unix)</span><br><span class="line">Access-Control-Allow-Origin: http://xxx</span><br><span class="line">Access-Control-Allow-Methods: GET, POST, PUT</span><br><span class="line">Access-Control-Allow-Headers: X-Custom-Header</span><br><span class="line">Content-Type: text/html; charset=utf-8</span><br><span class="line">Content-Encoding: gzip</span><br><span class="line">Content-Length: 0</span><br><span class="line">Keep-Alive: timeout=2, max=100</span><br><span class="line">Connection: Keep-Alive</span><br><span class="line">Content-Type: text/plain</span><br></pre></td></tr></table></figure>
+
+<p>上面的HTTP回应中，关键的是Access-Control-Allow-Origin字段，表示http://xxx可以请求数据。该字段也可以设为星号，表示同意任意跨源请求。</p>
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">Access-Control-Allow-Origin: *</span><br></pre></td></tr></table></figure>
+
+<p>如果服务器否定了”预检”请求，会返回一个正常的HTTP回应，但是没有任何CORS相关的头信息字段。这时，浏览器就会认定，服务器不同意预检请求，因此触发一个错误，被XMLHttpRequest对象的onerror回调函数捕获。控制台会打印出如下的报错信息。</p>
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line">XMLHttpRequest cannot load http://xxx</span><br><span class="line">Origin http://xxx is not allowed by Access-Control-Allow-Origin.</span><br></pre></td></tr></table></figure>
+
+<p>服务器回应的其他CORS相关字段如下。</p>
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br></pre></td><td class="code"><pre><span class="line">Access-Control-Allow-Methods: GET, POST, PUT</span><br><span class="line">Access-Control-Allow-Headers: X-Custom-Header</span><br><span class="line">Access-Control-Allow-Credentials: true</span><br><span class="line">Access-Control-Max-Age: 1728000</span><br></pre></td></tr></table></figure>
+
+<ul>
+<li>Access-Control-Allow-Methods</li>
+</ul>
+<p>该字段必需，它的值是逗号分隔的一个字符串，表明服务器支持的所有跨域请求的方法。注意，返回的是所有支持的方法，而不单是浏览器请求的那个方法。这是为了避免多次”预检”请求。</p>
+<ul>
+<li>Access-Control-Allow-Headers</li>
+</ul>
+<p>如果浏览器请求包括Access-Control-Request-Headers字段，则Access-Control-Allow-Headers字段是必需的。它也是一个逗号分隔的字符串，表明服务器支持的所有头信息字段，不限于浏览器在”预检”中请求的字段。</p>
+<ul>
+<li>Access-Control-Allow-Credentials</li>
+</ul>
+<p>该字段与简单请求时的含义相同。</p>
+<ul>
+<li>Access-Control-Max-Age</li>
+</ul>
+<p>该字段可选，用来指定本次预检请求的有效期，单位为秒。上面结果中，有效期是20天（1728000秒），即允许缓存该条回应1728000秒（即20天），在此期间，不用发出另一条预检请求。</p>
+<h4 id="浏览器的正常请求和回应"><a href="#浏览器的正常请求和回应" class="headerlink" title="浏览器的正常请求和回应"></a>浏览器的正常请求和回应</h4><p>一旦服务器通过了”预检”请求，以后每次浏览器正常的CORS请求，就都跟简单请求一样，会有一个Origin头信息字段。服务器的回应，也都会有一个Access-Control-Allow-Origin头信息字段。</p>
+<p>下面是”预检”请求之后，浏览器的正常CORS请求。</p>
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br></pre></td><td class="code"><pre><span class="line">PUT /cors HTTP/1.1</span><br><span class="line">Origin: http://api.bob.com</span><br><span class="line">Host: api.alice.com</span><br><span class="line">X-Custom-Header: value</span><br><span class="line">Accept-Language: en-US</span><br><span class="line">Connection: keep-alive</span><br><span class="line">User-Agent: Mozilla/5.0...</span><br></pre></td></tr></table></figure>
+
+<p>上面头信息的Origin字段是浏览器自动添加的。</p>
+<p>下面是服务器正常的回应。</p>
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line">Access-Control-Allow-Origin: http://xxx</span><br><span class="line">Content-Type: text/html; charset=utf-8</span><br></pre></td></tr></table></figure>
+
+<p>上面头信息中，Access-Control-Allow-Origin字段是每次回应都必定包含的。</p>
+<h4 id="与JSONP的比较"><a href="#与JSONP的比较" class="headerlink" title="与JSONP的比较"></a>与JSONP的比较</h4><p>CORS与JSONP的使用目的相同，但是比JSONP更强大。</p>
+<p>JSONP只支持GET请求，CORS支持所有类型的HTTP请求。JSONP的优势在于支持老式浏览器，以及可以向不支持CORS的网站请求数据。</p>
+<h4 id="fetch跨域遇到的问题"><a href="#fetch跨域遇到的问题" class="headerlink" title="fetch跨域遇到的问题"></a>fetch跨域遇到的问题</h4><p>如果服务器不支持CORS，fetch提供了三种模式，其中no-cors可以继续访问服务器</p>
+<p>fetch的mode配置项有3个值，如下:</p>
+<ul>
+<li><p>same-origin：该模式是不允许跨域的，它需要遵守同源策略，否则浏览器会返回一个error告知不能跨域；其对应的response type为basic。</p>
+</li>
+<li><p>cors: 该模式支持跨域请求，顾名思义它是以CORS的形式跨域；当然该模式也可以同域请求不需要后端额外的CORS支持；其对应的response type为cors。</p>
+</li>
+<li><p>no-cors: 该模式用于跨域请求但是服务器不带CORS响应头，也就是服务端不支持CORS；这也是fetch的特殊跨域请求方式；其对应的response type为opaque。</p>
+</li>
+</ul>
+<p><strong>no-cors该模式允许浏览器发送本次跨域请求，但是不能访问响应返回的内容，这也是其response type为opaque透明的原因。</strong></p>
+ 
+      <!-- reward -->
+      
+    </div>
+    
+
+    <!-- copyright -->
+    
+    <footer class="article-footer">
+       
+  <ul class="article-tag-list" itemprop="keywords"><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/%E8%B7%A8%E5%9F%9Fcors/" rel="tag">跨域cors</a></li></ul>
+
+    </footer>
+  </div>
+
+   
+    
+</article>
+
+    
+    <article
   id="post-react/基础/ReactHooks没有魔法只是数组"
   class="article article-type-post"
   itemscope
@@ -594,58 +841,6 @@
 
     
     <article
-  id="post-node/express学习项目4"
-  class="article article-type-post"
-  itemscope
-  itemprop="blogPost"
-  data-scroll-reveal
->
-  <div class="article-inner">
-    
-    <header class="article-header">
-       
-<h2 itemprop="name">
-  <a class="article-title" href="/posts/e94f43ff2888/"
-    >Express实践 ④ 支付/事务</a> 
-</h2>
- 
-
-      
-    </header>
-     
-    <div class="article-meta">
-      <a href="/posts/e94f43ff2888/" class="article-date">
-  <time datetime="2021-03-30T07:04:09.000Z" itemprop="datePublished">2021-03-30</time>
-</a> 
-  <div class="article-category">
-    <a class="article-category-link" href="/categories/NodeJS/">NodeJS</a>
-  </div>
-   
-    </div>
-      
-    <div class="article-entry" itemprop="articleBody">
-       
-  <h4 id=""><a href="#" class="headerlink" title=""></a></h4> 
-      <!-- reward -->
-      
-    </div>
-    
-
-    <!-- copyright -->
-    
-    <footer class="article-footer">
-       
-  <ul class="article-tag-list" itemprop="keywords"><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/NodeJS/" rel="tag">NodeJS</a></li></ul>
-
-    </footer>
-  </div>
-
-   
-    
-</article>
-
-    
-    <article
   id="post-typescript/TS挑战"
   class="article article-type-post"
   itemscope
@@ -898,84 +1093,6 @@
     <footer class="article-footer">
        
   <ul class="article-tag-list" itemprop="keywords"><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/webpack/" rel="tag">webpack</a></li><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/%E5%B7%A5%E7%A8%8B%E5%8C%96/" rel="tag">工程化</a></li></ul>
-
-    </footer>
-  </div>
-
-   
-    
-</article>
-
-    
-    <article
-  id="post-vue/vuex原理"
-  class="article article-type-post"
-  itemscope
-  itemprop="blogPost"
-  data-scroll-reveal
->
-  <div class="article-inner">
-    
-    <header class="article-header">
-       
-<h2 itemprop="name">
-  <a class="article-title" href="/posts/6e1045ca8489/"
-    >vuex原理</a> 
-</h2>
- 
-
-      
-    </header>
-     
-    <div class="article-meta">
-      <a href="/posts/6e1045ca8489/" class="article-date">
-  <time datetime="2021-03-08T01:29:31.000Z" itemprop="datePublished">2021-03-08</time>
-</a> 
-  <div class="article-category">
-    <a class="article-category-link" href="/categories/Vue/">Vue</a>
-  </div>
-   
-    </div>
-      
-    <div class="article-entry" itemprop="articleBody">
-       
-  <h4 id=""><a href="#" class="headerlink" title=""></a></h4><p><img src="/posts/6e1045ca8489/0001.jpg"></p>
-<p>1）state</p>
-<p>state是存储的单一状态，是存储的基本数据。</p>
-<p>2）Getters</p>
-<p>getters是store的计算属性，对state的加工，是派生出来的数据。就像computed计算属性一样，getter返回的值会根据它的依赖被缓存起来，且只有当它的依赖值发生改变才会被重新计算。</p>
-<p>3）Mutations</p>
-<p>mutations提交更改数据，使用store.commit方法更改state存储的状态。（mutations同步函数）</p>
-<p>4）Actions</p>
-<p>actions像一个装饰器，提交mutation，而不是直接变更状态。（actions可以包含任何异步操作）</p>
-<p>5）Module</p>
-<p>Module是store分割的模块，每个模块拥有自己的state、getters、mutations、actions。</p>
-<figure class="highlight javascript"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">const</span> moduleA = &#123;</span><br><span class="line">  <span class="attr">state</span>: &#123; ... &#125;,</span><br><span class="line">  <span class="attr">mutations</span>: &#123; ... &#125;,</span><br><span class="line">  <span class="attr">actions</span>: &#123; ... &#125;,</span><br><span class="line">  <span class="attr">getters</span>: &#123; ... &#125;</span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line"><span class="keyword">const</span> moduleB = &#123;</span><br><span class="line">  <span class="attr">state</span>: &#123; ... &#125;,</span><br><span class="line">  <span class="attr">mutations</span>: &#123; ... &#125;,</span><br><span class="line">  <span class="attr">actions</span>: &#123; ... &#125;</span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line"><span class="keyword">const</span> store = <span class="keyword">new</span> <span class="title class_">Vuex</span>.<span class="title class_">Store</span>(&#123;</span><br><span class="line">  <span class="attr">modules</span>: &#123;</span><br><span class="line">    <span class="attr">a</span>: moduleA,</span><br><span class="line">    <span class="attr">b</span>: moduleB</span><br><span class="line">  &#125;</span><br><span class="line">&#125;)</span><br><span class="line"></span><br><span class="line">store.<span class="property">state</span>.<span class="property">a</span> <span class="comment">// -&gt; moduleA 的状态</span></span><br><span class="line">store.<span class="property">state</span>.<span class="property">b</span> <span class="comment">// -&gt; moduleB 的状态</span></span><br></pre></td></tr></table></figure>
-
-<p>6）辅助函数</p>
-<p>Vuex提供了mapState、MapGetters、MapActions、mapMutations等辅助函数给开发在vm中处理store。</p>
-<h4 id="vuex实现原理"><a href="#vuex实现原理" class="headerlink" title="vuex实现原理"></a>vuex实现原理</h4><figure class="highlight javascript"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br><span class="line">35</span><br><span class="line">36</span><br><span class="line">37</span><br><span class="line">38</span><br><span class="line">39</span><br><span class="line">40</span><br><span class="line">41</span><br><span class="line">42</span><br><span class="line">43</span><br><span class="line">44</span><br><span class="line">45</span><br><span class="line">46</span><br><span class="line">47</span><br><span class="line">48</span><br><span class="line">49</span><br><span class="line">50</span><br><span class="line">51</span><br><span class="line">52</span><br><span class="line">53</span><br><span class="line">54</span><br><span class="line">55</span><br><span class="line">56</span><br><span class="line">57</span><br><span class="line">58</span><br><span class="line">59</span><br><span class="line">60</span><br><span class="line">61</span><br><span class="line">62</span><br><span class="line">63</span><br><span class="line">64</span><br><span class="line">65</span><br><span class="line">66</span><br><span class="line">67</span><br><span class="line">68</span><br><span class="line">69</span><br><span class="line">70</span><br><span class="line">71</span><br><span class="line">72</span><br><span class="line">73</span><br><span class="line">74</span><br><span class="line">75</span><br><span class="line">76</span><br><span class="line">77</span><br><span class="line">78</span><br><span class="line">79</span><br><span class="line">80</span><br><span class="line">81</span><br><span class="line">82</span><br><span class="line">83</span><br><span class="line">84</span><br><span class="line">85</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment">/* eslint-disable no-underscore-dangle */</span></span><br><span class="line"></span><br><span class="line"><span class="keyword">import</span> <span class="title class_">Vue</span> <span class="keyword">from</span> <span class="string">&#x27;vue&#x27;</span>;</span><br><span class="line"></span><br><span class="line"><span class="keyword">class</span> <span class="title class_">Store</span> &#123;</span><br><span class="line">  <span class="title function_">constructor</span>(<span class="params">options</span>) &#123;</span><br><span class="line">    <span class="keyword">const</span> &#123;</span><br><span class="line">      state,</span><br><span class="line">      <span class="comment">// 计算属性</span></span><br><span class="line">      getters,</span><br><span class="line">      <span class="comment">// 通过提交commit改变数据</span></span><br><span class="line">      <span class="comment">// 只是一个单纯的函数</span></span><br><span class="line">      <span class="comment">// 不要使用异步操作，异步操作会导致变量不能追踪</span></span><br><span class="line">      mutations,</span><br><span class="line">      <span class="comment">// 用于通过提交mutation改变数据</span></span><br><span class="line">      <span class="comment">// 会默认将自身封装为一个Promise</span></span><br><span class="line">      <span class="comment">// 可以包含任意的异步操作</span></span><br><span class="line">      actions,</span><br><span class="line">    &#125; = options;</span><br><span class="line">    <span class="variable language_">this</span>.<span class="property">_mutations</span> = mutations;</span><br><span class="line">    <span class="variable language_">this</span>.<span class="property">_actions</span> = actions;</span><br><span class="line">    <span class="keyword">if</span> (getters) &#123;</span><br><span class="line">      <span class="variable language_">this</span>.<span class="title function_">handleGetters</span>(getters);</span><br><span class="line">    &#125;</span><br><span class="line"></span><br><span class="line">    <span class="comment">// 把state添加到vue实例上</span></span><br><span class="line">    <span class="comment">// 用vue实现双向数据绑定</span></span><br><span class="line">    <span class="variable language_">this</span>.<span class="property">_vm</span> = <span class="keyword">new</span> <span class="title class_">Vue</span>(&#123;</span><br><span class="line">      <span class="attr">data</span>: &#123;</span><br><span class="line">        <span class="attr">$$state</span>: state,</span><br><span class="line">      &#125;,</span><br><span class="line">    &#125;);</span><br><span class="line">    <span class="variable language_">this</span>.<span class="property">commit</span> = <span class="variable language_">this</span>.<span class="property">commit</span>.<span class="title function_">bind</span>(<span class="variable language_">this</span>);</span><br><span class="line">    <span class="variable language_">this</span>.<span class="property">dispatch</span> = <span class="variable language_">this</span>.<span class="property">dispatch</span>.<span class="title function_">bind</span>(<span class="variable language_">this</span>);</span><br><span class="line">  &#125;</span><br><span class="line"></span><br><span class="line">  <span class="keyword">get</span> <span class="title function_">state</span>() &#123;</span><br><span class="line">    <span class="keyword">return</span> <span class="variable language_">this</span>.<span class="property">_vm</span>.<span class="property">_data</span>.<span class="property">$$state</span>;</span><br><span class="line">  &#125;</span><br><span class="line"></span><br><span class="line">  <span class="comment">// _mutations相当于reducer</span></span><br><span class="line">  <span class="title function_">commit</span>(<span class="params">type, paload</span>) &#123;</span><br><span class="line">    <span class="keyword">const</span> entry = <span class="variable language_">this</span>.<span class="property">_mutations</span>[type];</span><br><span class="line">    <span class="keyword">if</span> (entry) &#123;</span><br><span class="line">      <span class="title function_">entry</span>(<span class="variable language_">this</span>.<span class="property">state</span>, paload);</span><br><span class="line">    &#125;</span><br><span class="line">  &#125;</span><br><span class="line"></span><br><span class="line">  <span class="title function_">dispatch</span>(<span class="params">type, payload</span>) &#123;</span><br><span class="line">    <span class="keyword">const</span> entry = <span class="variable language_">this</span>.<span class="property">_actions</span>[type];</span><br><span class="line">    <span class="keyword">if</span> (entry) &#123;</span><br><span class="line">      <span class="title function_">entry</span>(<span class="variable language_">this</span>, payload);</span><br><span class="line">    &#125;</span><br><span class="line">  &#125;</span><br><span class="line"></span><br><span class="line">  <span class="comment">// 为每一个getter方法绑定了get</span></span><br><span class="line">  <span class="title function_">handleGetters</span>(<span class="params">getters</span>) &#123;</span><br><span class="line">    <span class="variable language_">this</span>.<span class="property">getters</span> = &#123;&#125;;</span><br><span class="line">    <span class="keyword">const</span> self = <span class="variable language_">this</span>;</span><br><span class="line">    <span class="title class_">Object</span>.<span class="title function_">keys</span>(getters).<span class="title function_">forEach</span>(<span class="function">(<span class="params">key</span>) =&gt;</span> &#123;</span><br><span class="line">      <span class="title class_">Object</span>.<span class="title function_">defineProperty</span>(self.<span class="property">getters</span>, key, &#123;</span><br><span class="line">        <span class="attr">get</span>: <span class="function">() =&gt;</span> getters[key](self.<span class="property">state</span>),</span><br><span class="line">      &#125;);</span><br><span class="line">    &#125;);</span><br><span class="line">  &#125;</span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line"><span class="keyword">let</span> _Vue;</span><br><span class="line"><span class="keyword">function</span> <span class="title function_">install</span>(<span class="params">__Vue</span>) &#123;</span><br><span class="line">  _Vue = __Vue;</span><br><span class="line">  _Vue.<span class="title function_">mixin</span>(&#123;</span><br><span class="line">    <span class="title function_">beforeCreate</span>(<span class="params"></span>) &#123;</span><br><span class="line">      <span class="comment">// 在原型上添加store;</span></span><br><span class="line">      <span class="keyword">if</span> (<span class="variable language_">this</span>.<span class="property">$options</span>.<span class="property">store</span>) &#123;</span><br><span class="line">        <span class="title class_">Vue</span>.<span class="property"><span class="keyword">prototype</span></span>.<span class="property">$store</span> = <span class="variable language_">this</span>.<span class="property">$options</span>.<span class="property">store</span>;</span><br><span class="line">      &#125;</span><br><span class="line">    &#125;,</span><br><span class="line">  &#125;);</span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line"><span class="keyword">export</span> <span class="keyword">default</span> &#123;</span><br><span class="line">  <span class="title class_">Store</span>,</span><br><span class="line">  install,</span><br><span class="line">&#125;;</span><br><span class="line"></span><br></pre></td></tr></table></figure>
-
-<h4 id="问题1"><a href="#问题1" class="headerlink" title="问题1"></a>问题1</h4><p>vuex的store是如何挂载注入到组件中呢？</p>
-<ul>
-<li><code>Vue.use(vuex);</code>通过vue插件机制</li>
-<li>调用 vuex 暴露出的 install 方法</li>
-<li>利用vue的mixin混入机制，在beforeCreate钩子前混入，把store挂载在原型上面</li>
-</ul>
-<p><img src="/posts/6e1045ca8489/0002.jpg"></p>
-<h4 id="问题2"><a href="#问题2" class="headerlink" title="问题2"></a>问题2</h4><p>vuex的state和getters是如何映射到各个组件实例中响应式更新状态呢？</p>
-<p>Vuex的state状态是响应式，是借助vue的data是响应式，将state存入vue实例组件的data中；Vuex的getters则是借助vue的计算属性computed实现数据实时监听。</p>
-<figure class="highlight javascript"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br><span class="line">35</span><br><span class="line">36</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">function</span> <span class="title function_">resetStoreVM</span> (store, state, hot) &#123;</span><br><span class="line">  <span class="keyword">const</span> oldVm = store.<span class="property">_vm</span></span><br><span class="line"></span><br><span class="line">  <span class="comment">// 设置 getters 属性</span></span><br><span class="line">  store.<span class="property">getters</span> = &#123;&#125;</span><br><span class="line">  <span class="keyword">const</span> wrappedGetters = store.<span class="property">_wrappedGetters</span></span><br><span class="line">  <span class="keyword">const</span> computed = &#123;&#125;</span><br><span class="line">  <span class="comment">// 遍历 wrappedGetters 属性</span></span><br><span class="line">  <span class="title function_">forEachValue</span>(wrappedGetters, <span class="function">(<span class="params">fn, key</span>) =&gt;</span> &#123;</span><br><span class="line">    <span class="comment">// 给 computed 对象添加属性</span></span><br><span class="line">    computed[key] = <span class="title function_">partial</span>(fn, store)</span><br><span class="line">    <span class="comment">// 重写 get 方法</span></span><br><span class="line">    <span class="comment">// store.getters.xx 其实是访问了store._vm[xx]，其中添加 computed 属性</span></span><br><span class="line">    <span class="title class_">Object</span>.<span class="title function_">defineProperty</span>(store.<span class="property">getters</span>, key, &#123;</span><br><span class="line">      <span class="attr">get</span>: <span class="function">() =&gt;</span> store.<span class="property">_vm</span>[key],</span><br><span class="line">      <span class="attr">enumerable</span>: <span class="literal">true</span> <span class="comment">// for local getters</span></span><br><span class="line">    &#125;)</span><br><span class="line">  &#125;)</span><br><span class="line"></span><br><span class="line">  <span class="keyword">const</span> silent = <span class="title class_">Vue</span>.<span class="property">config</span>.<span class="property">silent</span></span><br><span class="line">  <span class="title class_">Vue</span>.<span class="property">config</span>.<span class="property">silent</span> = <span class="literal">true</span></span><br><span class="line">  <span class="comment">// 创建Vue实例来保存state，同时让state变成响应式</span></span><br><span class="line">  <span class="comment">// store._vm._data.$$state = store.state</span></span><br><span class="line">  store.<span class="property">_vm</span> = <span class="keyword">new</span> <span class="title class_">Vue</span>(&#123;</span><br><span class="line">    <span class="attr">data</span>: &#123;</span><br><span class="line">      <span class="attr">$$state</span>: state</span><br><span class="line">    &#125;,</span><br><span class="line">    computed</span><br><span class="line">  &#125;)</span><br><span class="line">  <span class="title class_">Vue</span>.<span class="property">config</span>.<span class="property">silent</span> = silent</span><br><span class="line"></span><br><span class="line">  <span class="comment">// 只能通过commit方式更改状态</span></span><br><span class="line">  <span class="keyword">if</span> (store.<span class="property">strict</span>) &#123;</span><br><span class="line">    <span class="title function_">enableStrictMode</span>(store)</span><br><span class="line">  &#125;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure> 
-      <!-- reward -->
-      
-    </div>
-    
-
-    <!-- copyright -->
-    
-    <footer class="article-footer">
-       
-  <ul class="article-tag-list" itemprop="keywords"><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/Vue/" rel="tag">Vue</a></li></ul>
 
     </footer>
   </div>

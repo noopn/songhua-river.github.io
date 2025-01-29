@@ -112,6 +112,64 @@
     
     
     <article
+  id="post-javascript/Ramda_Objec方法"
+  class="article article-type-post"
+  itemscope
+  itemprop="blogPost"
+  data-scroll-reveal
+>
+  <div class="article-inner">
+    
+    <header class="article-header">
+       
+<h2 itemprop="name">
+  <a class="article-title" href="/posts/f021f8110e5a/"
+    >Ramda Object方法源码分析</a> 
+</h2>
+ 
+
+      
+    </header>
+     
+    <div class="article-meta">
+      <a href="/posts/f021f8110e5a/" class="article-date">
+  <time datetime="2021-01-16T09:15:23.000Z" itemprop="datePublished">2021-01-16</time>
+</a> 
+  <div class="article-category">
+    <a class="article-category-link" href="/categories/JavaScript/">JavaScript</a>
+  </div>
+   
+    </div>
+      
+    <div class="article-entry" itemprop="articleBody">
+       
+  <h4 id="keys"><a href="#keys" class="headerlink" title="keys"></a>keys</h4><p>Safari 可能存在 argument.length 可枚举的bug</p>
+<figure class="highlight javascript"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">var</span> hasArgsEnumBug = (<span class="keyword">function</span>(<span class="params"></span>) &#123;</span><br><span class="line">  <span class="string">&#x27;use strict&#x27;</span>;</span><br><span class="line">  <span class="keyword">return</span> <span class="variable language_">arguments</span>.<span class="title function_">propertyIsEnumerable</span>(<span class="string">&#x27;length&#x27;</span>);</span><br><span class="line">&#125;());</span><br></pre></td></tr></table></figure>
+
+<p>IE9一下<code>toString</code>方法存在可以枚举的bug</p>
+<figure class="highlight javascript"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment">// cover IE &lt; 9 keys issues</span></span><br><span class="line"><span class="keyword">var</span> hasEnumBug = !(&#123;<span class="attr">toString</span>: <span class="literal">null</span>&#125;).<span class="title function_">propertyIsEnumerable</span>(<span class="string">&#x27;toString&#x27;</span>);</span><br><span class="line"><span class="keyword">var</span> nonEnumerableProps = [</span><br><span class="line">  <span class="string">&#x27;constructor&#x27;</span>, <span class="string">&#x27;valueOf&#x27;</span>, <span class="string">&#x27;isPrototypeOf&#x27;</span>, <span class="string">&#x27;toString&#x27;</span>,</span><br><span class="line">  <span class="string">&#x27;propertyIsEnumerable&#x27;</span>, <span class="string">&#x27;hasOwnProperty&#x27;</span>, <span class="string">&#x27;toLocaleString&#x27;</span></span><br><span class="line">];</span><br></pre></td></tr></table></figure>
+
+<figure class="highlight javascript"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment">// 如果有原生 Object.keys 实现且Safari不存在bug</span></span><br><span class="line"><span class="keyword">var</span> keys = <span class="keyword">typeof</span> <span class="title class_">Object</span>.<span class="property">keys</span> === <span class="string">&#x27;function&#x27;</span> &amp;&amp; !hasArgsEnumBug ?</span><br><span class="line">  <span class="title function_">_curry1</span>(<span class="keyword">function</span> <span class="title function_">keys</span>(<span class="params">obj</span>) &#123;</span><br><span class="line">    <span class="comment">// 参数错误处理</span></span><br><span class="line">    <span class="keyword">return</span> <span class="title class_">Object</span>(obj) !== obj ? [] : <span class="title class_">Object</span>.<span class="title function_">keys</span>(obj);</span><br><span class="line">  &#125;) :</span><br><span class="line">  <span class="title function_">_curry1</span>(<span class="keyword">function</span> <span class="title function_">keys</span>(<span class="params">obj</span>) &#123;</span><br><span class="line">    <span class="keyword">if</span> (<span class="title class_">Object</span>(obj) !== obj) &#123;</span><br><span class="line">      <span class="keyword">return</span> [];</span><br><span class="line">    &#125;</span><br><span class="line">    <span class="keyword">var</span> prop, nIdx;</span><br><span class="line">    <span class="keyword">var</span> ks = [];</span><br><span class="line">    <span class="comment">// 如果传入的对象时argument，而且有bug</span></span><br><span class="line">    <span class="keyword">var</span> checkArgsLength = hasArgsEnumBug &amp;&amp; <span class="title function_">_isArguments</span>(obj);</span><br><span class="line">    <span class="comment">// 循环对象每一项检查</span></span><br><span class="line">    <span class="keyword">for</span> (prop <span class="keyword">in</span> obj) &#123;</span><br><span class="line">      <span class="keyword">if</span> (<span class="title function_">_has</span>(prop, obj) &amp;&amp; (!checkArgsLength || prop !== <span class="string">&#x27;length&#x27;</span>)) &#123;</span><br><span class="line">        ks[ks.<span class="property">length</span>] = prop;</span><br><span class="line">      &#125;</span><br><span class="line">    &#125;</span><br><span class="line">    <span class="comment">// 如果有toString可枚举的bug</span></span><br><span class="line">    <span class="keyword">if</span> (hasEnumBug) &#123;</span><br><span class="line">      nIdx = nonEnumerableProps.<span class="property">length</span> - <span class="number">1</span>;</span><br><span class="line">      <span class="comment">// 排除不可枚举的属性</span></span><br><span class="line">      <span class="keyword">while</span> (nIdx &gt;= <span class="number">0</span>) &#123;</span><br><span class="line">        prop = nonEnumerableProps[nIdx];</span><br><span class="line">        <span class="keyword">if</span> (<span class="title function_">_has</span>(prop, obj) &amp;&amp; !<span class="title function_">contains</span>(ks, prop)) &#123;</span><br><span class="line">          ks[ks.<span class="property">length</span>] = prop;</span><br><span class="line">        &#125;</span><br><span class="line">        nIdx -= <span class="number">1</span>;</span><br><span class="line">      &#125;</span><br><span class="line">    &#125;</span><br><span class="line">    <span class="keyword">return</span> ks;</span><br><span class="line">  &#125;);</span><br></pre></td></tr></table></figure> 
+      <!-- reward -->
+      
+    </div>
+    
+
+    <!-- copyright -->
+    
+    <footer class="article-footer">
+       
+  <ul class="article-tag-list" itemprop="keywords"><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/Ramda/" rel="tag">Ramda</a></li><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/%E5%87%BD%E6%95%B0%E5%BC%8F%E7%BC%96%E7%A8%8B/" rel="tag">函数式编程</a></li></ul>
+
+    </footer>
+  </div>
+
+   
+    
+</article>
+
+    
+    <article
   id="post-javascript/Ramda_私有方法"
   class="article article-type-post"
   itemscope
@@ -932,87 +990,6 @@
     <footer class="article-footer">
        
   <ul class="article-tag-list" itemprop="keywords"><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/JavaScript/" rel="tag">JavaScript</a></li><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/%E5%BA%94%E7%94%A8%E6%A1%88%E4%BE%8B/" rel="tag">应用案例</a></li><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/%E6%80%A7%E8%83%BD%E4%BC%98%E5%8C%96/" rel="tag">性能优化</a></li></ul>
-
-    </footer>
-  </div>
-
-   
-    
-</article>
-
-    
-    <article
-  id="post-webpack/开发环境处理"
-  class="article article-type-post"
-  itemscope
-  itemprop="blogPost"
-  data-scroll-reveal
->
-  <div class="article-inner">
-    
-    <header class="article-header">
-       
-<h2 itemprop="name">
-  <a class="article-title" href="/posts/dd1b8adb81f3/"
-    >开发环境处理</a> 
-</h2>
- 
-
-      
-    </header>
-     
-    <div class="article-meta">
-      <a href="/posts/dd1b8adb81f3/" class="article-date">
-  <time datetime="2020-12-26T14:46:37.000Z" itemprop="datePublished">2020-12-26</time>
-</a> 
-  <div class="article-category">
-    <a class="article-category-link" href="/categories/webpack/">webpack</a>
-  </div>
-   
-    </div>
-      
-    <div class="article-entry" itemprop="articleBody">
-       
-  <h4 id="处理html"><a href="#处理html" class="headerlink" title="处理html"></a>处理html</h4><p><a target="_blank" rel="noopener" href="https://www.npmjs.com/package/html-webpack-plugin">html-webpack-plugin</a></p>
-<figure class="highlight javascript"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">npm i --save-dev html-webpack-plugin@next <span class="comment">//webpack5</span></span><br></pre></td></tr></table></figure>
-
-<figure class="highlight javascript"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br></pre></td><td class="code"><pre><span class="line"><span class="attr">plugins</span>: [</span><br><span class="line">  <span class="keyword">new</span> <span class="title class_">HtmlWebpackPlugin</span>(&#123;</span><br><span class="line">    <span class="attr">template</span>:<span class="string">&#x27;**.html&#x27;</span></span><br><span class="line">  &#125;)</span><br><span class="line">]</span><br></pre></td></tr></table></figure>
-
-<h4 id="处理样式"><a href="#处理样式" class="headerlink" title="处理样式"></a>处理样式</h4><figure class="highlight javascript"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">yarn add -D sass-node less-loader css-loader style-loader</span><br></pre></td></tr></table></figure>
-
-<p><a target="_blank" rel="noopener" href="https://www.npmjs.com/package/css-loader">css-loader</a>  <a target="_blank" rel="noopener" href="https://www.npmjs.com/package/style-loader">style-loader</a> <a target="_blank" rel="noopener" href="https://www.npmjs.com/package/sass-loader">sass-loader</a></p>
-<figure class="highlight javascript"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br></pre></td><td class="code"><pre><span class="line">&#123;</span><br><span class="line">  <span class="attr">module</span>: &#123;</span><br><span class="line">    <span class="attr">rules</span>: [</span><br><span class="line">      &#123;</span><br><span class="line">        <span class="attr">test</span>: <span class="regexp">/\.scss$/</span>,</span><br><span class="line">        <span class="attr">use</span>: [</span><br><span class="line">          <span class="string">&#x27;style-loader&#x27;</span>,</span><br><span class="line">          &#123;</span><br><span class="line">              <span class="attr">loader</span>: <span class="string">&#x27;css-loader&#x27;</span>,</span><br><span class="line">              <span class="attr">options</span>: &#123;</span><br><span class="line">                  <span class="attr">minimize</span>: <span class="literal">false</span>, <span class="comment">//压缩css代码, 默认false</span></span><br><span class="line">                  <span class="attr">import</span>: <span class="literal">true</span>, <span class="comment">//禁止或启用@import, 默认true</span></span><br><span class="line">                  <span class="attr">url</span>: <span class="literal">true</span>, <span class="comment">//控制url/image-set的解析，会处理成require引入</span></span><br><span class="line">              &#125;</span><br><span class="line">          &#125;</span><br><span class="line">        , <span class="string">&#x27;sass-loader&#x27;</span>]</span><br><span class="line">      &#125;</span><br><span class="line">    ]</span><br><span class="line">  &#125;,</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
-
-
-
-<h4 id="处理图片资源"><a href="#处理图片资源" class="headerlink" title="处理图片资源"></a>处理图片资源</h4><figure class="highlight javascript"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">yarn add -D url-loader file-laoder</span><br></pre></td></tr></table></figure>
-
-<figure class="highlight javascript"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment">// 小图片以bash64的方式输出</span></span><br><span class="line"><span class="comment">// 可以处理通过import引入的样式中的图片，js文件中引入的图片文件</span></span><br><span class="line"><span class="comment">// 如果图片大于指定大小会默认交给file-loader处理</span></span><br><span class="line"><span class="comment">// file-loader 会使用options中的配置</span></span><br><span class="line">&#123;</span><br><span class="line">  <span class="attr">test</span>: <span class="regexp">/\.(png|jpe?g|gif)$/i</span>,</span><br><span class="line">  <span class="attr">use</span>: [</span><br><span class="line">    &#123;</span><br><span class="line">      <span class="attr">loader</span>: <span class="string">&#x27;url-loader&#x27;</span>,</span><br><span class="line">      <span class="attr">options</span>: &#123;</span><br><span class="line">        <span class="attr">limit</span>: <span class="number">5</span> * <span class="number">1024</span>,</span><br><span class="line">        <span class="attr">outputPath</span>: <span class="string">&#x27;assets&#x27;</span>,</span><br><span class="line">        <span class="attr">name</span>: <span class="string">&#x27;[hash:8].[ext]&#x27;</span>,</span><br><span class="line">      &#125;</span><br><span class="line">    &#125;</span><br><span class="line">  ]</span><br><span class="line">&#125;,</span><br><span class="line"><span class="comment">// 处理html中的图片</span></span><br><span class="line"><span class="comment">// 把html字符串中的图片引变成require的形式，</span></span><br><span class="line"><span class="comment">// 最终还是需要使用file-loader 和 url-loader来处理</span></span><br><span class="line"><span class="comment">// 如果生成的src是[object Module]需要关闭，url-loader的模块化规范</span></span><br><span class="line">&#123;</span><br><span class="line">  <span class="attr">test</span>: <span class="regexp">/\.html$/i</span>,</span><br><span class="line">  <span class="attr">use</span>: [&#123;</span><br><span class="line">    <span class="attr">loader</span>: <span class="string">&#x27;html-loader&#x27;</span>,</span><br><span class="line">  &#125;]</span><br><span class="line">&#125;,</span><br></pre></td></tr></table></figure>
-
-<h4 id="处理字体资源"><a href="#处理字体资源" class="headerlink" title="处理字体资源"></a>处理字体资源</h4><figure class="highlight javascript"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br></pre></td><td class="code"><pre><span class="line">&#123;</span><br><span class="line">  <span class="comment">// exclude:/\.xx$/</span></span><br><span class="line">  <span class="attr">test</span>: <span class="regexp">/\.(ttf|eot|svg|woff|woff2)$/</span>,</span><br><span class="line">  <span class="attr">loader</span>:<span class="string">&#x27;file-loader&#x27;</span>,</span><br><span class="line">  <span class="attr">options</span>:&#123;</span><br><span class="line">    <span class="attr">name</span>:<span class="string">&#x27;[path][name].[ext]&#x27;</span></span><br><span class="line">  &#125;</span><br><span class="line">  </span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
-
-<h4 id="简单的devServer搭建"><a href="#简单的devServer搭建" class="headerlink" title="简单的devServer搭建"></a>简单的devServer搭建</h4><figure class="highlight javascript"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">yarn add -D webpack-dev-server</span><br></pre></td></tr></table></figure>
-
-<p>webpack.config.js 可能因为 <code>webpack-dev-server</code>与<code>webpack</code>版本不匹配导致错误</p>
-<figure class="highlight javascript"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br></pre></td><td class="code"><pre><span class="line"><span class="attr">devServer</span>:&#123;</span><br><span class="line">  <span class="attr">compress</span>: <span class="literal">true</span>,</span><br><span class="line">  <span class="attr">contentBase</span>: path.<span class="title function_">join</span>(__dirname, <span class="string">&#x27;dist&#x27;</span>),</span><br><span class="line">  <span class="attr">open</span>:<span class="literal">true</span></span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
-
-<p>可以通过单独的server.js文件来使用</p>
-<figure class="highlight javascript"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">const</span> webpackDevServer = <span class="built_in">require</span>(<span class="string">&#x27;webpack-dev-server&#x27;</span>);</span><br><span class="line"><span class="keyword">const</span> webpack = <span class="built_in">require</span>(<span class="string">&#x27;webpack&#x27;</span>);</span><br><span class="line"></span><br><span class="line"></span><br><span class="line"><span class="keyword">const</span> config = <span class="built_in">require</span>(<span class="string">&#x27;./webpack.config.js&#x27;</span>);</span><br><span class="line"></span><br><span class="line"><span class="keyword">const</span> options = &#123;</span><br><span class="line">  <span class="attr">contentBase</span>: <span class="string">&#x27;./dist&#x27;</span>,</span><br><span class="line">  <span class="attr">publicPath</span>: <span class="string">&#x27;/&#x27;</span>,</span><br><span class="line">  <span class="attr">hot</span>: <span class="literal">true</span>,</span><br><span class="line">  <span class="attr">writeToDisk</span>: <span class="literal">true</span>,</span><br><span class="line">  <span class="attr">open</span>: <span class="literal">true</span></span><br><span class="line">&#125;;</span><br><span class="line"></span><br><span class="line">webpackDevServer.<span class="title function_">addDevServerEntrypoints</span>(config, options);</span><br><span class="line"><span class="keyword">const</span> compiler = <span class="title function_">webpack</span>(config);</span><br><span class="line"><span class="keyword">const</span> server = <span class="keyword">new</span> <span class="title function_">webpackDevServer</span>(compiler, options);</span><br><span class="line"></span><br><span class="line">server.<span class="title function_">listen</span>(<span class="number">9000</span>, <span class="string">&#x27;localhost&#x27;</span>, <span class="function">() =&gt;</span> &#123;</span><br><span class="line">  <span class="variable language_">console</span>.<span class="title function_">log</span>(<span class="string">&#x27;dev server listening on port 9000&#x27;</span>);</span><br><span class="line">&#125;);</span><br><span class="line"></span><br></pre></td></tr></table></figure>
-
-
-<h4 id="friendly-errors-webpack-plugin-https-www-npmjs-com-package-friendly-errors-webpack-plugin"><a href="#friendly-errors-webpack-plugin-https-www-npmjs-com-package-friendly-errors-webpack-plugin" class="headerlink" title="friendly-errors-webpack-plugin[https://www.npmjs.com/package/friendly-errors-webpack-plugin]"></a>friendly-errors-webpack-plugin[<a target="_blank" rel="noopener" href="https://www.npmjs.com/package/friendly-errors-webpack-plugin]">https://www.npmjs.com/package/friendly-errors-webpack-plugin]</a></h4><p>添加桌面通知<br>该插件没有桌面通知的原生支持，需要引入node-notifier，这样就可以了 。</p>
-<figure class="highlight javascript"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">var</span> <span class="title class_">NotifierPlugin</span> = <span class="built_in">require</span>(<span class="string">&#x27;friendly-errors-webpack-plugin&#x27;</span>);</span><br><span class="line"><span class="keyword">var</span> notifier = <span class="built_in">require</span>(<span class="string">&#x27;node-notifier&#x27;</span>);</span><br><span class="line"><span class="keyword">var</span> <span class="variable constant_">ICON</span> = path.<span class="title function_">join</span>(__dirname, <span class="string">&#x27;icon.png&#x27;</span>);</span><br><span class="line"> </span><br><span class="line"><span class="keyword">new</span> <span class="title class_">NotifierPlugin</span>(&#123;</span><br><span class="line">    <span class="attr">onErrors</span>: <span class="function">(<span class="params">severity, errors</span>) =&gt;</span> &#123;</span><br><span class="line">      <span class="keyword">if</span> (severity !== <span class="string">&#x27;error&#x27;</span>) &#123;</span><br><span class="line">        <span class="keyword">return</span>;</span><br><span class="line">      &#125;</span><br><span class="line">      <span class="keyword">const</span> error = errors[<span class="number">0</span>];</span><br><span class="line">      notifier.<span class="title function_">notify</span>(&#123;</span><br><span class="line">        <span class="attr">title</span>: <span class="string">&quot;Webpack error&quot;</span>,</span><br><span class="line">        <span class="attr">message</span>: severity + <span class="string">&#x27;: &#x27;</span> + error.<span class="property">name</span>,</span><br><span class="line">        <span class="attr">subtitle</span>: error.<span class="property">file</span> || <span class="string">&#x27;&#x27;</span>,</span><br><span class="line">        <span class="attr">icon</span>: <span class="variable constant_">ICON</span></span><br><span class="line">      &#125;);</span><br><span class="line">    &#125;</span><br><span class="line">  &#125;)</span><br><span class="line">]</span><br></pre></td></tr></table></figure>
- 
-      <!-- reward -->
-      
-    </div>
-    
-
-    <!-- copyright -->
-    
-    <footer class="article-footer">
-       
-  <ul class="article-tag-list" itemprop="keywords"><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/webpack/" rel="tag">webpack</a></li><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/%E5%B7%A5%E7%A8%8B%E5%8C%96/" rel="tag">工程化</a></li></ul>
 
     </footer>
   </div>

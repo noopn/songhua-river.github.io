@@ -15,7 +15,7 @@
         name="viewport"
         content="width=device-width, initial-scale=1, maximum-scale=1"
       />
-      <title>eventTime |  四月八日</title>
+      <title>createUpdate |  四月八日</title>
   <meta name="generator" content="hexo-theme-ayer">
       
       <link rel="shortcut icon" href="/favicon.ico" />
@@ -58,7 +58,7 @@
     <main class="content on">
       <section class="outer">
   <article
-  id="post-react/更新/eventTime"
+  id="post-react/createUpdate"
   class="article article-type-post"
   itemscope
   itemprop="blogPost"
@@ -69,7 +69,7 @@
     <header class="article-header">
        
 <h1 class="article-title sea-center" style="border-left:0" itemprop="name">
-  eventTime
+  createUpdate
 </h1>
  
 
@@ -77,11 +77,11 @@
     </header>
      
     <div class="article-meta">
-      <a href="/posts/24cbc56f5973/" class="article-date">
-  <time datetime="2021-02-14T08:08:57.000Z" itemprop="datePublished">2021-02-14</time>
+      <a href="/posts/5c53cf59bfce/" class="article-date">
+  <time datetime="2021-02-14T06:33:17.000Z" itemprop="datePublished">2021-02-14</time>
 </a> 
   <div class="article-category">
-    <a class="article-category-link" href="/categories/React/">React</a> / <a class="article-category-link" href="/categories/React/%E6%9B%B4%E6%96%B0/">更新</a>
+    <a class="article-category-link" href="/categories/React/">React</a>
   </div>
   
 <div class="word_count">
@@ -89,7 +89,7 @@
         <span class="post-meta-item-icon">
             <i class="ri-quill-pen-line"></i>
             <span class="post-meta-item-text"> 字数统计:</span>
-            <span class="post-count">348</span>
+            <span class="post-count">243</span>
         </span>
     </span>
 
@@ -113,11 +113,11 @@
   
     <div class="article-entry" itemprop="articleBody">
        
-  <h4 id="eventTime"><a href="#eventTime" class="headerlink" title="eventTime"></a>eventTime</h4><p><a href="/posts/a51eed6a/#updateContainer">用于的调度更新的时间戳</a> 通过 <code>requestEventTime</code> 创建</p>
-<figure class="highlight javascript"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment">// 用二进制来表示所处的上下文状态</span></span><br><span class="line"><span class="keyword">export</span> <span class="keyword">const</span> <span class="title class_">NoContext</span> = <span class="comment">/*             */</span> <span class="number">0b0000000</span>;</span><br><span class="line"><span class="keyword">const</span> <span class="title class_">BatchedContext</span> = <span class="comment">/*               */</span> <span class="number">0b0000001</span>;</span><br><span class="line"><span class="keyword">const</span> <span class="title class_">EventContext</span> = <span class="comment">/*                 */</span> <span class="number">0b0000010</span>;</span><br><span class="line"><span class="keyword">const</span> <span class="title class_">DiscreteEventContext</span> = <span class="comment">/*         */</span> <span class="number">0b0000100</span>;</span><br><span class="line"><span class="keyword">const</span> <span class="title class_">LegacyUnbatchedContext</span> = <span class="comment">/*       */</span> <span class="number">0b0001000</span>;</span><br><span class="line"><span class="keyword">const</span> <span class="title class_">RenderContext</span> = <span class="comment">/*                */</span> <span class="number">0b0010000</span>;</span><br><span class="line"><span class="keyword">const</span> <span class="title class_">CommitContext</span> = <span class="comment">/*                */</span> <span class="number">0b0100000</span>;</span><br><span class="line"><span class="keyword">export</span> <span class="keyword">const</span> <span class="title class_">RetryAfterError</span> = <span class="comment">/*       */</span> <span class="number">0b1000000</span>;</span><br><span class="line"></span><br><span class="line"><span class="keyword">var</span> currentEventTime = <span class="title class_">NoTimestamp</span> = -<span class="number">1</span>;;</span><br><span class="line"><span class="comment">// executionContext = NoContext</span></span><br><span class="line"><span class="keyword">export</span> <span class="keyword">function</span> <span class="title function_">requestEventTime</span>(<span class="params"></span>) &#123;</span><br><span class="line">  <span class="keyword">if</span> ((executionContext &amp; (<span class="title class_">RenderContext</span> | <span class="title class_">CommitContext</span>)) !== <span class="title class_">NoContext</span>) &#123;</span><br><span class="line">    <span class="comment">// We&#x27;re inside React, so it&#x27;s fine to read the actual time.</span></span><br><span class="line">    <span class="keyword">return</span> <span class="title function_">now</span>();</span><br><span class="line">  &#125;</span><br><span class="line">  <span class="comment">// 不在react中，可能在浏览器的事件中</span></span><br><span class="line">  <span class="keyword">if</span> (currentEventTime !== <span class="title class_">NoTimestamp</span>) &#123;</span><br><span class="line">    <span class="comment">// 对所有更新使用相同的开始时间，直到再次进入react中</span></span><br><span class="line">    <span class="keyword">return</span> currentEventTime;</span><br><span class="line">  &#125;</span><br><span class="line">  <span class="comment">// 这是React运行后后的第一次更新。计算新的开始时间。</span></span><br><span class="line">  currentEventTime = <span class="title function_">now</span>();</span><br><span class="line">  <span class="keyword">return</span> currentEventTime;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+  <h4 id="Update"><a href="#Update" class="headerlink" title="Update"></a>Update</h4><p><a href="/posts/a51eed6a/#updateContainer">用于记录组件状态的改变，保存到UpdateQueue中</a>，多个Update可以同时存在</p>
+<p>&#x2F;packages&#x2F;react-reconciler&#x2F;src&#x2F;ReactUpdateQueue.new.js </p>
+<figure class="highlight javascript"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">export</span> <span class="keyword">function</span> <span class="title function_">createUpdate</span>(<span class="params">eventTime: number, lane: Lane</span>): <span class="title class_">Update</span>&lt;*&gt; &#123;</span><br><span class="line">  <span class="keyword">const</span> <span class="attr">update</span>: <span class="title class_">Update</span>&lt;*&gt; = &#123;</span><br><span class="line">    eventTime,</span><br><span class="line">    lane,</span><br><span class="line">    <span class="comment">// export const UpdateState = 0; 更新</span></span><br><span class="line">    <span class="comment">// export const ReplaceState = 1; 替换更新</span></span><br><span class="line">    <span class="comment">// export const ForceUpdate = 2; 强制更新</span></span><br><span class="line">    <span class="comment">// export const CaptureUpdate = 3; 捕获哦错误后更新</span></span><br><span class="line">    <span class="attr">tag</span>: <span class="title class_">UpdateState</span>,</span><br><span class="line">    <span class="attr">payload</span>: <span class="literal">null</span>, <span class="comment">// 更新内容，比如`setState`接收的第一个参数</span></span><br><span class="line">    <span class="attr">callback</span>: <span class="literal">null</span>, <span class="comment">// 对应的回调，`setState`，`render`都有</span></span><br><span class="line">    <span class="attr">next</span>: <span class="literal">null</span>, <span class="comment">// 指向下一个更新</span></span><br><span class="line">  &#125;;</span><br><span class="line">  <span class="keyword">return</span> update;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
 
-<p>获取时间戳的时候，如果Date对象初始化的时间过长，在使用的时候还需要把初始化的时间减去</p>
-<figure class="highlight javascript"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">let</span> getCurrentTime;</span><br><span class="line"><span class="keyword">const</span> hasPerformanceNow =</span><br><span class="line">  <span class="keyword">typeof</span> performance === <span class="string">&#x27;object&#x27;</span> &amp;&amp; <span class="keyword">typeof</span> performance.<span class="property">now</span> === <span class="string">&#x27;function&#x27;</span>;</span><br><span class="line"></span><br><span class="line"><span class="keyword">if</span> (hasPerformanceNow) &#123;</span><br><span class="line">  <span class="keyword">const</span> localPerformance = performance;</span><br><span class="line">  getCurrentTime = <span class="function">() =&gt;</span> localPerformance.<span class="title function_">now</span>();</span><br><span class="line">&#125; <span class="keyword">else</span> &#123;</span><br><span class="line">  <span class="keyword">const</span> localDate = <span class="title class_">Date</span>;</span><br><span class="line">  <span class="keyword">const</span> initialTime = localDate.<span class="title function_">now</span>();</span><br><span class="line">  getCurrentTime = <span class="function">() =&gt;</span> localDate.<span class="title function_">now</span>() - initialTime;</span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line"><span class="keyword">var</span> <span class="title class_">Scheduler</span>_now = <span class="title class_">Scheduler</span>.<span class="property">unstable_now</span> = getCurrentTime;</span><br><span class="line"><span class="keyword">var</span> initialTimeMs$<span class="number">1</span> = <span class="title class_">Scheduler</span>_now<span class="title function_">$1</span>(); </span><br><span class="line"><span class="comment">// 如果初始化的事件戳非常小，直接使用 initialTimeMs，对于现代浏览器直接使用performance.now</span></span><br><span class="line"><span class="comment">// 在老的浏览器中回退使用Date.now, 返回Unix事件戳，这时需要减去模块初始化的时间来模拟 performance.now</span></span><br><span class="line"><span class="comment">// 并把时间控制在32位以内</span></span><br><span class="line"></span><br><span class="line"><span class="keyword">var</span> now = initialTimeMs$<span class="number">1</span> &lt; <span class="number">10000</span> ? <span class="title class_">Scheduler</span>_now$<span class="number">1</span> : <span class="keyword">function</span> (<span class="params"></span>) &#123;</span><br><span class="line">  <span class="keyword">return</span> <span class="title class_">Scheduler</span>_now<span class="title function_">$1</span>() - initialTimeMs$<span class="number">1</span>;</span><br><span class="line">&#125;;</span><br></pre></td></tr></table></figure> 
+<h4 id="enqueueUpdate"><a href="#enqueueUpdate" class="headerlink" title="enqueueUpdate"></a>enqueueUpdate</h4><figure class="highlight javascript"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">export</span> <span class="keyword">function</span> enqueueUpdate&lt;<span class="title class_">State</span>&gt;(<span class="attr">fiber</span>: <span class="title class_">Fiber</span>, <span class="attr">update</span>: <span class="title class_">Update</span>&lt;<span class="title class_">State</span>&gt;) &#123;</span><br><span class="line">  <span class="comment">// fiber 节点中的updateQueue,默认是null</span></span><br><span class="line">  <span class="keyword">const</span> updateQueue = fiber.<span class="property">updateQueue</span>;</span><br><span class="line">  <span class="keyword">if</span> (updateQueue === <span class="literal">null</span>) &#123;</span><br><span class="line">    <span class="comment">// 只在未挂载时执行</span></span><br><span class="line">    <span class="keyword">return</span>;</span><br><span class="line">  &#125;</span><br><span class="line"></span><br><span class="line">  <span class="keyword">const</span> <span class="attr">sharedQueue</span>: <span class="title class_">SharedQueue</span>&lt;<span class="title class_">State</span>&gt; = (<span class="attr">updateQueue</span>: any).<span class="property">shared</span>;</span><br><span class="line">  <span class="comment">// pending update链表，最新的更新在链表的顶端</span></span><br><span class="line">  <span class="comment">// pending = 3-&gt;2-&gt;1-&gt;3....</span></span><br><span class="line">  <span class="keyword">const</span> pending = sharedQueue.<span class="property">pending</span>;</span><br><span class="line">  <span class="keyword">if</span> (pending === <span class="literal">null</span>) &#123;</span><br><span class="line">    <span class="comment">// 只有一个update时候，循环引用</span></span><br><span class="line">    update.<span class="property">next</span> = update;</span><br><span class="line">  &#125; <span class="keyword">else</span> &#123;</span><br><span class="line">    update.<span class="property">next</span> = pending.<span class="property">next</span>;</span><br><span class="line">    pending.<span class="property">next</span> = update;</span><br><span class="line">  &#125;</span><br><span class="line">  sharedQueue.<span class="property">pending</span> = update;</span><br><span class="line"></span><br></pre></td></tr></table></figure> 
       <!-- reward -->
       
       <div id="reword-out">
@@ -153,19 +153,19 @@
    
   <nav class="article-nav">
     
-      <a href="/posts/106d9f1839c3/" class="article-nav-link">
+      <a href="/posts/264645bd7a07/" class="article-nav-link">
         <strong class="article-nav-caption">上一篇</strong>
         <div class="article-nav-title">
           
-            updateLane
+            eventTime
           
         </div>
       </a>
     
     
-      <a href="/posts/c4d75bef1f2e/" class="article-nav-link">
+      <a href="/posts/30160e8c26f0/" class="article-nav-link">
         <strong class="article-nav-caption">下一篇</strong>
-        <div class="article-nav-title">createUpdate</div>
+        <div class="article-nav-title">FiberNode</div>
       </a>
     
   </nav>
